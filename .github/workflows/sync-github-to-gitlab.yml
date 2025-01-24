@@ -31,7 +31,7 @@ jobs:
 
       # Step 4: Add GitLab remote
       - name: Add GitLab remote
-        run: git remote add gitlab git@gitlab.presidio.com:hai-build/cline-based-code-generator-github.git
+        run: git remote add gitlab git@gitlab.presidio.com:hai-build/specif-ai-github.git
 
       # Step 5: Fetch GitLab qa branch
       - name: Fetch GitLab qa branch
