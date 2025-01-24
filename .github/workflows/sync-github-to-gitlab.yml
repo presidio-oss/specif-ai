@@ -1,8 +1,10 @@
 name: Sync GitHub to GitLab
+
 on:
   push:
     branches:
       - main
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -12,11 +14,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Fetch the full history to ensure full context
+
       # Step 2: Configure Git identity
       - name: Configure Git Identity
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "kelumalai@presidio.com"
+
       # Step 3: Setup SSH for GitLab
       - name: Setup SSH for GitLab
         run: |
@@ -24,22 +28,27 @@ jobs:
           echo "${{ secrets.GITLAB_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H gitlab.presidio.com >> ~/.ssh/known_hosts
+
       # Step 4: Add GitLab remote
       - name: Add GitLab remote
-        run: git remote add gitlab git@gitlab.presidio.com:hai-build/specif-ai-github.git
-      # Step 5: Fetch GitLab branch
-      - name: Fetch GitLab branch
-        run: git fetch gitlab main || true  # Ensure GitLab branch is fetched
+        run: git remote add gitlab git@gitlab.presidio.com:hai-build/cline-based-code-generator-github.git
+
+      # Step 5: Fetch GitLab qa branch
+      - name: Fetch GitLab qa branch
+        run: git fetch gitlab qa || true  # Ensure GitLab qa branch is fetched
+
       # Step 6: Reconcile Divergent Histories
       - name: Reconcile Divergent Histories
         run: |
           # Checkout the current branch
           git checkout main
-          
-          # Merge GitLab branch into GitHub branch, allowing unrelated histories
-          git merge gitlab/main --allow-unrelated-histories --strategy-option=theirs || true
+
+          # Merge GitLab qa branch into GitHub main branch, allowing unrelated histories
+          git merge gitlab/qa --allow-unrelated-histories --strategy-option=theirs || true
+
           # Force push to GitLab if necessary
           git push gitlab main || git push --force gitlab main
-      # Step 7: Push Final Changes
-      - name: Push Final Changes
-        run: git push gitlab main
+
+      # Step 7: Push Final Changes to GitLab qa branch
+      - name: Push Final Changes to GitLab qa branch
+        run: git push gitlab main:qa
