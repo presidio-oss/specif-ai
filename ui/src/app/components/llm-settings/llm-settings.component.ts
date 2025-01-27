@@ -44,20 +44,15 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Store initial values
-    const config = this.store.selectSnapshot(LLMConfigState.getConfig);
-    this.initialModel = config.model;
-    this.initialProvider = config.provider;
-    
-    // Set form controls
-    this.selectedModel.setValue(this.initialModel);
-    this.selectedProvider.setValue(this.initialProvider);
-    this.hasChanges = false;
-
     this.subscriptions.add(
       this.llmConfig$.subscribe((config) => {
         this.currentLLMConfig = config;
         this.updateFilteredModels(config?.provider);
+        this.selectedModel.setValue(config.model);
+        this.selectedProvider.setValue(config.provider);
+        this.initialModel = config.model;
+        this.initialProvider = config.provider;
+        this.hasChanges = false;
       })
     );
     this.onModelChange();
@@ -69,9 +64,8 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
       this.selectedModel.valueChanges
         .pipe(distinctUntilChanged())
         .subscribe((res) => {
-          // Only update filtered models, don't update store
           this.updateFilteredModels(this.selectedProvider.value);
-          this.errorMessage = ''; // Clear error message on change
+          this.errorMessage = '';
           this.hasChanges = 
             this.selectedModel.value !== this.initialModel || 
             this.selectedProvider.value !== this.initialProvider;
@@ -87,7 +81,7 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
         .subscribe((res) => {
           this.updateFilteredModels(res);
           this.selectedModel.setValue(providerModelMap[res][0]);
-          this.errorMessage = ''; // Clear error message on change
+          this.errorMessage = '';
           this.hasChanges = 
             this.selectedModel.value !== this.initialModel || 
             this.selectedProvider.value !== this.initialProvider;
@@ -101,7 +95,6 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
   }
 
   closeModal() {
-    // Revert to initial values in the store
     this.store.dispatch(
       new SetLLMConfig({
         ...this.currentLLMConfig,
@@ -119,15 +112,14 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
     this.authService.verifyProviderConfig(provider, model).subscribe({
       next: (response) => {
         if (response.status === "success") {
-          // Update store with new values only on successful verification
-          this.store.dispatch(
-            new SetLLMConfig({
-              ...this.currentLLMConfig,
-              model: model,
-              provider: provider,
-            })
-          );
-          this.toasterService.showSuccess('Provider configuration verified successfully');
+          const newConfig = {
+            ...this.currentLLMConfig,
+            model: model,
+            provider: provider,
+          };
+          this.store.dispatch(new SetLLMConfig(newConfig));
+          localStorage.setItem('llmConfig', JSON.stringify(newConfig));
+          this.toasterService.showSuccess('Provider configuration verified and saved successfully');
           this.modalRef.close(true);
         } else {
           this.errorMessage = "Connection Failed! Please verify your model credentials in the backend configuration.";

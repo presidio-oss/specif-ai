@@ -12,7 +12,6 @@ import { Store } from '@ngxs/store';
 import { LoadingService } from '../services/loading.service';
 import { LLMConfigState } from '../store/llm-config/llm-config.state';
 import { ToasterService } from '../services/toaster/toaster.service';
-import { DefaultLLMModel, DefaultProvider } from '../constants/llm.models.constants';
 
 @Injectable()
 export class LoadingInterceptor implements HttpInterceptor {
@@ -33,8 +32,8 @@ export class LoadingInterceptor implements HttpInterceptor {
 
     const modifiedRequest = request.clone({
       setHeaders: {
-        'X-Provider': provider || DefaultProvider,
-        'X-Model': model || DefaultLLMModel,
+        'X-Provider': provider,
+        'X-Model': model,
       },
     });
 

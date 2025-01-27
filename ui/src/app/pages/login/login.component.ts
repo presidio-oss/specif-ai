@@ -91,9 +91,8 @@ export class LoginComponent implements OnInit {
       this.electronService.setStoreValue("APP_CONFIG", newConfig);
       localStorage.setItem(APP_CONSTANTS.APP_URL, updatedAppUrl as string);
       localStorage.setItem(APP_CONSTANTS.WORKING_DIR, newConfig.directoryPath as string);
-      this.logger.debug(updatedAppUrl, passcode);
+      this.logger.debug('Login attempt', updatedAppUrl);
 
-      this.logger.debug(updatedAppUrl);
       this.authService
         .login({
           appUrl: `${updatedAppUrl}/`,
@@ -101,23 +100,19 @@ export class LoginComponent implements OnInit {
         })
         .subscribe({
           next: (res: any) => {
-            this.logger.debug('logging successful', res);
+            this.logger.debug('Login successful', res);
             localStorage.setItem(
               APP_CONSTANTS.APP_PASSCODE_KEY,
               btoa(passcode) as string,
             );
 
             this.authService.setIsLoggedIn(true);
-
-            this.routerService
-              .navigate(['/apps'])
-              .then()
-              .catch((err) => this.logger.error(err));
+            this.routerService.navigate(['/apps']).catch((err) => this.logger.error(err));
           },
           error: (_) => {
             this.authService.setIsLoggedIn(false);
             localStorage.removeItem(APP_CONSTANTS.APP_URL);
-            localStorage.removeItem(APP_CONSTANTS.APP_PASSCODE_KEY)
+            localStorage.removeItem(APP_CONSTANTS.APP_PASSCODE_KEY);
             this.toastService.showError(
               'Your Server URL or passcode is incorrect. Please try again',
             );
