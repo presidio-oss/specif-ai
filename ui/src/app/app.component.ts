@@ -5,6 +5,7 @@ import { ElectronService } from './services/electron/electron.service';
 import { AuthService } from './services/auth/auth.service';
 import { Store } from '@ngxs/store';
 import { LLMConfigState } from './store/llm-config/llm-config.state';
+import { VerifyLLMConfig } from './store/llm-config/llm-config.actions';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -52,12 +53,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private initializeLLMConfig() {
     this.logger.debug('Initializing LLM configuration');
     if (this.authService.isAuthenticated()) {
-      this.authService.initializeLLMConfig().subscribe({
-        next: () => this.logger.debug('LLM configuration initialized successfully'),
-        error: (error) => this.logger.error('Error initializing LLM configuration', error)
+      this.store.dispatch(new VerifyLLMConfig()).subscribe({
+        next: () => this.logger.debug('LLM configuration verified successfully'),
+        error: (error) => this.logger.error('Error verifying LLM configuration', error)
       });
     } else {
-      this.logger.debug('User not authenticated, skipping LLM configuration initialization');
+      this.logger.debug('User not authenticated, skipping LLM configuration verification');
     }
   }
 }

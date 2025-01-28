@@ -12,3 +12,7 @@ export class FetchDefaultLLMConfig {
 export class VerifyLLMConfig {
     static readonly type = '[LLMConfig] Verify';
 }
+
+export class SyncLLMConfig {
+    static readonly type = '[LLMConfig] Sync';
+}

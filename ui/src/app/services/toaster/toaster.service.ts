@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, timer } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -14,24 +15,40 @@ export class ToasterService {
     return this.toastSubject.asObservable();
   }
 
-  showToast(type: string, message: string) {
+  showToast(type: string, message: string, duration: number = 5000) {
     this.id++;  // Increment the ID to ensure it's unique for every toast
-    this.toastSubject.next({ id: this.id, type, message });
+    const toastId = this.id;
+    this.toastSubject.next({ id: toastId, type, message });
+
+    // Auto-dismiss the toast after the specified duration
+    timer(duration).pipe(
+      takeUntil(this.toastSubject.pipe(
+        // Stop the timer if a new toast with the same ID is shown
+        // (which shouldn't happen, but just in case)
+        filter(toast => toast.id === toastId)
+      ))
+    ).subscribe(() => {
+      this.dismissToast(toastId);
+    });
   }
 
-  showSuccess(message: string) {
-    this.showToast('success', message);
+  showSuccess(message: string, duration: number = 5000) {
+    this.showToast('success', message, duration);
   }
 
-  showError(message: string) {
-    this.showToast('error', message);
+  showError(message: string, duration: number = 5000) {
+    this.showToast('error', message, duration);
   }
 
-  showInfo(message: string) {
-    this.showToast('info', message);
+  showInfo(message: string, duration: number = 5000) {
+    this.showToast('info', message, duration);
   }
   
-  showWarning(message: string) {
-    this.showToast('warning', message);
+  showWarning(message: string, duration: number = 5000) {
+    this.showToast('warning', message, duration);
+  }
+
+  private dismissToast(id: number) {
+    this.toastSubject.next({ id, type: 'dismiss' });
   }
 }

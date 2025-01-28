@@ -4,7 +4,7 @@ import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
 import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
 import { Store } from '@ngxs/store';
 import { AvailableProviders, providerModelMap } from '../../constants/llm.models.constants';
-import { SetLLMConfig } from '../../store/llm-config/llm-config.actions';
+import { SetLLMConfig, SyncLLMConfig } from '../../store/llm-config/llm-config.actions';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgIconComponent } from '@ng-icons/core';
@@ -117,10 +117,13 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
             model: model,
             provider: provider,
           };
-          this.store.dispatch(new SetLLMConfig(newConfig));
-          localStorage.setItem('llmConfig', JSON.stringify(newConfig));
-          this.toasterService.showSuccess('Provider configuration verified and saved successfully');
-          this.modalRef.close(true);
+          this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
+            this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
+              const providerDisplayName = this.availableProviders.find(p => p.key === provider)?.displayName || provider;
+              this.toasterService.showSuccess(`${providerDisplayName} : ${model} is now configured successfully.`);
+              this.modalRef.close(true);
+            });
+          });
         } else {
           this.errorMessage = "Connection Failed! Please verify your model credentials in the backend configuration.";
           this.cdr.markForCheck();

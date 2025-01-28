@@ -8,6 +8,7 @@ import { APP_CONSTANTS } from '../../constants/app.constants';
 import { Store } from '@ngxs/store';
 import { SetLLMConfig, FetchDefaultLLMConfig, VerifyLLMConfig } from '../../store/llm-config/llm-config.actions';
 import { ToasterService } from '../toaster/toaster.service';
+import { LLMConfigState } from '../../store/llm-config/llm-config.state';
 
 @Injectable({
   providedIn: 'root',
@@ -51,14 +52,22 @@ export class AuthService {
   }
 
   public initializeLLMConfig(): Observable<any> {
-    const savedConfig = localStorage.getItem('llmConfig');
-    if (savedConfig) {
-      const config = JSON.parse(savedConfig);
-      this.store.dispatch(new SetLLMConfig(config));
-      return this.store.dispatch(new VerifyLLMConfig());
-    } else {
-      return this.store.dispatch(new FetchDefaultLLMConfig());
-    }
+    return this.store.selectOnce(LLMConfigState.getConfig).pipe(
+      switchMap(config => {
+        if (config && config.provider && config.model) {
+          return this.store.dispatch(new VerifyLLMConfig());
+        } else {
+          return this.store.dispatch(new FetchDefaultLLMConfig());
+        }
+      }),
+      tap(() => this.syncConfigWithLocalStorage())
+    );
+  }
+
+  private syncConfigWithLocalStorage(): void {
+    this.store.selectOnce(LLMConfigState.getConfig).subscribe(config => {
+      localStorage.setItem('llmConfig', JSON.stringify(config));
+    });
   }
 
   public encodeAccessCode(accessCode: string): string {

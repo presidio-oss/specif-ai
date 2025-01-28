@@ -1,20 +1,17 @@
 <div
-  *ngFor="let toast of toasts"
-  class="fixed bottom-4 right-4 z-50 text-xs"
-  (click)="removeToast(toast.id)"
-  (keydown.enter)="removeToast(toast.id)"
-  (keydown.space)="removeToast(toast.id); $event.preventDefault()"
-  role="button"
-  tabindex="0"
+  *ngIf="toasts.length > 0"
+  class="fixed bottom-4 right-4 z-50 text-xs transition-opacity duration-300 ease-in-out"
+  [ngClass]="{'opacity-100': toasts[0].show, 'opacity-0': !toasts[0].show}"
+  (click)="removeToast(toasts[0].id)"
 >
   <div
     class="w-72 p-4 rounded-lg border-[0.5px]"
     [ngClass]="{
       'bg-success-50 border-success-300 text-success-600':
-        toast.type === 'success',
-      'bg-danger-50 border-danger-300 text-danger-600': toast.type === 'error',
-      'bg-blue-50 border-blue-300 text-blue-600': toast.type === 'info',
-      'bg-warning-50 border-warning-300 text-warning-600': toast.type === 'warning'
+        toasts[0].type === 'success',
+      'bg-danger-50 border-danger-300 text-danger-600': toasts[0].type === 'error',
+      'bg-blue-50 border-blue-300 text-blue-600': toasts[0].type === 'info',
+      'bg-warning-50 border-warning-300 text-warning-600': toasts[0].type === 'warning'
     }"
   >
     <div class="flex items-center overflow-hidden gap-2">
@@ -22,18 +19,18 @@
       <div class="flex items-center justify-center">
         <ng-icon
           [name]="
-            toast.type === 'success'
+            toasts[0].type === 'success'
               ? 'heroCheckCircle'
-              : toast.type === 'error'
+              : toasts[0].type === 'error'
                 ? 'heroExclamationCircle'
-                : toast.type === 'warning'
+                : toasts[0].type === 'warning'
                 ? 'heroExclamationTriangle'
                 : 'heroInformationCircle'
           "
           class="text-lg"
         />
       </div>
-      <div class="w-full break-words" [innerHTML]="toast.message"></div>
+      <div class="w-full break-words" [innerHTML]="toasts[0].message"></div>
     </div>
   </div>
 </div>
