@@ -4,7 +4,7 @@ import { LLMConfigModel } from "../../model/interfaces/ILLMConfig";
 import { SetLLMConfig, FetchDefaultLLMConfig, VerifyLLMConfig, SyncLLMConfig } from './llm-config.actions';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
+import { of, timer } from 'rxjs';
 import { LoadingService } from '../../services/loading.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { AvailableProviders } from '../../constants/llm.models.constants';
@@ -26,6 +26,9 @@ export interface LLMConfigStateModel extends LLMConfigModel {
 })
 @Injectable()
 export class LLMConfigState {
+  private lastVerificationTime: number = 0;
+  private readonly DEBOUNCE_TIME = 5000; // 5 seconds
+
   constructor(
     private http: HttpClient,
     private loadingService: LoadingService,
@@ -72,19 +75,26 @@ export class LLMConfigState {
 
   @Action(VerifyLLMConfig)
   verifyLLMConfig({ getState, dispatch }: StateContext<LLMConfigStateModel>) {
+    const currentTime = Date.now();
+    if (currentTime - this.lastVerificationTime < this.DEBOUNCE_TIME) {
+      return of(null); // Skip if called within debounce time
+    }
+    this.lastVerificationTime = currentTime;
+
     const state = getState();
     this.loadingService.setLoading(true);
-    return this.http.post('model/config-verification', {
-      provider: state.provider,
-      model: state.model
-    }).pipe(
+    return timer(0).pipe( // Use timer to ensure we're not blocking the main thread
+      tap(() => this.http.post('model/config-verification', {
+        provider: state.provider,
+        model: state.model
+      }).pipe(
       tap((response: any) => {
         const providerDisplayName = AvailableProviders.find(p => p.key === state.provider)?.displayName || state.provider;
         if (response.status === 'failed') {
           this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
             tap((defaultConfig) => {
               const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
-              this.toasterService.showError(`Something went wrong. Reset to default LLM configuration - ${defaultProviderDisplayName} : ${defaultConfig.model}`, 5000);
+              this.toasterService.showInfo(`LLM configuration error. Reset to default LLM configuration - ${defaultProviderDisplayName} : ${defaultConfig.model}`, 5000);
               dispatch(new FetchDefaultLLMConfig());
             }),
             catchError((error) => {
@@ -107,6 +117,7 @@ export class LLMConfigState {
       finalize(() => {
         this.loadingService.setLoading(false);
       })
+    ).subscribe())
     );
   }
 }

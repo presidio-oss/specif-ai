@@ -7,6 +7,7 @@ import { Store } from '@ngxs/store';
 import { LLMConfigState } from './store/llm-config/llm-config.state';
 import { VerifyLLMConfig } from './store/llm-config/llm-config.actions';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,7 @@ export class AppComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   store = inject(Store);
 
-  private authSubscription: Subscription | null = null;
+  private subscriptions: Subscription[] = [];
 
   ngOnInit() {
     if (sessionStorage.getItem('serverActive') !== 'true') {
@@ -37,17 +38,17 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.initializeLLMConfig();
 
-    this.authSubscription = this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
-      if (isLoggedIn) {
+    this.subscriptions.push(
+      this.authService.isLoggedIn$.pipe(
+        filter(isLoggedIn => isLoggedIn)
+      ).subscribe(() => {
         this.initializeLLMConfig();
-      }
-    });
+      })
+    );
   }
 
   ngOnDestroy() {
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   private initializeLLMConfig() {

@@ -96,12 +96,11 @@ export class AuthService {
       accessToken: encodedPasscode,
       appUrl: data.appUrl,
     }).pipe(
-      switchMap(response => {
+      tap(response => {
         if (response.valid) {
           this.authState.setIsLoggedIn(true);
-          return of(response);
+          this.initializeLLMConfig().subscribe();
         }
-        return of(response);
       })
     );
   }

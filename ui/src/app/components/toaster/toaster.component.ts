@@ -25,6 +25,7 @@ export class ToasterComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
   ) {}
 
+
   ngOnInit() {
     this.toastSubscription = this.toasterService.getToasts().subscribe((toast) => {
       this.addToast(toast);
@@ -32,6 +33,9 @@ export class ToasterComponent implements OnInit, OnDestroy {
   }
 
   addToast(toast: any) {
+    if (!toast.message || toast.message.trim() === '') {
+      return;
+    }
     const newToast = { ...toast, show: true };
     this.toasts = [newToast];
     this.cdr.detectChanges();
