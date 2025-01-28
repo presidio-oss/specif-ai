@@ -120,7 +120,7 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
           this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
             this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
               const providerDisplayName = this.availableProviders.find(p => p.key === provider)?.displayName || provider;
-              this.toasterService.showSuccess(`${providerDisplayName} : ${model} is now configured successfully.`);
+              this.toasterService.showSuccess(`${providerDisplayName} : ${model} is configured successfully.`);
               this.modalRef.close(true);
             });
           });

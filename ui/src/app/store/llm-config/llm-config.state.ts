@@ -84,7 +84,7 @@ export class LLMConfigState {
           this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
             tap((defaultConfig) => {
               const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
-              this.toasterService.showError(`Current provider configuration verification failed. Setting to default provider configuration - ${defaultProviderDisplayName} : ${defaultConfig.model}`, 5000);
+              this.toasterService.showError(`Something went wrong. Reset to default LLM configuration - ${defaultProviderDisplayName} : ${defaultConfig.model}`, 5000);
               dispatch(new FetchDefaultLLMConfig());
             }),
             catchError((error) => {
@@ -94,7 +94,7 @@ export class LLMConfigState {
             })
           ).subscribe();
         } else {
-          this.toasterService.showSuccess(`${providerDisplayName} : ${state.model} is now configured successfully.`, 5000);
+          this.toasterService.showSuccess(`${providerDisplayName} : ${state.model} is configured successfully.`, 5000);
           dispatch(new SyncLLMConfig());
         }
       }),
