@@ -9,6 +9,7 @@ import { LoadingService } from '../../services/loading.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { AvailableProviders } from '../../constants/llm.models.constants';
 import { ElectronService } from '../../services/electron/electron.service';
+import { DEFAULT_TOAST_DURATION } from 'src/app/constants/toast.constant';
 
 export interface LLMConfigStateModel extends LLMConfigModel {
   isDefault: boolean;
@@ -94,7 +95,7 @@ export class LLMConfigState {
           this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
             tap((defaultConfig) => {
               const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
-              this.toasterService.showInfo(`LLM configuration error. Reset to default LLM configuration - ${defaultProviderDisplayName} : ${defaultConfig.model}`, 5000);
+              this.toasterService.showInfo(`LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName} : ${defaultConfig.model}`, DEFAULT_TOAST_DURATION);
               dispatch(new FetchDefaultLLMConfig());
             }),
             catchError((error) => {
@@ -103,10 +104,9 @@ export class LLMConfigState {
               return of(null);
             })
           ).subscribe();
-        } else {
-          this.toasterService.showSuccess(`${providerDisplayName} : ${state.model} is configured successfully.`, 5000);
-          dispatch(new SyncLLMConfig());
         }
+        // Always sync the config after verification, regardless of success or failure
+        dispatch(new SyncLLMConfig());
       }),
       catchError((error) => {
         console.error('Error verifying LLM config:', error);

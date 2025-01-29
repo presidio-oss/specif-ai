@@ -17,3 +17,5 @@ export const APP_INTEGRATIONS = {
     ERROR: 'Failed to Update AWS Bedrock Knowledge Base Config',
   },
 };
+
+export const DEFAULT_TOAST_DURATION = 5000;

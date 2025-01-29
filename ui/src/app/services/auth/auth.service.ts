@@ -59,15 +59,8 @@ export class AuthService {
         } else {
           return this.store.dispatch(new FetchDefaultLLMConfig());
         }
-      }),
-      tap(() => this.syncConfigWithLocalStorage())
+      })
     );
-  }
-
-  private syncConfigWithLocalStorage(): void {
-    this.store.selectOnce(LLMConfigState.getConfig).subscribe(config => {
-      localStorage.setItem('llmConfig', JSON.stringify(config));
-    });
   }
 
   public encodeAccessCode(accessCode: string): string {

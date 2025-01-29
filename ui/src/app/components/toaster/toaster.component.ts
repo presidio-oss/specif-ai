@@ -4,6 +4,7 @@ import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent } from '@ng-icons/core';
 import { heroCheckCircle, heroExclamationCircle, heroInformationCircle, heroExclamationTriangle } from '@ng-icons/heroicons/outline';
 import { Subscription } from 'rxjs';
+import { DEFAULT_TOAST_DURATION } from 'src/app/constants/toast.constant';
 
 @Component({
   selector: 'app-toaster',
@@ -25,30 +26,29 @@ export class ToasterComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
   ) {}
 
-
   ngOnInit() {
-    this.toastSubscription = this.toasterService.getToasts().subscribe((toast) => {
-      this.addToast(toast);
+    this.toastSubscription = this.toasterService.getToasts().subscribe((newToast) => {
+      this.addToast(newToast);
     });
   }
 
-  addToast(toast: any) {
-    if (!toast.message || toast.message.trim() === '') {
+  addToast(newToast: any) {
+    if (!newToast.message || newToast.message.trim() === '') {
       return;
     }
-    const newToast = { ...toast, show: true };
-    this.toasts = [newToast];
+    const toast = { ...newToast, show: true };
+    this.toasts.push(toast);
     this.cdr.detectChanges();
 
     // Set timeout for auto-removal
-    this.toastTimeouts[newToast.id] = setTimeout(() => {
-      this.removeToast(newToast.id);
-    }, newToast.duration || 5000);
+    this.toastTimeouts[toast.id] = setTimeout(() => {
+      this.removeToast(toast.id);
+    }, newToast.duration);
   }
 
   removeToast(id: number) {
-    const toastIndex = this.toasts.findIndex((t) => t.id === id);
-    if (toastIndex > -1) {
+    const index = this.toasts.findIndex(t => t.id === id);
+    if (index > -1) {
       // Clear the timeout
       if (this.toastTimeouts[id]) {
         clearTimeout(this.toastTimeouts[id]);
@@ -56,17 +56,14 @@ export class ToasterComponent implements OnInit, OnDestroy {
       }
 
       // Start fade-out animation
-      this.toasts[toastIndex].show = false;
+      this.toasts[index].show = false;
       this.cdr.detectChanges();
 
-      // Remove toast from array after animation completes
+      // Remove toast after animation completes
       setTimeout(() => {
-        this.toasts = this.toasts.filter((toast) => toast.id !== id);
-        if (this.toasts.length === 0) {
-          // Ensure the toast container is removed from the DOM
-          this.cdr.detectChanges();
-        }
-      }, 300); // Adjust this value to match your CSS transition duration
+        this.toasts = this.toasts.filter(t => t.id !== id);
+        this.cdr.detectChanges();
+      }, 300);
     }
   }
 

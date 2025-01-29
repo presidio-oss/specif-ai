@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable, timer } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs';
+import { DEFAULT_TOAST_DURATION } from 'src/app/constants/toast.constant';
 
 @Injectable({
   providedIn: 'root',
@@ -15,40 +15,25 @@ export class ToasterService {
     return this.toastSubject.asObservable();
   }
 
-  showToast(type: string, message: string, duration: number = 5000) {
+  showToast(type: string, message: string, duration: number = DEFAULT_TOAST_DURATION) {
     this.id++;  // Increment the ID to ensure it's unique for every toast
     const toastId = this.id;
-    this.toastSubject.next({ id: toastId, type, message });
-
-    // Auto-dismiss the toast after the specified duration
-    timer(duration).pipe(
-      takeUntil(this.toastSubject.pipe(
-        // Stop the timer if a new toast with the same ID is shown
-        // (which shouldn't happen, but just in case)
-        filter(toast => toast.id === toastId)
-      ))
-    ).subscribe(() => {
-      this.dismissToast(toastId);
-    });
+    this.toastSubject.next({ id: toastId, type, message, duration });
   }
 
-  showSuccess(message: string, duration: number = 5000) {
+  showSuccess(message: string, duration: number = DEFAULT_TOAST_DURATION) {
     this.showToast('success', message, duration);
   }
 
-  showError(message: string, duration: number = 5000) {
+  showError(message: string, duration: number = DEFAULT_TOAST_DURATION) {
     this.showToast('error', message, duration);
   }
 
-  showInfo(message: string, duration: number = 5000) {
+  showInfo(message: string, duration: number = DEFAULT_TOAST_DURATION) {
     this.showToast('info', message, duration);
   }
   
-  showWarning(message: string, duration: number = 5000) {
+  showWarning(message: string, duration: number = DEFAULT_TOAST_DURATION) {
     this.showToast('warning', message, duration);
-  }
-
-  private dismissToast(id: number) {
-    this.toastSubject.next({ id, type: 'dismiss' });
   }
 }
