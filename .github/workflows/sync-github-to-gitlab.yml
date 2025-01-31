@@ -51,4 +51,4 @@ jobs:
 
       # Step 7: Push Final Changes to GitLab qa branch
       - name: Push Final Changes to GitLab qa branch
-        run: git push gitlab main:qa
+        run: git push gitlab main:qa 
