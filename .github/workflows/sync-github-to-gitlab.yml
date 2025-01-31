@@ -33,19 +33,19 @@ jobs:
       - name: Add GitLab remote
         run: git remote add gitlab git@gitlab.presidio.com:hai-build/specif-ai-github.git
 
-      # Step 5: Fetch GitLab qa branch
-      - name: Fetch GitLab qa branch
-        run: git fetch gitlab qa || true  # Ensure GitLab qa branch is fetched
+      # Step 5: Fetch GitLab release/QA branch
+      - name: Fetch GitLab release/QA branch
+        run: git fetch gitlab release/QA || true  # Ensure GitLab qa branch is fetched
 
       # Step 6: Checkout GitLab qa branch
-      - name: Checkout GitLab qa branch
+      - name: Checkout GitLab release/QA branch
         run: |
-          git checkout qa || git checkout -b qa gitlab/qa
+          git checkout release/QA || git checkout -b release/QA gitlab/release/QA
 
-      # Step 7: Merge GitHub main into GitLab qa
-      - name: Merge GitHub main into GitLab qa
+      # Step 7: Merge GitHub main into GitLab release/QA
+      - name: Merge GitHub main into GitLab release/QA
         run: git merge origin/main --allow-unrelated-histories --strategy-option=theirs || true
 
-      # Step 8: Push only to GitLab qa
-      - name: Push Final Changes to GitLab qa branch
-        run: git push gitlab qa
+      # Step 8: Push only to GitLab release/QA
+      - name: Push Final Changes to GitLab release/QA branch
+        run: git push gitlab release/QA
