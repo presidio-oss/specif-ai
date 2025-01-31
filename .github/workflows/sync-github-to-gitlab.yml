@@ -47,7 +47,7 @@ jobs:
           git merge gitlab/qa --allow-unrelated-histories --strategy-option=theirs || true
 
           # Force push to GitLab if necessary
-          git push gitlab qa || git push --force gitlab qa
+          git push gitlab main || git push --force gitlab main
 
       # Step 7: Push Final Changes to GitLab qa branch
       - name: Push Final Changes to GitLab qa branch
