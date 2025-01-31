@@ -13,7 +13,7 @@ jobs:
       - name: Checkout GitHub Repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Fetch the full history to ensure full context
+          fetch-depth: 0  # Fetch full history for context
 
       # Step 2: Configure Git identity
       - name: Configure Git Identity
@@ -37,12 +37,15 @@ jobs:
       - name: Fetch GitLab qa branch
         run: git fetch gitlab qa || true  # Ensure GitLab qa branch is fetched
 
-      # Step 6: Merge GitHub main into GitLab qa
-      - name: Merge GitHub main into GitLab qa
+      # Step 6: Checkout GitLab qa branch
+      - name: Checkout GitLab qa branch
         run: |
           git checkout qa || git checkout -b qa gitlab/qa
-          git merge origin/main --allow-unrelated-histories --strategy-option=theirs || true
 
-      # Step 7: Push Final Changes to GitLab qa branch
+      # Step 7: Merge GitHub main into GitLab qa
+      - name: Merge GitHub main into GitLab qa
+        run: git merge origin/main --allow-unrelated-histories --strategy-option=theirs || true
+
+      # Step 8: Push only to GitLab qa
       - name: Push Final Changes to GitLab qa branch
         run: git push gitlab qa
