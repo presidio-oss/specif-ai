@@ -37,18 +37,12 @@ jobs:
       - name: Fetch GitLab qa branch
         run: git fetch gitlab qa || true  # Ensure GitLab qa branch is fetched
 
-      # Step 6: Reconcile Divergent Histories
-      - name: Reconcile Divergent Histories
+      # Step 6: Merge GitHub main into GitLab qa
+      - name: Merge GitHub main into GitLab qa
         run: |
-          # Checkout the current branch
-          git checkout main
-
-          # Merge GitLab qa branch into GitHub main branch, allowing unrelated histories
-          git merge gitlab/qa --allow-unrelated-histories --strategy-option=theirs || true
-
-          # Force push to GitLab if necessary
-          git push gitlab main || git push --force gitlab main
+          git checkout qa || git checkout -b qa gitlab/qa
+          git merge origin/main --allow-unrelated-histories --strategy-option=theirs || true
 
       # Step 7: Push Final Changes to GitLab qa branch
       - name: Push Final Changes to GitLab qa branch
-        run: git push gitlab qa 
+        run: git push gitlab qa
