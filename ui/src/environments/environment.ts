@@ -5,7 +5,7 @@ export const environment = {
   ENABLE_SENTRY: false,
   DEBUG_MODE: true,
   JIRA_RATE_LIMIT_CONFIG: 9,
-  APP_VERSION: '1.9.5',
+  APP_VERSION: '1.9.6',
   ThemeConfiguration: {
     appLogo: 'assets/img/logo/haibuild_light_applogo.svg',
     appLogoDark: 'assets/img/logo/haibuild_dark_applogo.svg',
