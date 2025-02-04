@@ -48,7 +48,9 @@ export class LoadingInterceptor implements HttpInterceptor {
           if (error.status >= 500) {
             return timer(1);
           }
-          this.toasterService.showError(error?.message);
+          if (!(request.url.includes('auth/verify_access_token') && (error.status === 401 || error.status === 403))) {
+            this.toasterService.showError(error?.message);
+          }
           throw error;
         },
       }),
