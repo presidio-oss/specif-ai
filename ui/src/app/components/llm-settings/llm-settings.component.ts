@@ -3,7 +3,7 @@ import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
 import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
 import { Store } from '@ngxs/store';
-import { AvailableProviders, providerModelMap } from '../../constants/llm.models.constants';
+import { AvailableProviders, ProviderModelMap } from '../../constants/llm.models.constants';
 import { SetLLMConfig, SyncLLMConfig } from '../../store/llm-config/llm-config.actions';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -80,7 +80,7 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
         .pipe(distinctUntilChanged())
         .subscribe((res) => {
           this.updateFilteredModels(res);
-          this.selectedModel.setValue(providerModelMap[res][0]);
+          this.selectedModel.setValue(ProviderModelMap[res][0]);
           this.errorMessage = '';
           this.hasChanges = 
             this.selectedModel.value !== this.initialModel || 
@@ -91,7 +91,7 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
   }
 
   updateFilteredModels(provider: string) {
-    this.filteredModels = providerModelMap[provider] || [];
+    this.filteredModels = ProviderModelMap[provider] || [];
   }
 
   closeModal() {

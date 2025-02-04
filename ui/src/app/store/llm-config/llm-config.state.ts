@@ -7,7 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { of, timer } from 'rxjs';
 import { LoadingService } from '../../services/loading.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { AvailableProviders } from '../../constants/llm.models.constants';
+import { AvailableProviders, ProviderModelMap } from '../../constants/llm.models.constants';
 import { ElectronService } from '../../services/electron/electron.service';
 import { DEFAULT_TOAST_DURATION } from 'src/app/constants/toast.constant';
 
@@ -59,7 +59,12 @@ export class LLMConfigState {
   fetchDefaultLLMConfig({ setState, dispatch }: StateContext<LLMConfigStateModel>) {
     this.loadingService.setLoading(true);
     return this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
-      tap((defaultConfig) => {
+      tap((defaultConfig: LLMConfigModel) => {
+        if (!defaultConfig.provider || !defaultConfig.model) {
+          // Set default values if not provided
+          defaultConfig.provider = AvailableProviders[0].key;
+          defaultConfig.model = ProviderModelMap[defaultConfig.provider][0];
+        }
         setState({ ...defaultConfig, isDefault: true });
         dispatch(new SyncLLMConfig());
       }),
@@ -95,7 +100,7 @@ export class LLMConfigState {
           this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
             tap((defaultConfig) => {
               const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
-              this.toasterService.showInfo(`LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName} : ${defaultConfig.model}`, DEFAULT_TOAST_DURATION);
+              this.toasterService.showInfo(`LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}: ${defaultConfig.model}`);
               dispatch(new FetchDefaultLLMConfig());
             }),
             catchError((error) => {
