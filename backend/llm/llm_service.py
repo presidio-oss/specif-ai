@@ -29,14 +29,17 @@ class LLMService:
         :return: A list of message dictionaries formatted for the LLM.
         """
         messages = []
-        if chat_history:
-            if system_message:
-                chat_agent_custom_system_msg_service = ChatAgent(system_message)
-                messages = chat_agent_custom_system_msg_service.prepare_chat_messages_with_history(message=prompt, chat_history=chat_history)
-            else:
-                messages = self.chat_agent_service.prepare_chat_messages_with_history(message=prompt, chat_history=chat_history)
-        else:
-            messages.append({"role": "user", "content": prompt})
+
+        if not(bool(prompt) and isinstance(prompt, str)):
+            raise CustomAppException("Invalid prompt provided.", status_code=400)
+        if bool(system_message) and isinstance(system_message, str):
+            messages.append({"role": "system", "content": system_message})
+        if bool(chat_history) and isinstance(chat_history, list):
+            for chat in chat_history:
+                for key, value in chat.items():
+                    messages.append({"role": key, "content": value})
+        
+        messages.append({"role": "user", "content": prompt})
         return messages
 
     def call_llm(self, prompt, knowledge_base: str = None):
