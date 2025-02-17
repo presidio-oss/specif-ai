@@ -99,6 +99,7 @@ export class AiChatComponent implements OnInit {
   chatSuggestions: Array<string> = [];
   generateLoader: boolean = false;
   loadingChat: boolean = false;
+  gettingResponse: boolean = false;
   kb: string = '';
   isKbActive: boolean = false;
 
@@ -164,7 +165,7 @@ export class AiChatComponent implements OnInit {
         requirement: this.baseContent,
         knowledgeBase: this.kb,
       };
-      if (this.chatHistory.length == 0) this.getSuggestion();
+      this.getSuggestion();
     }, 1000);
   }
 
@@ -175,10 +176,12 @@ export class AiChatComponent implements OnInit {
       next: (response: Array<''>) => {
         this.chatSuggestions = response;
         this.loadingChat = false;
+        this.gettingResponse = false; 
       },
       error: (err) => {
         this.toastService.showError(ERROR_MESSAGES.GENERATE_SUGGESTIONS_FAILED);
         this.loadingChat = false;
+        this.gettingResponse = false; 
       }
     });
   }
@@ -205,6 +208,7 @@ export class AiChatComponent implements OnInit {
         this.chatHistory = [...this.chatHistory, { assistant: response }];
         this.returnChatHistory();
         this.smoothScroll();
+        this.getSuggestion();
       });
   }
 
@@ -299,6 +303,8 @@ export class AiChatComponent implements OnInit {
   }
 
   converse(message: string) {
+    this.gettingResponse = true;
+    this.chatSuggestions = []; 
     if (message || this.selectedFiles.length > 0) {
       this.generateLoader = true;
       
@@ -341,6 +347,7 @@ export class AiChatComponent implements OnInit {
       this.message = '';
       this.selectedFiles = [];
       this.selectedFilesContent = '';
+      this.gettingResponse = false;
     }
   }
 
@@ -358,9 +365,6 @@ export class AiChatComponent implements OnInit {
       knowledgeBase: this.kb
     };
 
-    // Only refresh suggestions if we're at the initial state
-    if (this.chatHistory.length === 0) {
-      this.getSuggestion();
-    }
+    this.getSuggestion();    
   }
 }
