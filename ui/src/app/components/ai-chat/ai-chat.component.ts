@@ -155,7 +155,6 @@ export class AiChatComponent implements OnInit {
     } else if (this.chatType == CHAT_TYPES.TASK) {
       this.type = 'Task for User Story';
     }
-    this.smoothScroll();
     setTimeout(() => {
       this.generateLoader = false;
       this.basePayload = {
@@ -177,11 +176,13 @@ export class AiChatComponent implements OnInit {
         this.chatSuggestions = response;
         this.loadingChat = false;
         this.gettingResponse = false; 
+        this.smoothScroll();
       },
       error: (err) => {
         this.toastService.showError(ERROR_MESSAGES.GENERATE_SUGGESTIONS_FAILED);
         this.loadingChat = false;
         this.gettingResponse = false; 
+        this.smoothScroll();
       }
     });
   }
@@ -207,7 +208,6 @@ export class AiChatComponent implements OnInit {
         this.generateLoader = false;
         this.chatHistory = [...this.chatHistory, { assistant: response }];
         this.returnChatHistory();
-        this.smoothScroll();
         this.getSuggestion();
       });
   }
