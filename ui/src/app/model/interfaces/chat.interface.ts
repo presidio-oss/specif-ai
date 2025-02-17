@@ -3,6 +3,8 @@ export interface suggestionPayload {
   description: string;
   type: string;
   requirement: string;
+  suggestions?: Array<string>;
+  selectedSuggestion?: string;
   knowledgeBase?: string;
 }
 

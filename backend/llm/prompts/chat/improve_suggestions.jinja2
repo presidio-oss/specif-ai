@@ -15,6 +15,16 @@ Suggestion 2:
 Suggestion 3:
 [Provide a creative one-liner suggestion encouraging innovation and new solutions.]
 -----------
+Cardinal rule:
+Do not repeat suggestions. Here are the suggestions that were already provided and relevant to the Abstract Requirement provided.
+{{suggestions}}
+Strictly do not provide any one of these.
+
+{% if selectedSuggestion %}
+Improve the suggestions you are going to generate based on the following suggestion since it was selected by the user but quickly rejected by the user:
+{{selectedSuggestion}}
+{% endif %}
+-----------
 Output Structure should be a valid JSON: Here is the sample Structure. Follow this exactly. Don't add or change the response JSON:
 ["Suggestion 1", "Suggestion 2", ... "Suggestion n"]
 Output only valid JSON. Do not include ```json ``` on start and end of the response.

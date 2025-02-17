@@ -97,6 +97,8 @@ export class AiChatComponent implements OnInit {
   projectId: string = '';
   message: string = '';
   chatSuggestions: Array<string> = [];
+  localSuggestions: Array<string> = [];
+  selectedSuggestion: string = '';
   generateLoader: boolean = false;
   loadingChat: boolean = false;
   gettingResponse: boolean = false;
@@ -171,10 +173,20 @@ export class AiChatComponent implements OnInit {
 
   getSuggestion() {
     this.loadingChat = true;
+    let suggestionPayload: suggestionPayload = {
+      name: this.name,
+      description: this.description,
+      type: this.type,
+      requirement: this.baseContent,
+      knowledgeBase: this.kb,
+      suggestions: this.localSuggestions,
+      selectedSuggestion: this.selectedSuggestion,
+    };
     this.chatService
-    .generateSuggestions(this.basePayload).subscribe({
+    .generateSuggestions(suggestionPayload).subscribe({
       next: (response: Array<''>) => {
         this.chatSuggestions = response;
+        this.localSuggestions.push(...response);
         this.loadingChat = false;
         this.gettingResponse = false; 
         this.smoothScroll();
@@ -306,6 +318,7 @@ export class AiChatComponent implements OnInit {
 
   converse(message: string) {
     this.gettingResponse = true;
+    this.selectedSuggestion = message;
     this.chatSuggestions = []; 
     if (message || this.selectedFiles.length > 0) {
       this.generateLoader = true;

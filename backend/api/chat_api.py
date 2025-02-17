@@ -60,6 +60,8 @@ def get_suggestions():
         description=data["description"],
         type=data["type"],
         requirement=data["requirement"],
+        suggestions=data["suggestions"],
+        selectedSuggestion=data["selectedSuggestion"],
     )
     llm_response = llm_service.call_llm(template, knowledge_base=knowledge_base)
 

@@ -10,9 +10,9 @@ class ImproveSuggestionSchema(Schema):
     description=fields.String(required=True)
     type=fields.String(required=True)
     requirement=fields.String(required=True)
+    suggestions=fields.List(fields.String, required=True)
+    selectedSuggestion=fields.String(required=False)
     knowledgeBase=fields.String(required=False)
-
-
 
 class ConverseRequirementSchema(Schema):
     name=fields.String(required=True)
