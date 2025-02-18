@@ -1,5 +1,5 @@
 You are an AI assistant tasked with generating {{n}} creative and practical one-liner suggestions(not more than 5 words) to improve an abstract requirement. 
-The requirement is not fully detailed and may lack specific context, so your suggestions should be broad, versatile, and aimed at enhancing clarity, feasibility, and overall effectiveness. Consider potential gaps, ambiguities, and areas for innovation.
+The requirement is not fully detailed and may lack specific context, so your suggestions should be broad, versatile, and aimed at enhancing clarity, feasibility, and overall effectiveness. Consider potential gaps, ambiguities, and areas for innovation. Ensure the suggestions you generate are accurate, relevant, and aligned with the abstract requirement.
 
 Application
 Name: {{name}}
@@ -19,12 +19,12 @@ Cardinal rule:
 Do not repeat suggestions. Here are the suggestions that were already provided and relevant to the Abstract Requirement provided.
 {{suggestions}}
 Strictly do not provide any one of these.
-
 {% if selectedSuggestion %}
+-----------
 Improve the suggestions you are going to generate based on the following suggestion since it was selected by the user but quickly rejected by the user:
 {{selectedSuggestion}}
-{% endif %}
 -----------
+{% endif %}
 Output Structure should be a valid JSON: Here is the sample Structure. Follow this exactly. Don't add or change the response JSON:
 ["Suggestion 1", "Suggestion 2", ... "Suggestion n"]
 Output only valid JSON. Do not include ```json ``` on start and end of the response.
