@@ -173,12 +173,9 @@ export class AiChatComponent implements OnInit {
 
   getSuggestion() {
     this.loadingChat = true;
-    let suggestionPayload: suggestionPayload = {
-      name: this.name,
-      description: this.description,
-      type: this.type,
+    const suggestionPayload: suggestionPayload = {
+      ...this.basePayload,
       requirement: this.baseContent,
-      knowledgeBase: this.kb,
       suggestions: this.localSuggestions,
       selectedSuggestion: this.selectedSuggestion,
     };
