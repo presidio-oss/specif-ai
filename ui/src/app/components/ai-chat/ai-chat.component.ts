@@ -101,7 +101,7 @@ export class AiChatComponent implements OnInit {
   selectedSuggestion: string = '';
   generateLoader: boolean = false;
   loadingChat: boolean = false;
-  gettingResponse: boolean = false;
+  responseStatus: boolean = false;
   kb: string = '';
   isKbActive: boolean = false;
 
@@ -185,13 +185,13 @@ export class AiChatComponent implements OnInit {
         this.chatSuggestions = response;
         this.localSuggestions.push(...response);
         this.loadingChat = false;
-        this.gettingResponse = false; 
+        this.responseStatus = false; 
         this.smoothScroll();
       },
       error: (err) => {
         this.toastService.showError(ERROR_MESSAGES.GENERATE_SUGGESTIONS_FAILED);
         this.loadingChat = false;
-        this.gettingResponse = false; 
+        this.responseStatus = false; 
         this.smoothScroll();
       }
     });
@@ -314,7 +314,7 @@ export class AiChatComponent implements OnInit {
   }
 
   converse(message: string) {
-    this.gettingResponse = true;
+    this.responseStatus = true;
     this.selectedSuggestion = message;
     this.chatSuggestions = []; 
     if (message || this.selectedFiles.length > 0) {
@@ -359,7 +359,7 @@ export class AiChatComponent implements OnInit {
       this.message = '';
       this.selectedFiles = [];
       this.selectedFilesContent = '';
-      this.gettingResponse = false;
+      this.responseStatus = false;
     }
   }
 
