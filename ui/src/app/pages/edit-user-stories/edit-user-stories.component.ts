@@ -149,7 +149,8 @@ export class EditUserStoriesComponent implements OnDestroy {
 
   updateUserStory() {
     const findUserStory = (res: any, id: string) => {
-        return res.features.find((feature: any) => feature.id === id.toUpperCase());
+        let result = res.features.find((feature: any) => feature.id === id.toUpperCase());
+        return result;
     }
 
     if (
@@ -194,8 +195,9 @@ export class EditUserStoriesComponent implements OnDestroy {
             this.allowFreeRedirection = true;
             this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
             this.selectedFileContent$.subscribe((res: any) => {
-            this.userStoryForm.patchValue({
-                description: findUserStory(res, this.data.id).description,
+            let updatedDescription = findUserStory(res, this.data.id).description
+              this.userStoryForm.patchValue({
+                description: updatedDescription
               });
               this.description = res.requirement;
               this.chatHistory = res.chatHistory || [];
