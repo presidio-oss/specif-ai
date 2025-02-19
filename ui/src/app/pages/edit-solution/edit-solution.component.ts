@@ -163,7 +163,16 @@ export class EditSolutionComponent {
             }),
           );
           this.allowFreeRedirection = true;
-          this.navigateBackToDocumentList(this.initialData);
+          this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+          this.selectedFileContent$.subscribe((res: any) => {
+            this.oldContent = res.requirement;
+            this.requirementForm.patchValue({
+              title: res.title,
+              content: res.requirement,
+              epicticketid: res.epicTicketId,
+            });
+            this.chatHistory = res.chatHistory || [];
+          });
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
               body.addReqtType,
@@ -191,7 +200,16 @@ export class EditSolutionComponent {
         }),
       );
       this.allowFreeRedirection = true;
-      this.navigateBackToDocumentList(this.initialData);
+      this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+      this.selectedFileContent$.subscribe((res: any) => {
+        this.oldContent = res.requirement;
+        this.requirementForm.patchValue({
+          title: res.title,
+          content: res.requirement,
+          epicticketid: res.epicTicketId,
+        });
+        this.chatHistory = res.chatHistory || [];
+      });
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
           this.folderName,
