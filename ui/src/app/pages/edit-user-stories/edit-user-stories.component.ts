@@ -40,6 +40,7 @@ import {
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ArchiveUserStory } from '../../store/user-stories/user-stories.actions';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { ReadFile } from 'src/app/store/projects/projects.actions';
 
 @Component({
   selector: 'app-edit-user-stories',
@@ -95,6 +96,9 @@ export class EditUserStoriesComponent implements OnDestroy {
   selectedPRD: any = {};
   allowFreeRedirection: boolean = false;
   readonly dialog = inject(MatDialog);
+  selectedFileContent$ = this.store.select(
+    ProjectsState.getSelectedFileContent,
+  );
   readonly regex = /\-feature.json$/;
 
   constructor(
@@ -144,6 +148,10 @@ export class EditUserStoriesComponent implements OnDestroy {
   }
 
   updateUserStory() {
+    const findUserStory = (res: any, id: string) => {
+        return res.features.find((feature: any) => feature.id === id.toUpperCase());
+    }
+
     if (
       this.userStoryForm.getRawValue().expandAI ||
       this.uploadedFileContent.length > 0
@@ -184,7 +192,14 @@ export class EditUserStoriesComponent implements OnDestroy {
               }),
             );
             this.allowFreeRedirection = true;
-            this.navigateBackToUserStories();
+            this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+            this.selectedFileContent$.subscribe((res: any) => {
+            this.userStoryForm.patchValue({
+                description: findUserStory(res, this.data.id).description,
+              });
+              this.description = res.requirement;
+              this.chatHistory = res.chatHistory || [];
+            });
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
                 this.entityType,
@@ -215,7 +230,14 @@ export class EditUserStoriesComponent implements OnDestroy {
         }),
       );
       this.allowFreeRedirection = true;
-      this.navigateBackToUserStories();
+      this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+      this.selectedFileContent$.subscribe((res: any) => {            
+        this.userStoryForm.patchValue({
+          description: findUserStory(res, this.data.id).description,
+        });
+        this.description = res.requirement;
+        this.chatHistory = res.chatHistory || [];
+      });
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
           this.entityType,
