@@ -22,7 +22,7 @@ import { Router } from '@angular/router';
 import { IList } from '../../model/interfaces/IList';
 import { firstValueFrom } from 'rxjs';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
-import { BP_FILE_KEYS } from 'src/app/constants/app.constants';
+import { BP_FILE_KEYS, PRD_HEADINGS } from 'src/app/constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 
 export class ProjectStateModel {
@@ -160,6 +160,9 @@ export class ProjectsState {
           this.generateFiles(brd, projectName, 'BRD'),
         );
         response.prd?.forEach((prd) => {
+          prd['requirement'] = prd['requirement']
+            .replace(PRD_HEADINGS.SCREENS, PRD_HEADINGS.SCREENS_FORMATTED)
+            .replace(PRD_HEADINGS.PERSONAS, PRD_HEADINGS.PERSONAS_FORMATTED);
           this.generateFiles(prd, projectName, 'PRD');
           this.generatePRDFeatureFiles(projectName, 'PRD', prd['id']);
         });

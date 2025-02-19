@@ -37,6 +37,7 @@ import { ConfirmationDialogComponent } from '../../components/confirmation-dialo
 import {
   CONFIRMATION_DIALOG,
   ERROR_MESSAGES,
+  PRD_HEADINGS,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
@@ -146,6 +147,13 @@ export class EditSolutionComponent {
       };
       this.featureService.updateRequirement(body).subscribe(
         (data) => {
+          data.updated.requirement = data.updated.requirement.replace(
+            PRD_HEADINGS.SCREENS,
+            PRD_HEADINGS.SCREENS_FORMATTED,
+          ).replace(
+            PRD_HEADINGS.PERSONAS,
+            PRD_HEADINGS.PERSONAS_FORMATTED,
+          );
           this.store.dispatch(
             new UpdateFile(this.absoluteFilePath, {
               requirement: data.updated.requirement,
@@ -224,6 +232,13 @@ export class EditSolutionComponent {
       };
       this.featureService.addRequirement(body).subscribe(
         (data) => {
+          data.LLMreqt.requirement.replace(
+            PRD_HEADINGS.SCREENS,
+            PRD_HEADINGS.SCREENS_FORMATTED,
+          ).replace(
+            PRD_HEADINGS.PERSONAS,
+            PRD_HEADINGS.PERSONAS_FORMATTED,
+          );
           this.store.dispatch(
             new CreateFile(`${this.folderName}`, {
               requirement: data.LLMreqt.requirement,

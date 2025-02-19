@@ -160,3 +160,10 @@ export const APP_MESSAGES = {
 export const TOOLTIP_CONTENT = {
   IMPORT_FROM_CODE_BUTTON: "Import from Code",
 }
+
+export const PRD_HEADINGS = {
+  SCREENS: 'Screens: ',
+  PERSONAS: 'Personas: ',
+  SCREENS_FORMATTED: '\n\nScreens:\n',
+  PERSONAS_FORMATTED: '\n\nPersonas:\n',
+}
