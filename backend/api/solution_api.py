@@ -32,17 +32,15 @@ def create_process_flow_chart():
     logger.info(f"Request {g.request_id}: Entered <create_process_flow_chart>")
     try:
         data = create_process_flow_chart_schema.load(request.get_json())
-    except ValidationError as err:
-        logger.error(f"Request {g.request_id}: Payload validation failed: {err.messages}")
-        raise CustomAppException("Payload validation failed.", status_code=400) from err
-    try:
-        data = request.get_json()
         process_flow_template = render_template(p_process_flow_chart)
         BRDS = "\n".join(data["selectedBRDs"])
         PRDS = "\n".join(data["selectedPRDs"])
         process_flow_req = process_flow_template.render(title=data["title"], description=data["description"], BRDS=BRDS, PRDS=PRDS,)
         process_flow_description = llm_service.call_llm(process_flow_req)
         parsed_res = json.dumps(process_flow_description)
+    except ValidationError as err:
+        logger.error(f"Request {g.request_id}: Payload validation failed: {err.messages}")
+        raise CustomAppException("Payload validation failed.", status_code=400) from err
     except json.JSONDecodeError as exc:
         logger.error(f"Request {g.request_id}: Failed to parse LLM response")
         raise CustomAppException(

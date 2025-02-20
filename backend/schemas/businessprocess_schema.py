@@ -8,8 +8,8 @@ class CreateFlowChartSchema(Schema):
         required=True,
         validate=validate.Length(min=5, error="Description must not be empty"),
     )
-    selectedBRDs = fields.List(fields.String(), required=False)
-    selectedPRDs = fields.List(fields.String(), required=False)
+    selectedBRDs = fields.List(fields.String(), required=False, load_default=list)
+    selectedPRDs = fields.List(fields.String(), required=False, load_default=list)
 
 
 class CreateBusinessProcessSchema(Schema):
