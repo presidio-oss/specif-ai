@@ -13,7 +13,7 @@ export const environment = {
     appWelcomeTitle: 'Welcome to Specif AI',
     appDescription: 'Get started to accelerate SDLC Process with HAI BUILD',
     companyName: 'Presidio',
-    companyLogo: 'assets/img/presidio.png',
+    companyLogo: 'assets/img/presidio-white.svg',
     appIcons: {
       mac: 'assets/icons/mac_icon.icns',
       win: 'assets/icons/win_icon.ico',

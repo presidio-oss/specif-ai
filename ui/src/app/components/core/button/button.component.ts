@@ -25,7 +25,8 @@ export class ButtonComponent {
   @Input() disabled: boolean = false;
   @Input() icon?: string;
   @Input() type: string = 'button';
-  @Input() isIconButton: boolean = false; 
+  @Input() isIconButton: boolean = false;
+  @Input() isFullWidth: boolean = false;
 
   get themeClasses() {
     const styles = {
@@ -35,7 +36,7 @@ export class ButtonComponent {
         hoverBg: 'hover:bg-primary-700',
         disabledBg: 'bg-primary-500',
         disabledText: 'text-primary-200',
-        border: ''
+        border: '',
       },
       primary_outline: {
         bg: 'bg-transparent',
@@ -67,7 +68,7 @@ export class ButtonComponent {
         hoverBg: 'hover:bg-red-700',
         disabledBg: 'bg-red-600',
         disabledText: 'text-secondary-50',
-        border: ''
+        border: '',
       },
       green: {
         bg: 'bg-green-500',
@@ -75,7 +76,7 @@ export class ButtonComponent {
         hoverBg: 'hover:bg-green-600',
         disabledBg: 'bg-green-400',
         disabledText: 'text-green-300',
-        border: ''
+        border: '',
       },
     };
     return styles[this.theme] || styles.primary;
@@ -83,7 +84,7 @@ export class ButtonComponent {
 
   get sizeClass(): string {
     switch (this.size) {
-      case "xs":
+      case 'xs':
         return 'px-2 py-1 text-xs';
       case 'sm':
         return 'px-3 py-2 text-xs';
@@ -97,8 +98,10 @@ export class ButtonComponent {
   }
 
   get roundedClass(): string {
-    const leftClass = this.roundedLeft !== 'none' ? `rounded-l-${this.roundedLeft}` : '';
-    const rightClass = this.roundedRight !== 'none' ? `rounded-r-${this.roundedRight}` : '';
+    const leftClass =
+      this.roundedLeft !== 'none' ? `rounded-l-${this.roundedLeft}` : '';
+    const rightClass =
+      this.roundedRight !== 'none' ? `rounded-r-${this.roundedRight}` : '';
     const baseClass = this.rounded !== 'none' ? `rounded-${this.rounded}` : '';
     return `${baseClass} ${leftClass} ${rightClass}`.trim();
   }
