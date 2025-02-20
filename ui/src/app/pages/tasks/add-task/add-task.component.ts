@@ -246,12 +246,10 @@ export class AddTaskComponent implements OnDestroy {
               subTaskTicketId: this.existingTask.subTaskTicketId,
             },
             `${this.selectedProject}/${this.config.folderName}/${newFileName}`,
-            true,
           ),
         );
         this.taskForm.markAsUntouched();
         this.taskForm.markAsPristine();
-        this.navigateBackToTasks();
         this.toastService.showSuccess(
           TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
             this.entityType,
@@ -417,7 +415,6 @@ ${chat.assistant}`,
           );
           this.taskForm.markAsUntouched();
           this.taskForm.markAsPristine();
-          this.navigateBackToTasks();
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(this.entityType, id),
           );
