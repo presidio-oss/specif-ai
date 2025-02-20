@@ -27,6 +27,7 @@ import {
   DeleteBreadcrumb,
 } from '../../../store/breadcrumb/breadcrumb.actions';
 import { NgClass, NgIf } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { InputFieldComponent } from '../../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../../components/core/textarea-field/textarea-field.component';
 import { ButtonComponent } from '../../../components/core/button/button.component';
@@ -57,6 +58,7 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
     AiChatComponent,
     MultiUploadComponent,
     ErrorMessageComponent,
+    MatTooltipModule,
   ],
 })
 export class AddTaskComponent implements OnDestroy {

@@ -28,6 +28,7 @@ import {
 } from '../../store/breadcrumb/breadcrumb.actions';
 import { MatDialog } from '@angular/material/dialog';
 import { NgClass, NgIf } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
@@ -55,6 +56,7 @@ import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dia
     ButtonComponent,
     AiChatComponent,
     MultiUploadComponent,
+    MatTooltipModule,
   ],
 })
 export class EditUserStoriesComponent implements OnDestroy {

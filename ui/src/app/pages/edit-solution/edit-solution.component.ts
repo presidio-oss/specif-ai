@@ -25,6 +25,7 @@ import {
 import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { NgClass, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
@@ -60,6 +61,7 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
     MultiUploadComponent,
     NgIconComponent,
     ErrorMessageComponent,
+    MatTooltipModule,
   ],
 })
 export class EditSolutionComponent {

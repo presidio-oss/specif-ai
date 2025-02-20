@@ -38,6 +38,7 @@ import { ElectronService } from '../../services/electron/electron.service';
 import { getNavigationParams } from '../../utils/common.utils';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
@@ -63,6 +64,7 @@ import { BehaviorSubject } from 'rxjs';
     ListItemComponent,
     BadgeComponent,
     SearchInputComponent,
+    MatTooltipModule,
   ],
 })
 export class UserStoriesComponent implements OnInit {
