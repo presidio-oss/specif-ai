@@ -197,6 +197,8 @@ export class BusinessProcessFlowComponent
       id: this.requirementId,
       title: this.selectedRequirement.title,
       description: this.selectedRequirement.requirement,
+      selectedBRDs: this.selectedRequirement.selectedBRDs,
+      selectedPRDs: this.selectedRequirement.selectedPRDs,
     };
     this.featureService.addFlowChart(request).subscribe({
       next: (response: any) => {

@@ -12,6 +12,8 @@ export interface IFlowChartRequest {
   id: string;
   title: string;
   description: string;
+  selectedBRDs: string[];
+  selectedPRDs: string[];
 }
 
 export interface IUpdateProcessRequest {
@@ -65,7 +67,7 @@ export interface IUpdateProcessResponse {
   selectedBRDs: string[];
   selectedPRDs: any[];
   title: string;
-  updated: ILLMresponse
+  updated: ILLMresponse;
   updatedReqt: string;
   useGenAI: boolean;
 }
