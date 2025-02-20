@@ -77,10 +77,7 @@ export class LoginComponent implements OnInit {
         appUrl: string;
         passcode: string;
       };
-      const updatedAppUrl =
-        appUrl[appUrl.length - 1] === '/'
-          ? appUrl.slice(0, appUrl.length - 1)
-          : `${appUrl}`;
+      const updatedAppUrl = appUrl.trim().replace(/\/+$/, '');
 
       const newConfig = {
         appUrl: updatedAppUrl,
