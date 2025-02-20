@@ -195,7 +195,7 @@ export class EditUserStoriesComponent implements OnDestroy {
             this.allowFreeRedirection = true;
             this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
             this.selectedFileContent$.subscribe((res: any) => {
-            let updatedDescription = findUserStory(res, this.data.id).description
+              let updatedDescription = findUserStory(res, this.data.id).description
               this.userStoryForm.patchValue({
                 description: updatedDescription
               });
@@ -233,9 +233,10 @@ export class EditUserStoriesComponent implements OnDestroy {
       );
       this.allowFreeRedirection = true;
       this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
-      this.selectedFileContent$.subscribe((res: any) => {            
+      this.selectedFileContent$.subscribe((res: any) => {
+        let updatedDescription = findUserStory(res, this.data.id).description
         this.userStoryForm.patchValue({
-          description: findUserStory(res, this.data.id).description,
+          description: updatedDescription
         });
         this.description = res.requirement;
         this.chatHistory = res.chatHistory || [];
