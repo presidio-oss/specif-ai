@@ -313,7 +313,6 @@ ${chat.assistant}`,
         else return item;
       });
       this.chatHistory = newArray;
-      this.requirementForm.getRawValue().content
       this.updateRequirement(true)
     }
   }
