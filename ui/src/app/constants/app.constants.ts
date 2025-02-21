@@ -155,6 +155,12 @@ export const APP_MESSAGES = {
     'Sync with Jira\n' +
     'option to create tickets directly in JIRA with the configured Project Key.',
   AWS_BEDROCK_ACCORDION_MESSAGE: `Using the AWS Bedrock Knowledge Base enriches ${environment.ThemeConfiguration.appName} with enterprise-specific context, enhancing its ability to generate precise, business-relevant responses. This added context improves accuracy and ensures deeper alignment with the overall solution.`,
+  JIRA_PREREQUISITE: `Please ensure that you have the following issue types in your JIRA project:
+  <ul class="list-disc pl-5 mt-2">
+    <li>Epic</li>
+    <li>Story</li>
+    <li>Task</li>
+  </ul>`,
 };
 
 export const TOOLTIP_CONTENT = {

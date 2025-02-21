@@ -246,6 +246,9 @@
                 {{ APP_MESSAGES.JIRA_ACCORDION }}
               </p>
             </div>
+            <div class="flex justify-start pb-4">              
+              <p class="text-sm font-normal text-secondary-500" [innerHTML]="APP_MESSAGES.JIRA_PREREQUISITE"></p>
+            </div>            
             <div [formGroup]="jiraForm" class="grid grid-cols-2 gap-6 w-full">
               <div class="flex items-start gap-2">
                 <div class="flex-1">
