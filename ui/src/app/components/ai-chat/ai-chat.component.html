@@ -104,26 +104,9 @@ class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden 
 
     <!-- Suggestions List -->
     <div *ngIf="!loadingChat && chatSuggestions.length > 0">
-      <!-- When chat is empty - wrapped layout -->
-      <div *ngIf="chatHistory.length == 0">
-        <div class="text-sm text-gray-600 font-medium mb-3">Suggestions to improve:</div>
-        <ul class="flex flex-wrap gap-2">
-          <li *ngFor="let suggestion of chatSuggestions"
-            class="flex items-center gap-2 text-sm py-2 px-4 rounded-full bg-gray-100 shadow-sm hover:shadow-md cursor-pointer transition-shadow duration-200 border border-slate-200"
-            (click)="converse(suggestion)"
-            (keydown.enter)="converse(suggestion)"
-            (keydown.space)="converse(suggestion); $event.preventDefault()"  
-            role="button"
-            tabindex="0">
-            <ng-icon name="heroSparklesSolid" class="text-lg text-amber-400"></ng-icon>
-            <span class="text-gray-600">{{ suggestion }}</span>
-          </li>
-        </ul>
-      </div>
-    
-      <!-- When chat has history - horizontal scroll -->
-      <div *ngIf="chatHistory.length > 0" class="overflow-x-auto">
-        <ul class="flex gap-2 min-w-max">
+      <div class="overflow-x-auto">
+        <div *ngIf="chatHistory.length == 0" class="text-sm text-gray-600 font-medium mb-3">Suggestions to improve:</div>
+        <ul class="flex gap-2" [class]="chatHistory.length > 0 ? 'min-w-max' : 'flex-wrap'">
           <li *ngFor="let suggestion of chatSuggestions"
             class="flex items-center gap-2 text-sm py-2 px-4 rounded-full bg-gray-100 shadow-sm hover:shadow-md cursor-pointer transition-shadow duration-200 border border-slate-200"
             (click)="converse(suggestion)"
