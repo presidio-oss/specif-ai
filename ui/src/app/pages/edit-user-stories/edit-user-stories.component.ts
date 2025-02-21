@@ -199,8 +199,7 @@ export class EditUserStoriesComponent implements OnDestroy {
               this.userStoryForm.patchValue({
                 description: updatedDescription
               });
-              this.description = res.requirement;
-              this.chatHistory = res.chatHistory || [];
+              this.description = updatedDescription;
             });
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
@@ -238,8 +237,7 @@ export class EditUserStoriesComponent implements OnDestroy {
         this.userStoryForm.patchValue({
           description: updatedDescription
         });
-        this.description = res.requirement;
-        this.chatHistory = res.chatHistory || [];
+        this.description = updatedDescription;
       });
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
