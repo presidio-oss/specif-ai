@@ -39,6 +39,7 @@ import { environment } from '../environments/environment';
 import { MatSelectModule } from '@angular/material/select';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions } from '@angular/material/tooltip';
 import { ChatSettingsState } from './store/chat-settings/chat-settings.state';
 import { Title } from '@angular/platform-browser';
 import { InputFieldComponent } from './components/core/input-field/input-field.component';
@@ -102,6 +103,14 @@ import { AuthStateService } from './services/auth/auth-state.service';
     ButtonComponent,
   ],
   providers: [
+    {
+      provide: MAT_TOOLTIP_DEFAULT_OPTIONS,
+      useValue: {
+        position: 'below',
+        showDelay: 500,
+        hideDelay: 500
+      } as MatTooltipDefaultOptions
+    },
     AuthStateService,
     AuthService,
     UtilityService,
