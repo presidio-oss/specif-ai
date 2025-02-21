@@ -133,8 +133,8 @@ export class EditSolutionComponent {
     this.createRequirementForm();
   }
 
-  updateRequirement() {
-    if (this.requirementForm.getRawValue().expandAI) {
+  updateRequirement(useAI: boolean = false) {
+    if (this.requirementForm.getRawValue().expandAI || useAI) {
       const body: IUpdateRequirementRequest = {
         updatedReqt: this.requirementForm.getRawValue().title,
         addReqtType: this.folderName,
@@ -312,13 +312,9 @@ ${chat.assistant}`,
         if (item.assistant == chat.assistant) return { ...item, isAdded: true };
         else return item;
       });
-      this.store.dispatch(
-        new UpdateFile(this.absoluteFilePath, {
-          requirement: this.requirementForm.get('content')?.value,
-          title: this.requirementForm.get('title')?.value,
-          chatHistory: newArray,
-        }),
-      );
+      this.chatHistory = newArray;
+      this.requirementForm.getRawValue().content
+      this.updateRequirement(true)
     }
   }
 

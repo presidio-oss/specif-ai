@@ -282,18 +282,14 @@ ${chat.assistant}`,
         else return item;
       });
       const newFileName = this.config.fileName.replace('base', 'feature');
-      this.store.dispatch(
-        new UpdateTask(
-          {
-            ...this.taskForm.getRawValue(),
-            chatHistory: newArray,
-            subTaskTicketId: this.existingTask.subTaskTicketId,
-          },
-          `${this.selectedProject}/${this.config.folderName}/${newFileName}`,
-          false,
-        ),
-      );
+      console.log("Add Task", this.taskForm.getRawValue().id, this.taskForm.getRawValue().list, this.taskForm.getRawValue().acceptance, newFileName);
       this.chatHistory = newArray;
+      this.editTaskWithAI(
+        this.taskForm.getRawValue().id,
+        this.taskForm.getRawValue().list,
+        this.taskForm.getRawValue().acceptance,
+        newFileName,
+      );
     }
   }
 
