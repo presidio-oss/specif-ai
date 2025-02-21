@@ -282,7 +282,6 @@ ${chat.assistant}`,
         else return item;
       });
       const newFileName = this.config.fileName.replace('base', 'feature');
-      console.log("Add Task", this.taskForm.getRawValue().id, this.taskForm.getRawValue().list, this.taskForm.getRawValue().acceptance, newFileName);
       this.chatHistory = newArray;
       this.editTaskWithAI(
         this.taskForm.getRawValue().id,
