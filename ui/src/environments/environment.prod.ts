@@ -1,7 +1,6 @@
 export const environment = {
   SENTRY_ENVIRONMENT: '',
-  SENTRY_DSN:
-    '',
+  SENTRY_DSN: '',
   SENTRY_RELEASE: '',
   JIRA_RATE_LIMIT_CONFIG: 9,
   ENABLE_SENTRY: false,
@@ -14,7 +13,7 @@ export const environment = {
     appWelcomeTitle: 'Welcome to Specif AI',
     appDescription: 'Get started to accelerate SDLC Process with HAI BUILD',
     companyName: 'Presidio',
-    companyLogo: 'assets/img/presidio.png',
+    companyLogo: 'assets/img/presidio-white.svg',
     appIcons: {
       mac: 'assets/icons/mac_icon.icns',
       win: 'assets/icons/win_icon.ico',

@@ -5,6 +5,14 @@
 @tailwind components;
 @tailwind utilities;
 
+// Import Font
+@font-face {
+  font-family: Geist;
+  src: url(assets/fonts/geist-variable.woff2) format("woff2");
+  font-display: swap;
+  font-weight: 100 900;
+}
+
 // Color of overlay background
 $color-overlay: rgba(0, 0, 0, 0.5) !default;
 
@@ -85,7 +93,7 @@ body.dialog-open {
   &.nsm-centered {
     display: flex;
     align-items: center;
-    min-height: calc(100% - (1.75rem * 2));
+    min-height: calc(100% - 1.75rem * 2);
   }
 }
 
@@ -102,9 +110,10 @@ body.dialog-open {
   margin-bottom: $dialog-position-bottom;
   margin-left: $dialog-position-left;
   margin-right: $dialog-position-right;
-  box-shadow: 0 7px 8px -4px rgba(0, 0, 0, 0.2),
-  0 13px 19px 2px rgba(0, 0, 0, 0.14),
-  0 5px 24px 4px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 7px 8px -4px rgba(0, 0, 0, 0.2),
+    0 13px 19px 2px rgba(0, 0, 0, 0.14),
+    0 5px 24px 4px rgba(0, 0, 0, 0.12);
   outline: 0;
 
   // For performance purpose
@@ -117,12 +126,13 @@ body.dialog-open {
 }
 
 /* *************************
-* Animations
-* *************************/
+ * Animations
+ * *************************/
 
 .nsm-dialog[class*="nsm-dialog-animation-"] {
-  transition: transform $transition-duration $transition-timing-function,
-  opacity $transition-duration;
+  transition:
+    transform $transition-duration $transition-timing-function,
+    opacity $transition-duration;
 }
 
 // Left to right (ltr)
@@ -237,12 +247,4 @@ body {
 
 .mat-mdc-menu-content {
   padding: 0 !important;
-}
-
-@layer base {
-  html, body {
-    font-weight: 300;
-    font-style: normal;
-    font-size: 16px;
-  }
 }

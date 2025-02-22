@@ -14,15 +14,21 @@
     disabled ? themeClasses.disabledBg : themeClasses.bg,
     disabled ? themeClasses.disabledText : themeClasses.text,
     !disabled ? themeClasses.hoverBg : '',
-    disabled ? 'cursor-not-allowed' : ''
+    disabled ? 'cursor-not-allowed' : '',
+    isFullWidth ? 'w-full' : '',
   ]"
   [type]="type"
   [disabled]="disabled"
 >
   <ng-container *ngIf="icon">
-    <ng-icon [name]="icon" [ngClass]="isIconButton ? 'w-5 h-5 text-lg' : 'w-4 h-4 mr-2'"></ng-icon>
+    <ng-icon
+      [name]="icon"
+      [ngClass]="isIconButton ? 'w-5 h-5 text-lg' : 'w-4 h-4 mr-2'"
+    ></ng-icon>
     <!-- Or use an SVG/image like this -->
     <!-- <img [src]="iconSrc" alt="" class="w-4 h-4 mr-2" *ngIf="iconSrc"/> -->
   </ng-container>
-  <span *ngIf="!isIconButton" class="whitespace-nowrap">{{ buttonContent }}</span>
+  <span *ngIf="!isIconButton" class="whitespace-nowrap">{{
+    buttonContent
+  }}</span>
 </button>
