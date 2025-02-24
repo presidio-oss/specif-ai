@@ -195,14 +195,12 @@ export class EditUserStoriesComponent implements OnDestroy {
               }),
             );
             this.allowFreeRedirection = true;
-            this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
-            this.selectedFileContent$.subscribe((res: any) => {
-              let updatedDescription = findUserStory(res, this.data.id).description
-              this.userStoryForm.patchValue({
-                description: updatedDescription
-              });
-              this.description = updatedDescription;
+            this.userStoryForm.patchValue({
+              name: featureName,
+              description: featureDescription
             });
+            this.name = featureName!;
+            this.description = featureDescription;
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
                 this.entityType,
@@ -233,14 +231,6 @@ export class EditUserStoriesComponent implements OnDestroy {
         }),
       );
       this.allowFreeRedirection = true;
-      this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
-      this.selectedFileContent$.subscribe((res: any) => {
-        let updatedDescription = findUserStory(res, this.data.id).description
-        this.userStoryForm.patchValue({
-          description: updatedDescription
-        });
-        this.description = updatedDescription;
-      });
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
           this.entityType,
