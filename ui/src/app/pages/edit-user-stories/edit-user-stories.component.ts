@@ -149,13 +149,14 @@ export class EditUserStoriesComponent implements OnDestroy {
     console.log(this.projectMetadata, 'projectMetadata');
   }
 
-  updateUserStory() {
+  updateUserStory(useAI: boolean = false) {
     const findUserStory = (res: any, id: string) => {
         let result = res.features.find((feature: any) => feature.id === id.toUpperCase());
         return result;
     }
 
     if (
+      useAI ||
       this.userStoryForm.getRawValue().expandAI ||
       this.uploadedFileContent.length > 0
     ) {
@@ -343,15 +344,8 @@ export class EditUserStoriesComponent implements OnDestroy {
         if (item.assistant == chat.assistant) return { ...item, isAdded: true };
         else return item;
       });
-      this.store.dispatch(
-        new EditUserStory(this.absoluteFilePath, {
-          description: this.userStoryForm.getRawValue().description,
-          name: this.userStoryForm.getRawValue().name,
-          id: this.data.id,
-          chatHistory: newArray,
-        }),
-      );
       this.chatHistory = newArray;
+      this.updateUserStory(true)
     }
   }
 
