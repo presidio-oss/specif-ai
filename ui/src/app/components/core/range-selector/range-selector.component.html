@@ -1,11 +1,10 @@
-<div class="flex flex-col gap-2">
-  <label class="text-sm font-medium text-gray-700">{{ label }}</label>
+<div class="flex flex-col gap-2 max-w-sm">
+  <label class="text-sm font-medium text-secondary-700">{{ label }}</label>
   <div class="flex flex-col gap-2">
     <mat-slider
       [min]="min"
       [max]="max"
       [step]="step"
-      [discrete]="true"
       class="w-full"
     >
       <input
