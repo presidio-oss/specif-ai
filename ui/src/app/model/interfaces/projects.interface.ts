@@ -15,6 +15,17 @@ export interface IProjectMetadata {
   createdAt: string;
 }
 
+export interface IGenerationCountRange {
+  generationCountRange: [number, number];
+}
+
+export interface IRootRequirementGenerationPreferences {
+  brd: IGenerationCountRange;
+  prd: IGenerationCountRange;
+  nfr: IGenerationCountRange;
+  uir: IGenerationCountRange;
+}
+
 export interface ISolutionResponse {
   brd?: { [key in string]: string }[];
   nfr?: { [key in string]: string }[];

@@ -1,0 +1,26 @@
+<div class="flex flex-col gap-2">
+  <label class="text-sm font-medium text-gray-700">{{ label }}</label>
+  <div class="flex flex-col gap-2">
+    <mat-slider
+      [min]="min"
+      [max]="max"
+      [step]="step"
+      [discrete]="true"
+      class="w-full"
+    >
+      <input
+        matSliderStartThumb
+        [value]="value[0]"
+        (valueChange)="onMinChange($event)"
+      />
+      <input
+        matSliderEndThumb
+        [value]="value[1]"
+        (valueChange)="onMaxChange($event)"
+      />
+    </mat-slider>
+  </div>
+  <div class="flex justify-center text-sm text-primary-600 font-medium">
+    {{ value[0] }} - {{ value[1] }}
+  </div>
+</div>

@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ISolutionResponse } from '../../model/interfaces/projects.interface';
+import {
+  IRootRequirementGenerationPreferences,
+  ISolutionResponse,
+} from '../../model/interfaces/projects.interface';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -15,6 +18,7 @@ export class SolutionService {
     name: string;
     description: string;
     cleanSolution: boolean;
+    rootRequirementGenerationPreferences: IRootRequirementGenerationPreferences;
   }): Observable<ISolutionResponse> {
     const url = `solutions/create`;
     return this.httpService.post<ISolutionResponse>(url, data);

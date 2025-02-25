@@ -150,6 +150,8 @@ export class ProjectsState {
           name: projectName,
           description: metadata.description,
           cleanSolution: metadata.cleanSolution,
+          rootRequirementGenerationPreferences:
+            metadata.rootRequirementGenerationPreferences,
         }),
       );
 

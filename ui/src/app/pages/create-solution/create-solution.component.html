@@ -129,6 +129,58 @@
                   </p>
                 </div>
               </div>
+
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                formGroupName="rootRequirementGenerationPreferences"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5"
+                  >Requirement Generation Ranges</label
+                >
+                <div class="mt-2 sm:col-span-2 sm:mt-0 space-y-4">
+                  <div formGroupName="brd">
+                    <app-range-selector
+                      formControlName="generationCountRange"
+                      label="Business Requirements (BRD)"
+                      [min]="5"
+                      [max]="30"
+                      [step]="5"
+                    />
+                  </div>
+                  <div formGroupName="prd">
+                    <app-range-selector
+                      formControlName="generationCountRange"
+                      label="Product Requirements (PRD)"
+                      [min]="5"
+                      [max]="30"
+                      [step]="5"
+                    />
+                  </div>
+                  <div formGroupName="nfr">
+                    <app-range-selector
+                      formControlName="generationCountRange"
+                      label="Non-Functional Requirements (NFR)"
+                      [min]="5"
+                      [max]="30"
+                      [step]="5"
+                    />
+                  </div>
+                  <div formGroupName="uir">
+                    <app-range-selector
+                      formControlName="generationCountRange"
+                      label="User Interface Requirements (UIR)"
+                      [min]="5"
+                      [max]="30"
+                      [step]="5"
+                    />
+                  </div>
+                  <p class="text-xs leading-6 text-gray-600">
+                    Select the range of requirements to generate for each type.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
