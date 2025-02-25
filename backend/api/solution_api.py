@@ -65,7 +65,16 @@ def create_solutions():
     def get_llm_response(template_path):
         logger.info(f"Request {g.request_id}: Fetching LLM response for template: {template_path}")
         template = jinja_template_env.get_template(template_path)
-        template = template.render(name=data["name"], description=data["description"])
+        
+        generation_prefs = data.get("rootRequirementGenerationPreferences")
+        template_type = template_path.split("_")[1].split(".")[0]
+        count_range = generation_prefs[template_type].get("generationCountRange")
+        
+        template = template.render(
+            name=data["name"], 
+            description=data["description"],
+            generation_count_range=count_range
+        )
         try:
             llm_response = llm_service.call_llm(template)
             logger.info(f"Request {g.request_id}: Successfully received LLM response for template: {template_path}")
