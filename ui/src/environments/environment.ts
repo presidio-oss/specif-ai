@@ -7,11 +7,11 @@ export const environment = {
   JIRA_RATE_LIMIT_CONFIG: 9,
   APP_VERSION: '1.9.7',
   ThemeConfiguration: {
-    appLogo: 'assets/img/logo/haibuild_light_applogo.svg',
-    appLogoDark: 'assets/img/logo/haibuild_dark_applogo.svg',
+    appLogo: 'assets/img/logo/specifai_light_applogo.svg',
+    appLogoDark: 'assets/img/logo/specifai_dark_applogo.svg',
     appName: 'Specif AI',
     appWelcomeTitle: 'Welcome to Specif AI',
-    appDescription: 'Get started to accelerate SDLC Process with HAI BUILD',
+    appDescription: 'Get started to accelerate SDLC Process',
     companyName: 'Presidio',
     companyLogo: 'assets/img/presidio-white.svg',
     appIcons: {
