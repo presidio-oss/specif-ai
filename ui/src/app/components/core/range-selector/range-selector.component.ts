@@ -6,7 +6,6 @@ import { MatSliderModule } from '@angular/material/slider';
 @Component({
   selector: 'app-range-selector',
   templateUrl: './range-selector.component.html',
-  styleUrls: ['./range-selector.component.scss'],
   standalone: true,
   imports: [CommonModule, MatSliderModule],
   providers: [
