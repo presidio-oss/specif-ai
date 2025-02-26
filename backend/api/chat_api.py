@@ -38,17 +38,19 @@ def chat_generic():
         raise CustomAppException("Payload validation failed.", status_code=400) from err
 
     message = data['message']
-    knowledge_base = data.get("knowledgeBase", "")
+    knowledge_base = data.get("knowledgeBase", "").strip()
 
     # Generate knowledge base constraint prompt
-    knowledge_base_constraint_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
-        knowledge_base_id=knowledge_base,
-        prompt=message
-    )
+    base_prompt = message
+    if bool(knowledge_base):
+        base_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
+            knowledge_base_id=knowledge_base,
+            prompt=base_prompt
+        )
 
     # Prepare message for LLM
     llm_message = LLMUtils.prepare_messages(
-        prompt=knowledge_base_constraint_prompt,
+        prompt=base_prompt,
         chat_history=data.get("chatHistory", [])
     )
 
@@ -73,7 +75,7 @@ def get_suggestions():
     except ValidationError as err:
         logger.error(f"Request {g.request_id}: Payload validation failed: {err.messages}")
         raise CustomAppException("Payload validation failed.", status_code=400) from err
-    knowledge_base = data.get("knowledgeBase", "")
+    knowledge_base = data.get("knowledgeBase", "").strip()
     llm_response_list = []
     template = render_template(p_chat_improved_suggestions)
     template = template.render(
@@ -87,14 +89,16 @@ def get_suggestions():
     )
 
     # Generate knowledge base constraint prompt
-    knowledge_base_constraint_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
-        knowledge_base_id=knowledge_base,
-        prompt=template
-    )
+    base_prompt = template
+    if bool(knowledge_base):
+        base_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
+            knowledge_base_id=knowledge_base,
+            prompt=base_prompt
+        )
 
     # Prepare message for LLM
     llm_message = LLMUtils.prepare_messages(
-        prompt=knowledge_base_constraint_prompt
+        prompt=base_prompt
     )
 
     # Invoke LLM
@@ -131,7 +135,7 @@ def chat_update_requirement():
     template = jinja_template_env.get_template('update_requirement.jinja2')
     requirement = data["requirement"]
     user_message = data["userMessage"]
-    knowledge_base = data.get('knowledgeBase', '')
+    knowledge_base = data.get('knowledgeBase', '').strip()
     system_prompt = template.render(
         name=data["name"],
         description=data["description"],
@@ -142,14 +146,16 @@ def chat_update_requirement():
     chat_history = data.get("chatHistory", [])
     try:
         # Generate knowledge base constraint prompt
-        knowledge_base_constraint_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
-            knowledge_base_id=knowledge_base,
-            prompt=user_message
-        )
+        base_prompt = user_message
+        if bool(knowledge_base):
+            base_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
+                knowledge_base_id=knowledge_base,
+                prompt=base_prompt
+            )
 
         # Prepare message for LLM
         llm_message = LLMUtils.prepare_messages(
-            prompt=knowledge_base_constraint_prompt,
+            prompt=base_prompt,
             chat_history=chat_history
         )
 
@@ -180,7 +186,7 @@ def chat_update_user_story_task():
     template = jinja_template_env.get_template('update_user_story_task.jinja2')
     requirement = data["requirement"]
     user_message = data["userMessage"]
-    knowledge_base = data.get('knowledgeBase', '')
+    knowledge_base = data.get('knowledgeBase', '').strip()
     prd = data.get('prd', '')
     us = data.get('us', '')
     system_prompt = template.render(
@@ -194,14 +200,16 @@ def chat_update_user_story_task():
     chat_history = data.get("chatHistory", [])
 
     # Generate knowledge base constraint prompt
-    knowledge_base_constraint_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
-        knowledge_base_id=knowledge_base,
-        prompt=user_message
-    )
+    base_prompt = user_message
+    if bool(knowledge_base):
+        base_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
+            knowledge_base_id=knowledge_base,
+            prompt=base_prompt
+        )
 
     # Prepare message for LLM
     llm_message = LLMUtils.prepare_messages(
-        prompt=knowledge_base_constraint_prompt,
+        prompt=base_prompt,
         chat_history=chat_history
     )
 
