@@ -9,8 +9,8 @@ export const environment = {
   ThemeConfiguration: {
     appLogo: 'assets/img/logo/specifai_light_applogo.svg',
     appLogoDark: 'assets/img/logo/specifai_dark_applogo.svg',
-    appName: 'Specif AI',
-    appWelcomeTitle: 'Welcome to Specif AI',
+    appName: 'Specifai',
+    appWelcomeTitle: 'Welcome to Specifai',
     appDescription: 'Get started to accelerate SDLC Process',
     companyName: 'Presidio',
     companyLogo: 'assets/img/presidio-white.svg',

@@ -1,6 +1,6 @@
-# 🖥️ Specif AI Desktop Application - Electron
+# 🖥️ Specifai Desktop Application - Electron
 
-The Electron-based desktop application for Specif AI facilitates local file system integration for all generated documents, providing a seamless user experience across platforms.
+The Electron-based desktop application for Specifai facilitates local file system integration for all generated documents, providing a seamless user experience across platforms.
 
 ## Table of Contents
 - [Features](#features)
