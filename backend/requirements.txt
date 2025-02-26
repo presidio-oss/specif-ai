@@ -13,3 +13,4 @@ sentry-sdk==2.13.0
 flask-executor==1.0.0
 langchain==0.2.16
 langchain_aws==0.1.18
+anthropic[bedrock]==0.47.1
