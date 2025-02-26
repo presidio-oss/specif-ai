@@ -85,14 +85,8 @@ export class ElectronService {
 
         this.electronAPI.on('port-error', (_: any, message: string) => {
           console.error('Port Error: ', message);
-          this.dialog.open(PortErrorDialogComponent, {
-            data: {
-              title: 'Port Error',
-              description:
-                `Port Error: ${message}`,
-              cancelButtonText: 'Close',
-              proceedButtonText: 'Kill',
-            },
+          this.dialog.open(PortErrorDialogComponent, {            
+            disableClose: true
           });
         });
         this.electronAPI.on('server-started', () => {

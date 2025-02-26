@@ -4,11 +4,24 @@
   </div>
   <div class="p-6">
     <p class="text-sm text-gray-500">
-      The port is already in use. Please close the conflicting application or use a different port.
+      The port is already in use. Please close the conflicting application or
+      use a different port.
     </p>
   </div>
   <div class="flex justify-end gap-4 p-4 border-t border-gray-300">
-    <button mat-button (click)="closeDialog()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200">Close</button>
-    <button mat-button (click)="killPort()" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">Kill Port</button>
+    <button
+      mat-button
+      (click)="closeDialog()"
+      class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200"
+    >
+      Close
+    </button>
+    <button
+      mat-button
+      (click)="killPort()"
+      class="bg-danger-100 text-danger-600 hover:bg-danger-200 px-4 py-2 rounded-md"
+    >
+      Kill Port
+    </button>
   </div>
 </div>
