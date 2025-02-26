@@ -13,6 +13,7 @@ const indexPath = app.isPackaged
   ? path.join(process.resourcesPath, "ui")
   : path.resolve(process.cwd(), "ui");
 const net = require("net");
+const { exec } = require("child_process");
 let store;
 
 (async () => {
@@ -150,8 +151,28 @@ app.whenReady().then(() => {
         );
         onAppReload();
       }
-    },
+    }
   );
+
+  ipcMain.handle("kill-port", async (event, port) => {
+    const command =
+      process.platform === "win32"
+        ? `netstat -ano | findstr :${port} | for /F "tokens=5" %P in ('more') do TaskKill /F /PID %P`
+        : `lsof -i tcp:${port} | grep LISTEN | awk '{print $2}' | xargs kill -9`;
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error killing port ${port}:`, error.message);
+        event.sender.send("kill-port-error", error.message);
+      } else {
+        console.log(`Port ${port} killed successfully.`);
+        event.sender.send(
+          "kill-port-success",
+          `Port ${port} killed successfully.`
+        );
+      }
+    });
+  });
 
   app.on("reload", () => onAppReload());
 
