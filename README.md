@@ -19,11 +19,11 @@
 </div>
 <br>
 
-# 🚀 Specif AI
+# 🚀 Specifai
 
-**Specif AI** is an AI-powered platform that transforms the project requirements management. It combines AI technology with intuitive workflows to automate documentation, generate and manage tasks - all while adapting to your team's specific needs.
+**Specifai** is an AI-powered platform that transforms the project requirements management. It combines AI technology with intuitive workflows to automate documentation, generate and manage tasks - all while adapting to your team's specific needs.
 <div align="center">
-    <img src="assets/gifs/specif-ai-overview.gif" alt="Specif AI in Action" width="900">
+    <img src="assets/gifs/specif-ai-overview.gif" alt="Specifai in Action" width="900">
 </div>
 
 ## Table of Contents
@@ -40,9 +40,9 @@
 
 ## 🌟 Overview
 
-In today's fast-paced software development landscape, delivering high-quality solutions quickly is more critical than ever. Specif AI is a cutting-edge platform that revolutionizes how teams generate, manage, and refine software requirements by combining AI intelligence with human context.
+In today's fast-paced software development landscape, delivering high-quality solutions quickly is more critical than ever. Specifai is a cutting-edge platform that revolutionizes how teams generate, manage, and refine software requirements by combining AI intelligence with human context.
 
-By simply providing a solution name, description, and tech stack details, Specif AI automatically generates comprehensive documentation, including:
+By simply providing a solution name, description, and tech stack details, Specifai automatically generates comprehensive documentation, including:
 
 - 📄 Business Requirement Documents (BRD)
 - 🔧 Non-Functional Requirements Documents (NFRD)
@@ -100,7 +100,7 @@ By simply providing a solution name, description, and tech stack details, Specif
    -it hai-build-requirement-backend
    ```
 
-3. **Download the Specif AI desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
+3. **Download the Specifai desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
 4. **Run** the Desktop Application
 
 For detailed setup instructions, refer to:
@@ -164,7 +164,7 @@ For more details, refer to the [Backend Server Setup Configuration Settings](./b
 
 ### 🔌 Integrations
 
-Specif AI seamlessly integrates with popular tools to enhance your workflow:
+Specifai seamlessly integrates with popular tools to enhance your workflow:
 
 #### Jira Integration
 The stories and tasks generated as part of the solutions can be used to create actual stories and tasks in your Jira instance using the Jira integration provided by the application. Features include:
@@ -184,7 +184,7 @@ The enterprise knowledge base is integrated with AI-powered chat to enhance sugg
 
 ## 🏗 Architecture
 
-Specif AI follows a modern, scalable architecture designed for optimal performance and maintainability.
+Specifai follows a modern, scalable architecture designed for optimal performance and maintainability.
 
 <div align="center">
     <img src="assets/img/specif-ai-architecture.png" alt="Application Architecture Diagram"/>
@@ -192,7 +192,7 @@ Specif AI follows a modern, scalable architecture designed for optimal performan
 
 ## 📝 Version Controlled Requirements Management Made Easy
 
-Specif AI is a powerful desktop application built to streamline and organize your project requirements. With Specif AI, users can create a unified directory where all essential files are not only accessible and editable but also seamlessly synced with platforms like OneDrive, Dropbox, or any git-enabled local folder. This setup allows users to point to specific artifacts and data sources in a version-controlled environment, making collaboration and tracking effortless. Our goal is to enhance your development workflow by integrating seamlessly with the tools you already use, without adding complexity or obstacles.
+Specifai is a powerful desktop application built to streamline and organize your project requirements. With Specifai, users can create a unified directory where all essential files are not only accessible and editable but also seamlessly synced with platforms like OneDrive, Dropbox, or any git-enabled local folder. This setup allows users to point to specific artifacts and data sources in a version-controlled environment, making collaboration and tracking effortless. Our goal is to enhance your development workflow by integrating seamlessly with the tools you already use, without adding complexity or obstacles.
 
 
 ## 🗺 Roadmap

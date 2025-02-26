@@ -1,6 +1,6 @@
-# 🚀 Specif AI Backend Server
+# 🚀 Specifai Backend Server
 
-The backend service that powers Specif AI's intelligent document generation and processing capabilities.
+The backend service that powers Specifai's intelligent document generation and processing capabilities.
 
 ## Table of Contents
 - [Setup Options](#setup-options)
