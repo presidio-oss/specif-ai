@@ -17,6 +17,7 @@ from config.logging_config import logger
 
 # Models
 class AWSBedrockSupportedModels(Enum):
+    ANTHROPIC_CLAUDE_3_7_SONNET_20250219_V1_0 = ('anthropic.claude-3-7-sonnet-20250219-v1:0', 8192)
     ANTHROPIC_CLAUDE_3_5_SONNET_20241022_V2_0 = ('anthropic.claude-3-5-sonnet-20241022-v2:0', 8192)
     ANTHROPIC_CLAUDE_3_5_HAIKU_20241022_V1_0 = ('anthropic.claude-3-5-haiku-20241022-v1:0', 8192)
     ANTHROPIC_CLAUDE_3_5_SONNET_20240620_V1_0 = ('anthropic.claude-3-5-sonnet-20240620-v1:0', 8192)
@@ -36,19 +37,19 @@ class AWSBedrockSupportedModels(Enum):
 # LLM specific configuration
 class AWSBedrockConfig(BaseModel):
     base_url: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.ANTHROPIC_BEDROCK_BASE_URL)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.ANTHROPIC_BEDROCK_BASE_URL) or None)
     )
     aws_access_key: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.AWS_BEDROCK_ACCESS_KEY)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.AWS_BEDROCK_ACCESS_KEY) or None)
     )
     aws_secret_key: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.AWS_BEDROCK_SECRET_KEY)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.AWS_BEDROCK_SECRET_KEY) or None)
     )
     aws_session_token: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.AWS_BEDROCK_SESSION_TOKEN)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.AWS_BEDROCK_SESSION_TOKEN) or None)
     )
     aws_region: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.AWS_REGION)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.AWS_REGION) or None)
     )
     model_id: Annotated[
         str,
@@ -67,7 +68,6 @@ class AWSBedrockHandler(LLMHandler):
 
         # Parse configuration from kwargs
         self._config = self.get_config(config=kwargs)
-        print(f'Config: {self._config}')
 
         # Create client
         self._client = AnthropicBedrock(

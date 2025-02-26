@@ -15,16 +15,16 @@ from config.logging_config import logger
 # LLM specific configuration
 class OpenAIConfig(BaseModel):
     base_url: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.OPENAI_BASE_URL)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.OPENAI_BASE_URL) or None)
     )
     api_key: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.OPENAI_API_KEY)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.OPENAI_API_KEY) or None)
     )
     azure_api_key: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.AZURE_OPENAI_API_KEY)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.AZURE_OPENAI_API_KEY) or None)
     )
     api_version: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.OPENAI_API_VERSION)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.OPENAI_API_VERSION) or None)
     )
     model_id: Annotated[
         str,

@@ -18,7 +18,7 @@ from config.logging_config import logger
 # LLM specific configuration
 class OpenAINativeConfig(BaseModel):
     api_key: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.OPENAI_API_KEY)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.OPENAI_API_KEY) or None)
     )
     model_id: Annotated[
         str,

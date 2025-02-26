@@ -34,10 +34,10 @@ class AnthropicSupportedModels(Enum):
 # LLM specific configuration
 class AnthropicConfig(BaseModel):
     base_url: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.ANTHROPIC_BASE_URL)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.ANTHROPIC_BASE_URL) or None)
     )
     api_key: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: get_env_variable(key=EnvVariables.ANTHROPIC_API_KEY)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.ANTHROPIC_API_KEY) or None)
     )
     model_id: Annotated[
         str,
