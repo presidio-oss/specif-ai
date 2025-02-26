@@ -1,0 +1,14 @@
+<div class="modal-wrapper">
+  <div class="modal-header flex items-center justify-between p-4 border-b">
+    <h4 class="text-lg font-medium">Port Error</h4>
+  </div>
+  <div class="modal-body p-6">
+    <p class="text-sm text-gray-500">
+      The port is already in use. Please close the conflicting application or use a different port.
+    </p>
+  </div>
+  <div class="modal-footer flex justify-end gap-4 p-4 border-t">
+    <button mat-button (click)="closeDialog()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md">Close</button>
+    <button mat-button (click)="killPort()" class="bg-red-600 text-white px-4 py-2 rounded-md">Kill Port</button>
+  </div>
+</div>
