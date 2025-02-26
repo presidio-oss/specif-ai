@@ -1,11 +1,16 @@
+# Standard library imports
 import json
+
+# Third-party imports
 from flask import request, jsonify, g, Blueprint
 from marshmallow import ValidationError
+
+# Local application imports
 from decorators.require_access_token import require_access_code
 from config.exceptions import CustomAppException
 from config.logging_config import logger
 from utils.common_utils import render_template, get_template_env
-from llm.llm_service import LLMService
+from utils.llm_utils import LLMUtils
 from schemas.schemas import (
     chat_generic_schema,
     chat_improve_suggestion_schema,
@@ -15,11 +20,12 @@ from schemas.schemas import (
 from llm.prompts import (
     p_chat_improved_suggestions,
 )
+from llm import build_llm_handler
 
 
 chat_api = Blueprint('chat_api', __name__)
 jinja_template_env = get_template_env()
-llm_service = LLMService()  # Singleton instance of LLMService
+
 
 @chat_api.route("/api/chat/generic", methods=["POST"])
 @require_access_code()
@@ -34,11 +40,27 @@ def chat_generic():
     message = data['message']
     knowledge_base = data.get("knowledgeBase", "")
 
-    llm_response = llm_service.call_llm_for_chat_agent(
-        prompt=message, chat_history=data.get("chatHistory", []), system_message=None, knowledge_base=knowledge_base
+    # Generate knowledge base constraint prompt
+    knowledge_base_constraint_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
+        knowledge_base_id=knowledge_base,
+        prompt=message
     )
+
+    # Prepare message for LLM
+    llm_message = LLMUtils.prepare_messages(
+        prompt=knowledge_base_constraint_prompt,
+        chat_history=data.get("chatHistory", [])
+    )
+
+    # Invoke LLM
+    llm_handler = build_llm_handler(
+        provider=g.current_provider,
+        model_id=g.current_model
+    )
+    response = llm_handler.invoke(messages=llm_message)
+
     logger.info(f"Request {g.request_id}: Exited <chat_generic>")
-    return jsonify(llm_response)
+    return jsonify(response)
 
 
 @chat_api.route("/api/chat/get_suggestions", methods=["POST"])
@@ -63,16 +85,33 @@ def get_suggestions():
         suggestions=data["suggestions"],
         selectedSuggestion=data["selectedSuggestion"],
     )
-    llm_response = llm_service.call_llm(template, knowledge_base=knowledge_base)
+
+    # Generate knowledge base constraint prompt
+    knowledge_base_constraint_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
+        knowledge_base_id=knowledge_base,
+        prompt=template
+    )
+
+    # Prepare message for LLM
+    llm_message = LLMUtils.prepare_messages(
+        prompt=knowledge_base_constraint_prompt
+    )
+
+    # Invoke LLM
+    llm_handler = build_llm_handler(
+        provider=g.current_provider,
+        model_id=g.current_model
+    )
+    response = llm_handler.invoke(messages=llm_message)
 
     try:
-        llm_response_list = json.loads(llm_response)
+        llm_response_list = json.loads(response)
     except json.JSONDecodeError as exc:
         logger.error(f"Request {g.request_id}: Failed to parse LLM response")
         raise CustomAppException(
             "Invalid JSON format. Please try again.",
             status_code=500,
-            payload={"llm_response": llm_response},
+            payload={"llm_response": response},
         ) from exc
     logger.info(f"Request {g.request_id}: Exited <get_suggestions>")
     return llm_response_list
@@ -102,11 +141,27 @@ def chat_update_requirement():
     )
     chat_history = data.get("chatHistory", [])
     try:
-        llm_response = llm_service.call_llm_for_chat_agent(
-            prompt=user_message, chat_history=chat_history, system_message=system_prompt, knowledge_base=knowledge_base
+        # Generate knowledge base constraint prompt
+        knowledge_base_constraint_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
+            knowledge_base_id=knowledge_base,
+            prompt=user_message
         )
+
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(
+            prompt=knowledge_base_constraint_prompt,
+            chat_history=chat_history
+        )
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        response = llm_handler.invoke(messages=llm_message, system_prompt=system_prompt)
+
         logger.info(f"Request {g.request_id}: Exited <chat_update_requirement>")
-        return jsonify(llm_response)
+        return jsonify(response)
     except Exception as e:
         logger.info("Exited <chat_update_requirement>")
         logger.error(e)
@@ -138,8 +193,24 @@ def chat_update_user_story_task():
     )
     chat_history = data.get("chatHistory", [])
 
-    llm_response = llm_service.call_llm_for_chat_agent(
-        prompt=user_message, chat_history=chat_history, system_message=system_prompt, knowledge_base=knowledge_base
+    # Generate knowledge base constraint prompt
+    knowledge_base_constraint_prompt = LLMUtils.generate_knowledge_base_prompt_constraint(
+        knowledge_base_id=knowledge_base,
+        prompt=user_message
     )
+
+    # Prepare message for LLM
+    llm_message = LLMUtils.prepare_messages(
+        prompt=knowledge_base_constraint_prompt,
+        chat_history=chat_history
+    )
+
+    # Invoke LLM
+    llm_handler = build_llm_handler(
+        provider=g.current_provider,
+        model_id=g.current_model
+    )
+    response = llm_handler.invoke(messages=llm_message, system_prompt=system_prompt)
+
     logger.info(f"Request {g.request_id}: Exited <chat_update_user_story_task>")
-    return jsonify(llm_response)
+    return jsonify(response)

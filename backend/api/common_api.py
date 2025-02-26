@@ -1,23 +1,34 @@
-from llm.llm_service import LLMService
+# Third-party imports
 from flask import Blueprint, request, g, jsonify
+
+# Local application imports
 from config.exceptions import CustomAppException
 from config.logging_config import logger
 from utils.env_utils import EnvVariables, get_env_variable
+from utils.llm_utils import LLMUtils
+from llm import build_llm_handler
 
+# API Blueprint
 common_api = Blueprint('common_api', __name__)
-llMService = LLMService()
+
 
 @common_api.route("/api/hello", methods=["GET"])
 def test():
     logger.info("Entered <test>")
     try:
-        response = {"LLM": llMService.current_llm()}
+        response = {
+            'llm': {
+                'provider': g.current_provider,
+                'model': g.current_model
+            }
+        }
         logger.info("Response: %s", response)
     except Exception as e:
         logger.error("An unexpected error occurred: %s", str(e))
         raise CustomAppException(f"An error occurred: {str(e)}", status_code=500) from e
     logger.info("Exited <test>")
     return jsonify(response)
+
 
 @common_api.route("/api/llm-config/defaults", methods=["GET"])
 def get_default_llm_config():
@@ -35,6 +46,7 @@ def get_default_llm_config():
     finally:
         logger.info("Exited <get_default_llm_config>")
 
+
 @common_api.route("/api/model/config-verification", methods=["POST"])
 def verify_provider_config():
     logger.info("Entered <provider_config_verification>")
@@ -48,7 +60,16 @@ def verify_provider_config():
 
         # Make a test call to the LLM with a simple prompt
         test_prompt = "This is a test prompt to verify the provider configuration."
-        result = llMService.call_llm(test_prompt)
+
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(prompt=test_prompt)
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        result = llm_handler.invoke(messages=llm_message)
 
         response = {
             "status": "success",
