@@ -27,7 +27,7 @@ import {
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ToggleComponent } from '../../components/toggle/toggle.component';
-
+import { RangeSelectorComponent } from 'src/app/components/core/range-selector/range-selector.component';
 @Component({
   selector: 'app-create-solution',
   templateUrl: './create-solution.component.html',
@@ -42,6 +42,7 @@ import { ToggleComponent } from '../../components/toggle/toggle.component';
     InputFieldComponent,
     TextareaFieldComponent,
     ToggleComponent,
+    RangeSelectorComponent,
   ],
 })
 export class CreateSolutionComponent implements OnInit {
@@ -78,6 +79,20 @@ export class CreateSolutionComponent implements OnInit {
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
+      rootRequirementGenerationPreferences: new FormGroup({
+        brd: new FormGroup({
+          generationCountRange: new FormControl([10, 15])
+        }),
+        prd: new FormGroup({
+          generationCountRange: new FormControl([10, 15])
+        }),
+        nfr: new FormGroup({
+          generationCountRange: new FormControl([10, 15])
+        }),
+        uir: new FormGroup({
+          generationCountRange: new FormControl([10, 15])
+        })
+      })
     });
   }
 
