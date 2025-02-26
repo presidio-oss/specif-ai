@@ -3,8 +3,14 @@ import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
 import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
 import { Store } from '@ngxs/store';
-import { AvailableProviders, ProviderModelMap } from '../../constants/llm.models.constants';
-import { SetLLMConfig, SyncLLMConfig } from '../../store/llm-config/llm-config.actions';
+import {
+  AvailableProviders,
+  ProviderModelMap,
+} from '../../constants/llm.models.constants';
+import {
+  SetLLMConfig,
+  SyncLLMConfig,
+} from '../../store/llm-config/llm-config.actions';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgIconComponent } from '@ng-icons/core';
@@ -14,11 +20,17 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
 
 @Component({
-  selector: 'app-llm-settings',
-  templateUrl: './llm-settings.component.html',
-  styleUrls: ['./llm-settings.component.scss'],
+  selector: 'app-settings',
+  templateUrl: './settings.component.html',
+  styleUrls: ['./settings.component.scss'],
   standalone: true,
-  imports: [ReactiveFormsModule, NgIconComponent, NgForOf, NgIf, ButtonComponent],
+  imports: [
+    ReactiveFormsModule,
+    NgIconComponent,
+    NgForOf,
+    NgIf,
+    ButtonComponent,
+  ],
 })
 export class LlmSettingsComponent implements OnInit, OnDestroy {
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
@@ -40,7 +52,7 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
     private store: Store,
     private authService: AuthService,
     private toasterService: ToasterService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -53,7 +65,7 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
         this.initialModel = config.model;
         this.initialProvider = config.provider;
         this.hasChanges = false;
-      })
+      }),
     );
     this.onModelChange();
     this.onProviderChange();
@@ -66,11 +78,11 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
         .subscribe((res) => {
           this.updateFilteredModels(this.selectedProvider.value);
           this.errorMessage = '';
-          this.hasChanges = 
-            this.selectedModel.value !== this.initialModel || 
+          this.hasChanges =
+            this.selectedModel.value !== this.initialModel ||
             this.selectedProvider.value !== this.initialProvider;
           this.cdr.markForCheck();
-        })
+        }),
     );
   }
 
@@ -82,11 +94,11 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
           this.updateFilteredModels(res);
           this.selectedModel.setValue(ProviderModelMap[res][0]);
           this.errorMessage = '';
-          this.hasChanges = 
-            this.selectedModel.value !== this.initialModel || 
+          this.hasChanges =
+            this.selectedModel.value !== this.initialModel ||
             this.selectedProvider.value !== this.initialProvider;
           this.cdr.detectChanges();
-        })
+        }),
     );
   }
 
@@ -100,7 +112,7 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
         ...this.currentLLMConfig,
         model: this.initialModel,
         provider: this.initialProvider,
-      })
+      }),
     );
     this.modalRef.close(false);
   }
@@ -111,7 +123,7 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
 
     this.authService.verifyProviderConfig(provider, model).subscribe({
       next: (response) => {
-        if (response.status === "success") {
+        if (response.status === 'success') {
           const newConfig = {
             ...this.currentLLMConfig,
             model: model,
@@ -119,20 +131,26 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
           };
           this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
             this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
-              const providerDisplayName = this.availableProviders.find(p => p.key === provider)?.displayName || provider;
-              this.toasterService.showSuccess(`${providerDisplayName} : ${model} is configured successfully.`);
+              const providerDisplayName =
+                this.availableProviders.find((p) => p.key === provider)
+                  ?.displayName || provider;
+              this.toasterService.showSuccess(
+                `${providerDisplayName} : ${model} is configured successfully.`,
+              );
               this.modalRef.close(true);
             });
           });
         } else {
-          this.errorMessage = "Connection Failed! Please verify your model credentials in the backend configuration.";
+          this.errorMessage =
+            'Connection Failed! Please verify your model credentials in the backend configuration.';
           this.cdr.markForCheck();
         }
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to verify provider configuration';
+        this.errorMessage =
+          error.error?.message || 'Failed to verify provider configuration';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
