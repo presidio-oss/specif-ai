@@ -32,7 +32,7 @@ import { TextareaFieldComponent } from '../../components/core/textarea-field/tex
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { MultiUploadComponent } from '../../components/multi-upload/multi-upload.component';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import {
@@ -44,6 +44,7 @@ import {
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { catchError, switchMap, take } from 'rxjs';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
+import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 
 @Component({
   selector: 'app-edit-solution',
@@ -64,6 +65,11 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
     ErrorMessageComponent,
     MatTooltipModule,
   ],
+  providers: [
+    provideIcons({ 
+      heroSparklesSolid
+    })
+  ]
 })
 export class EditSolutionComponent {
   projectId: string = '';
@@ -133,92 +139,84 @@ export class EditSolutionComponent {
     this.createRequirementForm();
   }
 
-  updateRequirement() {
-    if (this.requirementForm.getRawValue().expandAI) {
-      const body: IUpdateRequirementRequest = {
-        updatedReqt: this.requirementForm.getRawValue().title,
-        addReqtType: this.folderName,
-        fileContent: this.uploadedFileContent,
-        contentType: this.uploadedFileContent ? 'fileContent' : 'userContent',
-        id: this.initialData.id,
-        reqId: this.fileName.replace(/\-base.json$/, ''),
-        reqDesc: this.requirementForm.getRawValue().content,
-        name: this.initialData.name,
-        description: this.initialData.description,
-        useGenAI: true,
-      };
-      this.featureService.updateRequirement(body).subscribe(
-        (data) => {
-          data.updated.requirement = data.updated.requirement.replace(
-            PRD_HEADINGS.SCREENS,
-            PRD_HEADINGS.SCREENS_FORMATTED,
-          ).replace(
-            PRD_HEADINGS.PERSONAS,
-            PRD_HEADINGS.PERSONAS_FORMATTED,
-          );
-          this.store.dispatch(
-            new UpdateFile(this.absoluteFilePath, {
-              requirement: data.updated.requirement,
-              title: data.updated.title,
-              chatHistory: this.chatHistory,
-              epicTicketId: this.initialData.epicTicketId,
-            }),
-          );
-          this.allowFreeRedirection = true;
-          this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
-          this.selectedFileContent$.subscribe((res: any) => {
-            this.oldContent = res.requirement;
-            this.requirementForm.patchValue({
-              title: res.title,
-              content: res.requirement,
-              epicticketid: res.epicTicketId,
-            });
-            this.chatHistory = res.chatHistory || [];
+  updateRequirementWithAI() {
+    const body: IUpdateRequirementRequest = {
+      updatedReqt: this.requirementForm.getRawValue().title,
+      addReqtType: this.folderName,
+      fileContent: this.uploadedFileContent,
+      contentType: this.uploadedFileContent ? 'fileContent' : 'userContent',
+      id: this.initialData.id,
+      reqId: this.fileName.replace(/\-base.json$/, ''),
+      reqDesc: this.requirementForm.getRawValue().content,
+      name: this.initialData.name,
+      description: this.initialData.description,
+      useGenAI: true,
+    };
+    this.featureService.updateRequirement(body).subscribe(
+      (data) => {
+        data.updated.requirement = data.updated.requirement
+          .replace(PRD_HEADINGS.SCREENS, PRD_HEADINGS.SCREENS_FORMATTED)
+          .replace(PRD_HEADINGS.PERSONAS, PRD_HEADINGS.PERSONAS_FORMATTED);
+        this.store.dispatch(
+          new UpdateFile(this.absoluteFilePath, {
+            requirement: data.updated.requirement,
+            title: data.updated.title,
+            chatHistory: this.chatHistory,
+            epicTicketId: this.initialData.epicTicketId,
+          }),
+        );
+        this.allowFreeRedirection = true;
+        this.store.dispatch(
+          new ReadFile(`${this.folderName}/${this.fileName}`),
+        );
+        this.selectedFileContent$.subscribe((res: any) => {
+          this.oldContent = res.requirement;
+          this.requirementForm.patchValue({
+            title: res.title,
+            content: res.requirement,
+            epicticketid: res.epicTicketId,
           });
-          this.toastService.showSuccess(
-            TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
-              body.addReqtType,
-              data.reqId,
-            ),
-          );
-        },
-        (error) => {
-          console.error('Error updating requirement:', error); // Handle any errors
-          this.toastService.showError(
-            TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(
-              this.folderName,
-              body.reqId,
-            ),
-          );
-        },
-      );
-    } else {
-      this.store.dispatch(
-        new UpdateFile(this.absoluteFilePath, {
-          requirement: this.requirementForm.getRawValue().content,
-          title: this.requirementForm.getRawValue().title,
-          chatHistory: this.chatHistory,
-          epicTicketId: this.initialData.epicTicketId,
-        }),
-      );
-      this.allowFreeRedirection = true;
-      this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
-      this.selectedFileContent$.subscribe((res: any) => {
-        this.oldContent = res.requirement;
-        this.requirementForm.patchValue({
-          title: res.title,
-          content: res.requirement,
-          epicticketid: res.epicTicketId,
+          this.chatHistory = res.chatHistory || [];
         });
-        this.chatHistory = res.chatHistory || [];
+        this.toastService.showSuccess(
+          TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
+        );
+      },
+      (error) => {
+        console.error('Error updating requirement:', error); // Handle any errors
+        this.toastService.showError(
+          TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(this.folderName, body.reqId),
+        );
+      },
+    );
+  }
+
+  updateRequirement() {
+    this.store.dispatch(
+      new UpdateFile(this.absoluteFilePath, {
+        requirement: this.requirementForm.getRawValue().content,
+        title: this.requirementForm.getRawValue().title,
+        chatHistory: this.chatHistory,
+        epicTicketId: this.initialData.epicTicketId,
+      }),
+    );
+    this.allowFreeRedirection = true;
+    this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+    this.selectedFileContent$.subscribe((res: any) => {
+      this.oldContent = res.requirement;
+      this.requirementForm.patchValue({
+        title: res.title,
+        content: res.requirement,
+        epicticketid: res.epicTicketId,
       });
-      this.toastService.showSuccess(
-        TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
-          this.folderName,
-          this.fileName.replace(/\-base.json$/, ''),
-        ),
-      );
-    }
+      this.chatHistory = res.chatHistory || [];
+    });
+    this.toastService.showSuccess(
+      TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
+        this.folderName,
+        this.fileName.replace(/\-base.json$/, ''),
+      ),
+    );
   }
 
   navigateBackToDocumentList(data: any) {
