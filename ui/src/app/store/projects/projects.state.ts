@@ -150,8 +150,22 @@ export class ProjectsState {
           name: projectName,
           description: metadata.description,
           cleanSolution: metadata.cleanSolution,
-          rootRequirementGenerationPreferences:
-            metadata.rootRequirementGenerationPreferences,
+          brd: {
+            min_count: metadata.brd.min_count,
+            max_count: metadata.brd.max_count,
+          },
+          prd: {
+            min_count: metadata.prd.min_count,
+            max_count: metadata.prd.max_count,
+          },
+          uir: {
+            min_count: metadata.uir.min_count,
+            max_count: metadata.uir.max_count,
+          },
+          nfr: {
+            min_count: metadata.nfr.min_count,
+            max_count: metadata.nfr.max_count,
+          },
         }),
       );
 

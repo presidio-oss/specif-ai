@@ -3,6 +3,11 @@ export interface IProject {
   metadata: IProjectMetadata;
 }
 
+export interface IGenerationRange {
+  min_count: number;
+  max_count: number;
+}
+
 export interface IProjectMetadata {
   name?: string;
   description: string;
@@ -15,15 +20,15 @@ export interface IProjectMetadata {
   createdAt: string;
 }
 
-export interface IGenerationCountRange {
-  generationCountRange: [number, number];
-}
-
-export interface IRootRequirementGenerationPreferences {
-  brd: IGenerationCountRange;
-  prd: IGenerationCountRange;
-  nfr: IGenerationCountRange;
-  uir: IGenerationCountRange;
+export interface ICreateSolutionRequest {
+  name: string;
+  description: string;
+  createReqt: boolean;
+  cleanSolution: boolean;
+  brd: IGenerationRange;
+  prd: IGenerationRange;
+  uir: IGenerationRange;
+  nfr: IGenerationRange;
 }
 
 export interface ISolutionResponse {

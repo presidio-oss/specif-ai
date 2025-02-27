@@ -18,6 +18,7 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { SelectRootDirectoryComponent } from '../../components/select-root-directory/select-root-directory.component';
 import { NgIf } from '@angular/common';
 import { NgxLoadingModule } from 'ngx-loading';
+import { RangeSliderComponent } from '../../components/core/range-slider/range-slider.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
 import {
@@ -27,7 +28,6 @@ import {
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ToggleComponent } from '../../components/toggle/toggle.component';
-import { RangeSelectorComponent } from 'src/app/components/core/range-selector/range-selector.component';
 @Component({
   selector: 'app-create-solution',
   templateUrl: './create-solution.component.html',
@@ -42,7 +42,7 @@ import { RangeSelectorComponent } from 'src/app/components/core/range-selector/r
     InputFieldComponent,
     TextareaFieldComponent,
     ToggleComponent,
-    RangeSelectorComponent,
+    RangeSliderComponent,
   ],
 })
 export class CreateSolutionComponent implements OnInit {
@@ -79,20 +79,18 @@ export class CreateSolutionComponent implements OnInit {
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
-      rootRequirementGenerationPreferences: new FormGroup({
-        brd: new FormGroup({
-          generationCountRange: new FormControl([10, 15])
-        }),
-        prd: new FormGroup({
-          generationCountRange: new FormControl([10, 15])
-        }),
-        nfr: new FormGroup({
-          generationCountRange: new FormControl([10, 15])
-        }),
-        uir: new FormGroup({
-          generationCountRange: new FormControl([10, 15])
-        })
-      })
+      brd: new FormControl({ min_count: 10, max_count: 15 }, [
+        Validators.required,
+      ]),
+      prd: new FormControl({ min_count: 10, max_count: 15 }, [
+        Validators.required,
+      ]),
+      uir: new FormControl({ min_count: 10, max_count: 15 }, [
+        Validators.required,
+      ]),
+      nfr: new FormControl({ min_count: 10, max_count: 15 }, [
+        Validators.required,
+      ]),
     });
   }
 
