@@ -26,14 +26,10 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import {
   BP_FILE_KEYS,
   PRD_HEADINGS,
-  REQUIREMENT_TYPE,
-  REQUIREMENT_TYPE_FOLDER_MAP,
-  FILTER_STRINGS,
   REQUIREMENT_TYPE_DISPLAY_NAME,
   RequirementType,
 } from 'src/app/constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
-import { IUserStory } from 'src/app/model/interfaces/IUserStory';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
 
 export class ProjectStateModel {
