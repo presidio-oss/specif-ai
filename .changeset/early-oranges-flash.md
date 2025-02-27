@@ -1,5 +1,5 @@
 ---
-"specif-ai": minor
+"specif-ai": patch
 ---
 
 Remove in-app footer and add it to a new settings modal
