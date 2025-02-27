@@ -14,6 +14,7 @@ export const environment = {
     appDescription: 'Get started to accelerate SDLC Process',
     companyName: 'Presidio',
     companyLogo: 'assets/img/presidio-white.svg',
+    companyLogoColor: 'assets/img/presidio-blue.svg',
     appIcons: {
       mac: 'assets/icons/mac_icon.icns',
       win: 'assets/icons/win_icon.ico',

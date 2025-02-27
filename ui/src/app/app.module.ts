@@ -22,7 +22,6 @@ import { ProjectsState } from './store/projects/projects.state';
 import { UserStoriesState } from './store/user-stories/user-stories.state';
 import { LoadingInterceptor } from './interceptor/http.interceptor';
 import { BreadcrumbState } from './store/breadcrumb/breadcrumb.state';
-import { FooterComponent } from './components/layout/footer/footer.component';
 import { BusinessProcessState } from './store/business-process/business-process.state';
 import { MatDialogModule } from '@angular/material/dialog';
 import * as Sentry from '@sentry/angular';
@@ -39,7 +38,10 @@ import { environment } from '../environments/environment';
 import { MatSelectModule } from '@angular/material/select';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions } from '@angular/material/tooltip';
+import {
+  MAT_TOOLTIP_DEFAULT_OPTIONS,
+  MatTooltipDefaultOptions,
+} from '@angular/material/tooltip';
 import { ChatSettingsState } from './store/chat-settings/chat-settings.state';
 import { Title } from '@angular/platform-browser';
 import { InputFieldComponent } from './components/core/input-field/input-field.component';
@@ -94,7 +96,6 @@ import { AuthStateService } from './services/auth/auth-state.service';
     NgIconsModule,
     NgOptimizedImage,
     ToasterComponent,
-    FooterComponent,
     HeaderComponent,
     LoadingComponent,
     AlertComponent,
@@ -108,8 +109,8 @@ import { AuthStateService } from './services/auth/auth-state.service';
       useValue: {
         position: 'below',
         showDelay: 500,
-        hideDelay: 500
-      } as MatTooltipDefaultOptions
+        hideDelay: 500,
+      } as MatTooltipDefaultOptions,
     },
     AuthStateService,
     AuthService,
@@ -129,8 +130,8 @@ import { AuthStateService } from './services/auth/auth-state.service';
       provide: APP_INITIALIZER,
       deps: [Sentry.TraceService],
       multi: true,
-      useFactory: () => () => {}
-    }
+      useFactory: () => () => {},
+    },
   ],
   bootstrap: [AppComponent],
 })

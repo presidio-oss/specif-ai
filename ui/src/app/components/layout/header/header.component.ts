@@ -5,7 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ElectronService } from '../../../services/electron/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router, RouterLink } from '@angular/router';
-import { LlmSettingsComponent } from '../../llm-settings/llm-settings.component';
+import { SettingsComponent } from '../../settings/settings.component';
 import { AuthService } from '../../../services/auth/auth.service';
 import { environment } from '../../../../environments/environment';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -17,8 +17,6 @@ import {
   heroCog8Tooth,
   heroFolder,
 } from '@ng-icons/heroicons/outline';
-import { ConfirmationDialogComponent } from '../../../components/confirmation-dialog/confirmation-dialog.component';
-import { CONFIRMATION_DIALOG } from '../../../constants/app.constants';
 
 @Component({
   selector: 'app-header',
@@ -57,9 +55,10 @@ export class HeaderComponent {
     this.logger.debug(response);
     if (response.length > 0) {
       localStorage.setItem(APP_CONSTANTS.WORKING_DIR, response[0]);
-      const currentConfig = await this.electronService.getStoreValue("APP_CONFIG") || {};
+      const currentConfig =
+        (await this.electronService.getStoreValue('APP_CONFIG')) || {};
       const updatedConfig = { ...currentConfig, directoryPath: response[0] };
-      await this.electronService.setStoreValue("APP_CONFIG", updatedConfig);
+      await this.electronService.setStoreValue('APP_CONFIG', updatedConfig);
 
       this.logger.debug('===>', this.router.url);
       if (this.router.url === '/apps') {
@@ -83,24 +82,8 @@ export class HeaderComponent {
   }
 
   openSettingsModal() {
-    this.dialog.open(LlmSettingsComponent, {
+    this.dialog.open(SettingsComponent, {
       disableClose: true,
-    });
-  }
-
-  logout() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
-        title: CONFIRMATION_DIALOG.LOGOUT.TITLE,
-        description: CONFIRMATION_DIALOG.LOGOUT.DESCRIPTION,
-        cancelButtonText: CONFIRMATION_DIALOG.LOGOUT.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.LOGOUT.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) this.authService.logout();
     });
   }
 }

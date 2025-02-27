@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
 import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
@@ -11,13 +17,16 @@ import {
   SetLLMConfig,
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgIconComponent } from '@ng-icons/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { AuthService } from '../../services/auth/auth.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
+import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
+import { CONFIRMATION_DIALOG } from '../../constants/app.constants';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-settings',
@@ -32,7 +41,7 @@ import { ButtonComponent } from '../core/button/button.component';
     ButtonComponent,
   ],
 })
-export class LlmSettingsComponent implements OnInit, OnDestroy {
+export class SettingsComponent implements OnInit, OnDestroy {
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
     LLMConfigState.getConfig,
   );
@@ -46,9 +55,14 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
   private initialModel: string = '';
   private initialProvider: string = '';
+  protected themeConfiguration = environment.ThemeConfiguration;
+
+  dialog = inject(MatDialog);
+  version: string = environment.APP_VERSION;
+  currentYear = new Date().getFullYear();
 
   constructor(
-    private modalRef: MatDialogRef<LlmSettingsComponent>,
+    private modalRef: MatDialogRef<SettingsComponent>,
     private store: Store,
     private authService: AuthService,
     private toasterService: ToasterService,
@@ -151,6 +165,25 @@ export class LlmSettingsComponent implements OnInit, OnDestroy {
           error.error?.message || 'Failed to verify provider configuration';
         this.cdr.markForCheck();
       },
+    });
+  }
+
+  logout() {
+    // Close the settings modal and open the logout confirmation dialog
+    this.modalRef.close(true);
+
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '500px',
+      data: {
+        title: CONFIRMATION_DIALOG.LOGOUT.TITLE,
+        description: CONFIRMATION_DIALOG.LOGOUT.DESCRIPTION,
+        cancelButtonText: CONFIRMATION_DIALOG.LOGOUT.CANCEL_BUTTON_TEXT,
+        proceedButtonText: CONFIRMATION_DIALOG.LOGOUT.PROCEED_BUTTON_TEXT,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((res) => {
+      if (!res) this.authService.logout();
     });
   }
 

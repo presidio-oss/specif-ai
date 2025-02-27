@@ -1,7 +1,7 @@
 <div class="my-1.5">
   <label
     [for]="elementId"
-    class="block mb-1.5 text-sm font-medium text-secondary-500"
+    class="block mb-1.5 text-sm font-medium text-slate-500"
     *ngIf="showLabel"
   >
     {{ elementName }}
@@ -14,7 +14,7 @@
     (keydown.enter)="onKeyDown()"
     [value]="value"
     [disabled]="isDisabled"
-    class="block w-full p-2.5 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
+    class="block w-full p-2.5 border border-slate-300 text-slate-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-slate-100 focus-visible:outline-none"
     [placeholder]="elementPlaceHolder"
   />
 </div>
