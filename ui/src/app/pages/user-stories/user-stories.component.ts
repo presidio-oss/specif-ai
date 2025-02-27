@@ -121,7 +121,7 @@ export class UserStoriesComponent implements OnInit {
 
   constructor(
     private featureService: FeatureService,
-    private exportService: SpreadSheetService,
+    private spreadSheetService: SpreadSheetService,
     private clipboard: Clipboard,
     private loadingService: LoadingService,
     private jiraService: JiraService,
@@ -380,7 +380,7 @@ export class UserStoriesComponent implements OnInit {
   }
 
   exportToExcel() {
-    this.exportService.exportToExcel(
+    this.spreadSheetService.exportToExcel(
       [
         {
           data: this.exportData,
@@ -391,7 +391,7 @@ export class UserStoriesComponent implements OnInit {
   }
 
   exportToCSV() {
-    this.exportService.exportToCsv(
+    this.spreadSheetService.exportToCsv(
       this.exportData,
       `${this.navigation.data.name}_${this.navigation.fileName.split('-')[0]}`,
     );

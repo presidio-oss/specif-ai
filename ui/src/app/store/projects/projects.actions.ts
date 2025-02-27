@@ -96,7 +96,7 @@ export class checkBPFileAssociations {
 // Export related actions
 
 export class ExportRequirementData {
-  static readonly type = '[Projects] Prepare Export Data';
+  static readonly type = '[Projects] Export Requirement Data';
 
   constructor(
     public requirementType: string,
