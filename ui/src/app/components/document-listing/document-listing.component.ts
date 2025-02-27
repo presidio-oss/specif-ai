@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { BehaviorSubject, combineLatest, Observable, Subscription, first } from 'rxjs';
-import { BulkReadFiles } from '../../store/projects/projects.actions';
+import { BulkReadFiles, ExportRequirementData } from '../../store/projects/projects.actions';
 import {
   getDescriptionFromInput,
   truncateWithEllipsis,
@@ -19,6 +19,9 @@ import { SearchInputComponent } from '../core/search-input/search-input.componen
 import { SearchService } from '../../services/search/search.service';
 import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import { MatMenuModule } from '@angular/material/menu';
+import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
+import { ExportFileFormat } from 'src/app/constants/export.constants';
 
 @Component({
   selector: 'app-document-listing',
@@ -33,6 +36,7 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
     NgIconComponent,
     NgForOf,
     SearchInputComponent,
+    MatMenuModule,
   ],
 })
 export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -235,6 +239,19 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
         },
       },
     });
+  }
+
+  exportDocumentList(folder: string, format: ExportFileFormat) {
+    const requirementType =
+      FOLDER_REQUIREMENT_TYPE_MAP[
+        folder as keyof typeof FOLDER_REQUIREMENT_TYPE_MAP
+      ];
+
+    this.store.dispatch(
+      new ExportRequirementData(requirementType, {
+        type: format,
+      }),
+    );
   }
 
   getDescription(input: string | undefined): string | null {

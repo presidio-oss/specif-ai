@@ -10,7 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { UtilityService } from './services/utility.service';
 import { MatMenuModule } from '@angular/material/menu';
-import { ExportService } from './services/export.service';
+import { SpreadSheetService } from './services/spreadsheet.service';
 import { SharedModule } from './modules/shared/shared.module';
 import { NgxsModule } from '@ngxs/store';
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
@@ -114,7 +114,7 @@ import { AuthStateService } from './services/auth/auth-state.service';
     AuthStateService,
     AuthService,
     UtilityService,
-    ExportService,
+    SpreadSheetService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
     {

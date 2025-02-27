@@ -20,7 +20,7 @@ import {
   ReadFile,
   UpdateFile,
 } from '../../store/projects/projects.actions';
-import { ExportService } from '../../services/export.service';
+import { SpreadSheetService } from '../../services/spreadsheet.service';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ITaskRequest, ITasksResponse } from '../../model/interfaces/ITask';
 import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
@@ -121,7 +121,7 @@ export class UserStoriesComponent implements OnInit {
 
   constructor(
     private featureService: FeatureService,
-    private exportService: ExportService,
+    private exportService: SpreadSheetService,
     private clipboard: Clipboard,
     private loadingService: LoadingService,
     private jiraService: JiraService,
@@ -381,7 +381,11 @@ export class UserStoriesComponent implements OnInit {
 
   exportToExcel() {
     this.exportService.exportToExcel(
-      this.exportData,
+      [
+        {
+          data: this.exportData,
+        },
+      ],
       `${this.navigation.data.name}_${this.navigation.fileName.split('-')[0]}`,
     );
   }
