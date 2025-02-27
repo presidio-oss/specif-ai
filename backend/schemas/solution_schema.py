@@ -1,15 +1,9 @@
-from marshmallow import Schema, ValidationError, fields, validate
+from marshmallow import Schema, fields, validate
 
 
 class GenerationCountRangeSchema(Schema):
-    generationCountRange = fields.List(fields.Integer(), validate=validate.Length(equal=2))
-
-
-class RootRequirementGenerationPreferencesSchema(Schema):
-    brd = fields.Nested(GenerationCountRangeSchema)
-    prd = fields.Nested(GenerationCountRangeSchema)
-    nfr = fields.Nested(GenerationCountRangeSchema)
-    uir = fields.Nested(GenerationCountRangeSchema)
+    min_count = fields.Integer(required=True, validate=validate.Range(min=1))
+    max_count = fields.Integer(required=True, validate=validate.Range(min=30))
 
 
 class CreateSolutionSchema(Schema):
@@ -21,7 +15,10 @@ class CreateSolutionSchema(Schema):
     deployment = fields.Boolean(required=False)
     createReqt = fields.Boolean(required=False)
     created_on = fields.DateTime(required=True)
-    rootRequirementGenerationPreferences = fields.Nested(RootRequirementGenerationPreferencesSchema, required=True)
+    brd = fields.Nested(GenerationCountRangeSchema, required=True)
+    prd = fields.Nested(GenerationCountRangeSchema, required=True)
+    nfr = fields.Nested(GenerationCountRangeSchema, required=True)
+    uir = fields.Nested(GenerationCountRangeSchema, required=True)
 
 
 class SolutionIdSchema(Schema):

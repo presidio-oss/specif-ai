@@ -54,7 +54,7 @@ def create_process_flow_chart():
 
 # Create solutions without yaml
 @solution_api.route("/api/solutions/create", methods=["POST"])
-@require_access_code()
+# @require_access_code()
 def create_solutions():
     logger.info(f"Request {g.request_id}: Entered <create_solutions>")
     data = request.get_json()
@@ -62,25 +62,26 @@ def create_solutions():
     errors = []
     templates = []
 
-    def get_llm_response(template_path):
-        logger.info(f"Request {g.request_id}: Fetching LLM response for template: {template_path}")
-        template = jinja_template_env.get_template(template_path)
-        
-        generation_prefs = data.get("rootRequirementGenerationPreferences")
-        template_type = template_path.split("_")[1].split(".")[0]
-        count_range = generation_prefs[template_type].get("generationCountRange")
-        
+    def get_llm_response(template_config):
+        logger.info(
+            f"Request {g.request_id}: Fetching LLM response for template: {template_config['template_path']}")
+        template = jinja_template_env.get_template(
+            template_config['template_path'])
+
         template = template.render(
-            name=data["name"], 
+            name=data["name"],
             description=data["description"],
-            generation_count_range=count_range
+            min_count=template_config['min_count'],
+            max_count=template_config['max_count']
         )
         try:
             llm_response = llm_service.call_llm(template)
-            logger.info(f"Request {g.request_id}: Successfully received LLM response for template: {template_path}")
+            logger.info(
+                f"Request {g.request_id}: Successfully received LLM response for template: {template_config['template_path']}")
             return json.loads(llm_response)
         except json.JSONDecodeError:
-            logger.error(f"Request {g.request_id}: Failed to parse LLM response for template: {template_path}")
+            logger.error(
+                f"Request {g.request_id}: Failed to parse LLM response for template: {template_config['template_path']}")
             abort(500, description="Invalid JSON format. Please try again.")
 
     if data["createReqt"]:
@@ -88,7 +89,32 @@ def create_solutions():
         clean_solution = data['cleanSolution'] if ('cleanSolution' in data) and isinstance(data['cleanSolution'],
                                                                                            bool) else False
         if clean_solution is False:
-            templates = ['create_brd.jinja2', 'create_prd.jinja2', 'create_nfr.jinja2', 'create_uir.jinja2']
+            templates = [
+                {
+                    'type': 'brd',
+                    'template_path': 'create_brd.jinja2',
+                    'min_count': data['brd']['min_count'],
+                    'max_count': data['brd']['max_count']
+                },
+                {
+                    'type': 'prd',
+                    'template_path': 'create_prd.jinja2',
+                    'min_count': data['prd']['min_count'],
+                    'max_count': data['prd']['max_count']
+                },
+                {
+                    'type': 'nfr',
+                    'template_path': 'create_nfr.jinja2',
+                    'min_count': data['nfr']['min_count'],
+                    'max_count': data['nfr']['max_count']
+                },
+                {
+                    'type': 'uir',
+                    'template_path': 'create_uir.jinja2',
+                    'min_count': data['uir']['min_count'],
+                    'max_count': data['uir']['max_count']
+                }
+            ]
         executor = ExecutorConfig().get_executor()
         futures = [executor.submit(get_llm_response, template) for template in templates]
         for future in concurrent.futures.as_completed(futures):
