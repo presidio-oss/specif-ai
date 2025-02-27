@@ -11,6 +11,14 @@
         <app-badge [badgeText]="projectList.length" />
       </div>
       <div class="flex gap-2">
+        <app-button
+          buttonContent="Add"
+          icon="heroPlus"
+          theme="secondary"
+          size="sm"
+          rounded="lg"
+          (click)="navigateToAdd(projectList[0].id, projectList[0].folderName)"
+        />
         <ng-container
           *ngIf="filteredDocumentList$ | async as filteredProjectList"
         >
@@ -47,14 +55,6 @@
             </button>
           </mat-menu>
         </ng-container>
-        <app-button
-          buttonContent="Add"
-          icon="heroPlus"
-          theme="secondary"
-          size="sm"
-          rounded="lg"
-          (click)="navigateToAdd(projectList[0].id, projectList[0].folderName)"
-        />
       </div>
     </div>
     <app-search-input
