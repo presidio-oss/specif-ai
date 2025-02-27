@@ -4,9 +4,6 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
@@ -72,26 +69,19 @@ export class CreateSolutionComponent implements OnInit {
     );
   }
 
-  noWhitespaceValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const isWhitespace = (control.value || '').trim().length === 0;
-      return isWhitespace ? { whitespace: true } : null;
-    };
-  }
-
   createSolutionForm() {
     return new FormGroup({
       name: new FormControl('', [
         Validators.required,
-        this.noWhitespaceValidator(),
+        Validators.pattern(/\S/),
       ]),
       description: new FormControl('', [
         Validators.required,
-        this.noWhitespaceValidator(),
+        Validators.pattern(/\S/),
       ]),
       technicalDetails: new FormControl('', [
         Validators.required,
-        this.noWhitespaceValidator(),
+        Validators.pattern(/\S/),
       ]),
       createReqt: new FormControl(true),
       id: new FormControl(uuid()),
