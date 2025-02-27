@@ -163,13 +163,8 @@ app.whenReady().then(() => {
     exec(command, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error killing port ${port}:`, error.message);
-        event.sender.send("kill-port-error", error.message);
       } else {
         console.log(`Port ${port} killed successfully.`);
-        event.sender.send(
-          "kill-port-success",
-          `Port ${port} killed successfully.`
-        );
         setTimeout(() => {
           startServer(port);
         }, 1000); 
