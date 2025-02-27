@@ -95,7 +95,7 @@ By simply providing a solution name, description, and tech stack details, Specif
    -e AWS_BEDROCK_ACCESS_KEY=$AWS_BEDROCK_ACCESS_KEY \
    -e AWS_BEDROCK_SECRET_KEY=$AWS_BEDROCK_SECRET_KEY \
    -e AWS_BEDROCK_SESSION_TOKEN=$AWS_BEDROCK_SESSION_TOKEN \
-   -e AWS_REGION=$AWS_REGION \
+   -e AWS_BEDROCK_REGION=$AWS_BEDROCK_REGION \
    -e HOST=$HOST \
    -e PORT=$PORT \
    -e DEBUG=$DEBUG \
@@ -103,6 +103,7 @@ By simply providing a solution name, description, and tech stack details, Specif
    -e SENTRY_DSN=$SENTRY_DSN \
    -e SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT \
    -e SENTRY_RELEASE=$SENTRY_RELEASE \
+   -e AWS_REGION=$AWS_REGION \
    -it hai-build-requirement-backend
    ```
 

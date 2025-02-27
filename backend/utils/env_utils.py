@@ -22,7 +22,7 @@ class EnvVariables(Enum):
     AWS_BEDROCK_ACCESS_KEY = 'AWS_BEDROCK_ACCESS_KEY'
     AWS_BEDROCK_SECRET_KEY = 'AWS_BEDROCK_SECRET_KEY'
     AWS_BEDROCK_SESSION_TOKEN = 'AWS_BEDROCK_SESSION_TOKEN'
-    AWS_REGION = 'AWS_REGION'
+    AWS_BEDROCK_REGION = 'AWS_BEDROCK_REGION'
 
     # App related envs
     APP_PASSCODE_KEY = "APP_PASSCODE_KEY"
@@ -33,6 +33,7 @@ class EnvVariables(Enum):
     SENTRY_DSN = "SENTRY_DSN"
     SENTRY_ENVIRONMENT = "SENTRY_ENVIRONMENT"
     SENTRY_RELEASE = "SENTRY_RELEASE"
+    AWS_REGION = 'AWS_REGION'
 
 # Define a dictionary for default values
 DEFAULT_VALUES = {
@@ -44,7 +45,7 @@ DEFAULT_VALUES = {
     EnvVariables.OPENAI_API_VERSION: "2024-08-01-preview",
 
     # AWS Bedrock
-    EnvVariables.AWS_REGION: 'us-east-1',
+    EnvVariables.AWS_BEDROCK_REGION: 'us-west-1',
 
     # App related defaults
     EnvVariables.APP_PASSCODE_KEY: "",
@@ -54,7 +55,8 @@ DEFAULT_VALUES = {
     EnvVariables.ENABLE_SENTRY: False,
     EnvVariables.SENTRY_DSN: "",
     EnvVariables.SENTRY_ENVIRONMENT: "",
-    EnvVariables.SENTRY_RELEASE: ""
+    EnvVariables.SENTRY_RELEASE: "",
+    EnvVariables.AWS_REGION: 'us-east-1',
 }
 
 

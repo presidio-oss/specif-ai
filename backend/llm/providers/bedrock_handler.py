@@ -49,7 +49,7 @@ class AWSBedrockConfig(BaseModel):
         default_factory=lambda: (get_env_variable(key=EnvVariables.AWS_BEDROCK_SESSION_TOKEN) or None)
     )
     aws_region: Optional[Annotated[str, AfterValidator(ValidatorsUtil.empty_string)]] = Field(
-        default_factory=lambda: (get_env_variable(key=EnvVariables.AWS_REGION) or None)
+        default_factory=lambda: (get_env_variable(key=EnvVariables.AWS_BEDROCK_REGION) or None)
     )
     model_id: Annotated[
         str,

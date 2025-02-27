@@ -96,6 +96,7 @@ ANTHROPIC_BEDROCK_BASE_URL=""        # AWS Bedrock base URL
 AWS_BEDROCK_ACCESS_KEY=""            # AWS access key
 AWS_BEDROCK_SECRET_KEY=""            # AWS secret access key
 AWS_BEDROCK_SESSION_TOKEN=""         # AWS session token
+AWS_BEDROCK_REGION=""                # AWS Bedrock region
 AWS_REGION=""                        # AWS Region
 ```
 
@@ -131,7 +132,7 @@ docker run -p 5001:5001 \
 -e AWS_BEDROCK_ACCESS_KEY=$AWS_BEDROCK_ACCESS_KEY \
 -e AWS_BEDROCK_SECRET_KEY=$AWS_BEDROCK_SECRET_KEY \
 -e AWS_BEDROCK_SESSION_TOKEN=$AWS_BEDROCK_SESSION_TOKEN \
--e AWS_REGION=$AWS_REGION \
+-e AWS_BEDROCK_REGION=$AWS_BEDROCK_REGION \
 -e HOST=$HOST \
 -e PORT=$PORT \
 -e DEBUG=$DEBUG \
@@ -139,6 +140,7 @@ docker run -p 5001:5001 \
 -e SENTRY_DSN=$SENTRY_DSN \
 -e SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT \
 -e SENTRY_RELEASE=$SENTRY_RELEASE \
+-e AWS_REGION=$AWS_REGION \
 -it hai-build-requirement-backend
 ```
 
