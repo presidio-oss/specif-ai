@@ -54,7 +54,7 @@ def create_process_flow_chart():
 
 # Create solutions without yaml
 @solution_api.route("/api/solutions/create", methods=["POST"])
-# @require_access_code()
+@require_access_code()
 def create_solutions():
     logger.info(f"Request {g.request_id}: Entered <create_solutions>")
     data = request.get_json()
