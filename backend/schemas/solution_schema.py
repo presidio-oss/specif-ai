@@ -2,7 +2,7 @@ from marshmallow import Schema, fields, validate
 
 
 class GenerationCountRangeSchema(Schema):
-    min_count = fields.Integer(required=True, validate=validate.Range(min=1))
+    min_count = fields.Integer(required=True, validate=validate.Range(min=5))
     max_count = fields.Integer(required=True, validate=validate.Range(min=30))
 
 
