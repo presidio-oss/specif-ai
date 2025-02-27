@@ -20,10 +20,10 @@
           (click)="navigateToAdd(projectList[0].id, projectList[0].folderName)"
         />
         <ng-container
-          *ngIf="filteredDocumentList$ | async as filteredProjectList"
+          *ngIf="documentList$ | async as documentList"
         >
           <app-button
-            [disabled]="filteredProjectList.length == 0"
+            [disabled]="documentList.length == 0"
             icon="heroArrowDownTray"
             buttonContent="Export"
             theme="secondary"
