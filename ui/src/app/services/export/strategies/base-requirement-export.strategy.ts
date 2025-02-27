@@ -2,7 +2,7 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { NGXLogger } from 'ngx-logger';
 import {
   REQUIREMENT_TYPE,
-  REQUIREMENT_TYPE_DISPLAY_NAME,
+  REQUIREMENT_DISPLAY_NAME_MAP,
   RequirementType,
 } from '../../../constants/app.constants';
 import { EXPORT_FILE_FORMATS } from '../../../constants/export.constants';
@@ -88,7 +88,7 @@ export abstract class BaseRequirementExportStrategy implements ExportStrategy {
     this.exportService.exportToExcel(
       [
         {
-          name: REQUIREMENT_TYPE_DISPLAY_NAME[this.requirementType],
+          name: REQUIREMENT_DISPLAY_NAME_MAP[this.requirementType],
           data: [['Id', 'Title', 'Requirement'], ...data],
         },
       ],

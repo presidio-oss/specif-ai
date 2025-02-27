@@ -69,20 +69,31 @@ export const CONFIRMATION_DIALOG = {
   },
 };
 
-export enum ENTITY_DISPLAY_NAME_MAP {
-  STORIES = 'User Story',
-  BP = 'Business Process',
-  BRD = 'Business Requirement',
-  NFR = 'Non Functional Requirement',
-  PRD = 'Product Requirement',
-  UIR = 'User Interface Requirement',
-  TASK = 'Task',
-}
+export const REQUIREMENT_TYPE = {
+  BRD: 'BRD',
+  PRD: 'PRD',
+  UIR: 'UIR',
+  NFR: 'NFR',
+  BP: 'BP',
+  US: 'US',
+  TASK: 'TASK',
+} as const;
+
+export const REQUIREMENT_DISPLAY_NAME_MAP = {
+  [REQUIREMENT_TYPE.US]: 'User Story',
+  [REQUIREMENT_TYPE.BP]: 'Business Process',
+  [REQUIREMENT_TYPE.BRD]: 'Business Requirement',
+  [REQUIREMENT_TYPE.NFR]: 'Non Functional Requirement',
+  [REQUIREMENT_TYPE.PRD]: 'Product Requirement',
+  [REQUIREMENT_TYPE.UIR]: 'User Interface Requirement',
+  [REQUIREMENT_TYPE.TASK]: 'Task',
+};
 
 const getEntityDisplayName = (folderId: string): string => {
   return (
-    ENTITY_DISPLAY_NAME_MAP[folderId as keyof typeof ENTITY_DISPLAY_NAME_MAP] ||
-    'Unknown Requirement'
+    REQUIREMENT_DISPLAY_NAME_MAP[
+      folderId as keyof typeof REQUIREMENT_DISPLAY_NAME_MAP
+    ] || 'Unknown Requirement'
   );
 };
 
@@ -164,8 +175,8 @@ export const APP_MESSAGES = {
 };
 
 export const TOOLTIP_CONTENT = {
-  IMPORT_FROM_CODE_BUTTON: "Import from Code",
-}
+  IMPORT_FROM_CODE_BUTTON: 'Import from Code',
+};
 
 export const PRD_HEADINGS = {
   SCREENS: 'Screens: ',
@@ -173,16 +184,6 @@ export const PRD_HEADINGS = {
   SCREENS_FORMATTED: '\n\nScreens:\n',
   PERSONAS_FORMATTED: '\n\nPersonas:\n',
 };
-
-export const REQUIREMENT_TYPE = {
-  BRD: 'BRD',
-  PRD: 'PRD',
-  UIR: 'UIR',
-  NFR: 'NFR',
-  BP: 'BP',
-  US: 'US',
-  TASK: 'TASK',
-} as const;
 
 export const FOLDER = {
   BRD: 'BRD',
@@ -192,15 +193,7 @@ export const FOLDER = {
   BP: 'BP',
 };
 
-export const REQUIREMENT_TYPE_DISPLAY_NAME = {
-  BRD: ENTITY_DISPLAY_NAME_MAP.BRD,
-  PRD: ENTITY_DISPLAY_NAME_MAP.PRD,
-  UIR: ENTITY_DISPLAY_NAME_MAP.UIR,
-  NFR: ENTITY_DISPLAY_NAME_MAP.NFR,
-  BP: ENTITY_DISPLAY_NAME_MAP.BP,
-  US: ENTITY_DISPLAY_NAME_MAP.STORIES,
-  TASK: ENTITY_DISPLAY_NAME_MAP.TASK,
-} as const;
+
 
 export const REQUIREMENT_TYPE_FOLDER_MAP = {
   [REQUIREMENT_TYPE.BRD]: FOLDER.BRD,

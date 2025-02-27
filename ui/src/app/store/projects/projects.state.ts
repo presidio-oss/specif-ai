@@ -26,7 +26,7 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import {
   BP_FILE_KEYS,
   PRD_HEADINGS,
-  REQUIREMENT_TYPE_DISPLAY_NAME,
+  REQUIREMENT_DISPLAY_NAME_MAP,
   RequirementType,
 } from 'src/app/constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
@@ -574,7 +574,7 @@ export class ProjectsState {
     try {
       patchState({ exportingData: true });
       this.toast.showInfo(
-        `Exporting ${REQUIREMENT_TYPE_DISPLAY_NAME[requirementType as RequirementType]} data`,
+        `Exporting ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} data`,
       );
       const state = getState();
 

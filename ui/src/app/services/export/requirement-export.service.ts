@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
+import { ExportRequirementDataOptions } from 'src/app/model/interfaces/exports.interface';
 import { ToasterService } from '../toaster/toaster.service';
 import { RequirementExportStrategyManager } from './requirement-export-strategy.manager';
-import { ExportRequirementDataOptions } from 'src/app/model/interfaces/exports.interface';
 
 @Injectable({
   providedIn: 'root',

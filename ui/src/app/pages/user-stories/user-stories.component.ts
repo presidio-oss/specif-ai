@@ -70,7 +70,7 @@ import { BehaviorSubject } from 'rxjs';
 export class UserStoriesComponent implements OnInit {
   currentProject!: string;
   newFileName: string = '';
-  entityType: string = 'STORIES';
+  entityType: string = 'US';
   selectedRequirement: any = {};
   metadata: any = {};
   private searchTerm$ = new BehaviorSubject<string>('');
@@ -111,7 +111,6 @@ export class UserStoriesComponent implements OnInit {
   );
 
   userStoriesInState: IUserStory[] = [];
-
 
   readonly dialog = inject(MatDialog);
 
@@ -201,7 +200,6 @@ export class UserStoriesComponent implements OnInit {
     this.userStories$.subscribe((userStories: IUserStory[]) => {
       this.userStoriesInState = userStories;
     });
-
   }
 
   navigateToAddUserStory() {
@@ -522,7 +520,6 @@ export class UserStoriesComponent implements OnInit {
       new ReadFile(`${this.navigation.folderName}/${this.navigation.fileName}`),
     );
 
-    
     requestPayload.epicName = this.requirementFile.title;
     requestPayload.epicDescription = this.requirementFile.requirement;
     requestPayload.epicTicketId = this.requirementFile.epicTicketId

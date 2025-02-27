@@ -2,7 +2,7 @@ import { NGXLogger } from 'ngx-logger';
 import { Clipboard } from '@angular/cdk/clipboard';
 import {
   REQUIREMENT_TYPE,
-  REQUIREMENT_TYPE_DISPLAY_NAME,
+  REQUIREMENT_DISPLAY_NAME_MAP,
   REQUIREMENT_TYPE_FOLDER_MAP,
   FILTER_STRINGS,
 } from '../../../constants/app.constants';
@@ -197,7 +197,7 @@ export class PRDExportStrategy implements ExportStrategy {
     this.exportService.exportToExcel(
       [
         {
-          name: REQUIREMENT_TYPE_DISPLAY_NAME[REQUIREMENT_TYPE.PRD],
+          name: REQUIREMENT_DISPLAY_NAME_MAP[REQUIREMENT_TYPE.PRD],
           data: [['Id', 'Title', 'Requirement'], ...prdRows],
         },
         {
