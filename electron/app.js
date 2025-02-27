@@ -147,7 +147,7 @@ app.whenReady().then(() => {
       if (errorCode === -6) {
         // ERR_FILE_NOT_FOUND
         console.error(
-          `Failed to load URL: ${validatedURL}, error: ${errorDescription}`,
+          `Failed to load URL: ${validatedURL}, error: ${errorDescription}`
         );
         onAppReload();
       }
@@ -170,6 +170,9 @@ app.whenReady().then(() => {
           "kill-port-success",
           `Port ${port} killed successfully.`
         );
+        setTimeout(() => {
+          startServer(port);
+        }, 1000); 
       }
     });
   });
@@ -182,50 +185,8 @@ app.whenReady().then(() => {
 
   ipcMain.on("start-server", () => {
     // Auth Server used for Jira Integration OAuth Process
-
     const port = 49153;
-
-    const server = net.createServer();
-    server.once("error", (err) => {
-      if (err.code === "EADDRINUSE") {
-        mainWindow.webContents.send(
-          "port-error",
-          `Port ${port} is already in use by another application.`,
-        );
-      } else {
-        mainWindow.webContents.send(
-          "port-error",
-          `Failed to start server: ${err.message}`,
-        );
-      }
-    });
-
-    server.once("listening", () => {
-      server.close();
-
-      authServer.listen(port, () => {
-        console.debug(
-          `OAuth callback server listening on http://localhost:${port}/callback`,
-        );
-        mainWindow.webContents.send("server-started");
-      });
-
-      authServer.on("error", (err) => {
-        if (err.code === "EADDRINUSE") {
-          mainWindow.webContents.send(
-            "port-error",
-            `Port ${port} is already in use.`,
-          );
-        } else {
-          mainWindow.webContents.send(
-            "port-error",
-            `Server error: ${err.message}`,
-          );
-        }
-      });
-    });
-
-    server.listen(port);
+    startServer(port);
   });
 
   ipcMain.on("start-jira-oauth", (event, oauthParams) => {
@@ -347,6 +308,48 @@ app.whenReady().then(() => {
 ipcMain.handle("get-style-url", () => {
   return path.join(process.resourcesPath, "tailwind.output.css");
 });
+
+function startServer(port) {
+  const server = net.createServer();
+  server.once("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      mainWindow.webContents.send(
+        "port-error",
+        `Port ${port} is already in use by another application.`
+      );
+    } else {
+      mainWindow.webContents.send(
+        "port-error",
+        `Failed to start server: ${err.message}`
+      );
+    }
+  });
+
+  server.once("listening", () => {
+    server.close();
+    authServer.listen(port, () => {
+      console.debug(
+        `OAuth callback server listening on http://localhost:${port}/callback`
+      );
+      mainWindow.webContents.send("server-started");
+    });
+
+    authServer.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        mainWindow.webContents.send(
+          "port-error",
+          `Port ${port} is already in use.`
+        );
+      } else {
+        mainWindow.webContents.send(
+          "port-error",
+          `Server error: ${err.message}`
+        );
+      }
+    });
+  });
+  server.listen(port);
+}
 
 async function exchangeToken(grantType, codeOrToken) {
   const tokenUrl = "https://auth.atlassian.com/oauth/token";
