@@ -242,10 +242,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   exportDocumentList(folder: string, format: ExportFileFormat) {
-    const requirementType =
-      FOLDER_REQUIREMENT_TYPE_MAP[
-        folder as keyof typeof FOLDER_REQUIREMENT_TYPE_MAP
-      ];
+    const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folder];
 
     this.store.dispatch(
       new ExportRequirementData(requirementType, {
