@@ -61,17 +61,14 @@
 
         <div class="flex items-center justify-between mt-4">
           <div class="flex items-center">
-            <input
-              id="task-generate-with-ai"
-              type="checkbox"
-              formControlName="useGenAI"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label
-              for="task-generate-with-ai"
-              class="ml-2 block text-sm text-gray-900"
-              >Expand task with AI</label
-            >
+            <app-button
+              buttonContent="Enhance with AI"
+              icon="heroSparklesSolid"
+              theme="secondary"
+              size="sm"
+              rounded="lg"
+              (click)="editTaskWithAI()"
+            ></app-button>
           </div>
           <div class="flex items-center">
             <app-button

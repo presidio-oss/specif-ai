@@ -42,6 +42,8 @@ import {
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import { provideIcons } from '@ng-icons/core';
+import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 
 @Component({
   selector: 'app-add-task',
@@ -59,6 +61,11 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
     MultiUploadComponent,
     ErrorMessageComponent,
     MatTooltipModule,
+  ],
+  providers: [
+    provideIcons({
+      heroSparklesSolid,
+    }),
   ],
 })
 export class AddTaskComponent implements OnDestroy {
@@ -259,7 +266,7 @@ export class AddTaskComponent implements OnDestroy {
           ),
         );
       } else {
-        this.editTaskWithAI(data.id, data.list, data.acceptance, newFileName);
+        this.editTaskWithAI();
       }
     }
   }
@@ -372,38 +379,36 @@ ${chat.assistant}`,
       .then();
   }
 
-  editTaskWithAI(
-    id: string,
-    list: string,
-    acceptance: string,
-    newFileName: string,
-  ) {
+  editTaskWithAI() {
+    const data = this.taskForm.getRawValue();
+    const newFileName = this.config.fileName.replace('base', 'feature');
+
     const requestBody: IEditTaskRequest = {
       name: this.userStory.name,
       description: this.userStory.description,
       appId: this.projectMetadata.id,
-      taskId: id,
+      taskId: data.id,
       featureId: this.config.featureId,
       reqId: this.config.reqId,
       contentType: this.uploadedFileContent ? 'fileContent' : '',
       fileContent: this.uploadedFileContent,
-      reqDesc: acceptance,
+      reqDesc: data.acceptance,
       useGenAI: true,
       usIndex: 0,
       existingTaskDesc: this.existingTask.acceptance,
       existingTaskTitle: this.existingTask.task,
-      taskName: list,
+      taskName: data.list,
     };
 
     this.featureService.updateTask(requestBody).subscribe((res) => {
-      const taskEntry = res.tasks.find((task) => task.id === id);
+      const taskEntry = res.tasks.find((task) => task.id === data.id);
 
       if (taskEntry) {
         const taskKey = Object.keys(taskEntry).find((key) => key !== 'id');
 
         if (taskKey) {
           const dispatchData = {
-            id: id,
+            id: data.id,
             list: taskKey,
             acceptance: this.responseFormatter(taskEntry[taskKey]),
             chatHistory: this.chatHistory,
@@ -418,7 +423,7 @@ ${chat.assistant}`,
           this.taskForm.markAsUntouched();
           this.taskForm.markAsPristine();
           this.toastService.showSuccess(
-            TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(this.entityType, id),
+            TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(this.entityType, data.id),
           );
         } else {
           this.logger.error('No task key found other than "id"');
