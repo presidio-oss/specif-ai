@@ -68,6 +68,11 @@
         <div class="flex items-center justify-between mt-4">
           <div class="flex-col">
             <div class="flex items-center">
+              <app-multi-upload
+                *ngIf="mode === 'add'"
+                class="mr-2"
+                (fileContent)="handleFileContent($event)"
+              ></app-multi-upload>
               <app-button
                 buttonContent="Enhance with AI"
                 icon="heroSparklesSolid"
@@ -75,12 +80,9 @@
                 size="sm"
                 rounded="lg"
                 (click)="updateRequirementWithAI()"
+                [disabled]="requirementForm.invalid"
               ></app-button>
             </div>
-            <app-multi-upload
-              *ngIf="mode === 'add'"
-              (fileContent)="handleFileContent($event)"
-            ></app-multi-upload>
           </div>
           <div class="">
             <app-button

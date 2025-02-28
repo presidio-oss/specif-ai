@@ -61,6 +61,11 @@
 
         <div class="flex items-center justify-between mt-4">
           <div class="flex items-center">
+            <app-multi-upload
+              *ngIf="mode === 'add'"
+              class="mr-2"
+              (fileContent)="handleFileContent($event)"
+            />
             <app-button
               buttonContent="Enhance with AI"
               icon="heroSparklesSolid"
@@ -68,6 +73,7 @@
               size="sm"
               rounded="lg"
               (click)="editTaskWithAI()"
+              [disabled]="taskForm.invalid"
             ></app-button>
           </div>
           <div class="flex items-center">
@@ -90,12 +96,6 @@
               [disabled]="taskForm.invalid"
             />
           </div>
-        </div>
-        <div class="flex items-center justify-start">
-          <app-multi-upload
-            *ngIf="mode === 'add'"
-            (fileContent)="handleFileContent($event)"
-          />
         </div>
       </form>
     </div>
