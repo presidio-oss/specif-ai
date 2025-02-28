@@ -2,7 +2,7 @@
   "name": "specif_ai",
   "version": "1.9.8",
   "description": "AI-powered requirements management and specification platform",
-  "productName": "Specifai",
+  "productName": "Specif AI",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
