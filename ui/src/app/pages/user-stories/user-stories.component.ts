@@ -5,6 +5,7 @@ import { Store } from '@ngxs/store';
 import { UserStoriesState } from '../../store/user-stories/user-stories.state';
 import {
   EditUserStory,
+  ExportUserStories,
   GetUserStories,
   SetCurrentConfig,
   SetSelectedProject,
@@ -20,8 +21,7 @@ import {
   ReadFile,
   UpdateFile,
 } from '../../store/projects/projects.actions';
-import { SpreadSheetService } from '../../services/spreadsheet.service';
-import { Clipboard } from '@angular/cdk/clipboard';
+import { ClipboardService } from '../../services/clipboard.service';
 import { ITaskRequest, ITasksResponse } from '../../model/interfaces/ITask';
 import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { LoadingService } from '../../services/loading.service';
@@ -48,6 +48,7 @@ import { CONFIRMATION_DIALOG, TOASTER_MESSAGES } from '../../constants/app.const
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
 import { BehaviorSubject } from 'rxjs';
+import { ExportFileFormat } from 'src/app/constants/export.constants';
 
 @Component({
   selector: 'app-user-stories',
@@ -81,8 +82,6 @@ export class UserStoriesComponent implements OnInit {
   searchService = inject(SearchService);
   requirementFile: any = [];
   userStories: IUserStory[] = [];
-  exportData: any = [];
-  jsonOutput: any = {};
 
   isTokenAvailable: boolean = true;
   navigation: {
@@ -120,8 +119,7 @@ export class UserStoriesComponent implements OnInit {
 
   constructor(
     private featureService: FeatureService,
-    private spreadSheetService: SpreadSheetService,
-    private clipboard: Clipboard,
+    private clipboardService: ClipboardService,
     private loadingService: LoadingService,
     private jiraService: JiraService,
     private electronService: ElectronService,
@@ -329,69 +327,28 @@ export class UserStoriesComponent implements OnInit {
         `${this.currentProject}/${this.navigation.folderName}/${this.newFileName}`,
       ),
     );
-
-    this.userStories$.subscribe((res) => {
-      this.exportData = this.prepareExportData(res);
-      this.jsonOutput = {
-        userStories: res.map((userStory) => ({
-          name: userStory.name,
-          description: userStory.description,
-          tasks:
-            userStory.tasks?.map((task) => ({
-              list: task.list,
-              acceptanceCriteria: task.acceptance,
-            })) || [],
-        })),
-      };
-    });
-  }
-
-  private prepareExportData(stories: any): any {
-    const worksheetData = [
-      ['User Story', 'Description', 'Task', 'Acceptance Criteria'],
-    ];
-
-    stories.forEach((userStory: any) => {
-      userStory.tasks.forEach((task: any) => {
-        worksheetData.push([
-          userStory.name,
-          userStory.description,
-          task.list,
-          task.acceptance,
-        ]);
-      });
-    });
-    return worksheetData;
   }
 
   copyUserStoryContent(event: Event, userStory: IUserStory) {
     event.stopPropagation();
     const userStoryContent = `${userStory.id}: ${userStory.name}\n${userStory.description || ''}`;
-    this.clipboard.copy(userStoryContent);
-    this.toast.showSuccess(
-      TOASTER_MESSAGES.ENTITY.COPY.SUCCESS(this.entityType, userStory.id),
-    );
+    const success = this.clipboardService.copyToClipboard(userStoryContent);
+    if (success) {
+      this.toast.showSuccess(
+        TOASTER_MESSAGES.ENTITY.COPY.SUCCESS(this.entityType, userStory.id),
+      );
+    } else {
+      this.toast.showSuccess(
+        TOASTER_MESSAGES.ENTITY.COPY.FAILURE(this.entityType, userStory.id),
+      );
+    }
   }
 
-  copyToClipboard() {
-    this.clipboard.copy(JSON.stringify(this.jsonOutput));
-  }
-
-  exportToExcel() {
-    this.spreadSheetService.exportToExcel(
-      [
-        {
-          data: this.exportData,
-        },
-      ],
-      `${this.navigation.data.name}_${this.navigation.fileName.split('-')[0]}`,
-    );
-  }
-
-  exportToCSV() {
-    this.spreadSheetService.exportToCsv(
-      this.exportData,
-      `${this.navigation.data.name}_${this.navigation.fileName.split('-')[0]}`,
+  exportUserStories(exportType: ExportFileFormat) {
+    this.store.dispatch(
+      new ExportUserStories({
+        type: exportType,
+      }),
     );
   }
 

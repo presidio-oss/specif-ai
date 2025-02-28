@@ -1,5 +1,5 @@
 import { NGXLogger } from 'ngx-logger';
-import { Clipboard } from '@angular/cdk/clipboard';
+import { ClipboardService } from '../../clipboard.service';
 import { SpreadSheetService } from '../../spreadsheet.service';
 import { BaseRequirementExportStrategy } from './base-requirement-export.strategy';
 import { REQUIREMENT_TYPE } from 'src/app/constants/app.constants';
@@ -8,8 +8,8 @@ export class BRDExportStrategy extends BaseRequirementExportStrategy {
   constructor(
     exportService: SpreadSheetService,
     logger: NGXLogger,
-    clipboard: Clipboard,
+    clipboardService: ClipboardService,
   ) {
-    super(exportService, logger, clipboard, REQUIREMENT_TYPE.BRD);
+    super(logger, REQUIREMENT_TYPE.BP, exportService, clipboardService);
   }
 }

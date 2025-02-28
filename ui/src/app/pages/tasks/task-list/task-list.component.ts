@@ -25,7 +25,7 @@ import { ButtonComponent } from '../../../components/core/button/button.componen
 import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
-import { Clipboard } from '@angular/cdk/clipboard';
+import { ClipboardService } from '../../../services/clipboard.service';
 import { TOASTER_MESSAGES } from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
@@ -53,7 +53,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   store = inject(Store);
   logger = inject(NGXLogger);
   router = inject(Router);
-  clipboard = inject(Clipboard);
+  clipboardService = inject(ClipboardService);
   searchService = inject(SearchService);
   userStoryId: string | null = '';
   userStories: IUserStory[] = [];
@@ -226,10 +226,16 @@ export class TaskListComponent implements OnInit, OnDestroy {
   copyTaskContent(event: Event, task: any) {
     event.stopPropagation();
     const taskContent = `${task.id}: ${task.list}\n${task.acceptance || ''}`;
-    this.clipboard.copy(taskContent);
-    this.toastService.showSuccess(
-      TOASTER_MESSAGES.ENTITY.COPY.SUCCESS(this.entityType, task.id),
-    );
+    const success = this.clipboardService.copyToClipboard(taskContent);
+    if (success) {
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.COPY.SUCCESS(this.entityType, task.id),
+      );
+    } else {
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.COPY.FAILURE(this.entityType, task.id),
+      );
+    }
   }
 
   ngOnInit() {

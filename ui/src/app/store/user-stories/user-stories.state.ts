@@ -12,12 +12,16 @@ import {
   SetSelectedProject,
   SetSelectedUserStory,
   UpdateTask,
+  ExportUserStories,
 } from './user-stories.actions';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { NGXLogger } from 'ngx-logger';
 import { IUserStory } from '../../model/interfaces/IUserStory';
 import { ITask } from '../../model/interfaces/ITask';
 import { Router } from '@angular/router';
+import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
+import { REQUIREMENT_TYPE } from 'src/app/constants/app.constants';
+import { ToasterService } from 'src/app/services/toaster/toaster.service';
 
 export interface UserStoriesStateModel {
   userStories: IUserStory[];
@@ -53,6 +57,8 @@ export class UserStoriesState {
     private appSystemService: AppSystemService,
     private logger: NGXLogger,
     private router: Router,
+    private toast: ToasterService,
+    private requirementExportService: RequirementExportService
   ) { }
 
   @Selector()
@@ -379,5 +385,36 @@ export class UserStoriesState {
     ctx.patchState({
       currentConfig: config,
     });
+  }
+
+  @Action(ExportUserStories)
+  exportUserStories(
+    ctx: StateContext<UserStoriesStateModel>,
+    { exportOptions }: ExportUserStories,
+  ) {
+    try {
+      const state = ctx.getState();
+      const prdId = state.currentConfig?.reqId;
+      
+      this.toast.showInfo(`Exporting user stories of prd ${prdId}`);
+      this.requirementExportService.exportRequirementData(
+        {
+          prdId: state.currentConfig?.reqId!,
+          userStories: state.userStories,
+        },
+        {
+          projectName: state.selectedProject,
+          type: exportOptions.type,
+        },
+        REQUIREMENT_TYPE.US,
+      );
+    } catch (error) {
+      const message = `Failed to export user stories: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`;
+      this.logger.error(error);
+      this.logger.error(message);
+      this.toast.showError(message);
+    }
   }
 }
