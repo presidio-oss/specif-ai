@@ -1,28 +1,59 @@
-<div class="bg-secondary-950 font-poppins">
-  <div
-    class="flex flex-col h-screen w-screen overflow-hidden items-center justify-center"
+<section class="bg-slate-950 h-screen w-screen overflow-hidden relative">
+  <!-- Background SVG -->
+  <svg
+    width="1512"
+    height="982"
+    viewBox="0 0 1512 982"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    class="absolute inset-0 fill-slate-900/75"
   >
-    <img id="app-logo" [src]="themeConfiguration.appLogo" class="h-[60px] mb-6" alt="App Logo" />
+    <path
+      d="M652.812 200.36C890.793 153.925 936.923 107.795 983.358 -130.188C984.58 -136.604 993.745 -136.604 994.967 -130.188C1041.4 107.795 1087.53 153.925 1325.51 200.36C1331.93 201.582 1331.93 210.747 1325.51 211.969C1087.53 258.405 1041.4 304.535 994.967 542.518C993.745 548.934 984.58 548.934 983.358 542.518C936.923 304.535 890.793 258.405 652.812 211.969C646.396 210.747 646.396 201.582 652.812 200.36Z"
+    />
+    <path
+      d="M-562.596 213.956C-344.771 171.453 -302.549 129.23 -260.046 -88.5959C-258.928 -94.468 -250.539 -94.468 -249.421 -88.5959C-206.918 129.23 -164.696 171.453 53.129 213.956C59.001 215.074 59.001 223.463 53.129 224.581C-164.696 267.084 -206.918 309.307 -249.421 527.133C-250.539 533.005 -258.928 533.005 -260.046 527.133C-302.549 309.307 -344.771 267.084 -562.596 224.581C-568.468 223.463 -568.468 215.074 -562.596 213.956Z"
+    />
+    <path
+      d="M-367.637 799.749C-149.812 757.246 -107.59 715.023 -65.0872 497.197C-63.9687 491.325 -55.58 491.325 -54.4615 497.197C-11.9591 715.023 30.2634 757.246 248.088 799.749C253.96 800.867 253.96 809.256 248.088 810.374C30.2634 852.877 -11.9591 895.1 -54.4615 1112.93C-55.58 1118.8 -63.9687 1118.8 -65.0872 1112.93C-107.59 895.1 -149.812 852.877 -367.637 810.374C-373.509 809.256 -373.509 800.867 -367.637 799.749Z"
+    />
+    <path
+      d="M709.096 845.684C830.989 821.855 854.512 798.332 878.341 676.438C878.952 673.383 883.534 673.383 884.145 676.438C907.974 798.332 931.498 821.855 1053.39 845.684C1056.45 846.295 1056.45 850.877 1053.39 851.488C931.498 875.317 907.974 898.84 884.145 1020.73C883.534 1023.79 878.952 1023.79 878.341 1020.73C854.512 898.84 830.989 875.317 709.096 851.488C706.041 850.877 706.041 846.295 709.096 845.684Z"
+    />
+    <path
+      d="M1169.74 545.663C1481.04 483.342 1547.03 417.354 1609.35 106.052C1611.8 94.1371 1628.9 94.1371 1631.35 106.052C1693.67 417.354 1759.66 483.342 2070.96 545.663C2082.87 548.107 2082.87 565.215 2070.96 567.659C1759.66 629.981 1693.67 695.968 1631.35 1007.27C1628.9 1019.19 1611.8 1019.19 1609.35 1007.27C1547.03 695.968 1481.04 629.981 1169.74 567.659C1157.83 565.215 1157.83 548.107 1169.74 545.663Z"
+    />
+  </svg>
 
-    <div class="bg-white rounded-lg shadow-lg px-8 py-5 mt-6">
-      <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h3
-          id="app-title"
-          class="text-center mt-2 font-bold text-lg leading-10 text-gray-900"
-        >{{ themeConfiguration.appWelcomeTitle }}</h3>
-        <p
-          id="app-description"
-          class="text-center text-sm font-light text-gray-700"
-        >{{ themeConfiguration.appDescription }}</p>
+  <!-- Main Content -->
+  <main
+    class="flex flex-col h-screen w-screen items-center justify-center space-y-12 relative"
+  >
+    <img
+      id="app-logo"
+      [src]="themeConfiguration.appLogo"
+      class="h-10"
+      alt="App Logo"
+    />
+
+    <div class="bg-white rounded-lg shadow-lg max-w-lg overflow-hidden">
+      <div class="space-y-1 px-6 pt-6 text-center">
+        <h3 id="app-title" class="font-semibold text-base text-gray-900">
+          {{ themeConfiguration.appWelcomeTitle }}
+        </h3>
+        <p id="app-description" class="text-sm font-medium text-gray-500">
+          {{ themeConfiguration.appDescription }}
+        </p>
       </div>
-      <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form class="space-y-4" id="login-form" [formGroup]="loginForm">
+      <form id="login-form" [formGroup]="loginForm">
+        <div class="space-y-6 px-6 pt-4 pb-8">
           <div>
             <app-input-field
               formControlName="appUrl"
               elementPlaceHolder="Your Server URL"
-              elementName="App URL"/>
-            <app-error-message [errorControl]="loginForm.get('appUrl')"/>
+              elementName="App URL"
+            />
+            <app-error-message [errorControl]="loginForm.get('appUrl')" />
           </div>
           <div>
             <app-input-field
@@ -31,13 +62,13 @@
               formControlName="passcode"
               elementName="App Passcode"
             />
-            <app-error-message [errorControl]="loginForm.get('passcode')"/>
+            <app-error-message [errorControl]="loginForm.get('passcode')" />
           </div>
           <div>
             <label
               for="directory-path"
-              class="block text-sm font-medium text-secondary-500 mb-2"
-            >Choose Destination Folder</label
+              class="block mb-1.5 text-sm font-medium text-slate-500"
+              >Choose Destination Folder</label
             >
             <div class="flex w-full">
               <input
@@ -50,29 +81,35 @@
               <button
                 id="browse-files-btn"
                 type="button"
-                class="px-4 py-2 bg-primary-600 text-white rounded-r-lg"
+                class="flex items-center justify-center font-medium transition-colors duration-300 text-sm px-5 py-2.5 bg-primary-600 text-white hover:bg-primary-700 rounded-r-lg"
                 (click)="browseFiles()"
               >
                 Browse
               </button>
             </div>
-            <p class="text-xs font-light mt-2 text-gray-400">
-              Select a folder to store the requirements generated by
+            <p class="text-xs mt-2 text-gray-500">
+              This folder will store the requirements generated by
               <span id="app-name">{{ themeConfiguration.appName }}</span>
             </p>
           </div>
-          <div class="flex items-center justify-center py-4">
-            <app-button buttonContent="Get Started →" (click)="login()"/>
-          </div>
-        </form>
-      </div>
+        </div>
+        <app-button
+          buttonContent="Get Started ->"
+          [isFullWidth]="true"
+          rounded="none"
+          (click)="login()"
+          size="lg"
+        />
+      </form>
     </div>
 
     <!-- Add the company logo below the form -->
-    <img *ngIf="themeConfiguration.companyLogo.length > 0"
+    <img
+      *ngIf="themeConfiguration.companyLogo.length > 0"
       id="company-logo"
-      class="mt-6 h-[20px]"
+      class="h-4"
       [src]="themeConfiguration.companyLogo"
-      [alt]="themeConfiguration.companyName"/>
-  </div>
-</div>
+      [alt]="themeConfiguration.companyName"
+    />
+  </main>
+</section>

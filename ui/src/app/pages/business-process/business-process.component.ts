@@ -315,7 +315,6 @@ export class BusinessProcessComponent implements OnInit {
 
     this.loadingService.setLoading(false);
     this.allowFreeEdit = true;
-    this.navigateBackToDocumentList(this.data);
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
         this.folderName,

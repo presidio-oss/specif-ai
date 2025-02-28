@@ -1,72 +1,54 @@
 <ng-container *ngIf="(authService.isLoggedIn$ | async) === true">
   <div class="relative bg-secondary-950">
-    <div
-      class="flex items-center justify-between py-4 px-8"
-    >
+    <div class="flex items-center justify-between py-4 px-8">
       <div class="hidden lg:flex lg:items-center lg:pr-0.5">
         <a routerLink="/apps">
-          <ng-container *ngIf="themeConfiguration.appLogo.length > 0;else showAppName">
+          <ng-container
+            *ngIf="themeConfiguration.appLogo.length > 0; else showAppName"
+          >
             <span class="sr-only">{{ themeConfiguration.appName }}</span>
-            <img [src]="themeConfiguration.appLogo" class="mx-auto h-6" [alt]="themeConfiguration.appName"/>
+            <img
+              [src]="themeConfiguration.appLogo"
+              class="mx-auto h-6"
+              [alt]="themeConfiguration.appName"
+            />
           </ng-container>
           <ng-template #showAppName>
-            <h1 class="text-2xl text-secondary-50">{{ themeConfiguration.appName }}</h1>
+            <h1 class="text-2xl text-secondary-50">
+              {{ themeConfiguration.appName }}
+            </h1>
           </ng-template>
         </a>
       </div>
 
-      <!-- Logo -->
-      <div
-        class="flex items-center gap-4"
-      >
-        <img
-          *ngIf="themeConfiguration.companyLogo.length > 0"
-          class="h-6 w-auto"
-          [src]="themeConfiguration.companyLogo"
-          [alt]="themeConfiguration.companyName"
-        />
-        <div class="grid gap-2 grid-cols-3">
-
-          <div
-            class="flex justify-center items-center h-8 w-8 rounded-full bg-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-200 cursor-pointer"
-            role="button"
-            tabindex="0"
-            (click)="openSettingsModal()"
-            (keydown.enter)="openSettingsModal()"
-            (keydown.space)="openSettingsModal(); $event.preventDefault()"
-            matTooltip="Settings"
-          >
-            <ng-icon name="heroCog8Tooth"/>
-          </div>
-
-          <div
-            class="flex justify-center items-center h-8 w-8 rounded-full bg-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-200 cursor-pointer"
-            role="button"
-            tabindex="0"
-            (click)="openSelectRootDirectoryModal()"
-            (keydown.enter)="openSelectRootDirectoryModal()"
-            (keydown.space)="openSelectRootDirectoryModal(); $event.preventDefault()"
-            matTooltip="Choose Destination Folder"
-          >
-            <ng-icon name="heroFolder"/>
-          </div>
-          <div
-            class="flex justify-center items-center h-8 w-8 rounded-full bg-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-200 cursor-pointer"
-            role="button"
-            tabindex="0"
-            (click)="logout()"
-            (keydown.enter)="logout()"
-            (keydown.space)="logout(); $event.preventDefault()"
-            matTooltip="Logout"
-          >
-            <ng-icon name="heroArrowRightOnRectangle"/>
-          </div>
-
+      <div class="flex items-center gap-4">
+        <div
+          class="flex justify-center items-center h-8 w-8 rounded-full bg-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-200 cursor-pointer"
+          role="button"
+          tabindex="0"
+          (click)="openSelectRootDirectoryModal()"
+          (keydown.enter)="openSelectRootDirectoryModal()"
+          (keydown.space)="
+            openSelectRootDirectoryModal(); $event.preventDefault()
+          "
+          matTooltip="Choose Destination Folder"
+        >
+          <ng-icon name="heroFolder" />
         </div>
+
+        <button
+          (click)="openSettingsModal()"
+          (keydown.enter)="openSettingsModal()"
+          (keydown.space)="openSettingsModal(); $event.preventDefault()"
+          class="flex items-center justify-center font-medium opacity-100 transition-colors duration-300 px-3 py-2 gap-2 text-xs rounded-lg border border-slate-700 bg-transparent text-white hover:bg-slate-900"
+        >
+          <ng-icon name="heroCog8Tooth" strokeWidth="2" size="16" />
+          Settings
+        </button>
       </div>
     </div>
   </div>
   <div class="w-full px-8 py-3 flex items-center justify-start">
-    <app-breadcrumbs/>
+    <app-breadcrumbs />
   </div>
 </ng-container>

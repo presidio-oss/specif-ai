@@ -1,6 +1,6 @@
-# Contributing to Specif AI
+# Contributing to Specifai
 
-We're excited you're interested in contributing to Specif AI! This document outlines the process for contributing to our project. We welcome contributions from everyone, whether you're fixing a typo, improving documentation, or adding a new feature.
+We're excited you're interested in contributing to Specifai! This document outlines the process for contributing to our project. We welcome contributions from everyone, whether you're fixing a typo, improving documentation, or adding a new feature.
 
 ## Getting Started
 
@@ -64,4 +64,4 @@ Feature requests are welcome. Please provide a clear description of the feature 
 
 If you have any questions, feel free to open an issue or reach out to the maintainers through the GitHub repository.
 
-Thank you for contributing to Specif AI!
+Thank you for contributing to Specifai!

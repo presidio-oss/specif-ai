@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.9.7]
+
+### Enhancements
+
+- Recurring suggestions for AI chat
+- Editing requirements, user stories, and tasks now remains on the same page, avoiding unnecessary navigation.
+- Improved chat prompt behavior to be concise, preserve existing content, and avoid explaining feature benefits.
+- Reformatted PRDs, Screens, and Personas to improve readability by adding new lines before writing to the file.
+- PRDs and BRDs are no longer appended to the business process description during addition or updates.
+- PRDs and BRDs are now included as context when generating the business process flowchart.
+- Added process flow diagram examples and guidelines to improve flowchart generation prompts.
+- Updated business process add/update prompt to exclude marketing, promotional, or summarizing content.
+- Added tooltips for Delete, Copy, Settings, Folder, and Logout icons to improve usability.
+- Added Jira prerequisite message for better clarity.
+- Updated suggestions layout to appear horizontally when chat history is not empty.
+
+### Fixed
+
+- Trimmed unnecessary white spaces and removed trailing slashes from the App URL before verification to prevent authentication failures.
+- Resolved issue where chat history was disappearing in User Story.
+- Fixed task chat breaking due to payload validation failure.
+
 ## [1.9.6]
 
 ### Added

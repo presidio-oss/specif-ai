@@ -1,6 +1,6 @@
-# 🎨 Specif AI - Angular UI
+# 🎨 Specifai - Angular UI
 
-The modern, responsive frontend application for Specif AI, built with Angular and integrated with Electron for desktop deployment.
+The modern, responsive frontend application for Specifai, built with Angular and integrated with Electron for desktop deployment.
 
 ## Table of Contents
 - [Features](#features)

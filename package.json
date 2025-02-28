@@ -1,18 +1,18 @@
 {
-    "name": "specif-ai",
-    "displayName": "Specif AI",
-    "version": "1.9.6",
-    "description": "AI-powered platform that generates project requirements and transforms them into actionable tasks with intuitive workflows.",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/presidio-oss/specif-ai"
-    },
-    "scripts": {
-        "changeset": "npx @changesets/cli",
-        "version-packages": "changeset version"
-    },
-    "author": {
-        "name": "Presidio"
-    },
-    "license": "MIT"
+  "name": "specif-ai",
+  "displayName": "Specifai",
+  "version": "1.9.7",
+  "description": "AI-powered platform that generates project requirements and transforms them into actionable tasks with intuitive workflows.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/presidio-oss/specif-ai"
+  },
+  "scripts": {
+    "changeset": "npx @changesets/cli",
+    "version-packages": "npm run changeset version"
+  },
+  "author": {
+    "name": "Presidio"
+  },
+  "license": "MIT"
 }
