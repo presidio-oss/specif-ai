@@ -4,7 +4,6 @@ export interface IProject {
 }
 
 export interface IGenerationRange {
-  min_count: number;
   max_count: number;
 }
 

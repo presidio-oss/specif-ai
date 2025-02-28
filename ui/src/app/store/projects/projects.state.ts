@@ -151,20 +151,16 @@ export class ProjectsState {
           description: metadata.description,
           cleanSolution: metadata.cleanSolution,
           brd: {
-            min_count: metadata.brd.min_count,
-            max_count: metadata.brd.max_count,
+            max_count: metadata.brd,
           },
           prd: {
-            min_count: metadata.prd.min_count,
-            max_count: metadata.prd.max_count,
+            max_count: metadata.prd,
           },
           uir: {
-            min_count: metadata.uir.min_count,
-            max_count: metadata.uir.max_count,
+            max_count: metadata.uir,
           },
           nfr: {
-            min_count: metadata.nfr.min_count,
-            max_count: metadata.nfr.max_count,
+            max_count: metadata.nfr,
           },
         }),
       );

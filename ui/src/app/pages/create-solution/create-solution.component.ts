@@ -18,7 +18,7 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { SelectRootDirectoryComponent } from '../../components/select-root-directory/select-root-directory.component';
 import { NgIf } from '@angular/common';
 import { NgxLoadingModule } from 'ngx-loading';
-import { RangeSliderComponent } from '../../components/core/range-slider/range-slider.component';
+import { AppSliderComponent } from '../../components/core/app-slider/app-slider.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
 import {
@@ -42,7 +42,7 @@ import { ToggleComponent } from '../../components/toggle/toggle.component';
     InputFieldComponent,
     TextareaFieldComponent,
     ToggleComponent,
-    RangeSliderComponent,
+    AppSliderComponent,
   ],
 })
 export class CreateSolutionComponent implements OnInit {
@@ -79,17 +79,25 @@ export class CreateSolutionComponent implements OnInit {
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
-      brd: new FormControl({ min_count: 10, max_count: 15 }, [
+      brd: new FormControl(15, [
         Validators.required,
+        Validators.min(0),
+        Validators.max(30),
       ]),
-      prd: new FormControl({ min_count: 10, max_count: 15 }, [
+      prd: new FormControl(15, [
         Validators.required,
+        Validators.min(0),
+        Validators.max(30),
       ]),
-      uir: new FormControl({ min_count: 10, max_count: 15 }, [
+      uir: new FormControl(15, [
         Validators.required,
+        Validators.min(0),
+        Validators.max(30),
       ]),
-      nfr: new FormControl({ min_count: 10, max_count: 15 }, [
+      nfr: new FormControl(15, [
         Validators.required,
+        Validators.min(0),
+        Validators.max(30),
       ]),
     });
   }
