@@ -7,16 +7,24 @@ const EXCEL_TYPE =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
 const CSV_TYPE = 'text/csv;charset=utf-8;';
 
+type SheetExportInfo = {
+  data: Array<any[]>;
+  name?: string;
+};
+
 @Injectable({
   providedIn: 'root',
 })
-export class ExportService {
+export class SpreadSheetService {
   logger = inject(NGXLogger);
 
-  public exportToExcel(data: Array<[]> = [], fileName: string): void {
-    const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(data);
+  public exportToExcel(sheets: SheetExportInfo[], fileName: string): void {
     const workbook: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet);
+
+    sheets.forEach((sheet) => {
+      const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(sheet.data);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheet.name);
+    });
 
     const excelBuffer: any = XLSX.write(workbook, {
       bookType: 'xlsx',
@@ -25,14 +33,14 @@ export class ExportService {
     this.saveAsFile(excelBuffer, fileName, EXCEL_TYPE, '.xlsx');
   }
 
-  public exportToCsv(data: Array<[]> = [], fileName: string): void {
+  public exportToCsv(data: Array<any[]> = [], fileName: string): void {
     this.logger.debug('data', data);
     const csvData = this.convertToCsv(data);
     this.logger.debug('csv data', csvData);
     this.saveAsFile(csvData, fileName, CSV_TYPE, '.csv');
   }
 
-  private convertToCsv(data: Array<[]> = []): string {
+  private convertToCsv(data: Array<any[]> = []): string {
     return data
       .map((row) => row.map(String).map(this.escapeCsvValue).join(','))
       .join('\n');

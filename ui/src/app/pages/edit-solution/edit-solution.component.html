@@ -67,21 +67,21 @@
 
         <div class="flex items-center justify-between mt-4">
           <div class="flex-col">
-            <div class="flex items-center mb-4">
-              <input
-                type="checkbox"
-                id="expandAI"
-                formControlName="expandAI"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
-              />
-              <label for="expandAI" class="ml-2 block text-sm text-gray-900"
-                >Expand with AI</label
-              >
+            <div class="flex items-center gap-2">
+              <app-multi-upload
+                *ngIf="mode === 'add'"
+                (fileContent)="handleFileContent($event)"
+              ></app-multi-upload>
+              <app-button
+                buttonContent="Enhance with AI"
+                icon="heroSparklesSolid"
+                theme="secondary"
+                size="sm"
+                rounded="lg"
+                (click)="updateRequirementWithAI()"
+                [disabled]="requirementForm.invalid"
+              ></app-button>
             </div>
-            <app-multi-upload
-              *ngIf="mode === 'add'"
-              (fileContent)="handleFileContent($event)"
-            ></app-multi-upload>
           </div>
           <div class="">
             <app-button

@@ -71,9 +71,18 @@ export class CreateSolutionComponent implements OnInit {
 
   createSolutionForm() {
     return new FormGroup({
-      name: new FormControl('', Validators.required),
-      description: new FormControl('', Validators.required),
-      technicalDetails: new FormControl('', Validators.required),
+      name: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/\S/),
+      ]),
+      description: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/\S/),
+      ]),
+      technicalDetails: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/\S/),
+      ]),
       createReqt: new FormControl(true),
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),

@@ -1,4 +1,5 @@
 import { FILTER_STRINGS } from '../../constants/app.constants';
+import { ExportRequirementDataOptions } from 'src/app/model/interfaces/exports.interface';
 
 export class GetProjectListAction {
   static readonly type = '[Projects] Get Project List';
@@ -89,5 +90,16 @@ export class checkBPFileAssociations {
   constructor(
     public folderName: string,
     public fileName: string,
+  ) {}
+}
+
+// Export related actions
+
+export class ExportRequirementData {
+  static readonly type = '[Projects] Export Requirement Data';
+
+  constructor(
+    public requirementType: string,
+    public options: ExportRequirementDataOptions,
   ) {}
 }
