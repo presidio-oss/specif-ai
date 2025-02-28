@@ -65,9 +65,9 @@
         />
         <app-error-message [errorControl]="requirementForm.get('content')" />
 
-        <div class="flex items-center justify-between mt-4">
+        <div class="flex items-start justify-between mt-4">
           <div class="flex-col">
-            <div class="flex items-center gap-2">
+            <div class="flex items-start gap-2">
               <app-multi-upload
                 *ngIf="mode === 'add'"
                 (fileContent)="handleFileContent($event)"

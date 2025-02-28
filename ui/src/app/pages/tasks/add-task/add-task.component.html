@@ -59,8 +59,8 @@
         />
         <app-error-message [errorControl]="taskForm.get('acceptance')" />
 
-        <div class="flex items-center justify-between mt-4">
-          <div class="flex items-center gap-2">
+        <div class="flex items-start justify-between mt-4">
+          <div class="flex items-start gap-2">
             <app-multi-upload
               *ngIf="mode === 'add'"
               (fileContent)="handleFileContent($event)"
