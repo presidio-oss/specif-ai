@@ -338,7 +338,7 @@ export class UserStoriesComponent implements OnInit {
         TOASTER_MESSAGES.ENTITY.COPY.SUCCESS(this.entityType, userStory.id),
       );
     } else {
-      this.toast.showSuccess(
+      this.toast.showError(
         TOASTER_MESSAGES.ENTITY.COPY.FAILURE(this.entityType, userStory.id),
       );
     }

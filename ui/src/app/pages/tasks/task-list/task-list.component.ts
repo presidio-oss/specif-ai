@@ -232,7 +232,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
         TOASTER_MESSAGES.ENTITY.COPY.SUCCESS(this.entityType, task.id),
       );
     } else {
-      this.toastService.showSuccess(
+      this.toastService.showError(
         TOASTER_MESSAGES.ENTITY.COPY.FAILURE(this.entityType, task.id),
       );
     }
