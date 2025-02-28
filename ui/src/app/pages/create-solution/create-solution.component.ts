@@ -18,6 +18,7 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { SelectRootDirectoryComponent } from '../../components/select-root-directory/select-root-directory.component';
 import { NgIf } from '@angular/common';
 import { NgxLoadingModule } from 'ngx-loading';
+import { AppSliderComponent } from '../../components/core/slider/slider.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
 import {
@@ -27,7 +28,6 @@ import {
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ToggleComponent } from '../../components/toggle/toggle.component';
-
 @Component({
   selector: 'app-create-solution',
   templateUrl: './create-solution.component.html',
@@ -42,6 +42,7 @@ import { ToggleComponent } from '../../components/toggle/toggle.component';
     InputFieldComponent,
     TextareaFieldComponent,
     ToggleComponent,
+    AppSliderComponent,
   ],
 })
 export class CreateSolutionComponent implements OnInit {
@@ -87,6 +88,26 @@ export class CreateSolutionComponent implements OnInit {
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
+      brd: new FormControl(15, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(30),
+      ]),
+      prd: new FormControl(15, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(30),
+      ]),
+      uir: new FormControl(15, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(30),
+      ]),
+      nfr: new FormControl(15, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(30),
+      ]),
     });
   }
 

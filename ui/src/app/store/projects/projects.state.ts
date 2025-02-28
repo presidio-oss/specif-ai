@@ -167,6 +167,18 @@ export class ProjectsState {
           name: projectName,
           description: metadata.description,
           cleanSolution: metadata.cleanSolution,
+          brd: {
+            max_count: metadata.brd,
+          },
+          prd: {
+            max_count: metadata.prd,
+          },
+          uir: {
+            max_count: metadata.uir,
+          },
+          nfr: {
+            max_count: metadata.nfr,
+          },
         }),
       );
 

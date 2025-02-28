@@ -1,4 +1,8 @@
-from marshmallow import Schema, ValidationError, fields, validate
+from marshmallow import Schema, fields, validate
+
+
+class RequirementGenerationLimitSchema(Schema):
+    max_count = fields.Integer(required=True)
 
 
 class CreateSolutionSchema(Schema):
@@ -10,6 +14,10 @@ class CreateSolutionSchema(Schema):
     deployment = fields.Boolean(required=False)
     createReqt = fields.Boolean(required=False)
     created_on = fields.DateTime(required=True)
+    brd = fields.Nested(RequirementGenerationLimitSchema, required=True)
+    prd = fields.Nested(RequirementGenerationLimitSchema, required=True)
+    nfr = fields.Nested(RequirementGenerationLimitSchema, required=True)
+    uir = fields.Nested(RequirementGenerationLimitSchema, required=True)
 
 
 class SolutionIdSchema(Schema):
