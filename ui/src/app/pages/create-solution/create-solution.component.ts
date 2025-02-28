@@ -18,7 +18,7 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { SelectRootDirectoryComponent } from '../../components/select-root-directory/select-root-directory.component';
 import { NgIf } from '@angular/common';
 import { NgxLoadingModule } from 'ngx-loading';
-import { AppSliderComponent } from '../../components/core/app-slider/app-slider.component';
+import { AppSliderComponent } from '../../components/core/slider/slider.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
 import {

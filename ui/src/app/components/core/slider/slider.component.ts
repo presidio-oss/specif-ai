@@ -5,7 +5,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
   selector: 'app-slider',
-  templateUrl: './app-slider.component.html',
+  templateUrl: './slider.component.html',
   standalone: true,
   imports: [MatSliderModule, NgIf],
   providers: [
