@@ -19,4 +19,4 @@ Output Structure should be a valid JSON: Here is the sample Structure:
 }
 
 Please ensure the requirements are clear, concise, and comprehensive. Output only valid JSON. Do not include ```json ``` on start and end of the response.
-Generate Non-Functional Requirements targeting the preferred range {{ min_count|default(5) }} to {{ max_count|default(30) }}. If generating requirements outside this range would provide significant business value (either more or fewer requirements), Sort all requirements based on business impact (High to Medium to Low).
+Generate Non-Functional Requirements with a maximum count of {{ max_count|default(30) }}. Sort all requirements based on business impact (High to Medium to Low).

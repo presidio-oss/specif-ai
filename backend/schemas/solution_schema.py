@@ -1,9 +1,8 @@
 from marshmallow import Schema, fields, validate
 
 
-class GenerationCountRangeSchema(Schema):
-    min_count = fields.Integer(required=True, validate=validate.Range(min=5))
-    max_count = fields.Integer(required=True, validate=validate.Range(min=30))
+class RequirementGenerationLimitSchema(Schema):
+    max_count = fields.Integer(required=True)
 
 
 class CreateSolutionSchema(Schema):
@@ -15,10 +14,10 @@ class CreateSolutionSchema(Schema):
     deployment = fields.Boolean(required=False)
     createReqt = fields.Boolean(required=False)
     created_on = fields.DateTime(required=True)
-    brd = fields.Nested(GenerationCountRangeSchema, required=True)
-    prd = fields.Nested(GenerationCountRangeSchema, required=True)
-    nfr = fields.Nested(GenerationCountRangeSchema, required=True)
-    uir = fields.Nested(GenerationCountRangeSchema, required=True)
+    brd = fields.Nested(RequirementGenerationLimitSchema, required=True)
+    prd = fields.Nested(RequirementGenerationLimitSchema, required=True)
+    nfr = fields.Nested(RequirementGenerationLimitSchema, required=True)
+    uir = fields.Nested(RequirementGenerationLimitSchema, required=True)
 
 
 class SolutionIdSchema(Schema):

@@ -71,7 +71,6 @@ def create_solutions():
         template = template.render(
             name=data["name"],
             description=data["description"],
-            min_count=template_config['min_count'],
             max_count=template_config['max_count']
         )
         try:
@@ -93,25 +92,21 @@ def create_solutions():
                 {
                     'type': 'brd',
                     'template_path': 'create_brd.jinja2',
-                    'min_count': data['brd']['min_count'],
                     'max_count': data['brd']['max_count']
                 },
                 {
                     'type': 'prd',
                     'template_path': 'create_prd.jinja2',
-                    'min_count': data['prd']['min_count'],
                     'max_count': data['prd']['max_count']
                 },
                 {
                     'type': 'nfr',
                     'template_path': 'create_nfr.jinja2',
-                    'min_count': data['nfr']['min_count'],
                     'max_count': data['nfr']['max_count']
                 },
                 {
                     'type': 'uir',
                     'template_path': 'create_uir.jinja2',
-                    'min_count': data['uir']['min_count'],
                     'max_count': data['uir']['max_count']
                 }
             ]
