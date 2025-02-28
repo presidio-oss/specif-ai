@@ -91,17 +91,23 @@ export class PRDExportStrategy implements ExportStrategy {
             const userStories: Array<IUserStory> =
               JSON.parse(res).features || [];
             const userStoriesFormatted: PRDUserStory[] = userStories.map(
-              (userStory) => ({
-                id: userStory.id,
-                name: userStory.name,
-                description: userStory.description,
-                tasks:
-                  userStory.tasks?.map((task) => ({
-                    id: task.id,
-                    title: task.list,
-                    acceptance: task.acceptance,
-                  })) ?? [],
-              }),
+              (userStory) => {
+                const storyId = `${prdId}-${userStory.id}`;
+                return {
+                  id: storyId,
+                  name: userStory.name,
+                  description: userStory.description,
+                  tasks:
+                    userStory.tasks?.map((task) => {
+                      const taskId = `${storyId}-${task.id}`;
+                      return {
+                        id: taskId,
+                        title: task.list,
+                        acceptance: task.acceptance,
+                      };
+                    }) ?? [],
+                };
+              },
             );
 
             return [prdId, userStoriesFormatted] as [string, PRDUserStory[]];
@@ -171,16 +177,10 @@ export class PRDExportStrategy implements ExportStrategy {
 
     data.forEach((prd) => {
       prd.features?.forEach((story) => {
-        const storyId = `${prd.id}-${story.id}`;
-        userStories.push([storyId, prd.id, story.name, story.description]);
+        userStories.push([story.id, prd.id, story.name, story.description]);
 
         story.tasks?.forEach((task) => {
-          tasks.push([
-            `${storyId}-${task.id}`,
-            storyId,
-            task.title,
-            task.acceptance,
-          ]);
+          tasks.push([task.id, story.id, task.title, task.acceptance]);
         });
       });
     });
@@ -201,11 +201,11 @@ export class PRDExportStrategy implements ExportStrategy {
           data: [['Id', 'Title', 'Requirement'], ...prdRows],
         },
         {
-          name: 'User Stories',
+          name: REQUIREMENT_DISPLAY_NAME_MAP[REQUIREMENT_TYPE.US],
           data: [['Id', 'Parent Id', 'Name', 'Description'], ...userStories],
         },
         {
-          name: 'Tasks',
+          name: REQUIREMENT_DISPLAY_NAME_MAP[REQUIREMENT_TYPE.TASK],
           data: [['Id', 'Parent Id', 'Title', 'Acceptance Criteria'], ...tasks],
         },
       ],
