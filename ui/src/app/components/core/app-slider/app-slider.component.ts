@@ -24,18 +24,18 @@ export class AppSliderComponent implements ControlValueAccessor {
   @Input() disabled: boolean = false;
 
   value: number = 15;
-  onChange: any = () => {};
-  onTouch: any = () => {};
+  onChange: (value: number) => void = () => {};
+  onTouch: () => void = () => {};
 
   writeValue(value: number): void {
     this.value = value;
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: number) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouch = fn;
   }
 
