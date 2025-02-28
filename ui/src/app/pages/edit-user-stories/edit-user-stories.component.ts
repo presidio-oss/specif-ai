@@ -339,7 +339,7 @@ export class EditUserStoriesComponent implements OnDestroy {
         else return item;
       });
       this.chatHistory = newArray;
-      this.updateUserStory()
+      this.updateUserStoryWithAI();
     }
   }
 

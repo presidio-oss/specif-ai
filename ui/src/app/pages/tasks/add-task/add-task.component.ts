@@ -288,14 +288,8 @@ ${chat.assistant}`,
         if (item.assistant == chat.assistant) return { ...item, isAdded: true };
         else return item;
       });
-      const newFileName = this.config.fileName.replace('base', 'feature');
       this.chatHistory = newArray;
-      this.editTaskWithAI(
-        this.taskForm.getRawValue().id,
-        this.taskForm.getRawValue().list,
-        this.taskForm.getRawValue().acceptance,
-        newFileName,
-      );
+      this.editTaskWithAI();
     }
   }
 

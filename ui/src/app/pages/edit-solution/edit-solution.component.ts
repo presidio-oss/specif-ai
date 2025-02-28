@@ -311,7 +311,7 @@ ${chat.assistant}`,
         else return item;
       });
       this.chatHistory = newArray;
-      this.updateRequirement()
+      this.updateRequirementWithAI()
     }
   }
 
