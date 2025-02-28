@@ -56,7 +56,10 @@ export abstract class BaseRequirementExportStrategy implements ExportStrategy {
       const preparedData = await this.prepareData(data);
 
       if (format === EXPORT_FILE_FORMATS.JSON) {
-        return this.exportToJSON(preparedData);
+        const success = this.exportToJSON(preparedData);
+        return {
+          success: success,
+        };
       }
 
       const transformedData = this.transformData(preparedData);
@@ -64,8 +67,8 @@ export abstract class BaseRequirementExportStrategy implements ExportStrategy {
 
       if (format === EXPORT_FILE_FORMATS.EXCEL) {
         await this.exportToExcel(transformedData, fileName);
-      } else if (format === EXPORT_FILE_FORMATS.CSV) {
-        await this.exportToCSV(transformedData, fileName);
+      } else {
+        throw new Error(`Format ${format} not supported`);
       }
 
       return { success: true };
@@ -96,20 +99,8 @@ export abstract class BaseRequirementExportStrategy implements ExportStrategy {
     );
   }
 
-  protected async exportToCSV(
-    data: Array<[string, string, string]>,
-    fileName: string,
-  ): Promise<void> {
-    const rows = [['Id', 'Title', 'Requirement'], ...data];
-    this.exportService.exportToCsv(rows, fileName);
-  }
-
-  protected async exportToJSON(data: any): Promise<ExportResult> {
-    try {
-      this.clipboard.copy(JSON.stringify(data, null, 2));
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error as Error };
-    }
+  protected exportToJSON(data: any) {
+    const success = this.clipboard.copy(JSON.stringify(data, null, 2));
+    return success;
   }
 }

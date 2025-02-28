@@ -145,17 +145,22 @@ export class PRDExportStrategy implements ExportStrategy {
       // First prepare the data
       const preparedData = await this.prepareData(data, projectName);
 
+      let success = true;
+
       if (format === EXPORT_FILE_FORMATS.JSON) {
-        return this.exportToJSON(preparedData);
+        const success = this.exportToJSON(preparedData);
+        return {
+          success: success,
+        };
       }
 
       const transformedData = this.transformData(preparedData);
       const fileName = `${projectName}_${REQUIREMENT_TYPE.PRD.toLowerCase()}`;
 
       if (format === EXPORT_FILE_FORMATS.EXCEL) {
-        await this.exportToExcel(transformedData, fileName);
-      } else if (format === EXPORT_FILE_FORMATS.CSV) {
-        await this.exportToCSV(transformedData, fileName);
+        this.exportToExcel(transformedData, fileName);
+      } else {
+        throw new Error(`Format ${format} not supported`);
       }
 
       return { success: true };
@@ -188,10 +193,7 @@ export class PRDExportStrategy implements ExportStrategy {
     return { prdRows, userStories, tasks };
   }
 
-  private async exportToExcel(
-    data: PRDExportData,
-    fileName: string,
-  ): Promise<void> {
+  private exportToExcel(data: PRDExportData, fileName: string) {
     const { prdRows, userStories, tasks } = data;
 
     this.exportService.exportToExcel(
@@ -213,33 +215,8 @@ export class PRDExportStrategy implements ExportStrategy {
     );
   }
 
-  private async exportToCSV(
-    data: PRDExportData,
-    fileName: string,
-  ): Promise<void> {
-    const { prdRows, userStories, tasks } = data;
-    const allRows = [
-      ['Id', 'Type', 'Parent Id', 'Title', 'Description'],
-      ...prdRows.map((row) => [row[0], 'PRD', '', row[1], row[2]]),
-      ...userStories.map((row) => [
-        row[0],
-        'User Story',
-        row[1],
-        row[2],
-        row[3],
-      ]),
-      ...tasks.map((row) => [row[0], 'Task', row[1], row[2], row[3]]),
-    ];
-
-    this.exportService.exportToCsv(allRows, fileName);
-  }
-
-  private async exportToJSON(data: PRDData[]): Promise<ExportResult> {
-    try {
-      this.clipboard.copy(JSON.stringify(data, null, 2));
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error as Error };
-    }
+  private exportToJSON(data: PRDData[]) {
+    const success = this.clipboard.copy(JSON.stringify(data, null, 2));
+    return success;
   }
 }

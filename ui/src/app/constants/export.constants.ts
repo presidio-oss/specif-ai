@@ -1,6 +1,5 @@
 export const EXPORT_FILE_FORMATS = {
   JSON: 'json',
-  CSV: 'csv',
   EXCEL: 'xlsx',
 } as const;
 
