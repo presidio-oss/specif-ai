@@ -35,9 +35,6 @@ type StoriesExportData = {
   taskRows: Array<[string, string, string, string]>;
 };
 
-type StoryItemRowArr = [string, string, string, string];
-type TaskItemRowArr = [string, string, string, string];
-
 // types
 
 export class UserStoriesExportStrategy implements ExportStrategy {
@@ -114,11 +111,11 @@ export class UserStoriesExportStrategy implements ExportStrategy {
     prdId: string,
     formattedUserStories: FormattedStory[],
   ): StoriesExportData {
-    const userStoryRows: Array<StoryItemRowArr> = formattedUserStories.map(
+    const userStoryRows: StoriesExportData["userStoryRows"] = formattedUserStories.map(
       (story) => [story.id, prdId, story.name, story.description],
     );
 
-    const taskRows: Array<TaskItemRowArr> = [];
+    const taskRows: StoriesExportData["taskRows"] = [];
 
     formattedUserStories.forEach((story) => {
       story.tasks?.forEach((task) => {
