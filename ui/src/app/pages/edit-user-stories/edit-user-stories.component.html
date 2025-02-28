@@ -81,10 +81,9 @@
         </div>
         <div class="flex items-center justify-between mt-4">
           <div class="flex-col">
-            <div class="flex items-center">
+            <div class="flex items-center gap-2">
               <app-multi-upload
                 *ngIf="mode === 'add'"
-                class="mr-2"
                 (fileContent)="handleFileContent($event)"
               ></app-multi-upload>
               <app-button
