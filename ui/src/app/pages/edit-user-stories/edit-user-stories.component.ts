@@ -245,9 +245,10 @@ export class EditUserStoriesComponent implements OnDestroy {
     }
   }
 
-  addUserStory() {
+  addUserStory(useAI = false) {
     if (
       this.userStoryForm.getRawValue().expandAI ||
+      useAI ||
       this.uploadedFileContent.length > 0
     ) {
       const body: IUpdateUserStoryRequest = {
@@ -401,6 +402,19 @@ export class EditUserStoriesComponent implements OnDestroy {
         );
       }
     });
+  }
+
+  enhanceUserStoryWithAI(){
+    switch(this.mode){
+      case "edit":{
+        this.updateUserStoryWithAI();
+        break;
+      }
+      case "add":{
+        this.addUserStory(true);
+        break;
+      }
+    }
   }
 
   handleFileContent(content: string) {

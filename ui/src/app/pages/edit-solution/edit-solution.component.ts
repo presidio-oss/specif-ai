@@ -232,9 +232,10 @@ export class EditSolutionComponent {
     });
   }
 
-  addRequirement() {
+  addRequirement(useAI = false) {
     if (
       this.requirementForm.getRawValue().expandAI ||
+      useAI ||
       this.uploadedFileContent.length > 0
     ) {
       const body: IAddRequirementRequest = {
@@ -312,6 +313,19 @@ ${chat.assistant}`,
       });
       this.chatHistory = newArray;
       this.updateRequirementWithAI()
+    }
+  }
+
+  enhanceRequirementWithAI(){
+    switch(this.mode){
+      case "edit":{
+        this.updateRequirementWithAI();
+        break;
+      }
+      case "add":{
+        this.addRequirement(true);
+        break;
+      }
     }
   }
 
