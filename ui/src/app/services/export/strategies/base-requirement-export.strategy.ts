@@ -1,42 +1,44 @@
-import { Clipboard } from '@angular/cdk/clipboard';
 import { NGXLogger } from 'ngx-logger';
+import { IList } from 'src/app/model/interfaces/IList';
 import {
-  REQUIREMENT_TYPE,
   REQUIREMENT_DISPLAY_NAME_MAP,
+  REQUIREMENT_TYPE,
   RequirementType,
 } from '../../../constants/app.constants';
-import { EXPORT_FILE_FORMATS } from '../../../constants/export.constants';
+import {
+  EXPORT_FILE_FORMATS,
+  SPREADSHEET_HEADER_ROW,
+} from '../../../constants/export.constants';
+import { ClipboardService } from '../../clipboard.service';
 import { SpreadSheetService } from '../../spreadsheet.service';
 import { ExportOptions, ExportResult, ExportStrategy } from './export.strategy';
 
 // types
 
-type BaseRequirementData = {
+type FormattedRequirementItem = {
   id: string;
   title: string;
   requirement: string;
 };
 
+type RequirementItemRowArr = [string, string, string];
+
 // types
 
 export abstract class BaseRequirementExportStrategy implements ExportStrategy {
   constructor(
-    protected exportService: SpreadSheetService,
     protected logger: NGXLogger,
-    protected clipboard: Clipboard,
     protected requirementType: RequirementType,
+    protected exportService: SpreadSheetService,
+    protected clipboardService: ClipboardService,
   ) {}
 
-  supports(type: string): boolean {
-    return type === this.requirementType;
-  }
-
-  async prepareData(files: any[]): Promise<Array<BaseRequirementData>> {
+  protected prepareData(files: Array<IList>): Array<FormattedRequirementItem> {
     try {
-      const data: BaseRequirementData[] = files.map((file) => ({
+      const data: FormattedRequirementItem[] = files.map((file) => ({
         id: file.fileName.split('-')[0],
-        title: file.content.title,
-        requirement: file.content.requirement,
+        title: file.content.title!,
+        requirement: file.content.requirement!,
       }));
 
       return data;
@@ -49,58 +51,57 @@ export abstract class BaseRequirementExportStrategy implements ExportStrategy {
     }
   }
 
-  async export(data: any[], options: ExportOptions): Promise<ExportResult> {
+  async export(
+    data: Array<IList>,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
     try {
       const { format, projectName } = options;
+      const preparedData = this.prepareData(data);
 
-      const preparedData = await this.prepareData(data);
+      let success = true;
 
-      if (format === EXPORT_FILE_FORMATS.JSON) {
-        const success = this.exportToJSON(preparedData);
-        return {
-          success: success,
-        };
+      switch (format) {
+        case EXPORT_FILE_FORMATS.JSON: {
+          success = this.clipboardService.copyToClipboard(preparedData);
+          break;
+        }
+        case EXPORT_FILE_FORMATS.EXCEL: {
+          const transformedData = this.transformData(preparedData);
+          const fileName = `${projectName}_${REQUIREMENT_TYPE[this.requirementType].toLowerCase()}`;
+          this.exportToExcel(transformedData, fileName);
+          break;
+        }
+        default: {
+          throw new Error(`Format ${format} not supported`);
+        }
       }
 
-      const transformedData = this.transformData(preparedData);
-      const fileName = `${projectName}_${REQUIREMENT_TYPE[this.requirementType].toLowerCase()}`;
-
-      if (format === EXPORT_FILE_FORMATS.EXCEL) {
-        await this.exportToExcel(transformedData, fileName);
-      } else {
-        throw new Error(`Format ${format} not supported`);
-      }
-
-      return { success: true };
+      return { success: success };
     } catch (error) {
       this.logger.error(`${this.requirementType} export failed:`, error);
       return { success: false, error: error as Error };
     }
   }
 
-  protected transformData(
-    data: BaseRequirementData[],
-  ): Array<[string, string, string]> {
-    return data.map((d) => [d.id, d.title, d.requirement]);
+  protected transformData(data: FormattedRequirementItem[]) {
+    return data.map(
+      (d) => [d.id, d.title, d.requirement] as RequirementItemRowArr,
+    );
   }
 
-  protected async exportToExcel(
-    data: Array<[string, string, string]>,
+  protected exportToExcel(
+    data: Array<RequirementItemRowArr>,
     fileName: string,
-  ): Promise<void> {
+  ) {
     this.exportService.exportToExcel(
       [
         {
           name: REQUIREMENT_DISPLAY_NAME_MAP[this.requirementType],
-          data: [['Id', 'Title', 'Requirement'], ...data],
+          data: [SPREADSHEET_HEADER_ROW[this.requirementType], ...data],
         },
       ],
       fileName,
     );
-  }
-
-  protected exportToJSON(data: any) {
-    const success = this.clipboard.copy(JSON.stringify(data, null, 2));
-    return success;
   }
 }

@@ -46,14 +46,14 @@
             <button
               mat-menu-item
               class="rounded px-2 py-1 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 mr-2"
-              (click)="copyToClipboard()"
+              (click)="exportUserStories('json')"
             >
               Copy JSON to Clipboard
             </button>
             <button
               mat-menu-item
               class="rounded px-2 py-1 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 mr-2"
-              (click)="exportToExcel()"
+              (click)="exportUserStories('xlsx')"
             >
               Download as Excel(.xlsx)
             </button>
@@ -63,13 +63,6 @@
               (click)="syncRequirementWithJira()"
             >
               Sync with Jira
-            </button>
-            <button
-              mat-menu-item
-              class="rounded px-2 py-1 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 mr-2"
-              (click)="exportToCSV()"
-            >
-              Download as CSV(.csv)
             </button>
           </mat-menu>
           <app-button

@@ -7,6 +7,18 @@ import {
   REQUIREMENT_DISPLAY_NAME_MAP,
   RequirementType,
 } from 'src/app/constants/app.constants';
+import { IUserStory } from 'src/app/model/interfaces/IUserStory';
+import { IList } from 'src/app/model/interfaces/IList';
+
+// types
+
+type RequirementExportInputData = {
+  prdId:string;
+  userStories: Array<IUserStory>;
+} | Array<IList>;
+
+// types
+
 
 @Injectable({
   providedIn: 'root',
@@ -19,14 +31,14 @@ export class RequirementExportService {
   ) {}
 
   public async exportRequirementData(
-    files: any[],
+    data: RequirementExportInputData,
     options: ExportRequirementDataOptions & { projectName: string },
     requirementType: string,
   ): Promise<void> {
     try {
       const strategy = this.strategyManager.getStrategy(requirementType);
 
-      const result = await strategy.export(files, {
+      const result = await strategy.export(data, {
         format: options.type,
         projectName: options.projectName,
       });

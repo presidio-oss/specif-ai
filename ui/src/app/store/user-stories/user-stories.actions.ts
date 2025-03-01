@@ -1,3 +1,4 @@
+import { ExportRequirementDataOptions } from 'src/app/model/interfaces/exports.interface';
 import { ITask } from '../../model/interfaces/IList';
 
 import { IUserStory } from '../../model/interfaces/IUserStory';
@@ -76,7 +77,7 @@ export class UpdateTask {
   constructor(
     readonly task: ITask,
     readonly relativePath: string,
-    readonly redirect?: boolean
+    readonly redirect?: boolean,
   ) {}
 }
 
@@ -98,4 +99,10 @@ export class SetCurrentConfig {
       featureId: string;
     },
   ) {}
+}
+
+export class ExportUserStories {
+  static readonly type = '[UserStories] Export User Stories';
+
+  constructor(public exportOptions: ExportRequirementDataOptions) {}
 }

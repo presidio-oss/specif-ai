@@ -1,4 +1,3 @@
-import { Clipboard } from '@angular/cdk/clipboard';
 import { Injectable } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { REQUIREMENT_TYPE } from 'src/app/constants/app.constants';
@@ -10,6 +9,8 @@ import { NFRExportStrategy } from './strategies/nfr-export.strategy';
 import { PRDExportStrategy } from './strategies/prd-export.strategy';
 import { UIRExportStrategy } from './strategies/uir-export.strategy';
 import { AppSystemService } from '../app-system/app-system.service';
+import { ClipboardService } from '../clipboard.service';
+import { UserStoriesExportStrategy } from './strategies/user-stories-export.strategy';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +22,7 @@ export class RequirementExportStrategyManager {
     private logger: NGXLogger,
     private exportService: SpreadSheetService,
     private appSystemService: AppSystemService,
-    private clipboard: Clipboard,
+    private clipboardService: ClipboardService,
   ) {}
 
   initializeStrategy(requirementType: string) {
@@ -31,35 +32,42 @@ export class RequirementExportStrategyManager {
           this.exportService,
           this.appSystemService,
           this.logger,
-          this.clipboard,
+          this.clipboardService,
         );
       }
       case REQUIREMENT_TYPE.BRD: {
         return new BRDExportStrategy(
           this.exportService,
           this.logger,
-          this.clipboard,
+          this.clipboardService,
         );
       }
       case REQUIREMENT_TYPE.BP: {
         return new BPExportStrategy(
           this.exportService,
           this.logger,
-          this.clipboard,
+          this.clipboardService,
         );
       }
       case REQUIREMENT_TYPE.NFR: {
         return new NFRExportStrategy(
           this.exportService,
           this.logger,
-          this.clipboard,
+          this.clipboardService,
         );
       }
       case REQUIREMENT_TYPE.UIR: {
         return new UIRExportStrategy(
           this.exportService,
           this.logger,
-          this.clipboard,
+          this.clipboardService,
+        );
+      }
+      case REQUIREMENT_TYPE.US: {
+        return new UserStoriesExportStrategy(
+          this.exportService,
+          this.logger,
+          this.clipboardService,
         );
       }
       default: {

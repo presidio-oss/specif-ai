@@ -1,15 +1,15 @@
-import { Clipboard } from '@angular/cdk/clipboard';
 import { NGXLogger } from 'ngx-logger';
-import { REQUIREMENT_TYPE } from 'src/app/constants/app.constants';
+import { ClipboardService } from '../../clipboard.service';
 import { SpreadSheetService } from '../../spreadsheet.service';
 import { BaseRequirementExportStrategy } from './base-requirement-export.strategy';
+import { REQUIREMENT_TYPE } from 'src/app/constants/app.constants';
 
 export class NFRExportStrategy extends BaseRequirementExportStrategy {
   constructor(
     exportService: SpreadSheetService,
     logger: NGXLogger,
-    clipboard: Clipboard,
+    clipboardService: ClipboardService,
   ) {
-    super(exportService, logger, clipboard, REQUIREMENT_TYPE.NFR);
+    super(logger, REQUIREMENT_TYPE.BP, exportService, clipboardService);
   }
 }

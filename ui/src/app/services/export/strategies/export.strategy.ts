@@ -11,6 +11,5 @@ export interface ExportResult {
 }
 
 export interface ExportStrategy {
-  supports(requirementType: string): boolean;
-  export(data: any[], options: ExportOptions): Promise<ExportResult>;
+  export(data: unknown, options: ExportOptions): Promise<ExportResult>;
 }
