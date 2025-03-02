@@ -21,31 +21,15 @@
         </a>
       </div>
 
-      <div class="flex items-center gap-4">
-        <div
-          class="flex justify-center items-center h-8 w-8 rounded-full bg-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-200 cursor-pointer"
-          role="button"
-          tabindex="0"
-          (click)="openSelectRootDirectoryModal()"
-          (keydown.enter)="openSelectRootDirectoryModal()"
-          (keydown.space)="
-            openSelectRootDirectoryModal(); $event.preventDefault()
-          "
-          matTooltip="Choose Destination Folder"
-        >
-          <ng-icon name="heroFolder" />
-        </div>
-
-        <button
-          (click)="openSettingsModal()"
-          (keydown.enter)="openSettingsModal()"
-          (keydown.space)="openSettingsModal(); $event.preventDefault()"
-          class="flex items-center justify-center font-medium opacity-100 transition-colors duration-300 px-3 py-2 gap-2 text-xs rounded-lg border border-slate-700 bg-transparent text-white hover:bg-slate-900"
-        >
-          <ng-icon name="heroCog8Tooth" strokeWidth="2" size="16" />
-          Settings
-        </button>
-      </div>
+      <button
+        (click)="openSettingsModal()"
+        (keydown.enter)="openSettingsModal()"
+        (keydown.space)="openSettingsModal(); $event.preventDefault()"
+        class="flex items-center justify-center font-medium opacity-100 transition-colors duration-300 px-3 py-2 gap-2 text-xs rounded-lg border border-slate-700 bg-transparent text-white hover:bg-slate-900"
+      >
+        <ng-icon name="heroCog8Tooth" strokeWidth="2" size="16" />
+        Settings
+      </button>
     </div>
   </div>
   <div class="w-full px-8 py-3 flex items-center justify-start">

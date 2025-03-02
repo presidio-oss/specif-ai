@@ -15,7 +15,6 @@ import { NGXLogger } from 'ngx-logger';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { ElectronService } from '../../services/electron/electron.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { SelectRootDirectoryComponent } from '../../components/select-root-directory/select-root-directory.component';
 import { NgIf } from '@angular/common';
 import { NgxLoadingModule } from 'ngx-loading';
 import { ButtonComponent } from '../../components/core/button/button.component';
@@ -27,6 +26,7 @@ import {
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ToggleComponent } from '../../components/toggle/toggle.component';
+import { SettingsComponent } from 'src/app/components/settings/settings.component';
 
 @Component({
   selector: 'app-create-solution',
@@ -116,13 +116,8 @@ export class CreateSolutionComponent implements OnInit {
   }
 
   openSelectRootDirectoryModal() {
-    const modalRef = this.dialog.open(SelectRootDirectoryComponent, {
+    this.dialog.open(SettingsComponent, {
       disableClose: true,
-    });
-    modalRef.afterClosed().subscribe((res) => {
-      if (res === true) {
-        this.selectRootDirectory().then();
-      }
     });
   }
 
