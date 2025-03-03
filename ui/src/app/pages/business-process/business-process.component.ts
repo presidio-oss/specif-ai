@@ -38,13 +38,14 @@ import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { ExpandDescriptionPipe } from '../../pipes/expand-description.pipe';
 import { TruncateEllipsisPipe } from '../../pipes/truncate-ellipsis-pipe';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NGXLogger } from 'ngx-logger';
 import {
   CONFIRMATION_DIALOG,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 
 @Component({
   selector: 'app-business-process',
@@ -65,6 +66,11 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
     ExpandDescriptionPipe,
     TruncateEllipsisPipe,
     NgIconComponent,
+  ],
+  providers: [
+    provideIcons({
+      heroSparklesSolid,
+    }),
   ],
 })
 export class BusinessProcessComponent implements OnInit {
@@ -323,13 +329,12 @@ export class BusinessProcessComponent implements OnInit {
     );
   }
 
-  async updateBusinessProcess() {
+  async updateBusinessProcess(useGenAI: boolean = false) {
     const formValue = this.businessProcessForm.getRawValue();
-    const expandWithAI = formValue.expandAI;
     this.loadingService.setLoading(true);
 
     // Handle locally without API call if AI expansion is not needed
-    if (!expandWithAI) {
+    if (!useGenAI) {
       await this.handleBusinessProcessUpdate({
         requirement: formValue.content,
         title: formValue.title,
@@ -348,7 +353,7 @@ export class BusinessProcessComponent implements OnInit {
       id: this.data.id,
       name: this.name,
       title: formValue.title,
-      useGenAI: expandWithAI,
+      useGenAI: useGenAI,
       selectedBRDs: formValue.selectedBRDs.map(
         (item: { requirement: any; fileName: any }) => item.requirement,
       ),
@@ -534,6 +539,7 @@ export class BusinessProcessComponent implements OnInit {
           chatHistory: newArray,
         }),
       );
+      this.updateBusinessProcess(true);
     }
   }
 
