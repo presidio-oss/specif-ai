@@ -225,12 +225,11 @@ export class BusinessProcessComponent implements OnInit {
     );
   }
 
-  addBusinessProcess() {
+  addBusinessProcess(useGenAI: boolean = false) {
     const formValue = this.businessProcessForm.getRawValue();
-    const expandWithAI = formValue.expandAI;
 
     // Handle locally without API call if AI expansion is not needed
-    if (!expandWithAI) {
+    if (!useGenAI) {
       this.handleBusinessProcessCreation({
         requirement: formValue.content,
         title: formValue.title,
@@ -248,7 +247,7 @@ export class BusinessProcessComponent implements OnInit {
       id: this.data.id,
       name: this.data.name,
       title: formValue.title,
-      useGenAI: expandWithAI,
+      useGenAI: useGenAI,
       selectedBRDs: formValue.selectedBRDs.map(
         (item: { requirement: any; fileName: any }) => item.requirement,
       ),
