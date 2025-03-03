@@ -156,6 +156,18 @@ export const TOASTER_MESSAGES = {
       FAILURE: (entityType: string, entityId: string) =>
         TOASTER_MESSAGES_DEFAULT_TEMPLATE.FAILURE(entityType, 'copy', entityId),
     },
+    GENERATE: {
+      SUCCESS: (entityType: string, isRegenerate = false) =>
+        TOASTER_MESSAGES_DEFAULT_TEMPLATE.SUCCESS(
+          entityType,
+          isRegenerate ? 'regenerated' : 'generated',
+        ),
+      FAILURE: (entityType: string, isRegenerate = false) =>
+        TOASTER_MESSAGES_DEFAULT_TEMPLATE.FAILURE(
+          entityType,
+          isRegenerate ? 'regenerate' : 'generate',
+        ),
+    },
   },
 };
 

@@ -1,0 +1,26 @@
+<div class="flex flex-col gap-2 max-w-sm">
+  <label
+    *ngIf="label"
+    class="block text-sm font-medium text-secondary-700 mb-2"
+    >{{ label }}</label
+  >
+  <div class="flex items-center gap-4 w-full">
+    <mat-slider
+      class="flex-1"
+      [min]="min"
+      [max]="max"
+      [step]="step"
+      [disabled]="disabled"
+    >
+      <input
+        matSliderThumb
+        [value]="value"
+        (valueChange)="onSliderChange($event)"
+        (input)="onSliderChange($event)"
+      />
+    </mat-slider>
+    <span class="text-sm text-primary-600 font-semibold whitespace-nowrap">{{
+      value
+    }}</span>
+  </div>
+</div>

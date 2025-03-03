@@ -3,6 +3,11 @@ export interface IProject {
   metadata: IProjectMetadata;
 }
 
+export interface IGenerationRange {
+  max_count: number;
+  isEnabled: boolean;
+}
+
 export interface IProjectMetadata {
   name?: string;
   description: string;
@@ -13,6 +18,17 @@ export interface IProjectMetadata {
   createReqt?: boolean;
   id: string;
   createdAt: string;
+}
+
+export interface ICreateSolutionRequest {
+  name: string;
+  description: string;
+  createReqt: boolean;
+  cleanSolution: boolean;
+  brdPreferences: IGenerationRange;
+  prdPreferences: IGenerationRange;
+  uirPreferences: IGenerationRange;
+  nfrPreferences: IGenerationRange;
 }
 
 export interface ISolutionResponse {

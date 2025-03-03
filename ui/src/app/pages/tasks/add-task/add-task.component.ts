@@ -215,13 +215,13 @@ export class AddTaskComponent implements OnDestroy {
     }
   }
 
-  addTask() {
+  addTask(useAI = false) {
     if (this.taskForm.valid) {
       this.logger.debug(this.config);
       const newFileName = this.config.fileName.replace('base', 'feature');
       this.logger.debug(this.taskForm.getRawValue());
       const data = this.taskForm.getRawValue();
-      if (!data.useGenAI && this.uploadedFileContent.length === 0) {
+      if (!data.useGenAI && this.uploadedFileContent.length === 0 && !useAI) {
         this.store.dispatch(
           new CreateNewTask(
             { id: data.id, list: data.list, acceptance: data.acceptance },
@@ -421,6 +421,19 @@ ${chat.assistant}`,
         this.logger.error('Task with specified ID not found in the response');
       }
     });
+  }
+
+  enhanceTaskWithAI(){
+    switch(this.mode){
+      case "edit":{
+        this.editTaskWithAI();
+        break;
+      }
+      case "add":{
+        this.addTask(true);
+        break;
+      }
+    }
   }
 
   handleFileContent(content: string) {

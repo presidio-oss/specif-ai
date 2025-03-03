@@ -25,8 +25,14 @@ import { AuthService } from '../../services/auth/auth.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
-import { CONFIRMATION_DIALOG } from '../../constants/app.constants';
+import {
+  APP_CONSTANTS,
+  CONFIRMATION_DIALOG,
+} from '../../constants/app.constants';
 import { environment } from 'src/environments/environment';
+import { ElectronService } from 'src/app/services/electron/electron.service';
+import { NGXLogger } from 'ngx-logger';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -52,11 +58,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
   selectedProvider: FormControl = new FormControl();
   errorMessage: string = '';
   hasChanges: boolean = false;
+  workingDir: string | null;
+  appName = environment.ThemeConfiguration.appName;
   private subscriptions: Subscription = new Subscription();
   private initialModel: string = '';
   private initialProvider: string = '';
   protected themeConfiguration = environment.ThemeConfiguration;
 
+  electronService = inject(ElectronService);
+  logger = inject(NGXLogger);
+  router = inject(Router);
   dialog = inject(MatDialog);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
@@ -67,7 +78,39 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    this.workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
+  }
+
+  /**
+   * Prompts the user to select a root directory, saves the selected directory to local storage,
+   * and navigates to the '/apps' route or reloads the current page based on the current URL.
+   *
+   * @return {Promise<void>} A promise that resolves when the directory selection and navigation are complete.
+   */
+  async selectRootDirectory(): Promise<void> {
+    const response = await this.electronService.openDirectory();
+    this.logger.debug(response);
+    if (response.length > 0) {
+      localStorage.setItem(APP_CONSTANTS.WORKING_DIR, response[0]);
+      const currentConfig =
+        (await this.electronService.getStoreValue('APP_CONFIG')) || {};
+      const updatedConfig = { ...currentConfig, directoryPath: response[0] };
+      await this.electronService.setStoreValue('APP_CONFIG', updatedConfig);
+
+      this.logger.debug('===>', this.router.url);
+      if (this.router.url === '/apps') {
+        await this.electronService.reloadApp();
+      } else {
+        await this.router.navigate(['/apps']);
+      }
+    }
+  }
+
+  openFolderSelector() {
+    this.selectRootDirectory().then();
+    this.modalRef.close(true);
+  }
 
   ngOnInit(): void {
     this.subscriptions.add(

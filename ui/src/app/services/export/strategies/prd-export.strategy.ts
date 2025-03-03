@@ -1,40 +1,41 @@
 import { NGXLogger } from 'ngx-logger';
-import { Clipboard } from '@angular/cdk/clipboard';
-import {
-  REQUIREMENT_TYPE,
-  REQUIREMENT_DISPLAY_NAME_MAP,
-  REQUIREMENT_TYPE_FOLDER_MAP,
-  FILTER_STRINGS,
-} from '../../../constants/app.constants';
-import { EXPORT_FILE_FORMATS } from '../../../constants/export.constants';
-import { SpreadSheetService } from '../../spreadsheet.service';
-import { ExportStrategy, ExportOptions, ExportResult } from './export.strategy';
-import { AppSystemService } from '../../app-system/app-system.service';
 import { IUserStory } from 'src/app/model/interfaces/IUserStory';
+import {
+  FILTER_STRINGS,
+  REQUIREMENT_DISPLAY_NAME_MAP,
+  REQUIREMENT_TYPE,
+  REQUIREMENT_TYPE_FOLDER_MAP,
+} from '../../../constants/app.constants';
+import { EXPORT_FILE_FORMATS, SPREADSHEET_HEADER_ROW } from '../../../constants/export.constants';
+import { AppSystemService } from '../../app-system/app-system.service';
+import { ClipboardService } from '../../clipboard.service';
+import { SpreadSheetService } from '../../spreadsheet.service';
+import { ExportOptions, ExportResult, ExportStrategy } from './export.strategy';
+import { IList } from 'src/app/model/interfaces/IList';
 
 // types
 
-type PRDTask = {
+type FormattedTask = {
   id: string;
   title: string;
   acceptance: string;
 };
 
-type PRDUserStory = {
+type FormattedUserStory = {
   id: string;
   name: string;
   description: string;
-  tasks: PRDTask[];
+  tasks: FormattedTask[];
 };
 
-type PRDData = {
+type FormattedPRD = {
   id: string;
   title: string;
   requirement: string;
-  features: PRDUserStory[];
+  features: FormattedUserStory[];
 };
 
-type PRDExportData = {
+type PRDExportRows = {
   prdRows: Array<[string, string, string]>;
   userStories: Array<[string, string, string, string]>;
   tasks: Array<[string, string, string, string]>;
@@ -47,20 +48,19 @@ export class PRDExportStrategy implements ExportStrategy {
     private exportService: SpreadSheetService,
     private appSystemService: AppSystemService,
     private logger: NGXLogger,
-    private clipboard: Clipboard,
+    private clipboardService: ClipboardService,
   ) {}
 
   supports(requirementType: string): boolean {
     return requirementType === REQUIREMENT_TYPE.PRD;
   }
 
-  async prepareData(prdFiles: any[], projectName: string): Promise<PRDData[]> {
+  async prepareData(prdFiles: IList[], projectName: string): Promise<FormattedPRD[]> {
     try {
-      // Initialize PRDs with basic data
-      const prds: PRDData[] = prdFiles.map((prdFile) => ({
+      const prds: FormattedPRD[] = prdFiles.map((prdFile) => ({
         id: prdFile.fileName.split('-')[0],
-        title: prdFile.content.title,
-        requirement: prdFile.content.requirement,
+        title: prdFile.content.title!,
+        requirement: prdFile.content.requirement!,
         features: [],
       }));
 
@@ -90,7 +90,7 @@ export class PRDExportStrategy implements ExportStrategy {
 
             const userStories: Array<IUserStory> =
               JSON.parse(res).features || [];
-            const userStoriesFormatted: PRDUserStory[] = userStories.map(
+            const userStoriesFormatted: FormattedUserStory[] = userStories.map(
               (userStory) => {
                 const storyId = `${prdId}-${userStory.id}`;
                 return {
@@ -110,7 +110,7 @@ export class PRDExportStrategy implements ExportStrategy {
               },
             );
 
-            return [prdId, userStoriesFormatted] as [string, PRDUserStory[]];
+            return [prdId, userStoriesFormatted] as [string, FormattedUserStory[]];
           } catch (error) {
             this.logger.error('Error processing feature file:', {
               path,
@@ -138,47 +138,46 @@ export class PRDExportStrategy implements ExportStrategy {
     }
   }
 
-  async export(data: any[], options: ExportOptions): Promise<ExportResult> {
+  async export(data: IList[], options: ExportOptions): Promise<ExportResult> {
     try {
-      const { format, projectName } = options;
+      const { format: exportFormat, projectName } = options;
 
-      // First prepare the data
       const preparedData = await this.prepareData(data, projectName);
 
       let success = true;
 
-      if (format === EXPORT_FILE_FORMATS.JSON) {
-        const success = this.exportToJSON(preparedData);
-        return {
-          success: success,
-        };
+      switch (exportFormat) {
+        case EXPORT_FILE_FORMATS.JSON: {
+          success = this.clipboardService.copyToClipboard(preparedData);
+          break;
+        }
+        case EXPORT_FILE_FORMATS.EXCEL: {
+          const transformedData = this.transformData(preparedData);
+          const fileName = `${projectName}_${REQUIREMENT_TYPE.PRD.toLowerCase()}`;
+          this.exportToExcel(transformedData, fileName);
+          break;
+        }
+        default: {
+          throw new Error(`Format ${exportFormat} not supported`);
+        }
       }
-
-      const transformedData = this.transformData(preparedData);
-      const fileName = `${projectName}_${REQUIREMENT_TYPE.PRD.toLowerCase()}`;
-
-      if (format === EXPORT_FILE_FORMATS.EXCEL) {
-        this.exportToExcel(transformedData, fileName);
-      } else {
-        throw new Error(`Format ${format} not supported`);
-      }
-
-      return { success: true };
+  
+      return { success: success };
     } catch (error) {
       this.logger.error('PRD export failed:', error);
       return { success: false, error: error as Error };
     }
   }
 
-  private transformData(data: PRDData[]): PRDExportData {
-    const prdRows: Array<[string, string, string]> = data.map((d) => [
+  private transformData(data: FormattedPRD[]): PRDExportRows {
+    const prdRows: PRDExportRows["prdRows"] = data.map((d) => [
       d.id,
       d.title,
       d.requirement,
     ]);
 
-    const userStories: Array<[string, string, string, string]> = [];
-    const tasks: Array<[string, string, string, string]> = [];
+    const userStories: PRDExportRows["userStories"] = [];
+    const tasks: PRDExportRows["tasks"] = [];
 
     data.forEach((prd) => {
       prd.features?.forEach((story) => {
@@ -193,30 +192,25 @@ export class PRDExportStrategy implements ExportStrategy {
     return { prdRows, userStories, tasks };
   }
 
-  private exportToExcel(data: PRDExportData, fileName: string) {
+  private exportToExcel(data: PRDExportRows, fileName: string) {
     const { prdRows, userStories, tasks } = data;
 
     this.exportService.exportToExcel(
       [
         {
           name: REQUIREMENT_DISPLAY_NAME_MAP[REQUIREMENT_TYPE.PRD],
-          data: [['Id', 'Title', 'Requirement'], ...prdRows],
+          data: [SPREADSHEET_HEADER_ROW.PRD, ...prdRows],
         },
         {
           name: REQUIREMENT_DISPLAY_NAME_MAP[REQUIREMENT_TYPE.US],
-          data: [['Id', 'Parent Id', 'Name', 'Description'], ...userStories],
+          data: [SPREADSHEET_HEADER_ROW.US, ...userStories],
         },
         {
           name: REQUIREMENT_DISPLAY_NAME_MAP[REQUIREMENT_TYPE.TASK],
-          data: [['Id', 'Parent Id', 'Title', 'Acceptance Criteria'], ...tasks],
+          data: [SPREADSHEET_HEADER_ROW.TASK, ...tasks],
         },
       ],
       fileName,
     );
-  }
-
-  private exportToJSON(data: PRDData[]) {
-    const success = this.clipboard.copy(JSON.stringify(data, null, 2));
-    return success;
   }
 }

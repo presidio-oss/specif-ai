@@ -129,6 +129,157 @@
                   </p>
                 </div>
               </div>
+
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Business Requirements (BRD)<span class="text-red-500 text-xs">
+                    *</span
+                  >
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="solutionForm.get('enableBRD')?.value"
+                        (toggleChange)="
+                          solutionForm.get('enableBRD')?.setValue($event)
+                        "
+                        isPlainToggle="true"
+                      ></app-toggle>
+                    </div>
+                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                      Enable to set maximum number of Business Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('enableBRD')?.value"
+                  >
+                    <div class="border rounded-lg p-4">
+                      <app-slider formControlName="brd"></app-slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Product Requirements (PRD)<span class="text-red-500 text-xs">
+                    *</span
+                  >
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="solutionForm.get('enablePRD')?.value"
+                        (toggleChange)="
+                          solutionForm.get('enablePRD')?.setValue($event)
+                        "
+                        isPlainToggle="true"
+                      ></app-toggle>
+                    </div>
+                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                      Enable to set maximum number of Product Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('enablePRD')?.value"
+                  >
+                    <div class="border rounded-lg p-4">
+                      <app-slider formControlName="prd"></app-slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  UI Requirements (UIR)<span class="text-red-500 text-xs">
+                    *</span
+                  >
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="solutionForm.get('enableUIR')?.value"
+                        (toggleChange)="
+                          solutionForm.get('enableUIR')?.setValue($event)
+                        "
+                        isPlainToggle="true"
+                      ></app-toggle>
+                    </div>
+                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                      Enable to set maximum number of UI Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('enableUIR')?.value"
+                  >
+                    <div class="border rounded-lg p-4">
+                      <app-slider formControlName="uir"></app-slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Non-Functional Requirements (NFR)<span
+                    class="text-red-500 text-xs"
+                  >
+                    *</span
+                  >
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="solutionForm.get('enableNFR')?.value"
+                        (toggleChange)="
+                          solutionForm.get('enableNFR')?.setValue($event)
+                        "
+                        isPlainToggle="true"
+                      ></app-toggle>
+                    </div>
+                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                      Enable to set maximum number of Non-Functional
+                      Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('enableNFR')?.value"
+                  >
+                    <div class="border rounded-lg p-4">
+                      <app-slider formControlName="nfr"></app-slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -43,7 +43,7 @@
               theme="secondary"
               size="sm"
               rounded="lg"
-              (click)="addExtraContext()"
+              (click)="addExtraContext(taskList.length > 0)"
             />
           </ng-container>
 
@@ -87,6 +87,7 @@
                 [isIconButton]="true"
                 icon="heroDocumentDuplicate"
                 (click)="copyTaskContent($event, task)"
+                matTooltip="Copy"
               />
             </div>
           </app-list-item>

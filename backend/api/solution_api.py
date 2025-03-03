@@ -81,10 +81,17 @@ def create_solutions():
     errors = []
     templates = []
 
-    def get_llm_response(template_path):
-        logger.info(f"Request {g.request_id}: Fetching LLM response for template: {template_path}")
-        template = jinja_template_env.get_template(template_path)
-        template = template.render(name=data["name"], description=data["description"])
+    def get_llm_response(template_config):
+        logger.info(
+            f"Request {g.request_id}: Fetching LLM response for template: {template_config['template_path']}")
+        template = jinja_template_env.get_template(
+            template_config['template_path'])
+
+        template = template.render(
+            name=data["name"],
+            description=data["description"],
+            max_count=template_config['max_count']
+        )
         try:
             # Prepare message for LLM
             llm_message = LLMUtils.prepare_messages(prompt=template)
@@ -96,10 +103,12 @@ def create_solutions():
             )
             llm_response = llm_handler.invoke(messages=llm_message)
 
-            logger.info(f"Request {g.request_id}: Successfully received LLM response for template: {template_path}")
+            logger.info(
+                f"Request {g.request_id}: Successfully received LLM response for template: {template_config['template_path']}")
             return json.loads(llm_response)
         except json.JSONDecodeError:
-            logger.error(f"Request {g.request_id}: Failed to parse LLM response for template: {template_path}")
+            logger.error(
+                f"Request {g.request_id}: Failed to parse LLM response for template: {template_config['template_path']}")
             abort(500, description="Invalid JSON format. Please try again.")
 
     if data["createReqt"]:
@@ -107,7 +116,22 @@ def create_solutions():
         clean_solution = data['cleanSolution'] if ('cleanSolution' in data) and isinstance(data['cleanSolution'],
                                                                                            bool) else False
         if clean_solution is False:
-            templates = ['create_brd.jinja2', 'create_prd.jinja2', 'create_nfr.jinja2', 'create_uir.jinja2']
+            preference_mapping = {
+                'brdPreferences': {'type': 'brd', 'template': 'create_brd.jinja2'},
+                'prdPreferences': {'type': 'prd', 'template': 'create_prd.jinja2'},
+                'uirPreferences': {'type': 'uir', 'template': 'create_uir.jinja2'},
+                'nfrPreferences': {'type': 'nfr', 'template': 'create_nfr.jinja2'},
+            }
+
+            templates = [
+                {
+                    'type': config['type'],
+                    'template_path': config['template'],
+                    'max_count': data[pref]['max_count']
+                }
+                for pref, config in preference_mapping.items()
+                if data.get(pref, {}).get('isEnabled')
+            ]
         executor = ExecutorConfig().get_executor()
         futures = [executor.submit(get_llm_response, template) for template in templates]
         for future in concurrent.futures.as_completed(futures):
