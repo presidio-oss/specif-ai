@@ -1,6 +1,6 @@
-# Jira OAuth 2.0 Integration Guide for Specif AI
+# Jira OAuth 2.0 Integration Guide for Specifai
 
-This guide explains how to integrate the Specif AI solution with Jira using OAuth 2.0. Follow these steps to create an OAuth app, configure permissions, and set up the integration.
+This guide explains how to integrate the Specifai solution with Jira using OAuth 2.0. Follow these steps to create an OAuth app, configure permissions, and set up the integration.
 
 ## Step 1: Create an OAuth 2.0 Integration
 
@@ -11,7 +11,7 @@ This guide explains how to integrate the Specif AI solution with Jira using OAut
 2. **Create a New OAuth App:**
    - Log in and click the **Create New App** button.
    - Select **OAuth 2.0 Integration** from the options.
-   - Enter a name for the app, such as "Specif AI Integration."
+   - Enter a name for the app, such as "Specifai Integration."
    - Click **Create App** to proceed.
 
 3. **Navigate to the App Configuration:**
@@ -41,7 +41,7 @@ This guide explains how to integrate the Specif AI solution with Jira using OAut
    - Open the **Authorization** tab in the app configuration screen.
 
 2. **Select OAuth 2.0 Authorization:**
-   - Choose **OAuth 2.0** as the authorization type to enable OAuth-based authentication between Jira and the Specif AI.
+   - Choose **OAuth 2.0** as the authorization type to enable OAuth-based authentication between Jira and the Specifai.
 
 3. **Set the Callback URL:**
    - Enter the **Callback URL** for the Requirements app. This URL is where users will be redirected after authorizing the app.

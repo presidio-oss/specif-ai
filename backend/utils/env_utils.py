@@ -3,15 +3,28 @@ from enum import Enum
 
 # Define an Enum for environment variable keys
 class EnvVariables(Enum):
+    # Default LLM provider and model
     DEFAULT_API_PROVIDER = "DEFAULT_API_PROVIDER"
     DEFAULT_MODEL = "DEFAULT_MODEL"
-    AZUREAI_API_BASE = "AZUREAI_API_BASE"
-    AZUREAI_API_KEY = "AZUREAI_API_KEY"
-    AZUREAI_API_VERSION = "AZUREAI_API_VERSION"
+
+    # OpenAI
+    AZURE_OPENAI_API_KEY = "AZURE_OPENAI_API_KEY"
+    OPENAI_API_VERSION = "OPENAI_API_VERSION"
     OPENAI_API_KEY = "OPENAI_API_KEY"
-    OPENAI_API_BASE = "OPENAI_API_BASE"
-    CLAUDE_API_KEY = "CLAUDE_API_KEY"
-    CLAUDE_ENDPOINT = "CLAUDE_ENDPOINT"
+    OPENAI_BASE_URL = 'OPENAI_BASE_URL'
+
+    # Anthropic
+    ANTHROPIC_BASE_URL = 'ANTHROPIC_BASE_URL'
+    ANTHROPIC_API_KEY = 'ANTHROPIC_API_KEY'
+
+    # AWS Bedrock
+    ANTHROPIC_BEDROCK_BASE_URL = 'ANTHROPIC_BEDROCK_BASE_URL'
+    AWS_BEDROCK_ACCESS_KEY = 'AWS_BEDROCK_ACCESS_KEY'
+    AWS_BEDROCK_SECRET_KEY = 'AWS_BEDROCK_SECRET_KEY'
+    AWS_BEDROCK_SESSION_TOKEN = 'AWS_BEDROCK_SESSION_TOKEN'
+    AWS_BEDROCK_REGION = 'AWS_BEDROCK_REGION'
+
+    # App related envs
     APP_PASSCODE_KEY = "APP_PASSCODE_KEY"
     HOST = "HOST"
     PORT = "PORT"
@@ -20,18 +33,21 @@ class EnvVariables(Enum):
     SENTRY_DSN = "SENTRY_DSN"
     SENTRY_ENVIRONMENT = "SENTRY_ENVIRONMENT"
     SENTRY_RELEASE = "SENTRY_RELEASE"
+    AWS_REGION = 'AWS_REGION'
 
 # Define a dictionary for default values
 DEFAULT_VALUES = {
-    EnvVariables.DEFAULT_API_PROVIDER: "OPENAI_NATIVE",
+    # Default LLM provider and model
+    EnvVariables.DEFAULT_API_PROVIDER: "openai",
     EnvVariables.DEFAULT_MODEL: "gpt-4o",
-    EnvVariables.AZUREAI_API_BASE: "",
-    EnvVariables.AZUREAI_API_KEY: "",
-    EnvVariables.AZUREAI_API_VERSION: "",
-    EnvVariables.OPENAI_API_KEY: "",
-    EnvVariables.OPENAI_API_BASE: "https://api.openai.com/v1/models/",
-    EnvVariables.CLAUDE_API_KEY: "",
-    EnvVariables.CLAUDE_ENDPOINT: "",
+
+    # OpenAI
+    EnvVariables.OPENAI_API_VERSION: "2024-08-01-preview",
+
+    # AWS Bedrock
+    EnvVariables.AWS_BEDROCK_REGION: 'us-west-1',
+
+    # App related defaults
     EnvVariables.APP_PASSCODE_KEY: "",
     EnvVariables.HOST: "0.0.0.0",
     EnvVariables.PORT: 5001,
@@ -39,9 +55,11 @@ DEFAULT_VALUES = {
     EnvVariables.ENABLE_SENTRY: False,
     EnvVariables.SENTRY_DSN: "",
     EnvVariables.SENTRY_ENVIRONMENT: "",
-    EnvVariables.SENTRY_RELEASE: ""
+    EnvVariables.SENTRY_RELEASE: "",
+    EnvVariables.AWS_REGION: 'us-east-1',
 }
+
 
 def get_env_variable(key: EnvVariables):
     """Retrieve an environment variable or return its default value."""
-    return os.environ.get(key.value, DEFAULT_VALUES[key])
+    return os.getenv(key.value, DEFAULT_VALUES[key] if (key in DEFAULT_VALUES) else None)

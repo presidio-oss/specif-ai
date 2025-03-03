@@ -19,11 +19,11 @@
 </div>
 <br>
 
-# 🚀 Specif AI
+# 🚀 Specifai
 
-**Specif AI** is an AI-powered platform that transforms the project requirements management. It combines AI technology with intuitive workflows to automate documentation, generate and manage tasks - all while adapting to your team's specific needs.
+**Specifai** is an AI-powered platform that transforms the project requirements management. It combines AI technology with intuitive workflows to automate documentation, generate and manage tasks - all while adapting to your team's specific needs.
 <div align="center">
-    <img src="assets/gifs/specif-ai-overview.gif" alt="Specif AI in Action" width="900">
+    <img src="assets/gifs/specif-ai-overview.gif" alt="Specifai in Action" width="900">
 </div>
 
 ## Table of Contents
@@ -40,9 +40,9 @@
 
 ## 🌟 Overview
 
-In today's fast-paced software development landscape, delivering high-quality solutions quickly is more critical than ever. Specif AI is a cutting-edge platform that revolutionizes how teams generate, manage, and refine software requirements by combining AI intelligence with human context.
+In today's fast-paced software development landscape, delivering high-quality solutions quickly is more critical than ever. Specifai is a cutting-edge platform that revolutionizes how teams generate, manage, and refine software requirements by combining AI intelligence with human context.
 
-By simply providing a solution name, description, and tech stack details, Specif AI automatically generates comprehensive documentation, including:
+By simply providing a solution name, description, and tech stack details, Specifai automatically generates comprehensive documentation, including:
 
 - 📄 Business Requirement Documents (BRD)
 - 🔧 Non-Functional Requirements Documents (NFRD)
@@ -83,13 +83,19 @@ By simply providing a solution name, description, and tech stack details, Specif
    # Run the container
    docker run -p 5001:5001 \
    -e APP_PASSCODE_KEY=$APP_PASSCODE_KEY \
+   -e DEFAULT_API_PROVIDER=$DEFAULT_API_PROVIDER \
+   -e DEFAULT_MODEL=$DEFAULT_MODEL \
+   -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY \
+   -e OPENAI_API_VERSION=$OPENAI_API_VERSION \
    -e OPENAI_API_KEY=$OPENAI_API_KEY \
-   -e OPENAI_API_BASE=$OPENAI_API_BASE \
-   -e AZUREAI_API_BASE=$AZUREAI_API_BASE \
-   -e AZUREAI_API_KEY=$AZUREAI_API_KEY \
-   -e AZUREAI_API_VERSION=$AZUREAI_API_VERSION \
-   -e CLAUDE_API_KEY=$CLAUDE_API_KEY \
-   -e CLAUDE_ENDPOINT=$CLAUDE_ENDPOINT \
+   -e OPENAI_BASE_URL=$OPENAI_BASE_URL \
+   -e ANTHROPIC_BASE_URL=$ANTHROPIC_BASE_URL \
+   -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+   -e ANTHROPIC_BEDROCK_BASE_URL=$ANTHROPIC_BEDROCK_BASE_URL \
+   -e AWS_BEDROCK_ACCESS_KEY=$AWS_BEDROCK_ACCESS_KEY \
+   -e AWS_BEDROCK_SECRET_KEY=$AWS_BEDROCK_SECRET_KEY \
+   -e AWS_BEDROCK_SESSION_TOKEN=$AWS_BEDROCK_SESSION_TOKEN \
+   -e AWS_BEDROCK_REGION=$AWS_BEDROCK_REGION \
    -e HOST=$HOST \
    -e PORT=$PORT \
    -e DEBUG=$DEBUG \
@@ -97,10 +103,11 @@ By simply providing a solution name, description, and tech stack details, Specif
    -e SENTRY_DSN=$SENTRY_DSN \
    -e SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT \
    -e SENTRY_RELEASE=$SENTRY_RELEASE \
+   -e AWS_REGION=$AWS_REGION \
    -it hai-build-requirement-backend
    ```
 
-3. **Download the Specif AI desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
+3. **Download the Specifai desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
 4. **Run** the Desktop Application
 
 For detailed setup instructions, refer to:
@@ -150,7 +157,13 @@ For more details, refer to the [Backend Server Setup Configuration Settings](./b
       - gpt-4o
       - gpt-4o-mini
    - AWS Bedrock
+      - anthropic.claude-3-7-sonnet-20250219-v1:0
+      - anthropic.claude-3-5-sonnet-20241022-v2:0
+      - anthropic.claude-3-5-haiku-20241022-v1:0
       - anthropic.claude-3-5-sonnet-20240620-v1:0
+      - anthropic.claude-3-opus-20240229-v1:0
+      - anthropic.claude-3-sonnet-20240229-v1:0
+      - anthropic.claude-3-haiku-20240307-v1:0
 
 <div align="center">
 
@@ -164,7 +177,7 @@ For more details, refer to the [Backend Server Setup Configuration Settings](./b
 
 ### 🔌 Integrations
 
-Specif AI seamlessly integrates with popular tools to enhance your workflow:
+Specifai seamlessly integrates with popular tools to enhance your workflow:
 
 #### Jira Integration
 The stories and tasks generated as part of the solutions can be used to create actual stories and tasks in your Jira instance using the Jira integration provided by the application. Features include:
@@ -184,7 +197,7 @@ The enterprise knowledge base is integrated with AI-powered chat to enhance sugg
 
 ## 🏗 Architecture
 
-Specif AI follows a modern, scalable architecture designed for optimal performance and maintainability.
+Specifai follows a modern, scalable architecture designed for optimal performance and maintainability.
 
 <div align="center">
     <img src="assets/img/specif-ai-architecture.png" alt="Application Architecture Diagram"/>
@@ -192,7 +205,7 @@ Specif AI follows a modern, scalable architecture designed for optimal performan
 
 ## 📝 Version Controlled Requirements Management Made Easy
 
-Specif AI is a powerful desktop application built to streamline and organize your project requirements. With Specif AI, users can create a unified directory where all essential files are not only accessible and editable but also seamlessly synced with platforms like OneDrive, Dropbox, or any git-enabled local folder. This setup allows users to point to specific artifacts and data sources in a version-controlled environment, making collaboration and tracking effortless. Our goal is to enhance your development workflow by integrating seamlessly with the tools you already use, without adding complexity or obstacles.
+Specifai is a powerful desktop application built to streamline and organize your project requirements. With Specifai, users can create a unified directory where all essential files are not only accessible and editable but also seamlessly synced with platforms like OneDrive, Dropbox, or any git-enabled local folder. This setup allows users to point to specific artifacts and data sources in a version-controlled environment, making collaboration and tracking effortless. Our goal is to enhance your development workflow by integrating seamlessly with the tools you already use, without adding complexity or obstacles.
 
 
 ## 🗺 Roadmap

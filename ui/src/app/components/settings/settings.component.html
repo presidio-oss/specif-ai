@@ -1,0 +1,160 @@
+<div class="modal-wrapper w-[32rem] max-w-lg text-sm font-medium">
+  <div class="modal-header flex items-center justify-between px-4 pt-4">
+    <h4 class="font-medium text-base">Settings</h4>
+    <button
+      type="button"
+      class="text-slate-400 bg-transparent hover:bg-slate-200 hover:text-slate-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center focus:outline-none focus:ring-0"
+      data-dismiss="modal"
+      aria-label="Close"
+      (click)="closeModal()"
+    >
+      <ng-icon name="heroXMark" strokeWidth="2" size="16"></ng-icon>
+    </button>
+  </div>
+  <div class="modal-body p-4 space-y-6">
+    <!-- Error Message -->
+    <div
+      *ngIf="errorMessage && hasChanges"
+      class="p-2 text-danger-600 font-medium bg-red-50 rounded"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <!-- Providers Dropdown -->
+    <div class="space-y-1">
+      <label for="providerSelect" class="block text-slate-500">Providers</label>
+      <div class="relative w-full">
+        <select
+          id="providerSelect"
+          [formControl]="selectedProvider"
+          class="h-10 block w-full px-3 pr-10 border border-slate-300 text-slate-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-slate-100 focus-visible:outline-none appearance-none cursor-pointer"
+        >
+          <option
+            *ngFor="let provider of availableProviders"
+            [value]="provider.key"
+            class="py-2"
+          >
+            {{ provider.displayName }}
+          </option>
+        </select>
+        <div
+          class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
+        >
+          <svg
+            class="h-4 w-4 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model Dropdown -->
+    <div class="space-y-1">
+      <label for="modelSelect" class="block text-slate-500">Model</label>
+      <div class="relative w-full">
+        <select
+          id="modelSelect"
+          [formControl]="selectedModel"
+          class="h-10 block w-full px-3 pr-10 border border-slate-300 text-slate-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-slate-100 focus-visible:outline-none appearance-none cursor-pointer"
+        >
+          <option
+            *ngFor="let model of filteredModels"
+            [value]="model"
+            class="py-2"
+          >
+            {{ model }}
+          </option>
+        </select>
+        <div
+          class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
+        >
+          <svg
+            class="h-4 w-4 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save and Cancel Buttons -->
+    <div
+      *ngIf="hasChanges"
+      class="flex justify-end gap-2 pb-4 border-b border-slate-200"
+    >
+      <app-button
+        buttonContent="Cancel"
+        theme="secondary_outline"
+        size="sm"
+        (click)="closeModal()"
+      />
+      <app-button
+        buttonContent="Save"
+        theme="primary"
+        size="sm"
+        (click)="onSave()"
+      />
+    </div>
+
+    <!-- Company Logo, Version and Logout -->
+    <div
+      class="divide-y-[0.5px] divide-slate-300 font-medium rounded-lg overflow-hidden border-[0.5px] border-slate-300 bg-slate-50"
+    >
+      <div class="px-3.5 py-2 flex items-center justify-between w-full">
+        <span class="text-slate-500">Accelerate SDLC process with</span>
+        <img
+          *ngIf="themeConfiguration.companyLogoColor.length > 0"
+          class="h-3 w-auto"
+          [src]="themeConfiguration.companyLogoColor"
+          [alt]="themeConfiguration.companyName"
+        />
+      </div>
+      <div class="px-3.5 py-2 flex items-center justify-between w-full">
+        <span class="text-slate-500">Version</span>
+        <span>{{ version }}</span>
+      </div>
+      <button
+        class="px-3.5 py-2 text-red-600 flex items-center justify-between w-full"
+        role="button"
+        tabindex="0"
+        (click)="logout()"
+        (keydown.enter)="logout()"
+        (keydown.space)="logout(); $event.preventDefault()"
+      >
+        <span>Log Out</span>
+        <svg
+          width="20"
+          height="21"
+          viewBox="0 0 20 21"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M7.5 15.5L12.5 10.5L7.5 5.5"
+            stroke="#64748B"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

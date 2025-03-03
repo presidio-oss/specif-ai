@@ -41,7 +41,8 @@ import {
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ArchiveUserStory } from '../../store/user-stories/user-stories.actions';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
-import { ReadFile } from 'src/app/store/projects/projects.actions';
+import { provideIcons } from '@ng-icons/core';
+import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 
 @Component({
   selector: 'app-edit-user-stories',
@@ -59,6 +60,11 @@ import { ReadFile } from 'src/app/store/projects/projects.actions';
     MultiUploadComponent,
     MatTooltipModule,
   ],
+  providers: [
+    provideIcons({ 
+      heroSparklesSolid
+    })
+  ]
 })
 export class EditUserStoriesComponent implements OnDestroy {
   projectId: string = '';
@@ -149,78 +155,77 @@ export class EditUserStoriesComponent implements OnDestroy {
     console.log(this.projectMetadata, 'projectMetadata');
   }
 
-  updateUserStory() {
-    const findUserStory = (res: any, id: string) => {
-        let result = res.features.find((feature: any) => feature.id === id.toUpperCase());
-        return result;
-    }
+  updateUserStoryWithAI() {
+    const body: IUpdateUserStoryRequest = {
+      name: this.projectMetadata.name,
+      description: this.projectMetadata.description,
+      appId: this.projectMetadata.appId,
+      reqId: this.fileName.replace(this.regex, ''),
+      reqDesc: this.selectedPRD.requirement,
+      featureId: this.existingUserForm.id,
+      featureRequest: this.userStoryForm.getRawValue().description,
+      contentType: '',
+      fileContent: this.uploadedFileContent,
+      useGenAI: true,
+      existingFeatureTitle: this.existingUserForm.name,
+      existingFeatureDesc: this.existingUserForm.description,
+    };
+    this.featureService.updateUserStory(body).subscribe(
+      (data) => {
+        const featuresResponse: any = data;
+        const matchingFeature = featuresResponse.features.find(
+          (feature: { id: string }) => feature.id === this.data.id,
+        );
 
-    if (
-      this.userStoryForm.getRawValue().expandAI ||
-      this.uploadedFileContent.length > 0
-    ) {
-      const body: IUpdateUserStoryRequest = {
-        name: this.projectMetadata.name,
-        description: this.projectMetadata.description,
-        appId: this.projectMetadata.appId,
-        reqId: this.fileName.replace(this.regex, ''),
-        reqDesc: this.selectedPRD.requirement,
-        featureId: this.existingUserForm.id,
-        featureRequest: this.userStoryForm.getRawValue().description,
-        contentType: '',
-        fileContent: this.uploadedFileContent,
-        useGenAI: true,
-        existingFeatureTitle: this.existingUserForm.name,
-        existingFeatureDesc: this.existingUserForm.description,
-      };
-      this.featureService.updateUserStory(body).subscribe(
-        (data) => {
-          const featuresResponse: any = data;
-          const matchingFeature = featuresResponse.features.find(
-            (feature: { id: string }) => feature.id === this.data.id,
+        if (matchingFeature) {
+          const featureName = Object.keys(matchingFeature).find(
+            (key) => key !== 'id',
           );
-
-          if (matchingFeature) {
-            const featureName = Object.keys(matchingFeature).find(
-              (key) => key !== 'id',
-            );
-            const featureDescription = matchingFeature[featureName!];
-            this.store.dispatch(
-              new EditUserStory(this.absoluteFilePath, {
-                description: featureDescription,
-                name: featureName!,
-                id: this.data.id,
-                storyTicketId: this.data.storyTicketId,
-                chatHistory: this.chatHistory,
-              }),
-            );
-            this.allowFreeRedirection = true;
-            this.userStoryForm.patchValue({
-              name: featureName,
-              description: featureDescription
-            });
-            this.name = featureName!;
-            this.description = featureDescription;
-            this.toasterService.showSuccess(
-              TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
-                this.entityType,
-                this.existingUserForm.id,
-              ),
-            );
-          } else {
-            console.log('No matching feature found for the given ID.');
-          }
-        },
-        (error) => {
-          console.error('Error updating requirement:', error);
-          this.toasterService.showError(
-            TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(
+          const featureDescription = matchingFeature[featureName!];
+          this.store.dispatch(
+            new EditUserStory(this.absoluteFilePath, {
+              description: featureDescription,
+              name: featureName!,
+              id: this.data.id,
+              storyTicketId: this.data.storyTicketId,
+              chatHistory: this.chatHistory,
+            }),
+          );
+          this.allowFreeRedirection = true;
+          this.userStoryForm.patchValue({
+            name: featureName,
+            description: featureDescription
+          });
+          this.name = featureName!;
+          this.description = featureDescription;
+          this.toasterService.showSuccess(
+            TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
               this.entityType,
               this.existingUserForm.id,
             ),
           );
-        },
-      );
+        } else {
+          console.log('No matching feature found for the given ID.');
+        }
+      },
+      (error) => {
+        console.error('Error updating requirement:', error);
+        this.toasterService.showError(
+          TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(
+            this.entityType,
+            this.existingUserForm.id,
+          ),
+        );
+      },
+    );
+  }
+
+  updateUserStory() {
+    if (
+      this.userStoryForm.getRawValue().expandAI ||
+      this.uploadedFileContent.length > 0
+    ) {
+      this.updateUserStoryWithAI();
     } else {
       this.store.dispatch(
         new EditUserStory(this.absoluteFilePath, {
@@ -333,15 +338,8 @@ export class EditUserStoriesComponent implements OnDestroy {
         if (item.assistant == chat.assistant) return { ...item, isAdded: true };
         else return item;
       });
-      this.store.dispatch(
-        new EditUserStory(this.absoluteFilePath, {
-          description: this.userStoryForm.getRawValue().description,
-          name: this.userStoryForm.getRawValue().name,
-          id: this.data.id,
-          chatHistory: newArray,
-        }),
-      );
       this.chatHistory = newArray;
+      this.updateUserStoryWithAI();
     }
   }
 

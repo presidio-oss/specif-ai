@@ -1,6 +1,6 @@
-# 🚀 Specif AI Backend Server
+# 🚀 Specifai Backend Server
 
-The backend service that powers Specif AI's intelligent document generation and processing capabilities.
+The backend service that powers Specifai's intelligent document generation and processing capabilities.
 
 ## Table of Contents
 - [Setup Options](#setup-options)
@@ -68,7 +68,7 @@ source env.sh
 
 Available environment variables:
 ```
-APP_PASSCODE_KEY="7654321"            # Electron app passcode (For local development only)
+APP_PASSCODE_KEY="7654321"           # Electron app passcode (For local development only)
 HOST="0.0.0.0"                       # Backend server host
 PORT=5001                            # Backend server port
 DEBUG=false                          # Log level
@@ -77,21 +77,27 @@ SENTRY_DSN=                          # Sentry DNS
 SENTRY_ENVIRONMENT=                  # Sentry environment
 SENTRY_RELEASE=                      # Sentry release name
 
-DEFAULT_API_PROVIDER="OPENAI_COMPATIBLE_AZURE"  # Default API provider
-DEFAULT_MODEL="gpt-4o"                          # Default model
+# Default LLM provider and model
+DEFAULT_API_PROVIDER="openai"        # Default API provider
+DEFAULT_MODEL="gpt-4o"               # Default model
 
-# OpenAI Config
-OPENAI_API_KEY=""
-OPENAI_API_BASE=""
+# OpenAI
+AZURE_OPENAI_API_KEY=""              # Azure OpenAI API key
+OPENAI_API_VERSION=""                # OpenAI API version
+OPENAI_API_KEY=""                    # OpenAI API key
+OPENAI_BASE_URL=""                   # OpenAI Base URL
 
-# Azure Config
-AZUREAI_API_BASE=""
-AZUREAI_API_KEY=""
-AZUREAI_API_VERSION=""
+# Anthropic
+ANTHROPIC_BASE_URL=""                # Anthropic base URL
+ANTHROPIC_API_KEY=""                 # Anthropic API Key
 
-# Bedrock Config
-CLAUDE_API_KEY=""
-CLAUDE_ENDPOINT=""
+# AWS Bedrock
+ANTHROPIC_BEDROCK_BASE_URL=""        # AWS Bedrock base URL
+AWS_BEDROCK_ACCESS_KEY=""            # AWS access key
+AWS_BEDROCK_SECRET_KEY=""            # AWS secret access key
+AWS_BEDROCK_SESSION_TOKEN=""         # AWS session token
+AWS_BEDROCK_REGION=""                # AWS Bedrock region
+AWS_REGION=""                        # AWS Region
 ```
 
 #### 5️⃣ Launch Application
@@ -114,13 +120,19 @@ docker build . --tag hai-build-requirement-backend
 # Run the container
 docker run -p 5001:5001 \
 -e APP_PASSCODE_KEY=$APP_PASSCODE_KEY \
+-e DEFAULT_API_PROVIDER=$DEFAULT_API_PROVIDER \
+-e DEFAULT_MODEL=$DEFAULT_MODEL \
+-e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY \
+-e OPENAI_API_VERSION=$OPENAI_API_VERSION \
 -e OPENAI_API_KEY=$OPENAI_API_KEY \
--e OPENAI_API_BASE=$OPENAI_API_BASE \
--e AZUREAI_API_BASE=$AZUREAI_API_BASE \
--e AZUREAI_API_KEY=$AZUREAI_API_KEY \
--e AZUREAI_API_VERSION=$AZUREAI_API_VERSION \
--e CLAUDE_API_KEY=$CLAUDE_API_KEY \
--e CLAUDE_ENDPOINT=$CLAUDE_ENDPOINT \
+-e OPENAI_BASE_URL=$OPENAI_BASE_URL \
+-e ANTHROPIC_BASE_URL=$ANTHROPIC_BASE_URL \
+-e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+-e ANTHROPIC_BEDROCK_BASE_URL=$ANTHROPIC_BEDROCK_BASE_URL \
+-e AWS_BEDROCK_ACCESS_KEY=$AWS_BEDROCK_ACCESS_KEY \
+-e AWS_BEDROCK_SECRET_KEY=$AWS_BEDROCK_SECRET_KEY \
+-e AWS_BEDROCK_SESSION_TOKEN=$AWS_BEDROCK_SESSION_TOKEN \
+-e AWS_BEDROCK_REGION=$AWS_BEDROCK_REGION \
 -e HOST=$HOST \
 -e PORT=$PORT \
 -e DEBUG=$DEBUG \
@@ -128,6 +140,7 @@ docker run -p 5001:5001 \
 -e SENTRY_DSN=$SENTRY_DSN \
 -e SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT \
 -e SENTRY_RELEASE=$SENTRY_RELEASE \
+-e AWS_REGION=$AWS_REGION \
 -it hai-build-requirement-backend
 ```
 

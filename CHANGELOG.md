@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.9.8]
+
+### Enhancements
+- UI Fix for multi file upload and alignment
+- Checkbox to Button for Enhance with AI for Root Requirements, User Stories and Tasks
+- Allow users to export PRD (with stories and tasks), BRD, NFR, UIR and BP requirements
+- Refactored the LLM module and added support for additional Bedrock models
+- Font Updates and Styling Updates to Welcome Page
+- Update methods to include AI in requirement, user story and task updates
+- Removed FooterComponent and added new settings modal with improved UI and logout functionality
+- Updated Header component layout, removed buttons and changed color scheme from secondary to slate
+- Added company logo color configuration in environment files
+- Updated branding from HAI BUILD to Specifai across configuration, assets, documentation and app description
+
+### Fixed
+- Fix for task chat to stay on same page
+- Margin and disable buttons for invalid forms
+- Keep the user on the same page after business process update
+- Prevent solution creation with spaces-only input in required fields by trimming values before form submission
+
 ## [1.9.7]
 
 ### Enhancements
