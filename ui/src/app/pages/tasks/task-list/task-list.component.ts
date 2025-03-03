@@ -186,9 +186,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
           tasks: tasksResponse,
         };
         this.userStories = updatedUserStories;
-        this.updateWithUserStories(updatedUserStories[this.config.i]);
-        this.toastService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
+        this.updateWithUserStories(
+          updatedUserStories[this.config.i],
+          regenerate,
         );
       },
       error: (error) => {
@@ -202,7 +202,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.dialog.closeAll();
   }
 
-  updateWithUserStories(userStories: IUserStory) {
+  updateWithUserStories(userStories: IUserStory, regenerate: boolean = false) {
     this.store.dispatch(
       new EditUserStory(
         `${this.config.folderName}/${this.config.newFileName}`,
@@ -212,6 +212,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.getLatestUserStories();
       this.loadingService.setLoading(false);
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
+      );
     }, 2000);
   }
 

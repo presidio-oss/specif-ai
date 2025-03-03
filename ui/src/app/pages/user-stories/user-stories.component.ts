@@ -271,11 +271,8 @@ export class UserStoriesComponent implements OnInit {
       next: (response) => {
         this.userStories = response;
         this.generateTasks(regenerate).then(() => {
-          this.updateWithUserStories(this.userStories);
+          this.updateWithUserStories(this.userStories, regenerate);
         });
-        this.toast.showSuccess(
-          TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
-        );
       },
       error: (error) => {
         this.loadingService.setLoading(false);
@@ -316,7 +313,10 @@ export class UserStoriesComponent implements OnInit {
     return Promise.all(requests);
   }
 
-  updateWithUserStories(userStories: IUserStory[]) {
+  updateWithUserStories(
+    userStories: IUserStory[],
+    regenerate: boolean = false,
+  ) {
     this.store.dispatch(
       new CreateFile(
         `${this.navigation.folderName}`,
@@ -328,6 +328,9 @@ export class UserStoriesComponent implements OnInit {
     setTimeout(() => {
       this.getLatestUserStories();
       this.loadingService.setLoading(false);
+      this.toast.showSuccess(
+        TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
+      );
     }, 2000);
   }
 
