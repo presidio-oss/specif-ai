@@ -135,37 +135,139 @@
                 *ngIf="!solutionForm.get('cleanSolution')?.value"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5"
+                  class="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Requirement Preferences<span class="text-danger-500 text-xs"
-                    >*</span
-                  >
+                  Business Requirements (BRD)
                 </label>
-                <div class="mt-2 sm:col-span-2 sm:mt-0 space-y-6">
-                  <div class="border rounded-lg p-4 space-y-4">
-                    <app-slider
-                      label="Business Requirements (BRD)"
-                      formControlName="brd"
-                    ></app-slider>
-
-                    <app-slider
-                      label="Product Requirements (PRD)"
-                      formControlName="prd"
-                    ></app-slider>
-
-                    <app-slider
-                      label="UI Requirements (UIR)"
-                      formControlName="uir"
-                    ></app-slider>
-
-                    <app-slider
-                      label="Non-Functional Requirements (NFR)"
-                      formControlName="nfr"
-                    ></app-slider>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="solutionForm.get('enableBRD')?.value"
+                        (toggleChange)="
+                          solutionForm.get('enableBRD')?.setValue($event)
+                        "
+                        isPlainToggle="true"
+                      ></app-toggle>
+                    </div>
+                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                      Enable to set maximum number of Business Requirements
+                    </p>
                   </div>
-                  <p class="text-xs leading-6 text-gray-600">
-                    Set the maximum number of requirements to generate for each type
-                  </p>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('enableBRD')?.value"
+                  >
+                    <div class="border rounded-lg p-4">
+                      <app-slider formControlName="brd"></app-slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Product Requirements (PRD)
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="solutionForm.get('enablePRD')?.value"
+                        (toggleChange)="
+                          solutionForm.get('enablePRD')?.setValue($event)
+                        "
+                        isPlainToggle="true"
+                      ></app-toggle>
+                    </div>
+                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                      Enable to set maximum number of Product Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('enablePRD')?.value"
+                  >
+                    <div class="border rounded-lg p-4">
+                      <app-slider formControlName="prd"></app-slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  UI Requirements (UIR)
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="solutionForm.get('enableUIR')?.value"
+                        (toggleChange)="
+                          solutionForm.get('enableUIR')?.setValue($event)
+                        "
+                        isPlainToggle="true"
+                      ></app-toggle>
+                    </div>
+                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                      Enable to set maximum number of UI Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('enableUIR')?.value"
+                  >
+                    <div class="border rounded-lg p-4">
+                      <app-slider formControlName="uir"></app-slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Non-Functional Requirements (NFR)
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="solutionForm.get('enableNFR')?.value"
+                        (toggleChange)="
+                          solutionForm.get('enableNFR')?.setValue($event)
+                        "
+                        isPlainToggle="true"
+                      ></app-toggle>
+                    </div>
+                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                      Enable to set maximum number of Non-Functional
+                      Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('enableNFR')?.value"
+                  >
+                    <div class="border rounded-lg p-4">
+                      <app-slider formControlName="nfr"></app-slider>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

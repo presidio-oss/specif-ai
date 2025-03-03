@@ -79,6 +79,10 @@ export class CreateSolutionComponent implements OnInit {
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
+      enableBRD: new FormControl(true),
+      enablePRD: new FormControl(true),
+      enableUIR: new FormControl(true),
+      enableNFR: new FormControl(true),
       brd: new FormControl(15, [
         Validators.required,
         Validators.min(0),

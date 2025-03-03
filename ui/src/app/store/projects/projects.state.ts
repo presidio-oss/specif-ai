@@ -150,17 +150,21 @@ export class ProjectsState {
           name: projectName,
           description: metadata.description,
           cleanSolution: metadata.cleanSolution,
-          brd: {
+          brdPreferences: {
             max_count: metadata.brd,
+            isEnabled: metadata.enableBRD,
           },
-          prd: {
+          prdPreferences: {
             max_count: metadata.prd,
+            isEnabled: metadata.enablePRD,
           },
-          uir: {
+          uirPreferences: {
             max_count: metadata.uir,
+            isEnabled: metadata.enableUIR,
           },
-          nfr: {
+          nfrPreferences: {
             max_count: metadata.nfr,
+            isEnabled: metadata.enableNFR,
           },
         }),
       );

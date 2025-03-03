@@ -3,6 +3,7 @@ from marshmallow import Schema, fields, validate
 
 class RequirementGenerationLimitSchema(Schema):
     max_count = fields.Integer(required=True)
+    isEnabled = fields.Boolean(required=True)
 
 
 class CreateSolutionSchema(Schema):
@@ -14,10 +15,14 @@ class CreateSolutionSchema(Schema):
     deployment = fields.Boolean(required=False)
     createReqt = fields.Boolean(required=False)
     created_on = fields.DateTime(required=True)
-    brd = fields.Nested(RequirementGenerationLimitSchema, required=True)
-    prd = fields.Nested(RequirementGenerationLimitSchema, required=True)
-    nfr = fields.Nested(RequirementGenerationLimitSchema, required=True)
-    uir = fields.Nested(RequirementGenerationLimitSchema, required=True)
+    brdPreferences = fields.Nested(
+        RequirementGenerationLimitSchema, required=True)
+    prdPreferences = fields.Nested(
+        RequirementGenerationLimitSchema, required=True)
+    nfrPreferences = fields.Nested(
+        RequirementGenerationLimitSchema, required=True)
+    uirPreferences = fields.Nested(
+        RequirementGenerationLimitSchema, required=True)
 
 
 class SolutionIdSchema(Schema):

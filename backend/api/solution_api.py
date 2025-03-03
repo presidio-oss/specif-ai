@@ -88,27 +88,21 @@ def create_solutions():
         clean_solution = data['cleanSolution'] if ('cleanSolution' in data) and isinstance(data['cleanSolution'],
                                                                                            bool) else False
         if clean_solution is False:
+            preference_mapping = {
+                'brdPreferences': {'type': 'brd', 'template': 'create_brd.jinja2'},
+                'prdPreferences': {'type': 'prd', 'template': 'create_prd.jinja2'},
+                'uirPreferences': {'type': 'uir', 'template': 'create_uir.jinja2'},
+                'nfrPreferences': {'type': 'nfr', 'template': 'create_nfr.jinja2'},
+            }
+
             templates = [
                 {
-                    'type': 'brd',
-                    'template_path': 'create_brd.jinja2',
-                    'max_count': data['brd']['max_count']
-                },
-                {
-                    'type': 'prd',
-                    'template_path': 'create_prd.jinja2',
-                    'max_count': data['prd']['max_count']
-                },
-                {
-                    'type': 'nfr',
-                    'template_path': 'create_nfr.jinja2',
-                    'max_count': data['nfr']['max_count']
-                },
-                {
-                    'type': 'uir',
-                    'template_path': 'create_uir.jinja2',
-                    'max_count': data['uir']['max_count']
+                    'type': config['type'],
+                    'template_path': config['template'],
+                    'max_count': data[pref]['max_count']
                 }
+                for pref, config in preference_mapping.items()
+                if data.get(pref, {}).get('isEnabled')
             ]
         executor = ExecutorConfig().get_executor()
         futures = [executor.submit(get_llm_response, template) for template in templates]

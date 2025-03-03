@@ -5,6 +5,7 @@ export interface IProject {
 
 export interface IGenerationRange {
   max_count: number;
+  isEnabled: boolean;
 }
 
 export interface IProjectMetadata {
@@ -24,10 +25,10 @@ export interface ICreateSolutionRequest {
   description: string;
   createReqt: boolean;
   cleanSolution: boolean;
-  brd: IGenerationRange;
-  prd: IGenerationRange;
-  uir: IGenerationRange;
-  nfr: IGenerationRange;
+  brdPreferences: IGenerationRange;
+  prdPreferences: IGenerationRange;
+  uirPreferences: IGenerationRange;
+  nfrPreferences: IGenerationRange;
 }
 
 export interface ISolutionResponse {
