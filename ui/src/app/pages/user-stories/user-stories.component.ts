@@ -44,7 +44,10 @@ import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
-import { CONFIRMATION_DIALOG, TOASTER_MESSAGES } from '../../constants/app.constants';
+import {
+  CONFIRMATION_DIALOG,
+  TOASTER_MESSAGES,
+} from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
 import { BehaviorSubject } from 'rxjs';
@@ -270,10 +273,15 @@ export class UserStoriesComponent implements OnInit {
         this.generateTasks(regenerate).then(() => {
           this.updateWithUserStories(this.userStories);
         });
+        this.toast.showSuccess(
+          TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
+        );
       },
       error: (error) => {
         this.loadingService.setLoading(false);
-        console.error('Error fetching user stories:', error);
+        this.toast.showError(
+          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+        );
       },
     });
     this.dialog.closeAll();

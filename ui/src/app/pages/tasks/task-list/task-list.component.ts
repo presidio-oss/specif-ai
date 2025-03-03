@@ -22,6 +22,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ProjectsState } from '../../../store/projects/projects.state';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent } from '../../../components/core/button/button.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
@@ -46,6 +47,7 @@ import { BehaviorSubject } from 'rxjs';
     ListItemComponent,
     BadgeComponent,
     SearchInputComponent,
+    MatTooltipModule,
   ],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
@@ -145,7 +147,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     });
   }
 
-  addExtraContext() {
+  addExtraContext(regenerate: boolean = false) {
     const dialogText = {
       title: 'Generate User Story Tasks',
       description:
@@ -159,18 +161,18 @@ export class TaskListComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.componentInstance.generate.subscribe((emittedValue) => {
-      this.refineUserStoryIntoTasks(emittedValue);
+      this.refineUserStoryIntoTasks(regenerate, emittedValue);
     });
   }
 
-  refineUserStoryIntoTasks(extraContext: string) {
+  refineUserStoryIntoTasks(regenerate: boolean = false, extraContext: string) {
     let request: ITaskRequest = {
       appId: this.config.projectId,
       reqId: this.config.newFileName.split('-')[0],
       featureId: this.selectedUserStory.id,
       name: this.selectedUserStory.name,
       description: this.selectedUserStory.description,
-      regenerate: true,
+      regenerate: regenerate,
       technicalDetails: this.metadata.technicalDetails || '',
       extraContext: extraContext,
     };
@@ -185,10 +187,16 @@ export class TaskListComponent implements OnInit, OnDestroy {
         };
         this.userStories = updatedUserStories;
         this.updateWithUserStories(updatedUserStories[this.config.i]);
+        this.toastService.showSuccess(
+          TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
+        );
       },
       error: (error) => {
         console.error('There was an error!', error);
         this.loadingService.setLoading(false);
+        this.toastService.showError(
+          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+        );
       },
     });
     this.dialog.closeAll();

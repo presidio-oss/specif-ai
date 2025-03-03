@@ -19,19 +19,14 @@
 
         <div class="flex items-center justify-between gap-3">
           <app-button
-            *ngIf="userStories.length === 0"
-            buttonContent="Generate User Stories"
+            [buttonContent]="
+              userStories.length === 0
+                ? 'Generate User Stories'
+                : 'Regenerate User Stories'
+            "
             theme="secondary"
             size="sm"
-            (click)="addMoreContext(true)"
-            rounded="lg"
-          />
-          <app-button
-            *ngIf="userStories.length > 0"
-            buttonContent="Regenerate User Stories"
-            theme="secondary"
-            size="sm"
-            (click)="addMoreContext(true)"
+            (click)="addMoreContext(userStories.length > 0)"
             rounded="lg"
           />
           <app-button
