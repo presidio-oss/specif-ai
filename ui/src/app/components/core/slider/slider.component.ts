@@ -17,7 +17,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
   ],
 })
 export class AppSliderComponent implements ControlValueAccessor {
-  @Input() min: number = 0;
+  @Input() min: number = 1;
   @Input() max: number = 30;
   @Input() step: number = 1;
   @Input() label: string = '';

@@ -94,22 +94,22 @@ export class CreateSolutionComponent implements OnInit {
       enableNFR: new FormControl(true),
       brd: new FormControl(15, [
         Validators.required,
-        Validators.min(0),
+        Validators.min(1),
         Validators.max(30),
       ]),
       prd: new FormControl(15, [
         Validators.required,
-        Validators.min(0),
+        Validators.min(1),
         Validators.max(30),
       ]),
       uir: new FormControl(15, [
         Validators.required,
-        Validators.min(0),
+        Validators.min(1),
         Validators.max(30),
       ]),
       nfr: new FormControl(15, [
         Validators.required,
-        Validators.min(0),
+        Validators.min(1),
         Validators.max(30),
       ]),
     });
