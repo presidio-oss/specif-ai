@@ -1,6 +1,6 @@
 {
   "name": "ui",
-  "version": "1.9.7",
+  "version": "1.9.8",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

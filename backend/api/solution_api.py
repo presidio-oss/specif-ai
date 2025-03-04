@@ -1,12 +1,18 @@
+# Standard library imports
 import json
+import concurrent.futures
+
+# Third-party imports
 from flask import abort, request, g, Blueprint
 from marshmallow import ValidationError
-from decorators.require_access_token import require_access_code
 from langchain_aws.retrievers import AmazonKnowledgeBasesRetriever
+
+# Local application imports
+from decorators.require_access_token import require_access_code
 from config.exceptions import CustomAppException
 from config.logging_config import logger
 from utils.common_utils import render_template, get_template_env
-from llm.llm_service import LLMService
+from utils.llm_utils import LLMUtils
 from llm.prompts import (
     p_process_flow_chart,
     p_add_business_process,
@@ -15,29 +21,41 @@ from llm.prompts import (
     p_add_task,
     p_update_task,
 )
+from llm import build_llm_handler
 from schemas.schemas import (
     create_process_flow_chart_schema,
 )
 from config.executor import ExecutorConfig
-import concurrent.futures
 
 
 solution_api = Blueprint('solution_api', __name__)
 jinja_template_env = get_template_env()
-llm_service = LLMService()  # Singleton instance of LLMService
+
 
 @solution_api.route("/api/solutions/flowchart", methods=["POST"])
 @require_access_code()
 def create_process_flow_chart():
     logger.info(f"Request {g.request_id}: Entered <create_process_flow_chart>")
+    response = None
+
     try:
         data = create_process_flow_chart_schema.load(request.get_json())
         process_flow_template = render_template(p_process_flow_chart)
         BRDS = "\n".join(data["selectedBRDs"])
         PRDS = "\n".join(data["selectedPRDs"])
         process_flow_req = process_flow_template.render(title=data["title"], description=data["description"], BRDS=BRDS, PRDS=PRDS,)
-        process_flow_description = llm_service.call_llm(process_flow_req)
-        parsed_res = json.dumps(process_flow_description)
+
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(prompt=process_flow_req)
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        response = llm_handler.invoke(messages=llm_message)
+
+        parsed_res = json.dumps(response)
     except ValidationError as err:
         logger.error(f"Request {g.request_id}: Payload validation failed: {err.messages}")
         raise CustomAppException("Payload validation failed.", status_code=400) from err
@@ -46,11 +64,12 @@ def create_process_flow_chart():
         raise CustomAppException(
             "Invalid JSON format. Please try again.",
             status_code=500,
-            payload={"features": process_flow_description},
+            payload={"features": response},
         ) from exc
     flow_chart_data = parsed_res
     logger.info(f"Request {g.request_id}: Exited <create_process_flow_chart>")
     return flow_chart_data
+
 
 # Create solutions without yaml
 @solution_api.route("/api/solutions/create", methods=["POST"])
@@ -62,16 +81,34 @@ def create_solutions():
     errors = []
     templates = []
 
-    def get_llm_response(template_path):
-        logger.info(f"Request {g.request_id}: Fetching LLM response for template: {template_path}")
-        template = jinja_template_env.get_template(template_path)
-        template = template.render(name=data["name"], description=data["description"])
+    def get_llm_response(template_config):
+        logger.info(
+            f"Request {g.request_id}: Fetching LLM response for template: {template_config['template_path']}")
+        template = jinja_template_env.get_template(
+            template_config['template_path'])
+
+        template = template.render(
+            name=data["name"],
+            description=data["description"],
+            max_count=template_config['max_count']
+        )
         try:
-            llm_response = llm_service.call_llm(template)
-            logger.info(f"Request {g.request_id}: Successfully received LLM response for template: {template_path}")
+            # Prepare message for LLM
+            llm_message = LLMUtils.prepare_messages(prompt=template)
+
+            # Invoke LLM
+            llm_handler = build_llm_handler(
+                provider=g.current_provider,
+                model_id=g.current_model
+            )
+            llm_response = llm_handler.invoke(messages=llm_message)
+
+            logger.info(
+                f"Request {g.request_id}: Successfully received LLM response for template: {template_config['template_path']}")
             return json.loads(llm_response)
         except json.JSONDecodeError:
-            logger.error(f"Request {g.request_id}: Failed to parse LLM response for template: {template_path}")
+            logger.error(
+                f"Request {g.request_id}: Failed to parse LLM response for template: {template_config['template_path']}")
             abort(500, description="Invalid JSON format. Please try again.")
 
     if data["createReqt"]:
@@ -79,7 +116,22 @@ def create_solutions():
         clean_solution = data['cleanSolution'] if ('cleanSolution' in data) and isinstance(data['cleanSolution'],
                                                                                            bool) else False
         if clean_solution is False:
-            templates = ['create_brd.jinja2', 'create_prd.jinja2', 'create_nfr.jinja2', 'create_uir.jinja2']
+            preference_mapping = {
+                'brdPreferences': {'type': 'brd', 'template': 'create_brd.jinja2'},
+                'prdPreferences': {'type': 'prd', 'template': 'create_prd.jinja2'},
+                'uirPreferences': {'type': 'uir', 'template': 'create_uir.jinja2'},
+                'nfrPreferences': {'type': 'nfr', 'template': 'create_nfr.jinja2'},
+            }
+
+            templates = [
+                {
+                    'type': config['type'],
+                    'template_path': config['template'],
+                    'max_count': data[pref]['max_count']
+                }
+                for pref, config in preference_mapping.items()
+                if data.get(pref, {}).get('isEnabled')
+            ]
         executor = ExecutorConfig().get_executor()
         futures = [executor.submit(get_llm_response, template) for template in templates]
         for future in concurrent.futures.as_completed(futures):
@@ -118,7 +170,15 @@ def update_solution_reqt():
             addReqtType=data["addReqtType"]
         )
 
-        llm_response = llm_service.call_llm(template)
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(prompt=template)
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        llm_response = llm_handler.invoke(messages=llm_message)
     else:
         updatedReqt = f'{updatedReqt} {data["reqDesc"]}'
         llm_response = json.dumps(
@@ -157,7 +217,16 @@ def add_solution_reqt():
             fileContent=fileContent,
             addReqtType=data["addReqtType"],
         )
-        llm_response = llm_service.call_llm(template)
+
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(prompt=template)
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        llm_response = llm_handler.invoke(messages=llm_message)
     else:
         llm_response = json.dumps(
             {"LLMreqt": {"title": data["title"], "requirement": newReqt}}
@@ -188,7 +257,17 @@ def create_stories():
         feature_req = feature_template.render(
             requirements=data["reqDesc"], extraContext=data["extraContext"], technologies=data['technicalDetails']
         )
-        features = llm_service.call_llm(feature_req)
+
+        # Create LLM handler
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+
+        # Prepare message and invoke LLM
+        llm_message = LLMUtils.prepare_messages(prompt=feature_req)
+        features = llm_handler.invoke(messages=llm_message)
+
         splits = [line for line in features.strip().split("\n") if line.strip()]
         # 2. Evaluation of generated user stories/features
         feature_evaluation_template = jinja_template_env.get_template('06_evaluate.jinja2')
@@ -196,12 +275,20 @@ def create_stories():
         parsed_evaluation = feature_evaluation_template.render(
             requirements=data["reqDesc"], features=features_splits_json
         )
-        evaluation = llm_service.call_llm(parsed_evaluation)
+
+        # Prepare message and invoke LLM
+        llm_message = LLMUtils.prepare_messages(prompt=parsed_evaluation)
+        evaluation = llm_handler.invoke(messages=llm_message)
+
         # 3. After the evaluation the response is sent back to LLM, generate the final set of US/features
         final_features = feature_template.render(
             requirements=data["reqDesc"], features=features, evaluation=evaluation
         )
-        final_features_res = llm_service.call_llm(final_features)
+
+        # Prepare message and invoke LLM
+        llm_message = LLMUtils.prepare_messages(prompt=final_features)
+        final_features_res = llm_handler.invoke(messages=llm_message)
+
         try:
             pre_format_response = json.loads(final_features_res)
             llm_response_dict = {"features": [{"id": i["id"], i["title"]: i["description"]} for i in pre_format_response['features']]}
@@ -233,7 +320,16 @@ def create_task():
         task_req = task_template.render(
             name=data["name"], userstories=data["description"], extraContext=data["extraContext"], technologies=data['technicalDetails']
         )
-        llm_response = llm_service.call_llm(task_req)
+
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(prompt=task_req)
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        llm_response = llm_handler.invoke(messages=llm_message)
         try:
             pre_format_response = json.loads(llm_response)
             llm_response_dict = {"tasks": [{"id": i["id"], i["name"]: i["acceptance"]} for i in pre_format_response['tasks']]}
@@ -253,6 +349,7 @@ def create_task():
             "An unexpected error occurred while creating the task for user stories.",
             status_code=500,
         ) from e
+
 
 @solution_api.route("/api/solutions/task/update", methods=["PUT"])
 @require_access_code()
@@ -288,7 +385,16 @@ def update_task():
         taskDescription=reqDesc,
         fileContent=fileContent,
     )
-    llm_response = llm_service.call_llm(template)
+
+    # Prepare message for LLM
+    llm_message = LLMUtils.prepare_messages(prompt=template)
+
+    # Invoke LLM
+    llm_handler = build_llm_handler(
+        provider=g.current_provider,
+        model_id=g.current_model
+    )
+    llm_response = llm_handler.invoke(messages=llm_message)
     try:
         llm_response_dict = json.loads(llm_response)
     except json.JSONDecodeError as exc:
@@ -336,7 +442,16 @@ def add_task():
         taskDescription=reqDesc,
         fileContent=fileContent,
     )
-    llm_response = llm_service.call_llm(template)
+
+    # Prepare message for LLM
+    llm_message = LLMUtils.prepare_messages(prompt=template)
+
+    # Invoke LLM
+    llm_handler = build_llm_handler(
+        provider=g.current_provider,
+        model_id=g.current_model
+    )
+    llm_response = llm_handler.invoke(messages=llm_message)
     try:
         llm_response_dict = json.loads(llm_response)
         logger.info(f"Request {g.request_id}: Successfully processed task creation.")
@@ -387,7 +502,16 @@ def update_user_story():
         newFeatureDescription=featureRequest,
         fileContent=fileContent,
     )
-    llm_response = llm_service.call_llm(template)
+
+    # Prepare message for LLM
+    llm_message = LLMUtils.prepare_messages(prompt=template)
+
+    # Invoke LLM
+    llm_handler = build_llm_handler(
+        provider=g.current_provider,
+        model_id=g.current_model
+    )
+    llm_response = llm_handler.invoke(messages=llm_message)
     try:
         llm_response_dict = json.loads(llm_response)
         logger.info(f"Request {g.request_id}: Successfully processed user story update.")
@@ -438,7 +562,16 @@ def add_user_story():
             featureRequest=featureRequest,
             fileContent=fileContent,
         )
-        llm_response = llm_service.call_llm(template)
+
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(prompt=template)
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        llm_response = llm_handler.invoke(messages=llm_message)
         try:
             llm_response_dict = json.loads(llm_response)
             logger.info(f"Request {g.request_id}: Successfully processed user story addition.")
@@ -475,7 +608,16 @@ def add_business_process():
             BRDS=BRDS,
             PRDS=PRDS,
         )
-        llm_response = llm_service.call_llm(template)
+
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(prompt=template)
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        llm_response = llm_handler.invoke(messages=llm_message)
     else:
         llm_response = json.dumps(
             {"LLMreqt": {"title": data["title"], "requirement": newReqt}}
@@ -515,7 +657,16 @@ def update_business_process():
             BRDS=BRDS,
             PRDS=PRDS,
         )
-        llm_response = llm_service.call_llm(template)
+
+        # Prepare message for LLM
+        llm_message = LLMUtils.prepare_messages(prompt=template)
+
+        # Invoke LLM
+        llm_handler = build_llm_handler(
+            provider=g.current_provider,
+            model_id=g.current_model
+        )
+        llm_response = llm_handler.invoke(messages=llm_message)
     else:
         llm_response = json.dumps(
             {"updated": {"title": data["title"], "requirement": updatedReqt}}
@@ -532,6 +683,7 @@ def update_business_process():
     merged_data = {**data, **llm_response_dict}
     logger.info(f"Request {g.request_id}: Exited <update_business_process>")
     return merged_data
+
 
 @solution_api.route("/api/solutions/integration/knowledgebase/validation", methods=["POST"])
 @require_access_code()

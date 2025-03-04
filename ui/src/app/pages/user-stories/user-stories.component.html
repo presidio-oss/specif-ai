@@ -19,19 +19,14 @@
 
         <div class="flex items-center justify-between gap-3">
           <app-button
-            *ngIf="userStories.length === 0"
-            buttonContent="Generate User Stories"
+            [buttonContent]="
+              userStories.length === 0
+                ? 'Generate User Stories'
+                : 'Regenerate User Stories'
+            "
             theme="secondary"
             size="sm"
-            (click)="addMoreContext(true)"
-            rounded="lg"
-          />
-          <app-button
-            *ngIf="userStories.length > 0"
-            buttonContent="Regenerate User Stories"
-            theme="secondary"
-            size="sm"
-            (click)="addMoreContext(true)"
+            (click)="addMoreContext(userStories.length > 0)"
             rounded="lg"
           />
           <app-button
@@ -46,14 +41,14 @@
             <button
               mat-menu-item
               class="rounded px-2 py-1 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 mr-2"
-              (click)="copyToClipboard()"
+              (click)="exportUserStories('json')"
             >
               Copy JSON to Clipboard
             </button>
             <button
               mat-menu-item
               class="rounded px-2 py-1 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 mr-2"
-              (click)="exportToExcel()"
+              (click)="exportUserStories('xlsx')"
             >
               Download as Excel(.xlsx)
             </button>
@@ -63,13 +58,6 @@
               (click)="syncRequirementWithJira()"
             >
               Sync with Jira
-            </button>
-            <button
-              mat-menu-item
-              class="rounded px-2 py-1 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 mr-2"
-              (click)="exportToCSV()"
-            >
-              Download as CSV(.csv)
             </button>
           </mat-menu>
           <app-button

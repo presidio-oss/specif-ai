@@ -83,13 +83,19 @@ By simply providing a solution name, description, and tech stack details, Specif
    # Run the container
    docker run -p 5001:5001 \
    -e APP_PASSCODE_KEY=$APP_PASSCODE_KEY \
+   -e DEFAULT_API_PROVIDER=$DEFAULT_API_PROVIDER \
+   -e DEFAULT_MODEL=$DEFAULT_MODEL \
+   -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY \
+   -e OPENAI_API_VERSION=$OPENAI_API_VERSION \
    -e OPENAI_API_KEY=$OPENAI_API_KEY \
-   -e OPENAI_API_BASE=$OPENAI_API_BASE \
-   -e AZUREAI_API_BASE=$AZUREAI_API_BASE \
-   -e AZUREAI_API_KEY=$AZUREAI_API_KEY \
-   -e AZUREAI_API_VERSION=$AZUREAI_API_VERSION \
-   -e CLAUDE_API_KEY=$CLAUDE_API_KEY \
-   -e CLAUDE_ENDPOINT=$CLAUDE_ENDPOINT \
+   -e OPENAI_BASE_URL=$OPENAI_BASE_URL \
+   -e ANTHROPIC_BASE_URL=$ANTHROPIC_BASE_URL \
+   -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+   -e ANTHROPIC_BEDROCK_BASE_URL=$ANTHROPIC_BEDROCK_BASE_URL \
+   -e AWS_BEDROCK_ACCESS_KEY=$AWS_BEDROCK_ACCESS_KEY \
+   -e AWS_BEDROCK_SECRET_KEY=$AWS_BEDROCK_SECRET_KEY \
+   -e AWS_BEDROCK_SESSION_TOKEN=$AWS_BEDROCK_SESSION_TOKEN \
+   -e AWS_BEDROCK_REGION=$AWS_BEDROCK_REGION \
    -e HOST=$HOST \
    -e PORT=$PORT \
    -e DEBUG=$DEBUG \
@@ -97,6 +103,7 @@ By simply providing a solution name, description, and tech stack details, Specif
    -e SENTRY_DSN=$SENTRY_DSN \
    -e SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT \
    -e SENTRY_RELEASE=$SENTRY_RELEASE \
+   -e AWS_REGION=$AWS_REGION \
    -it hai-build-requirement-backend
    ```
 
@@ -150,7 +157,13 @@ For more details, refer to the [Backend Server Setup Configuration Settings](./b
       - gpt-4o
       - gpt-4o-mini
    - AWS Bedrock
+      - anthropic.claude-3-7-sonnet-20250219-v1:0
+      - anthropic.claude-3-5-sonnet-20241022-v2:0
+      - anthropic.claude-3-5-haiku-20241022-v1:0
       - anthropic.claude-3-5-sonnet-20240620-v1:0
+      - anthropic.claude-3-opus-20240229-v1:0
+      - anthropic.claude-3-sonnet-20240229-v1:0
+      - anthropic.claude-3-haiku-20240307-v1:0
 
 <div align="center">
 

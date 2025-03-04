@@ -22,10 +22,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { ProjectsState } from '../../../store/projects/projects.state';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent } from '../../../components/core/button/button.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
-import { Clipboard } from '@angular/cdk/clipboard';
+import { ClipboardService } from '../../../services/clipboard.service';
 import { TOASTER_MESSAGES } from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
@@ -46,6 +47,7 @@ import { BehaviorSubject } from 'rxjs';
     ListItemComponent,
     BadgeComponent,
     SearchInputComponent,
+    MatTooltipModule,
   ],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
@@ -53,7 +55,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   store = inject(Store);
   logger = inject(NGXLogger);
   router = inject(Router);
-  clipboard = inject(Clipboard);
+  clipboardService = inject(ClipboardService);
   searchService = inject(SearchService);
   userStoryId: string | null = '';
   userStories: IUserStory[] = [];
@@ -145,7 +147,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     });
   }
 
-  addExtraContext() {
+  addExtraContext(regenerate: boolean = false) {
     const dialogText = {
       title: 'Generate User Story Tasks',
       description:
@@ -159,18 +161,18 @@ export class TaskListComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.componentInstance.generate.subscribe((emittedValue) => {
-      this.refineUserStoryIntoTasks(emittedValue);
+      this.refineUserStoryIntoTasks(regenerate, emittedValue);
     });
   }
 
-  refineUserStoryIntoTasks(extraContext: string) {
+  refineUserStoryIntoTasks(regenerate: boolean = false, extraContext: string) {
     let request: ITaskRequest = {
       appId: this.config.projectId,
       reqId: this.config.newFileName.split('-')[0],
       featureId: this.selectedUserStory.id,
       name: this.selectedUserStory.name,
       description: this.selectedUserStory.description,
-      regenerate: true,
+      regenerate: regenerate,
       technicalDetails: this.metadata.technicalDetails || '',
       extraContext: extraContext,
     };
@@ -184,17 +186,23 @@ export class TaskListComponent implements OnInit, OnDestroy {
           tasks: tasksResponse,
         };
         this.userStories = updatedUserStories;
-        this.updateWithUserStories(updatedUserStories[this.config.i]);
+        this.updateWithUserStories(
+          updatedUserStories[this.config.i],
+          regenerate,
+        );
       },
       error: (error) => {
         console.error('There was an error!', error);
         this.loadingService.setLoading(false);
+        this.toastService.showError(
+          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+        );
       },
     });
     this.dialog.closeAll();
   }
 
-  updateWithUserStories(userStories: IUserStory) {
+  updateWithUserStories(userStories: IUserStory, regenerate: boolean = false) {
     this.store.dispatch(
       new EditUserStory(
         `${this.config.folderName}/${this.config.newFileName}`,
@@ -204,6 +212,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.getLatestUserStories();
       this.loadingService.setLoading(false);
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
+      );
     }, 2000);
   }
 
@@ -226,10 +237,16 @@ export class TaskListComponent implements OnInit, OnDestroy {
   copyTaskContent(event: Event, task: any) {
     event.stopPropagation();
     const taskContent = `${task.id}: ${task.list}\n${task.acceptance || ''}`;
-    this.clipboard.copy(taskContent);
-    this.toastService.showSuccess(
-      TOASTER_MESSAGES.ENTITY.COPY.SUCCESS(this.entityType, task.id),
-    );
+    const success = this.clipboardService.copyToClipboard(taskContent);
+    if (success) {
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.COPY.SUCCESS(this.entityType, task.id),
+      );
+    } else {
+      this.toastService.showError(
+        TOASTER_MESSAGES.ENTITY.COPY.FAILURE(this.entityType, task.id),
+      );
+    }
   }
 
   ngOnInit() {

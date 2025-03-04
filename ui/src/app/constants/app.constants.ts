@@ -69,20 +69,31 @@ export const CONFIRMATION_DIALOG = {
   },
 };
 
-export enum ENTITY_DISPLAY_NAME_MAP {
-  STORIES = 'User Story',
-  BP = 'Business Process',
-  BRD = 'Business Requirement',
-  NFR = 'Non Functional Requirement',
-  PRD = 'Product Requirement',
-  UIR = 'User Interface Requirement',
-  TASK = 'Task',
-}
+export const REQUIREMENT_TYPE = {
+  BRD: 'BRD',
+  PRD: 'PRD',
+  UIR: 'UIR',
+  NFR: 'NFR',
+  BP: 'BP',
+  US: 'US',
+  TASK: 'TASK',
+} as const;
+
+export const REQUIREMENT_DISPLAY_NAME_MAP = {
+  [REQUIREMENT_TYPE.US]: 'User Story',
+  [REQUIREMENT_TYPE.BP]: 'Business Process',
+  [REQUIREMENT_TYPE.BRD]: 'Business Requirement',
+  [REQUIREMENT_TYPE.NFR]: 'Non Functional Requirement',
+  [REQUIREMENT_TYPE.PRD]: 'Product Requirement',
+  [REQUIREMENT_TYPE.UIR]: 'User Interface Requirement',
+  [REQUIREMENT_TYPE.TASK]: 'Task',
+};
 
 const getEntityDisplayName = (folderId: string): string => {
   return (
-    ENTITY_DISPLAY_NAME_MAP[folderId as keyof typeof ENTITY_DISPLAY_NAME_MAP] ||
-    'Unknown Requirement'
+    REQUIREMENT_DISPLAY_NAME_MAP[
+      folderId as keyof typeof REQUIREMENT_DISPLAY_NAME_MAP
+    ] || 'Unknown Requirement'
   );
 };
 
@@ -145,6 +156,18 @@ export const TOASTER_MESSAGES = {
       FAILURE: (entityType: string, entityId: string) =>
         TOASTER_MESSAGES_DEFAULT_TEMPLATE.FAILURE(entityType, 'copy', entityId),
     },
+    GENERATE: {
+      SUCCESS: (entityType: string, isRegenerate = false) =>
+        TOASTER_MESSAGES_DEFAULT_TEMPLATE.SUCCESS(
+          entityType,
+          isRegenerate ? 'regenerated' : 'generated',
+        ),
+      FAILURE: (entityType: string, isRegenerate = false) =>
+        TOASTER_MESSAGES_DEFAULT_TEMPLATE.FAILURE(
+          entityType,
+          isRegenerate ? 'regenerate' : 'generate',
+        ),
+    },
   },
 };
 
@@ -164,12 +187,42 @@ export const APP_MESSAGES = {
 };
 
 export const TOOLTIP_CONTENT = {
-  IMPORT_FROM_CODE_BUTTON: "Import from Code",
-}
+  IMPORT_FROM_CODE_BUTTON: 'Import from Code',
+};
 
 export const PRD_HEADINGS = {
   SCREENS: 'Screens: ',
   PERSONAS: 'Personas: ',
   SCREENS_FORMATTED: '\n\nScreens:\n',
   PERSONAS_FORMATTED: '\n\nPersonas:\n',
-}
+};
+
+export const FOLDER = {
+  BRD: 'BRD',
+  PRD: 'PRD',
+  NFR: 'NFR',
+  UIR: 'UIR',
+  BP: 'BP',
+};
+
+export const REQUIREMENT_TYPE_FOLDER_MAP = {
+  [REQUIREMENT_TYPE.BRD]: FOLDER.BRD,
+  [REQUIREMENT_TYPE.PRD]: FOLDER.PRD,
+  [REQUIREMENT_TYPE.NFR]: FOLDER.NFR,
+  [REQUIREMENT_TYPE.UIR]: FOLDER.UIR,
+  [REQUIREMENT_TYPE.BP]: FOLDER.BP,
+} as const;
+
+export const FOLDER_REQUIREMENT_TYPE_MAP = {
+  [FOLDER.BRD]: REQUIREMENT_TYPE.BRD,
+  [FOLDER.PRD]: REQUIREMENT_TYPE.PRD,
+  [FOLDER.NFR]: REQUIREMENT_TYPE.NFR,
+  [FOLDER.UIR]: REQUIREMENT_TYPE.UIR,
+  [FOLDER.BP]: REQUIREMENT_TYPE.BP,
+} as const;
+
+
+// types
+
+export type RequirementType =
+  (typeof REQUIREMENT_TYPE)[keyof typeof REQUIREMENT_TYPE];
