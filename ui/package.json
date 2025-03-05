@@ -60,6 +60,7 @@
     "ngx-smart-modal": "^14.0.3",
     "npm-run-all": "^4.1.5",
     "panzoom": "^9.4.3",
+    "posthog-js": "^1.181.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "uuid": "^10.0.0",
@@ -70,6 +71,7 @@
     "@angular-devkit/build-angular": "^16.2.1",
     "@angular/cli": "~16.2.1",
     "@angular/compiler-cli": "^16.2.0",
+    "@rrweb/types": "^2.0.0-alpha.16",
     "@types/d3": "^7.4.3",
     "@types/dompurify": "~3.0.5",
     "@types/file-saver": "^2.0.7",
@@ -88,6 +90,7 @@
     "ngx-logger": "^5.0.12",
     "postcss": "^8.4.39",
     "prettier": "3.3.2",
+    "rrweb-snapshot": "^2.0.0-alpha.16",
     "tailwindcss": "^3.4.4",
     "typescript": "~5.1.3"
   }

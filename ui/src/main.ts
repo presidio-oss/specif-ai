@@ -3,6 +3,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { AppModule } from './app/app.module';
 import * as Sentry from '@sentry/angular';
 import { environment } from './environments/environment';
+import posthog from 'posthog-js'
 
 if (environment.ENABLE_SENTRY) {
   Sentry.init({
@@ -30,6 +31,21 @@ if (environment.ENABLE_SENTRY) {
 } else {
   console.log('Disabling sentry based on the environment configuration.');
 }
+
+if (environment.ENABLE_POSTHOG) {
+  posthog.init(
+    environment.POSTHOG_KEY,
+    {
+      api_host: environment.POSTHOG_HOST,
+      person_profiles: 'always', 
+      autocapture: false,
+      ip: true
+    }
+  )
+} else {
+  console.log('Disabling PostHog based on the environment configuration.');
+}
+  
 
 platformBrowserDynamic()
   .bootstrapModule(AppModule)
