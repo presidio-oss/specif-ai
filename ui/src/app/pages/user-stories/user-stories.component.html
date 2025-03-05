@@ -6,13 +6,17 @@
     <div class="mb-4">
       <div class="flex items-center mt-2 justify-between">
         <div class="flex flex-col gap-2 min-w-0">
-          <h1 class="text-lg font-bold text-gray-800 truncate max-w-full pr-8">
+          <h1
+            class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
+          >
             {{ newFileName.split("-")[0] }}:
             {{ navigation.selectedRequirement.title }}
           </h1>
 
           <div class="flex items-center">
-            <h2 class="text-md font-semibold text-gray-600">User Stories</h2>
+            <h2 class="text-md font-semibold text-secondary-600">
+              User Stories
+            </h2>
             <app-badge [badgeText]="userStories.length"></app-badge>
           </div>
         </div>
@@ -109,7 +113,7 @@
         </div>
       </app-list-item>
       <h1
-        class="font-semibold text-gray-700 mt-4 text-center"
+        class="font-semibold text-secondary-700 mt-4 text-center"
         *ngIf="(filteredUserStories$ | async)?.length === 0"
       >
         No User Stories Available.

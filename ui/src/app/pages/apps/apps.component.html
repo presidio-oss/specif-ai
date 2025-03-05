@@ -3,7 +3,9 @@
     <div
       class="flex items-center justify-between p-6 sticky top-0 bg-white rounded-t-lg"
     >
-      <h1 class="text-xl font-semibold leading-6 text-gray-900">Solutions</h1>
+      <h1 class="text-xl font-semibold leading-6 text-secondary-900">
+        Solutions
+      </h1>
       <app-button
         (click)="navigateToCreate()"
         buttonContent="Create Solution"
@@ -16,10 +18,10 @@
         <button
           (click)="navigateToCreate()"
           type="button"
-          class="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          class="relative block w-full rounded-lg border-2 border-dashed border-secondary-300 p-12 text-center hover:border-secondary-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           <svg
-            class="mx-auto h-12 w-12 text-gray-400"
+            class="mx-auto h-12 w-12 text-secondary-400"
             stroke="currentColor"
             fill="none"
             viewBox="0 0 48 48"
@@ -32,13 +34,16 @@
               d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6"
             />
           </svg>
-          <span class="mt-2 block text-sm font-semibold text-gray-900"
+          <span class="mt-2 block text-sm font-semibold text-secondary-900"
             >Create a new solution</span
           >
         </button>
       </div>
 
-      <ul role="list" class="divide-y divide-gray-100 h-full overflow-hidden">
+      <ul
+        role="list"
+        class="divide-y divide-secondary-100 h-full overflow-hidden"
+      >
         <li
           class="flex items-center justify-between gap-x-6 px-6 py-3 hover:bg-secondary-50"
           *ngFor="let app of apps; index as i"
@@ -46,18 +51,18 @@
           <div class="min-w-0">
             <div class="flex items-start gap-x-3">
               <p
-                class="capitalize text-sm font-semibold leading-6 text-gray-900"
+                class="capitalize text-sm font-semibold leading-6 text-secondary-900"
               >
                 {{ app.project }}
               </p>
               <!-- <p
-                class="rounded-md whitespace-nowrap mt-0.5 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset text-green-700 bg-green-50 ring-green-600/20"
+                class="rounded-md whitespace-nowrap mt-0.5 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset text-success-700 bg-success-50 ring-success-600/20"
               >
                 Complete
               </p> -->
             </div>
             <div
-              class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500"
+              class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-secondary-500"
             >
               <p class="whitespace-nowrap">
                 Created

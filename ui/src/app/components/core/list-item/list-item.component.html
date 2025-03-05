@@ -1,7 +1,7 @@
 <div class="grid grid-cols-1 gap-5 sm:gap-6 lg:gap-6 mt-3">
   <div class="col-span-1 flex rounded-md shadow-sm">
     <div
-      class="flex flex-1 items-center justify-between truncate rounded-lg border border-gray-200 bg-white cursor-pointer hover:bg-secondary-50 transition-colors relative"
+      class="flex flex-1 items-center justify-between truncate rounded-lg border border-secondary-200 bg-white cursor-pointer hover:bg-secondary-50 transition-colors relative"
     >
       <div class="flex-1 truncate p-4 text-sm">
         <a class="font-semibold text-secondary-500 text-sm">
@@ -10,10 +10,10 @@
             >&bull; {{ payload.jiraTicketId }}</span
           >
         </a>
-        <h1 class="text-gray-900 text-base font-medium truncate mt-2">
+        <h1 class="text-secondary-900 text-base font-medium truncate mt-2">
           {{ payload.name }}
         </h1>
-        <p class="text-gray-500 text-xs leading-4 pt-2 text-wrap">
+        <p class="text-secondary-500 text-xs leading-4 pt-2 text-wrap">
           {{ payload.description | truncateWithEllipsis }}
         </p>
       </div>

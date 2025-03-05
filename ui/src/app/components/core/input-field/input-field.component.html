@@ -5,7 +5,7 @@
     *ngIf="showLabel"
   >
     {{ elementName }}
-    <span class="text-red-500 text-xs" *ngIf="required">*</span>
+    <span class="text-danger-500 text-xs" *ngIf="required">*</span>
   </label>
   <input
     [type]="elementType"

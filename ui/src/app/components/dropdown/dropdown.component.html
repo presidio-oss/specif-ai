@@ -1,19 +1,33 @@
 <div class="relative">
-  <button class="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-between focus:outline-none"
-          (click)="toggleDropdown()">
-    <span>{{ selectedOption || 'Select an option' }}</span>
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+  <button
+    class="w-full bg-white border border-secondary-300 text-secondary-700 py-2 px-4 rounded-md flex items-center justify-between focus:outline-none"
+    (click)="toggleDropdown()"
+  >
+    <span>{{ selectedOption || "Select an option" }}</span>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+        clip-rule="evenodd"
+      />
     </svg>
   </button>
 
-  <ul *ngIf="isOpen" class="absolute z-10 w-full bg-white border border-gray-200 rounded-md mt-2 shadow-lg">
+  <ul
+    *ngIf="isOpen"
+    class="absolute z-10 w-full bg-white border border-secondary-200 rounded-md mt-2 shadow-lg"
+  >
     <li
       *ngFor="let option of options"
       (click)="selectOption(option)"
       (keydown.enter)="selectOption(option)"
       (keydown.space)="selectOption(option); $event.preventDefault()"
-      class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+      class="px-4 py-2 cursor-pointer hover:bg-secondary-100"
       role="button"
       tabindex="0"
     >

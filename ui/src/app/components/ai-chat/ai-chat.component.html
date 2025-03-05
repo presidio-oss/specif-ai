@@ -1,20 +1,45 @@
-<div [ngClass]="requirementAbbrivation != 'BP' ? 'h-[calc(100dvh-150px)]' : 'h-[calc(100dvh-200px)]'" 
-class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden border border-slate-300">
+<div
+  [ngClass]="
+    requirementAbbrivation != 'BP'
+      ? 'h-[calc(100dvh-150px)]'
+      : 'h-[calc(100dvh-200px)]'
+  "
+  class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden border border-secondary-300"
+>
   <!-- Fixed Header -->
-  <div *ngIf="isKbAvailable || requirementAbbrivation != 'BP'" class="flex-none px-6 py-3 border-b border-slate-300">
-    <p *ngIf="!isKbAvailable && requirementAbbrivation != 'BP'" class="text-md font-medium">AI Chat</p>
-    <div *ngIf="isKbAvailable" class="kb-container flex justify-between items-center">
+  <div
+    *ngIf="isKbAvailable || requirementAbbrivation != 'BP'"
+    class="flex-none px-6 py-3 border-b border-secondary-300"
+  >
+    <p
+      *ngIf="!isKbAvailable && requirementAbbrivation != 'BP'"
+      class="text-md font-medium"
+    >
+      AI Chat
+    </p>
+    <div
+      *ngIf="isKbAvailable"
+      class="kb-container flex justify-between items-center"
+    >
       <div class="flex items-center space-x-2">
-        <img src="./assets/img/logo/aws_dark_bg_white_logo.svg" class="h-[30px]" alt="AWS logo"/>
-        <p class="text-sm text-gray-600">AWS Bedrock Knowledge Base</p>
+        <img
+          src="./assets/img/logo/aws_dark_bg_white_logo.svg"
+          class="h-[30px]"
+          alt="AWS logo"
+        />
+        <p class="text-sm text-secondary-600">AWS Bedrock Knowledge Base</p>
         <ng-icon
           name="heroInformationCircle"
           class="text-lg cursor-pointer"
-          matTooltip="{{APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE}}"
+          matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"
         ></ng-icon>
       </div>
       <div class="flex items-center">
-        <app-toggle *ngIf="isKbAvailable" [isActive]="isKbActive" (toggleChange)="onKbToggle($event)"/>
+        <app-toggle
+          *ngIf="isKbAvailable"
+          [isActive]="isKbActive"
+          (toggleChange)="onKbToggle($event)"
+        />
       </div>
     </div>
   </div>
@@ -24,23 +49,42 @@ class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden 
     <div class="relative py-3 space-y-6">
       <!-- Chat Messages -->
       <div class="space-y-6">
-        <div *ngFor="let chat of chatHistory" class="transition-all duration-300 ease-in-out">
+        <div
+          *ngFor="let chat of chatHistory"
+          class="transition-all duration-300 ease-in-out"
+        >
           <!-- User Message and Files -->
-          <div class="flex flex-col items-end gap-2" *ngIf="chat.user || chat.files">
+          <div
+            class="flex flex-col items-end gap-2"
+            *ngIf="chat.user || chat.files"
+          >
             <!-- User text message -->
-            <div class="px-5 py-3 bg-indigo-600 text-white rounded-2xl w-fit max-w-[75%] text-sm" *ngIf="chat.user">
+            <div
+              class="px-5 py-3 bg-indigo-600 text-white rounded-2xl w-fit max-w-[75%] text-sm"
+              *ngIf="chat.user"
+            >
               {{ chat.user }}
             </div>
             <!-- File attachments -->
-            <div class="p-2 bg-gray-100 border border-slate-300 rounded-2xl w-fit max-w-[75%]" *ngIf="chat.files">
+            <div
+              class="p-2 bg-secondary-100 border border-secondary-300 rounded-2xl w-fit max-w-[75%]"
+              *ngIf="chat.files"
+            >
               <div class="flex flex-col gap-2">
-                <div *ngFor="let file of chat.files" 
-                  class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg">
+                <div
+                  *ngFor="let file of chat.files"
+                  class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg"
+                >
                   <div class="flex items-center gap-2">
-                    <ng-icon name="heroDocumentText" class="text-xl text-gray-600"></ng-icon>
+                    <ng-icon
+                      name="heroDocumentText"
+                      class="text-xl text-secondary-600"
+                    ></ng-icon>
                     <div class="flex flex-col">
                       <span class="text-sm">{{ file.name }}</span>
-                      <span class="text-xs text-gray-500">{{ file.size }}</span>
+                      <span class="text-xs text-secondary-500">{{
+                        file.size
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -51,22 +95,40 @@ class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden 
           <!-- Assistant Message -->
           <div *ngIf="chat.assistant" class="flex items-start">
             <div class="flex items-start gap-3 w-full">
-              <div class="flex-none bg-gray-100 rounded-full flex items-center justify-center w-10 h-10">
-                <img src="assets/img/logo/haibuild_onlylogo.svg" alt="AI" class="w-6 h-6">
+              <div
+                class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10"
+              >
+                <img
+                  src="assets/img/logo/haibuild_onlylogo.svg"
+                  alt="AI"
+                  class="w-6 h-6"
+                />
               </div>
               <div class="flex-1 max-w-[75%]">
-                <div class="inline-block bg-gray-100 px-4 py-3 rounded-2xl text-sm border border-slate-300">
+                <div
+                  class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-300"
+                >
                   {{ chat.assistant }}
                   <div class="mt-3 flex items-start">
-                    <button *ngIf="!chat.isAdded" 
-                      class="text-sm bg-white text-emerald-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-slate-300"
-                      (click)="update(chat)">
-                      <ng-icon name="heroDocumentPlus" class="text-lg"></ng-icon>
+                    <button
+                      *ngIf="!chat.isAdded"
+                      class="text-sm bg-white text-success-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-300"
+                      (click)="update(chat)"
+                    >
+                      <ng-icon
+                        name="heroDocumentPlus"
+                        class="text-lg"
+                      ></ng-icon>
                       Add to Description
                     </button>
-                    <div *ngIf="chat.isAdded" 
-                      class="text-sm bg-emerald-600 text-white flex items-center py-1 px-3 gap-1 rounded-full">
-                      <ng-icon name="heroCheck" class="text-lg text-white"></ng-icon>
+                    <div
+                      *ngIf="chat.isAdded"
+                      class="text-sm bg-success-600 text-white flex items-center py-1 px-3 gap-1 rounded-full"
+                    >
+                      <ng-icon
+                        name="heroCheck"
+                        class="text-lg text-white"
+                      ></ng-icon>
                       Added
                     </div>
                   </div>
@@ -80,10 +142,16 @@ class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden 
       <!-- Thinking State -->
       <div class="flex items-start" *ngIf="generateLoader">
         <div class="flex items-start gap-3 w-full">
-          <div class="flex-none bg-gray-100 rounded-full flex items-center justify-center w-10 h-10">
-            <img src="assets/img/logo/haibuild_onlylogo.svg" alt="AI" class="w-6 h-6">
+          <div
+            class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10"
+          >
+            <img
+              src="assets/img/logo/haibuild_onlylogo.svg"
+              alt="AI"
+              class="w-6 h-6"
+            />
           </div>
-          <div class="text-sm text-gray-600 mt-2">Thinking...</div>
+          <div class="text-sm text-secondary-600 mt-2">Thinking...</div>
         </div>
       </div>
 
@@ -92,29 +160,53 @@ class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden 
   </div>
 
   <!-- Suggestions Area -->
-  <div *ngIf="!responseStatus && !generateLoader" class="flex-none bg-white px-6 py-4">
+  <div
+    *ngIf="!responseStatus && !generateLoader"
+    class="flex-none bg-white px-6 py-4"
+  >
     <!-- Loading State -->
     <div *ngIf="loadingChat" class="flex items-start gap-3 mb-3">
-      <div class="flex-none bg-gray-100 rounded-full flex items-center justify-center w-10 h-10">
-        <img src="assets/img/logo/haibuild_onlylogo.svg" alt="AI" class="w-6 h-6">
+      <div
+        class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10"
+      >
+        <img
+          src="assets/img/logo/haibuild_onlylogo.svg"
+          alt="AI"
+          class="w-6 h-6"
+        />
       </div>
-      <div class="text-sm text-gray-600 mt-2">Generating suggestions for you...</div>
+      <div class="text-sm text-secondary-600 mt-2">
+        Generating suggestions for you...
+      </div>
     </div>
 
     <!-- Suggestions List -->
     <div *ngIf="!loadingChat && chatSuggestions.length > 0">
       <div class="overflow-x-auto">
-        <div *ngIf="chatHistory.length == 0" class="text-sm text-gray-600 font-medium mb-3">Suggestions to improve:</div>
-        <ul class="flex gap-2" [class]="chatHistory.length > 0 ? 'min-w-max' : 'flex-wrap'">
-          <li *ngFor="let suggestion of chatSuggestions"
-            class="flex items-center gap-2 text-sm py-2 px-4 rounded-full bg-gray-100 shadow-sm hover:shadow-md cursor-pointer transition-shadow duration-200 border border-slate-200"
+        <div
+          *ngIf="chatHistory.length == 0"
+          class="text-sm text-secondary-600 font-medium mb-3"
+        >
+          Suggestions to improve:
+        </div>
+        <ul
+          class="flex gap-2"
+          [class]="chatHistory.length > 0 ? 'min-w-max' : 'flex-wrap'"
+        >
+          <li
+            *ngFor="let suggestion of chatSuggestions"
+            class="flex items-center gap-2 text-sm py-2 px-4 rounded-full bg-secondary-100 shadow-sm hover:shadow-md cursor-pointer transition-shadow duration-200 border border-secondary-200"
             (click)="converse(suggestion)"
             (keydown.enter)="converse(suggestion)"
-            (keydown.space)="converse(suggestion); $event.preventDefault()"  
+            (keydown.space)="converse(suggestion); $event.preventDefault()"
             role="button"
-            tabindex="0">
-            <ng-icon name="heroSparklesSolid" class="text-lg text-amber-400"></ng-icon>
-            <span class="text-gray-600">{{ suggestion }}</span>
+            tabindex="0"
+          >
+            <ng-icon
+              name="heroSparklesSolid"
+              class="text-lg text-warning-400"
+            ></ng-icon>
+            <span class="text-secondary-600">{{ suggestion }}</span>
           </li>
         </ul>
       </div>
@@ -122,22 +214,34 @@ class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden 
   </div>
 
   <!-- Fixed Input Area -->
-  <div class="flex-none w-full bg-gray-100">
-    <div class="relative">      
+  <div class="flex-none w-full bg-secondary-100">
+    <div class="relative">
       <!-- Selected Files Display -->
-      <div *ngIf="selectedFiles.length > 0" class="max-h-28 overflow-y-auto border-t border-slate-300">
-        <div *ngFor="let file of selectedFiles; let i = index" 
-          class="flex items-center gap-2 bg-transparent px-4 py-2" 
-          [class.border-t]="i > 0" 
-          [class.border-gray-200]="i > 0">
-          <ng-icon name="heroDocumentText" class="text-gray-600"></ng-icon>
+      <div
+        *ngIf="selectedFiles.length > 0"
+        class="max-h-28 overflow-y-auto border-t border-secondary-300"
+      >
+        <div
+          *ngFor="let file of selectedFiles; let i = index"
+          class="flex items-center gap-2 bg-transparent px-4 py-2"
+          [class.border-t]="i > 0"
+          [class.border-secondary-200]="i > 0"
+        >
+          <ng-icon name="heroDocumentText" class="text-secondary-600"></ng-icon>
           <div class="flex-1 flex items-center justify-between">
             <div class="flex items-center">
-              <span class="text-sm text-gray-700 font-medium">{{file.name}}</span>
+              <span class="text-sm text-secondary-700 font-medium">{{
+                file.name
+              }}</span>
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-500">{{formatFileSize(file.size)}}</span>
-              <button (click)="removeFile(i)" class="text-gray-500 flex flex-col items-center hover:text-gray-700">
+              <span class="text-xs text-secondary-500">{{
+                formatFileSize(file.size)
+              }}</span>
+              <button
+                (click)="removeFile(i)"
+                class="text-secondary-500 flex flex-col items-center hover:text-secondary-700"
+              >
                 <ng-icon name="heroXMark" class="text-lg"></ng-icon>
               </button>
             </div>
@@ -145,18 +249,22 @@ class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden 
         </div>
       </div>
 
-      <div class="h-content border-t border-slate-300 px-4 py-3 transition-all duration-300 ease-in-out">
+      <div
+        class="h-content border-t border-secondary-300 px-4 py-3 transition-all duration-300 ease-in-out"
+      >
         <div class="relative flex flex-col h-full">
           <div class="flex-grow h-16">
             <textarea
               placeholder="Chat to add or modify your requirement"
               [disabled]="generateLoader"
               [(ngModel)]="message"
-              class="w-full h-14 text-sm bg-transparent text-gray-700 focus:outline-none placeholder:text-gray-500 focus:right-0 resize-none overflow-x-hidden overflow-y-auto transition-all duration-300 ease-in-out"
+              class="w-full h-14 text-sm bg-transparent text-secondary-700 focus:outline-none placeholder:text-secondary-500 focus:right-0 resize-none overflow-x-hidden overflow-y-auto transition-all duration-300 ease-in-out"
             ></textarea>
           </div>
-          
-          <div class="flex mt-2 justify-between items-center transition-transform duration-300 ease-in-out">
+
+          <div
+            class="flex mt-2 justify-between items-center transition-transform duration-300 ease-in-out"
+          >
             <div class="flex items-center">
               <input
                 type="file"
@@ -166,22 +274,24 @@ class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden 
                 #fileInput
                 class="hidden"
               />
-              <button 
+              <button
                 (click)="fileInput.click()"
-                class="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                matTooltip="{{TOOLTIP_CONTENT.IMPORT_FROM_CODE_BUTTON}}"
-                matTooltipPosition="right">
-                <ng-icon 
-                  name="heroPaperClip" 
-                  class="text-xl text-gray-700"
+                class="flex items-center justify-center w-8 h-8 hover:bg-secondary-100 rounded-full transition-colors duration-200"
+                matTooltip="{{ TOOLTIP_CONTENT.IMPORT_FROM_CODE_BUTTON }}"
+                matTooltipPosition="right"
+              >
+                <ng-icon
+                  name="heroPaperClip"
+                  class="text-xl text-secondary-700"
                 ></ng-icon>
               </button>
             </div>
 
-            <button 
+            <button
               [disabled]="isSendDisabled"
               class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              (click)="converse(message)">
+              (click)="converse(message)"
+            >
               Send
             </button>
           </div>

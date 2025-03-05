@@ -4,11 +4,11 @@
 ></ngx-loading>
 <div class="w-full px-8">
   <div
-    class="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow"
+    class="divide-y divide-secondary-200 overflow-hidden rounded-lg bg-white shadow"
   >
     <div class="px-4 py-5">
       <h1
-        class="text-xl font-medium leading-tight tracking-tight text-gray-900"
+        class="text-xl font-medium leading-tight tracking-tight text-secondary-900"
       >
         Create Solution
       </h1>
@@ -17,23 +17,23 @@
       <form [formGroup]="solutionForm">
         <div class="space-y-12 sm:space-y-16">
           <div>
-            <h2 class="text-sm font-medium leading-7 text-gray-900">
+            <h2 class="text-sm font-medium leading-7 text-secondary-900">
               Solution Information
             </h2>
-            <p class="mt-1 max-w-2xl text-xs leading-6 text-gray-600">
+            <p class="mt-1 max-w-2xl text-xs leading-6 text-secondary-600">
               Give little bit information about the app which you are planning
               to build
             </p>
 
             <div
-              class="mt-4 space-y-8 border-b border-gray-900/10 pb-12 sm:space-y-0 sm:divide-y sm:divide-gray-900/10 sm:border-t sm:pb-0"
+              class="mt-4 space-y-8 border-b border-secondary-900/10 pb-12 sm:space-y-0 sm:divide-y sm:divide-secondary-900/10 sm:border-t sm:pb-0"
             >
               <div
                 class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5"
-                  >Solution Name<span class="text-red-500 text-xs">
+                  class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5"
+                  >Solution Name<span class="text-danger-500 text-xs">
                     *</span
                   ></label
                 >
@@ -46,17 +46,15 @@
                   [showLabel]="false"
                   [required]="true"
                 />
-                <app-error-message
-                  [errorControl]="solutionForm.get('name')"
-                />
+                <app-error-message [errorControl]="solutionForm.get('name')" />
               </div>
 
               <div
                 class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5"
-                  >Solution Description<span class="text-red-500 text-xs">
+                  class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5"
+                  >Solution Description<span class="text-danger-500 text-xs">
                     *</span
                   ></label
                 >
@@ -73,7 +71,7 @@
                   <app-error-message
                     [errorControl]="solutionForm.get('description')"
                   />
-                  <p class="text-xs leading-6 text-gray-600">
+                  <p class="text-xs leading-6 text-secondary-600">
                     Write a few sentences about your idea
                   </p>
                 </div>
@@ -83,8 +81,8 @@
                 class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5"
-                  >Technical Details<span class="text-red-500 text-xs">
+                  class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5"
+                  >Technical Details<span class="text-danger-500 text-xs">
                     *</span
                   ></label
                 >
@@ -101,7 +99,7 @@
                   <app-error-message
                     [errorControl]="solutionForm.get('technicalDetails')"
                   />
-                  <p class="text-xs leading-6 text-gray-600">
+                  <p class="text-xs leading-6 text-secondary-600">
                     Write a few sentences about the technical stack of your
                     application
                   </p>
@@ -112,20 +110,25 @@
                 class="sm:grid sm:grid-cols-3 sm:items-center sm:gap-4 sm:py-6"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-gray-900"
-                  >Is solution built already?<span class="text-red-500 text-xs">
-                    *</span></label
+                  class="block text-sm font-medium leading-6 text-secondary-900"
+                  >Is solution built already?<span
+                    class="text-danger-500 text-xs"
+                  >
+                    *</span
+                  ></label
                 >
                 <div class="col-span-2 flex items-center">
-           <div class="mt-1.5">
-             <app-toggle
-               [isActive]="solutionForm.get('cleanSolution')?.value"
-               (toggleChange)="solutionForm.get('cleanSolution')?.setValue($event)"
-               isPlainToggle="true"
-             ></app-toggle>
-           </div>
-                  <p class="text-xs leading-6 text-gray-600 ml-4">
-                    {{getSolutionToggleDescription()}}
+                  <div class="mt-1.5">
+                    <app-toggle
+                      [isActive]="solutionForm.get('cleanSolution')?.value"
+                      (toggleChange)="
+                        solutionForm.get('cleanSolution')?.setValue($event)
+                      "
+                      isPlainToggle="true"
+                    ></app-toggle>
+                  </div>
+                  <p class="text-xs leading-6 text-secondary-600 ml-4">
+                    {{ getSolutionToggleDescription() }}
                   </p>
                 </div>
               </div>
@@ -135,9 +138,11 @@
                 *ngIf="!solutionForm.get('cleanSolution')?.value"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-gray-900"
+                  class="block text-sm font-medium leading-6 text-secondary-900"
                 >
-                  Business Requirements (BRD)<span class="text-red-500 text-xs">
+                  Business Requirements (BRD)<span
+                    class="text-danger-500 text-xs"
+                  >
                     *</span
                   >
                 </label>
@@ -152,7 +157,7 @@
                         isPlainToggle="true"
                       ></app-toggle>
                     </div>
-                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                    <p class="text-xs leading-6 text-secondary-600 ml-4">
                       Enable to set maximum number of Business Requirements
                     </p>
                   </div>
@@ -172,9 +177,11 @@
                 *ngIf="!solutionForm.get('cleanSolution')?.value"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-gray-900"
+                  class="block text-sm font-medium leading-6 text-secondary-900"
                 >
-                  Product Requirements (PRD)<span class="text-red-500 text-xs">
+                  Product Requirements (PRD)<span
+                    class="text-danger-500 text-xs"
+                  >
                     *</span
                   >
                 </label>
@@ -189,7 +196,7 @@
                         isPlainToggle="true"
                       ></app-toggle>
                     </div>
-                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                    <p class="text-xs leading-6 text-secondary-600 ml-4">
                       Enable to set maximum number of Product Requirements
                     </p>
                   </div>
@@ -209,9 +216,9 @@
                 *ngIf="!solutionForm.get('cleanSolution')?.value"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-gray-900"
+                  class="block text-sm font-medium leading-6 text-secondary-900"
                 >
-                  UI Requirements (UIR)<span class="text-red-500 text-xs">
+                  UI Requirements (UIR)<span class="text-danger-500 text-xs">
                     *</span
                   >
                 </label>
@@ -226,7 +233,7 @@
                         isPlainToggle="true"
                       ></app-toggle>
                     </div>
-                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                    <p class="text-xs leading-6 text-secondary-600 ml-4">
                       Enable to set maximum number of UI Requirements
                     </p>
                   </div>
@@ -246,10 +253,10 @@
                 *ngIf="!solutionForm.get('cleanSolution')?.value"
               >
                 <label
-                  class="block text-sm font-medium leading-6 text-gray-900"
+                  class="block text-sm font-medium leading-6 text-secondary-900"
                 >
                   Non-Functional Requirements (NFR)<span
-                    class="text-red-500 text-xs"
+                    class="text-danger-500 text-xs"
                   >
                     *</span
                   >
@@ -265,7 +272,7 @@
                         isPlainToggle="true"
                       ></app-toggle>
                     </div>
-                    <p class="text-xs leading-6 text-gray-600 ml-4">
+                    <p class="text-xs leading-6 text-secondary-600 ml-4">
                       Enable to set maximum number of Non-Functional
                       Requirements
                     </p>
