@@ -32,9 +32,15 @@
           name="heroInformationCircle"
           class="text-lg cursor-pointer"
           matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"
+          matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"
         ></ng-icon>
       </div>
       <div class="flex items-center">
+        <app-toggle
+          *ngIf="isKbAvailable"
+          [isActive]="isKbActive"
+          (toggleChange)="onKbToggle($event)"
+        />
         <app-toggle
           *ngIf="isKbAvailable"
           [isActive]="isKbActive"
@@ -53,12 +59,24 @@
           *ngFor="let chat of chatHistory"
           class="transition-all duration-300 ease-in-out"
         >
+        <div
+          *ngFor="let chat of chatHistory"
+          class="transition-all duration-300 ease-in-out"
+        >
           <!-- User Message and Files -->
           <div
             class="flex flex-col items-end gap-2"
             *ngIf="chat.user || chat.files"
           >
+          <div
+            class="flex flex-col items-end gap-2"
+            *ngIf="chat.user || chat.files"
+          >
             <!-- User text message -->
+            <div
+              class="px-5 py-3 bg-indigo-600 text-white rounded-2xl w-fit max-w-[75%] text-sm"
+              *ngIf="chat.user"
+            >
             <div
               class="px-5 py-3 bg-indigo-600 text-white rounded-2xl w-fit max-w-[75%] text-sm"
               *ngIf="chat.user"
@@ -71,6 +89,10 @@
               *ngIf="chat.files"
             >
               <div class="flex flex-col gap-2">
+                <div
+                  *ngFor="let file of chat.files"
+                  class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg"
+                >
                 <div
                   *ngFor="let file of chat.files"
                   class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg"
@@ -164,6 +186,10 @@
     *ngIf="!responseStatus && !generateLoader"
     class="flex-none bg-white px-6 py-4"
   >
+  <div
+    *ngIf="!responseStatus && !generateLoader"
+    class="flex-none bg-white px-6 py-4"
+  >
     <!-- Loading State -->
     <div *ngIf="loadingChat" class="flex items-start gap-3 mb-3">
       <div
@@ -198,6 +224,7 @@
             class="flex items-center gap-2 text-sm py-2 px-4 rounded-full bg-secondary-100 shadow-sm hover:shadow-md cursor-pointer transition-shadow duration-200 border border-secondary-200"
             (click)="converse(suggestion)"
             (keydown.enter)="converse(suggestion)"
+            (keydown.space)="converse(suggestion); $event.preventDefault()"
             (keydown.space)="converse(suggestion); $event.preventDefault()"
             role="button"
             tabindex="0"
@@ -265,6 +292,10 @@
           <div
             class="flex mt-2 justify-between items-center transition-transform duration-300 ease-in-out"
           >
+
+          <div
+            class="flex mt-2 justify-between items-center transition-transform duration-300 ease-in-out"
+          >
             <div class="flex items-center">
               <input
                 type="file"
@@ -274,6 +305,7 @@
                 #fileInput
                 class="hidden"
               />
+              <button
               <button
                 (click)="fileInput.click()"
                 class="flex items-center justify-center w-8 h-8 hover:bg-secondary-100 rounded-full transition-colors duration-200"
@@ -288,8 +320,11 @@
             </div>
 
             <button
+            <button
               [disabled]="isSendDisabled"
               class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              (click)="converse(message)"
+            >
               (click)="converse(message)"
             >
               Send
