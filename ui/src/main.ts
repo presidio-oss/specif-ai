@@ -39,7 +39,11 @@ if (environment.ENABLE_POSTHOG) {
       api_host: environment.POSTHOG_HOST,
       person_profiles: 'always', 
       autocapture: false,
-      ip: true
+      ip: true,
+      capture_pageview: false,
+      capture_pageleave: false,
+      capture_performance: false,
+      disable_session_recording: true
     }
   )
 } else {
