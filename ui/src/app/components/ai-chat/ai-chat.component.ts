@@ -35,6 +35,7 @@ import { ToggleComponent } from '../toggle/toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ERROR_MESSAGES } from '../../constants/app.constants';
+import { AnalyticsManager } from 'src/app/services/analytics/managers/analytics.manager';
 @Component({
   selector: 'app-chat',
   templateUrl: './ai-chat.component.html',
@@ -120,6 +121,7 @@ export class AiChatComponent implements OnInit {
     private utilityService: UtilityService,
     private store: Store,
     private toastService: ToasterService,
+    private analyticsManager: AnalyticsManager
   ) {}
 
   smoothScroll() {
@@ -198,6 +200,7 @@ export class AiChatComponent implements OnInit {
   }
 
   finalCall(message: string) {
+    this.analyticsManager.startTimer();
     let payload: conversePayload = {
       ...this.basePayload,
       chatHistory: this.chatHistory
@@ -219,6 +222,7 @@ export class AiChatComponent implements OnInit {
         this.chatHistory = [...this.chatHistory, { assistant: response }];
         this.returnChatHistory();
         this.getSuggestion();
+        this.analyticsManager.stopTimer();
       });
   }
 

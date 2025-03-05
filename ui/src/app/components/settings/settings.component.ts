@@ -33,6 +33,8 @@ import { environment } from 'src/environments/environment';
 import { ElectronService } from 'src/app/services/electron/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
+import { AnalyticsManager } from 'src/app/services/analytics/managers/analytics.manager';
+import { AnalyticsEvents } from 'src/app/services/analytics/events/analytics.events';
 
 @Component({
   selector: 'app-settings',
@@ -68,6 +70,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
+  analyticsManager = inject(AnalyticsManager)
   dialog = inject(MatDialog);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
@@ -197,15 +200,26 @@ export class SettingsComponent implements OnInit, OnDestroy {
               this.modalRef.close(true);
             });
           });
+          this.analyticsManager.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
+            provider: provider,
+            model: model,
+            status: 'success'
+          })
         } else {
           this.errorMessage =
             'Connection Failed! Please verify your model credentials in the backend configuration.';
           this.cdr.markForCheck();
+          this.analyticsManager.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
+            provider: provider,
+            model: model,
+            status: 'failure'
+          });
         }
       },
       error: (error) => {
         this.errorMessage = 'LLM configuration verification failed. Please contact your admin for technical support.';
         this.cdr.markForCheck();
+        this.analyticsManager.captureException(error);
       },
     });
   }
