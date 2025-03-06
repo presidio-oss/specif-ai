@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
+<div class="mx-auto max-w-7xl px-4 h-full">
   <div
     [ngClass]="
       mode === 'add'
@@ -9,34 +9,29 @@
     <div
       [ngClass]="
         mode === 'add'
-          ? 'bg-white shadow rounded-lg p-6 flex flex-col'
-          : 'bg-white shadow rounded-lg p-6 flex flex-col lg:col-span-2'
+          ? 'bg-white border border-secondary-200 rounded-lg flex flex-col'
+          : 'bg-white border border-secondary-200 rounded-lg flex flex-col lg:col-span-2'
       "
     >
-      <div class="flex justify-between items-center">
-        <div class="flex items-center space-x-1">
-          <h1 class="text-normal font-semibold mb-4">
-            {{ mode === "add" ? "Add User Story" : existingUserForm.id }}
-          </h1>
-        </div>
+      <header
+        class="flex justify-between items-center p-4 border-b border-secondary-200"
+      >
+        <h1 class="text-normal font-semibold">
+          {{ mode === "add" ? "Add User Story" : existingUserForm.id }}
+        </h1>
 
-        <div
-          *ngIf="mode === 'edit'"
-          class="flex items-center space-x-1 text-3xl"
-        >
-          <div class="relative" style="display: inline-block; cursor: pointer">
-            <app-button
-              [isIconButton]="true"
-              icon="heroTrash"
-              theme="danger"
-              size="sm"
-              rounded="md"
-              (click)="deleteUserStory()"
-              matTooltip="Delete"
-            ></app-button>
-          </div>
+        <div *ngIf="mode === 'edit'">
+          <app-button
+            [isIconButton]="true"
+            icon="heroTrash"
+            theme="danger"
+            size="sm"
+            rounded="md"
+            (click)="deleteUserStory()"
+            matTooltip="Delete"
+          ></app-button>
         </div>
-      </div>
+      </header>
       <form
         [formGroup]="userStoryForm"
         (ngSubmit)="mode === 'edit' ? updateUserStory() : addUserStory()"

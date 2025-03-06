@@ -10,13 +10,14 @@ import {
 import { NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent } from '../core/button/button.component';
 import { ToasterService } from '../../services/toaster/toaster.service';
+import { NgIconComponent } from '@ng-icons/core';
 
 @Component({
   selector: 'app-multi-upload',
   templateUrl: './multi-upload.component.html',
   styleUrls: ['./multi-upload.component.scss'],
   standalone: true,
-  imports: [NgIf, NgForOf, ButtonComponent],
+  imports: [NgIf, NgForOf, ButtonComponent, NgIconComponent],
 })
 export class MultiUploadComponent implements AfterViewInit, OnDestroy {
   files: string[] = [];
