@@ -1,4 +1,4 @@
-<div>
+<div class="mt-4 flex flex-col gap-1.5">
   <input
     type="file"
     (change)="onFileSelected($event)"
@@ -7,21 +7,25 @@
     #fileInput
     class="hidden"
   />
-
-  <div class="button-container">
-    <app-button buttonContent="Import from code"
-      theme="secondary"
-      size="sm"
-      rounded="md"
-      (click)="triggerFileInput()"/>
-  </div>
-  <div *ngIf="files.length > 0" class="mt-2">
-    <div class="text-sm font-medium">
+  <app-button
+    buttonContent="Upload Code Files"
+    theme="secondary_outline"
+    size="sm"
+    rounded="md"
+    icon="heroDocument"
+    (click)="triggerFileInput()"
+  />
+  <div
+    *ngIf="files.length > 0"
+    class="mt-2 w-full divide-y divide-secondary-200 border border-secondary-200 rounded-md text-xs font-medium"
+  >
+    <div class="p-2">
       <span *ngIf="files.length === 1">Selected File</span>
       <span *ngIf="files.length > 1">Selected Files</span>
     </div>
-    <div *ngFor="let file of files" class="text-xs">
-      {{ file }}
+    <div *ngFor="let file of files" class="p-2 flex items-center gap-2">
+      <ng-icon name="heroDocument" strokeWidth="2" class="w-4 h-4" />
+      <span>{{ file }}</span>
     </div>
   </div>
 </div>

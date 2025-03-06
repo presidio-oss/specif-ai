@@ -3,8 +3,8 @@
     <h1 class="text-2xl font-semibold mb-6">{{ data.title }}</h1>
   </div>
   <div class="rounded-md" [formGroup]="emittedForm">
-    <label class="block text-gray-700 text-sm font-medium mb-2">
-      {{ data.description }} <span class="text-gray-400">(Optional)</span>
+    <label class="block text-secondary-700 text-sm font-medium mb-2">
+      {{ data.description }} <span class="text-secondary-400">(Optional)</span>
     </label>
     <app-textarea-field
       [elementPlaceHolder]="data.placeholder"

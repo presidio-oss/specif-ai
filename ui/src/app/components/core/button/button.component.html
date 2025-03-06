@@ -14,7 +14,7 @@
     disabled ? themeClasses.disabledBg : themeClasses.bg,
     disabled ? themeClasses.disabledText : themeClasses.text,
     !disabled ? themeClasses.hoverBg : '',
-    disabled ? 'cursor-not-allowed' : '',
+    disabled ? 'cursor-not-allowed' : 'cursor-pointer',
     isFullWidth ? 'w-full' : '',
   ]"
   [type]="type"
@@ -23,6 +23,7 @@
   <ng-container *ngIf="icon">
     <ng-icon
       [name]="icon"
+      strokeWidth="2"
       [ngClass]="isIconButton ? 'w-5 h-5 text-lg' : 'w-4 h-4 mr-2'"
     ></ng-icon>
     <!-- Or use an SVG/image like this -->

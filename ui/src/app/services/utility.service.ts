@@ -73,11 +73,11 @@ export class UtilityService {
     let details = `${productRequirements.trim()}`;
 
     if (screensText && screensText.trim() !== productRequirements.trim()) {
-      details += `<br><br><h3 class="${fontWeight} text-gray-900 hover:text-gray-600">SCREENS</h3>${screensText.trim()}`;
+      details += `<br><br><h3 class="${fontWeight} text-secondary-900 hover:text-secondary-600">SCREENS</h3>${screensText.trim()}`;
     }
 
     if (personasText && personasText.trim()) {
-      details += `<br><br><h3 class="${fontWeight} text-gray-900 hover:text-gray-600">PERSONAS</h3>${personasText.trim()}`;
+      details += `<br><br><h3 class="${fontWeight} text-secondary-900 hover:text-secondary-600">PERSONAS</h3>${personasText.trim()}`;
     }
 
     return details;

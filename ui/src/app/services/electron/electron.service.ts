@@ -4,7 +4,7 @@ import { IpcRendererEvent } from 'electron';
 import { ToasterService } from '../toaster/toaster.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { WarningRootModalComponent } from '../../components/warning-root-modal/warning-root-modal.component';
+import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +19,12 @@ export class ElectronService {
   ) {
     if (this.isElectron()) {
       this.electronAPI = window.electronAPI; // Access Electron APIs through preload
+    }
+  }
+
+  async killPort(port: number): Promise<void> {
+    if (this.electronAPI) {
+      this.electronAPI.invoke('kill-port', port);
     }
   }
 
@@ -63,7 +69,6 @@ export class ElectronService {
 
         this.electronAPI?.once('port-error', (_: any, message: any) => {
           console.error('Port Error: ', message.message);
-          this.toast.showError(message);
         });
       });
     } else {
@@ -80,7 +85,9 @@ export class ElectronService {
 
         this.electronAPI.on('port-error', (_: any, message: string) => {
           console.error('Port Error: ', message);
-          this.toast.showError(`Port Error: ${message}`);
+          this.dialog.open(PortErrorDialogComponent, {            
+            disableClose: true
+          });
         });
         this.electronAPI.on('server-started', () => {
           sessionStorage.setItem('serverActive', 'true');
