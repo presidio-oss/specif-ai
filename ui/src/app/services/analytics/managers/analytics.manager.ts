@@ -17,7 +17,6 @@ export class AnalyticsManager implements AnalyticsTracker {
   private deviceId: string;
   private currentLLMConfig!: LLMConfigModel;
 
-  // Define the observable at class level
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
     LLMConfigState.getConfig,
   );
@@ -27,7 +26,6 @@ export class AnalyticsManager implements AnalyticsTracker {
     this.deviceId = this.getDeviceId();
     console.log('Device ID', this.deviceId);
 
-    // Move the subscription to constructor
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
       console.log('Config changes', this.currentLLMConfig);
