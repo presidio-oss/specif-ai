@@ -2,7 +2,7 @@
   <label
     *ngIf="showLabel"
     [for]="elementId"
-    class="block mb-1.5 text-sm font-medium text-secondary-500"
+    class="block mb-2 text-sm font-medium text-secondary-500"
     >{{ elementName }}
     <span class="text-danger-500 text-xs" *ngIf="required">*</span>
   </label>
@@ -11,7 +11,7 @@
     [id]="elementId"
     [rows]="rows"
     (input)="onChange($event.target)"
-    class="block p-2.5 w-full text-sm text-secondary-900 rounded-lg border border-secondary-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-none overflow-auto"
+    class="block w-full p-2.5 border border-secondary-200 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none overflow-auto"
     [placeholder]="elementPlaceHolder"
     [value]="value"
   ></textarea>

@@ -36,82 +36,78 @@
         [formGroup]="userStoryForm"
         (ngSubmit)="mode === 'edit' ? updateUserStory() : addUserStory()"
       >
-        <app-input-field
-          [required]="true"
-          elementPlaceHolder="Name"
-          elementId="name"
-          elementName="Name"
-          formControlName="name"
-        />
-        <div
-          *ngIf="
-            userStoryForm.get('name')?.invalid &&
-            (userStoryForm.get('name')?.dirty ||
-              userStoryForm.get('name')?.touched)
-          "
-          class="text-danger-500 text-sm mt-1"
-        >
-          <div *ngIf="userStoryForm.get('name')?.errors?.['required']">
-            Name is required.
-          </div>
-        </div>
-        <app-textarea-field
-          [required]="true"
-          elementPlaceHolder="Description"
-          elementId="description"
-          elementName="Description"
-          formControlName="description"
-        />
-        <div
-          *ngIf="
-            userStoryForm.get('description')?.invalid &&
-            (userStoryForm.get('description')?.dirty ||
-              userStoryForm.get('description')?.touched)
-          "
-          class="text-danger-500 text-sm mt-1"
-        >
-          <div *ngIf="userStoryForm.get('description')?.errors?.['required']">
-            Description is required.
-          </div>
-        </div>
-        <div class="flex items-start justify-between mt-4">
-          <div class="flex-col">
-            <div class="flex items-start gap-2">
-              <app-multi-upload
-                *ngIf="mode === 'add'"
-                (fileContent)="handleFileContent($event)"
-              ></app-multi-upload>
-              <app-button
-                buttonContent="Enhance with AI"
-                icon="heroSparklesSolid"
-                theme="secondary"
-                size="sm"
-                rounded="lg"
-                (click)="enhanceUserStoryWithAI()"
-                [disabled]="userStoryForm.invalid"
-              ></app-button>
+        <div class="p-4">
+          <app-input-field
+            [required]="true"
+            elementPlaceHolder="Name"
+            elementId="name"
+            elementName="Name"
+            formControlName="name"
+          />
+          <div
+            *ngIf="
+              userStoryForm.get('name')?.invalid &&
+              (userStoryForm.get('name')?.dirty ||
+                userStoryForm.get('name')?.touched)
+            "
+            class="text-danger-500 text-sm mt-1"
+          >
+            <div *ngIf="userStoryForm.get('name')?.errors?.['required']">
+              Name is required.
             </div>
           </div>
-          <div class="">
-            <app-button
-              buttonContent="Update"
-              theme="primary"
-              size="sm"
-              rounded="md"
-              *ngIf="mode === 'edit'"
-              type="submit"
-              [disabled]="userStoryForm.invalid"
-            />
-            <app-button
-              buttonContent="Add"
-              theme="primary"
-              size="sm"
-              rounded="md"
-              *ngIf="mode === 'add'"
-              type="submit"
-              [disabled]="userStoryForm.invalid"
-            />
+          <app-textarea-field
+            [required]="true"
+            elementPlaceHolder="Description"
+            elementId="description"
+            elementName="Description"
+            formControlName="description"
+          />
+          <div
+            *ngIf="
+              userStoryForm.get('description')?.invalid &&
+              (userStoryForm.get('description')?.dirty ||
+                userStoryForm.get('description')?.touched)
+            "
+            class="text-danger-500 text-sm mt-1"
+          >
+            <div *ngIf="userStoryForm.get('description')?.errors?.['required']">
+              Description is required.
+            </div>
           </div>
+          <app-multi-upload
+            *ngIf="mode === 'add'"
+            (fileContent)="handleFileContent($event)"
+          ></app-multi-upload>
+        </div>
+        <div class="flex justify-end gap-2 p-4 border-t border-secondary-200">
+          <app-button
+            buttonContent="Enhance with AI"
+            icon="heroSparklesSolid"
+            theme="secondary_outline"
+            size="sm"
+            rounded="lg"
+            (click)="enhanceUserStoryWithAI()"
+            [disabled]="userStoryForm.invalid"
+          ></app-button>
+          <app-button
+            buttonContent="Update"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'edit'"
+            type="submit"
+            [disabled]="userStoryForm.invalid"
+          />
+          <app-button
+            buttonContent="Add"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'add'"
+            type="submit"
+            [disabled]="userStoryForm.invalid"
+          />
         </div>
       </form>
     </div>
