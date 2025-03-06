@@ -2,7 +2,7 @@
   <div
     *ngFor="let toast of toasts"
     class="text-xs transition-opacity duration-300 ease-in-out"
-    [ngClass]="{'opacity-100': toast.show, 'opacity-0': !toast.show}"
+    [ngClass]="{ 'opacity-100': toast.show, 'opacity-0': !toast.show }"
     (click)="removeToast(toast.id)"
     (keydown.enter)="removeToast(toast.id)"
     (keydown.space)="removeToast(toast.id); $event.preventDefault()"
@@ -12,9 +12,12 @@
       [ngClass]="{
         'bg-success-50 border-success-300 text-success-600':
           toast.type === 'success',
-        'bg-danger-50 border-danger-300 text-danger-600': toast.type === 'error',
-        'bg-blue-50 border-blue-300 text-blue-600': toast.type === 'info',
-        'bg-warning-50 border-warning-300 text-warning-600': toast.type === 'warning'
+        'bg-danger-50 border-danger-300 text-danger-600':
+          toast.type === 'error',
+        'bg-primary-50 border-primary-300 text-primary-600':
+          toast.type === 'info',
+        'bg-warning-50 border-warning-300 text-warning-600':
+          toast.type === 'warning',
       }"
     >
       <div class="flex items-center overflow-hidden gap-2">
@@ -27,8 +30,8 @@
                 : toast.type === 'error'
                   ? 'heroExclamationCircle'
                   : toast.type === 'warning'
-                  ? 'heroExclamationTriangle'
-                  : 'heroInformationCircle'
+                    ? 'heroExclamationTriangle'
+                    : 'heroInformationCircle'
             "
             class="text-lg"
           />
