@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg shadow-md max-w-md">
+<div class="bg-white rounded-lg shadow-md max-w-lg">
   <div class="flex items-center justify-between p-4 border-b border-gray-300">
     <h4 class="text-lg font-medium">Port Error</h4>
     <button
@@ -8,14 +8,14 @@
       <ng-icon name="heroXMark" class="text-lg"></ng-icon>
     </button>
   </div>
-  <div class="p-6">
+  <div class="p-4">
     <p class="text-sm text-gray-500">
       The host port is currently in use by another application. To proceed,
       please close the conflicting application. Keep in mind that Jira
       integration may not function correctly until this issue is resolved.
     </p>
   </div>
-  <div class="flex justify-end gap-4 p-4 border-t border-gray-300">
+  <div class="flex justify-end gap-4 pb-4 px-4">
     <button
       mat-button
       (click)="closeDialog()"
