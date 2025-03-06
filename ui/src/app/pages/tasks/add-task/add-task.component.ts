@@ -44,6 +44,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { StoryTaskIdGeneratorService } from 'src/app/services/user-story/story-task-id-generator.service';
 
 @Component({
   selector: 'app-add-task',
@@ -97,7 +98,6 @@ export class AddTaskComponent implements OnDestroy {
   editLabel: string = '';
   userStory: any = {};
   entityType: string = 'TASK';
-  totalTaskCount: number = 0;
   absoluteFilePath: string = '';
 
   existingTask: {
@@ -115,6 +115,7 @@ export class AddTaskComponent implements OnDestroy {
   constructor(
     private dialog: MatDialog,
     private toastService: ToasterService,
+    private storyTaskIdGeneratorService: StoryTaskIdGeneratorService,
   ) {
     this.mode = this.activatedRoute.snapshot.paramMap.get('mode') as
       | 'edit'
@@ -134,13 +135,6 @@ export class AddTaskComponent implements OnDestroy {
       this.prd = res;
     });
 
-    this.store
-      .select(UserStoriesState.getSelectedUserStory)
-      .subscribe((res) => {
-        this.userStory = res;
-        this.totalTaskCount =
-          (res?.tasks?.length || 0) + (res?.archivedTasks?.length || 0);
-      });
 
     this.createTaskForm(taskId);
     this.editLabel = this.mode == 'edit' ? 'Edit' : 'Add';
@@ -192,7 +186,7 @@ export class AddTaskComponent implements OnDestroy {
         '',
         Validators.compose([Validators.required]),
       ),
-      id: new FormControl(`TASK${this.totalTaskCount + 1}`),
+      id: new FormControl(taskId),
       useGenAI: new FormControl(false),
       fileContent: new FormControl(''),
       subTaskTicketId: new FormControl(''),
@@ -212,6 +206,16 @@ export class AddTaskComponent implements OnDestroy {
           subTaskTicketId: task?.subTaskTicketId,
         });
       });
+    } else {
+      this.storyTaskIdGeneratorService.getNextTaskId(this.selectedProject)
+        .then(nextTaskId => {
+          this.taskForm.patchValue({
+            id: `TASK${nextTaskId}`
+          });
+        })
+        .catch(error => {
+          this.toastService.showError(`Error generating task ID: ${error.message}`);
+        });
     }
   }
 

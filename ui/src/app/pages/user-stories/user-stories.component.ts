@@ -50,8 +50,9 @@ import {
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, switchMap } from 'rxjs';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { StoryTaskIdGeneratorService } from 'src/app/services/user-story/story-task-id-generator.service';
 
 @Component({
   selector: 'app-user-stories',
@@ -127,6 +128,7 @@ export class UserStoriesComponent implements OnInit {
     private jiraService: JiraService,
     private electronService: ElectronService,
     private toast: ToasterService,
+    private storyTaskIdGeneratorService: StoryTaskIdGeneratorService,
   ) {
     this.navigation = getNavigationParams(this.router.getCurrentNavigation());
     this.store.dispatch(
@@ -315,21 +317,42 @@ export class UserStoriesComponent implements OnInit {
     userStories: IUserStory[],
     regenerate: boolean = false,
   ) {
-    this.store.dispatch(
-      new CreateFile(
-        `${this.navigation.folderName}`,
-        { features: userStories },
-        this.navigation.fileName.replace(/\-base.json$/, ''),
-      ),
-    );
-
-    setTimeout(() => {
-      this.getLatestUserStories();
-      this.loadingService.setLoading(false);
-      this.toast.showSuccess(
-        TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
-      );
-    }, 2000);
+    this.store
+      .dispatch(
+        new CreateFile(
+          `${this.navigation.folderName}`,
+          { features: userStories },
+          this.navigation.fileName.replace(/\-base.json$/, ''),
+        ),
+      )
+      .pipe(
+        switchMap(() =>
+          this.storyTaskIdGeneratorService.updateFeatureAndTaskIds(
+            this.currentProject,
+          ),
+        ),
+      )
+      .subscribe({
+        next: () => {
+          this.getLatestUserStories();
+          this.loadingService.setLoading(false);
+          this.toast.showSuccess(
+            TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(
+              this.entityType,
+              regenerate,
+            ),
+          );
+        },
+        error: (err) => {
+          this.loadingService.setLoading(false);
+          this.toast.showError(
+            TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(
+              this.entityType,
+              regenerate,
+            ),
+          );
+        },
+      });
   }
 
   getLatestUserStories() {

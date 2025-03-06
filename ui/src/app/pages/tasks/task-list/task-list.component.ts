@@ -27,11 +27,15 @@ import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
 import { ClipboardService } from '../../../services/clipboard.service';
-import { TOASTER_MESSAGES } from 'src/app/constants/app.constants';
+import {
+  REQUIREMENT_TYPE,
+  TOASTER_MESSAGES,
+} from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { SearchService } from '../../../services/search/search.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, switchMap } from 'rxjs';
+import { StoryTaskIdGeneratorService } from 'src/app/services/user-story/story-task-id-generator.service';
 
 @Component({
   selector: 'app-task-list',
@@ -94,6 +98,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private featureService: FeatureService,
     private loadingService: LoadingService,
     private toastService: ToasterService,
+    private storyTaskIdGeneratorService: StoryTaskIdGeneratorService,
   ) {
     this.userStoryId = this.activatedRoute.snapshot.paramMap.get('userStoryId');
     this.logger.debug('userStoryId', this.userStoryId);
@@ -203,19 +208,42 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   updateWithUserStories(userStories: IUserStory, regenerate: boolean = false) {
-    this.store.dispatch(
-      new EditUserStory(
-        `${this.config.folderName}/${this.config.newFileName}`,
-        userStories,
-      ),
-    );
-    setTimeout(() => {
-      this.getLatestUserStories();
-      this.loadingService.setLoading(false);
-      this.toastService.showSuccess(
-        TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
-      );
-    }, 2000);
+    this.store
+      .dispatch(
+        new EditUserStory(
+          `${this.config.folderName}/${this.config.newFileName}`,
+          userStories,
+        ),
+      )
+      .pipe(
+        switchMap(() =>
+          this.storyTaskIdGeneratorService.updateFeatureAndTaskIds(
+            this.config.currentProject,
+            REQUIREMENT_TYPE.TASK,
+          ),
+        ),
+      )
+      .subscribe({
+        next: () => {
+          this.getLatestUserStories();
+          this.loadingService.setLoading(false);
+          this.toastService.showSuccess(
+            TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(
+              this.entityType,
+              regenerate,
+            ),
+          );
+        },
+        error: (err) => {
+          this.loadingService.setLoading(false);
+          this.toastService.showError(
+            TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(
+              this.entityType,
+              regenerate,
+            ),
+          );
+        },
+      });
   }
 
   getLatestUserStories() {
