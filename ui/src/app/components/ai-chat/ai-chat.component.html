@@ -4,12 +4,12 @@
       ? 'h-[calc(100dvh-150px)]'
       : 'h-[calc(100dvh-200px)]'
   "
-  class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden border border-secondary-300"
+  class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden border border-secondary-200"
 >
   <!-- Fixed Header -->
   <div
     *ngIf="isKbAvailable || requirementAbbrivation != 'BP'"
-    class="flex-none px-6 py-3 border-b border-secondary-300"
+    class="flex-none px-6 py-3 border-b border-secondary-200"
   >
     <p
       *ngIf="!isKbAvailable && requirementAbbrivation != 'BP'"
@@ -32,15 +32,9 @@
           name="heroInformationCircle"
           class="text-lg cursor-pointer"
           matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"
-          matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"
         ></ng-icon>
       </div>
       <div class="flex items-center">
-        <app-toggle
-          *ngIf="isKbAvailable"
-          [isActive]="isKbActive"
-          (toggleChange)="onKbToggle($event)"
-        />
         <app-toggle
           *ngIf="isKbAvailable"
           [isActive]="isKbActive"
@@ -59,15 +53,7 @@
           *ngFor="let chat of chatHistory"
           class="transition-all duration-300 ease-in-out"
         >
-        <div
-          *ngFor="let chat of chatHistory"
-          class="transition-all duration-300 ease-in-out"
-        >
           <!-- User Message and Files -->
-          <div
-            class="flex flex-col items-end gap-2"
-            *ngIf="chat.user || chat.files"
-          >
           <div
             class="flex flex-col items-end gap-2"
             *ngIf="chat.user || chat.files"
@@ -77,22 +63,14 @@
               class="px-5 py-3 bg-indigo-600 text-white rounded-2xl w-fit max-w-[75%] text-sm"
               *ngIf="chat.user"
             >
-            <div
-              class="px-5 py-3 bg-indigo-600 text-white rounded-2xl w-fit max-w-[75%] text-sm"
-              *ngIf="chat.user"
-            >
               {{ chat.user }}
             </div>
             <!-- File attachments -->
             <div
-              class="p-2 bg-secondary-100 border border-secondary-300 rounded-2xl w-fit max-w-[75%]"
+              class="p-2 bg-secondary-100 border border-secondary-200 rounded-2xl w-fit max-w-[75%]"
               *ngIf="chat.files"
             >
               <div class="flex flex-col gap-2">
-                <div
-                  *ngFor="let file of chat.files"
-                  class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg"
-                >
                 <div
                   *ngFor="let file of chat.files"
                   class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg"
@@ -128,13 +106,13 @@
               </div>
               <div class="flex-1 max-w-[75%]">
                 <div
-                  class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-300"
+                  class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200"
                 >
                   {{ chat.assistant }}
                   <div class="mt-3 flex items-start">
                     <button
                       *ngIf="!chat.isAdded"
-                      class="text-sm bg-white text-success-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-300"
+                      class="text-sm bg-white text-emerald-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-200"
                       (click)="update(chat)"
                     >
                       <ng-icon
@@ -145,7 +123,7 @@
                     </button>
                     <div
                       *ngIf="chat.isAdded"
-                      class="text-sm bg-success-600 text-white flex items-center py-1 px-3 gap-1 rounded-full"
+                      class="text-sm bg-emerald-600 text-white flex items-center py-1 px-3 gap-1 rounded-full"
                     >
                       <ng-icon
                         name="heroCheck"
@@ -186,10 +164,6 @@
     *ngIf="!responseStatus && !generateLoader"
     class="flex-none bg-white px-6 py-4"
   >
-  <div
-    *ngIf="!responseStatus && !generateLoader"
-    class="flex-none bg-white px-6 py-4"
-  >
     <!-- Loading State -->
     <div *ngIf="loadingChat" class="flex items-start gap-3 mb-3">
       <div
@@ -225,13 +199,12 @@
             (click)="converse(suggestion)"
             (keydown.enter)="converse(suggestion)"
             (keydown.space)="converse(suggestion); $event.preventDefault()"
-            (keydown.space)="converse(suggestion); $event.preventDefault()"
             role="button"
             tabindex="0"
           >
             <ng-icon
               name="heroSparklesSolid"
-              class="text-lg text-warning-400"
+              class="text-lg text-amber-400"
             ></ng-icon>
             <span class="text-secondary-600">{{ suggestion }}</span>
           </li>
@@ -246,7 +219,7 @@
       <!-- Selected Files Display -->
       <div
         *ngIf="selectedFiles.length > 0"
-        class="max-h-28 overflow-y-auto border-t border-secondary-300"
+        class="max-h-28 overflow-y-auto border-t border-secondary-200"
       >
         <div
           *ngFor="let file of selectedFiles; let i = index"
@@ -277,7 +250,7 @@
       </div>
 
       <div
-        class="h-content border-t border-secondary-300 px-4 py-3 transition-all duration-300 ease-in-out"
+        class="h-content border-t border-secondary-200 px-4 py-3 transition-all duration-300 ease-in-out"
       >
         <div class="relative flex flex-col h-full">
           <div class="flex-grow h-16">
@@ -292,10 +265,6 @@
           <div
             class="flex mt-2 justify-between items-center transition-transform duration-300 ease-in-out"
           >
-
-          <div
-            class="flex mt-2 justify-between items-center transition-transform duration-300 ease-in-out"
-          >
             <div class="flex items-center">
               <input
                 type="file"
@@ -305,7 +274,6 @@
                 #fileInput
                 class="hidden"
               />
-              <button
               <button
                 (click)="fileInput.click()"
                 class="flex items-center justify-center w-8 h-8 hover:bg-secondary-100 rounded-full transition-colors duration-200"
@@ -320,11 +288,8 @@
             </div>
 
             <button
-            <button
               [disabled]="isSendDisabled"
               class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              (click)="converse(message)"
-            >
               (click)="converse(message)"
             >
               Send
