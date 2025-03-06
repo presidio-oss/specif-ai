@@ -155,21 +155,56 @@ app.whenReady().then(() => {
   );
 
   ipcMain.handle("kill-port", async (event, port) => {
-    const command =
-      process.platform === "win32"
-        ? `netstat -ano | findstr :${port} | for /F "tokens=5" %P in ('more') do TaskKill /F /PID %P`
-        : `lsof -i tcp:${port} | grep LISTEN | awk '{print $2}' | xargs kill -9`;
+    if (process.platform === "win32") {
+      try {
+        const { stdout } = await new Promise((resolve, reject) => {
+          exec(`netstat -ano | findstr :${port}`, (error, stdout, stderr) => {
+            if (error) reject(error);
+            else resolve({ stdout, stderr });
+          });
+        });
+  
+        const pids = [...new Set(
+          stdout.trim().split('\n')
+                .map(line => line.trim().split(/\s+/)[4])
+                .filter(pid => pid && pid !== "0")  // Filter out empty or system PIDs
+        )];
 
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error killing port ${port}:`, error.message);
-      } else {
+        if (pids.length === 0) {
+          console.log(`No valid process found using port ${port}`);
+          return { success: false, message: "No valid process found" };
+        }
+        
+        // Kill each PID
+        for (const pid of pids) {
+          await new Promise((resolve, reject) => {
+            exec(`taskkill /F /PID ${pid}`, (error, stdout, stderr) => {
+              if (error) reject(error);
+              else resolve({ stdout, stderr });
+            });
+          });
+        }
+        
         console.log(`Port ${port} killed successfully.`);
         setTimeout(() => {
           startServer(port);
-        }, 1000); 
+        }, 1000);
+        
+      } catch (error) {
+        console.error(`Error killing port ${port}:`, error.message);
       }
-    });
+    } else {
+      exec(`lsof -i tcp:${port} | grep LISTEN | awk '{print $2}' | xargs kill -9`, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error killing port ${port}:`, error.message);
+        } else {
+          console.log(`Port ${port} killed successfully.`);
+          setTimeout(() => {
+            startServer(port);
+          }, 1000); 
+        }
+      });
+    }
   });
 
   app.on("reload", () => onAppReload());
