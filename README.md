@@ -7,9 +7,9 @@
 <br />
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/img/hai-build-logo-light.png">
-    <source media="(prefers-color-scheme: light)" srcset="assets/img/hai-build-logo-theme.png">
-    <img alt="HAI Logo" src="assets/img/hai-build-logo-white-bg.png" height="auto">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/img/hai-specif-ai-light.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/img/hai-specif-ai-theme.svg">
+    <img alt="HAI Logo" src="assets/img/hai-specif-ai-theme.svg" height="auto">
   </picture>
 </div>
 <br />  
