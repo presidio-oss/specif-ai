@@ -1,8 +1,19 @@
 # Changelog
 
+## [1.9.9]
+
+### Enhancements
+
+- Replaced the checkbox with a button for AI enhancement in the business process.
+- Consolidated root directory selection into the settings modal.
+- Added a configurable option to control the number of generated requirements.
+- Made the user story export format consistent with the PRD export format and removed the CSV export option for PRD user stories.
+- Introduced success and failure toast messages for task, user story generation, and regeneration.
+
 ## [1.9.8]
 
 ### Enhancements
+
 - UI Fix for multi file upload and alignment
 - Checkbox to Button for Enhance with AI for Root Requirements, User Stories and Tasks
 - Allow users to export PRD (with stories and tasks), BRD, NFR, UIR and BP requirements
@@ -15,6 +26,7 @@
 - Updated branding from HAI BUILD to Specifai across configuration, assets, documentation and app description
 
 ### Fixed
+
 - Fix for task chat to stay on same page
 - Margin and disable buttons for invalid forms
 - Keep the user on the same page after business process update
