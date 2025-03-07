@@ -12,7 +12,6 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class AnalyticsManager implements AnalyticsTracker {
-  startTime: number | null = null;
   private isEnabled: boolean;
   private deviceId: string;
   private currentLLMConfig!: LLMConfigModel;
@@ -48,27 +47,6 @@ export class AnalyticsManager implements AnalyticsTracker {
     }
 
     posthog.capture(eventName, properties);
-  }
-
-  startTimer(): void {
-    if (!this.isEnabled) {
-      return;
-    }
-    this.startTime = Date.now();
-  }
-
-  stopTimer(): void {
-    if (!this.isEnabled || this.startTime === null) {
-      return;
-    }
-
-    const duration = Date.now() - this.startTime;
-    this.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, {
-      durationMs: duration,
-      llmConfig: this.currentLLMConfig,
-    });
-    console.log('LLM Duration', duration);
-    this.startTime = null;
   }
 
   private getDeviceId() {

@@ -34,7 +34,7 @@ import { ElectronService } from 'src/app/services/electron/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
 import { AnalyticsManager } from 'src/app/services/analytics/managers/analytics.manager';
-import { AnalyticsEvents } from 'src/app/services/analytics/events/analytics.events';
+import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 
 @Component({
   selector: 'app-settings',
@@ -203,7 +203,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.analyticsManager.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
             provider: provider,
             model: model,
-            status: 'success'
+            source: AnalyticsEventSource.LLM_SETTINGS,
+            status: AnalyticsEventStatus.SUCCESS
           })
         } else {
           this.errorMessage =
@@ -212,7 +213,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.analyticsManager.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
             provider: provider,
             model: model,
-            status: 'failure'
+            source: AnalyticsEventSource.LLM_SETTINGS,
+            status: AnalyticsEventStatus.FAILURE
           });
         }
       },

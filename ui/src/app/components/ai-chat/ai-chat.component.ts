@@ -36,6 +36,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ERROR_MESSAGES } from '../../constants/app.constants';
 import { AnalyticsManager } from 'src/app/services/analytics/managers/analytics.manager';
+import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 @Component({
   selector: 'app-chat',
   templateUrl: './ai-chat.component.html',
@@ -174,6 +175,7 @@ export class AiChatComponent implements OnInit {
   }
 
   getSuggestion() {
+    const startTime = Date.now()
     this.loadingChat = true;
     const suggestionPayload: suggestionPayload = {
       ...this.basePayload,
@@ -189,18 +191,30 @@ export class AiChatComponent implements OnInit {
         this.loadingChat = false;
         this.responseStatus = false; 
         this.smoothScroll();
+        const stopTime = Date.now() - startTime;
+        this.analyticsManager.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, { 
+          durationMs: stopTime,
+          source: AnalyticsEventSource.GENERATE_SUGGESTIONS, 
+          status: AnalyticsEventStatus.SUCCESS 
+        });
       },
       error: (err) => {
         this.toastService.showError(ERROR_MESSAGES.GENERATE_SUGGESTIONS_FAILED);
         this.loadingChat = false;
         this.responseStatus = false; 
         this.smoothScroll();
+        const stopTime = Date.now() - startTime;
+        this.analyticsManager.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, { 
+          durationMs: stopTime,
+          source: AnalyticsEventSource.GENERATE_SUGGESTIONS, 
+          status: AnalyticsEventStatus.SUCCESS 
+        });
       }
     });
   }
 
   finalCall(message: string) {
-    this.analyticsManager.startTimer();
+    const startTime = Date.now();
     let payload: conversePayload = {
       ...this.basePayload,
       chatHistory: this.chatHistory
@@ -220,9 +234,14 @@ export class AiChatComponent implements OnInit {
       .subscribe((response) => {
         this.generateLoader = false;
         this.chatHistory = [...this.chatHistory, { assistant: response }];
+        const stopTime = Date.now() - startTime;
+        this.analyticsManager.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, { 
+          durationMs: stopTime,
+          source: AnalyticsEventSource.AI_CHAT, 
+          status: AnalyticsEventStatus.SUCCESS 
+        });
         this.returnChatHistory();
         this.getSuggestion();
-        this.analyticsManager.stopTimer();
       });
   }
 
