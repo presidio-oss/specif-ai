@@ -84,6 +84,14 @@ export class AppSystemService {
     });
   }
 
+  async writeFile(relativePath: string, content: any) {
+    const directory = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
+    await this.electronService.invokeFunction('writeFile', {
+      path: `${directory}/${relativePath}`,
+      content,
+    });
+  }
+
   async readPortionOfFile(relativePath: string, filterString: string) {
     const directory = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
     return this.electronService.invokeFunction('readFileChunk', {

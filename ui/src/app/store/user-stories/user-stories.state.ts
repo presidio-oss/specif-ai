@@ -22,6 +22,7 @@ import { Router } from '@angular/router';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
 import { REQUIREMENT_TYPE } from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import { StoryTaskIdGeneratorService } from 'src/app/services/user-story/story-task-id-generator.service';
 
 export interface UserStoriesStateModel {
   userStories: IUserStory[];
@@ -58,8 +59,9 @@ export class UserStoriesState {
     private logger: NGXLogger,
     private router: Router,
     private toast: ToasterService,
-    private requirementExportService: RequirementExportService
-  ) { }
+    private requirementExportService: RequirementExportService,
+    private storyTaskIdGeneratorService: StoryTaskIdGeneratorService,
+  ) {}
 
   @Selector()
   static getUserStories(state: UserStoriesStateModel) {
@@ -268,7 +270,8 @@ export class UserStoriesState {
   ) {
     const state = ctx.getState();
 
-    const newId = `US${state.userStories.length + 1}`;
+    const nextStoryId = await this.storyTaskIdGeneratorService.getNextStoryId(state.selectedProject)
+    const newId = `US${nextStoryId}`
 
     const newUserStory = { id: newId, ...userStory, tasks: [] };
     const updatedUserStories = [...state.userStories, newUserStory];
@@ -281,8 +284,6 @@ export class UserStoriesState {
       null,
       2,
     );
-
-    console.log(`${state.selectedProject}/${absolutePath}`, 'absinthe');
 
     await this.appSystemService.createFileWithContent(
       `${state.selectedProject}/${absolutePath}`,
