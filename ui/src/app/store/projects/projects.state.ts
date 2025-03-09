@@ -168,23 +168,35 @@ export class ProjectsState {
           description: metadata.description,
           cleanSolution: metadata.cleanSolution,
           brdPreferences: {
-            max_count: metadata.brd,
-            isEnabled: metadata.enableBRD,
+            max_count: metadata.requirementsPreferences.BRD.maxCount,
+            isEnabled: metadata.requirementsPreferences.BRD.enabled,
           },
           prdPreferences: {
-            max_count: metadata.prd,
-            isEnabled: metadata.enablePRD,
+            max_count: metadata.requirementsPreferences.PRD.maxCount,
+            isEnabled: metadata.requirementsPreferences.PRD.enabled,
           },
           uirPreferences: {
-            max_count: metadata.uir,
-            isEnabled: metadata.enableUIR,
+            max_count: metadata.requirementsPreferences.UIR.maxCount,
+            isEnabled: metadata.requirementsPreferences.UIR.enabled,
           },
           nfrPreferences: {
-            max_count: metadata.nfr,
-            isEnabled: metadata.enableNFR,
+            max_count: metadata.requirementsPreferences.NFR.maxCount,
+            isEnabled: metadata.requirementsPreferences.NFR.enabled,
           },
         }),
       );
+
+      metadata = {
+        ...metadata,
+        requirementsIdCounter: {
+          BRD: response?.brd?.length || 0,
+          PRD: response?.prd?.length || 0,
+          UIR: response?.uir?.length || 0,
+          NFR: response?.nfr?.length || 0,
+          US: 0,
+          TASK: 0,
+        },
+      };
 
       await this.appSystemService.createProject(metadata, projectName);
 
@@ -459,17 +471,61 @@ export class ProjectsState {
 
   @Action(CreateFile)
   async createFile(
-    { getState }: StateContext<ProjectStateModel>,
+    { getState, patchState }: StateContext<ProjectStateModel>,
     { path, content, featureFile }: CreateFile,
   ) {
     const state = getState();
     this.logger.debug('Creating file:', path, content);
     const fileContent = JSON.stringify(content);
-    await this.appSystemService.createNewFile(
+
+    const baseFileCount = await this.appSystemService.createNewFile(
       `${state.selectedProject}/${path}`,
       fileContent,
       featureFile,
+      state.metadata?.requirementsIdCounter?.[path] || -1,
     );
+
+    if (!featureFile) {
+      const { updatedMetadataContent, updatedProjects } =
+        await this.updateRequirementCounterMetadata(state, path, baseFileCount);
+
+      patchState({
+        projects: updatedProjects,
+        metadata: updatedMetadataContent,
+      });
+    }
+  }
+
+  private async updateRequirementCounterMetadata(
+    state: ProjectStateModel,
+    path: string,
+    baseFileCount: number,
+  ) {
+    const updatedMetadataContent = {
+      ...state.metadata,
+      requirementsIdCounter: {
+        ...state.metadata.requirementsIdCounter,
+        [path]: baseFileCount + 1,
+      },
+    };
+
+    await this.appSystemService.createFileWithContent(
+      `${state.selectedProject}/.metadata.json`,
+      JSON.stringify(updatedMetadataContent),
+    );
+
+    return {
+      updatedMetadataContent,
+      updatedProjects: state.projects.map((p) => {
+        if (p.metadata.id === state.metadata.id) {
+          return {
+            ...p,
+            metadata: updatedMetadataContent,
+          };
+        }
+        return p;
+      }),
+    };
   }
 
   @Action(UpdateFile)

@@ -59,12 +59,14 @@ export class AppSystemService {
     relativePathWithFileName: string,
     content: any,
     featureFile: string,
-  ) {
+    baseFileCount: number,
+  ): Promise<number> {
     const directory = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
-    await this.electronService.invokeFunction('appendFile', {
+    return await this.electronService.invokeFunction('appendFile', {
       content,
       path: `${directory}/${relativePathWithFileName}`,
       featureFile,
+      baseFileCount,
     });
   }
 

@@ -37,6 +37,7 @@ import { ErrorMessageComponent } from '../../../components/core/error-message/er
 import { ArchiveTask } from '../../../store/user-stories/user-stories.actions';
 import {
   CONFIRMATION_DIALOG,
+  REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from 'src/app/constants/app.constants';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
@@ -44,6 +45,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
 
 @Component({
   selector: 'app-add-task',
@@ -97,7 +99,6 @@ export class AddTaskComponent implements OnDestroy {
   editLabel: string = '';
   userStory: any = {};
   entityType: string = 'TASK';
-  totalTaskCount: number = 0;
   absoluteFilePath: string = '';
 
   existingTask: {
@@ -115,6 +116,7 @@ export class AddTaskComponent implements OnDestroy {
   constructor(
     private dialog: MatDialog,
     private toastService: ToasterService,
+    private requirementIdService: RequirementIdService,
   ) {
     this.mode = this.activatedRoute.snapshot.paramMap.get('mode') as
       | 'edit'
@@ -134,13 +136,6 @@ export class AddTaskComponent implements OnDestroy {
       this.prd = res;
     });
 
-    this.store
-      .select(UserStoriesState.getSelectedUserStory)
-      .subscribe((res) => {
-        this.userStory = res;
-        this.totalTaskCount =
-          (res?.tasks?.length || 0) + (res?.archivedTasks?.length || 0);
-      });
 
     this.createTaskForm(taskId);
     this.editLabel = this.mode == 'edit' ? 'Edit' : 'Add';
@@ -192,7 +187,7 @@ export class AddTaskComponent implements OnDestroy {
         '',
         Validators.compose([Validators.required]),
       ),
-      id: new FormControl(`TASK${this.totalTaskCount + 1}`),
+      id: new FormControl(taskId),
       useGenAI: new FormControl(false),
       fileContent: new FormControl(''),
       subTaskTicketId: new FormControl(''),
@@ -211,6 +206,14 @@ export class AddTaskComponent implements OnDestroy {
           list: task?.list,
           subTaskTicketId: task?.subTaskTicketId,
         });
+      });
+    } else {
+      const nextTaskId = this.requirementIdService.getNextRequirementId(
+        REQUIREMENT_TYPE.TASK,
+        true,
+      );
+      this.taskForm.patchValue({
+        id: `TASK${nextTaskId}`,
       });
     }
   }

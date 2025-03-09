@@ -22,6 +22,7 @@ import { Router } from '@angular/router';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
 import { REQUIREMENT_TYPE } from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
 
 export interface UserStoriesStateModel {
   userStories: IUserStory[];
@@ -58,8 +59,9 @@ export class UserStoriesState {
     private logger: NGXLogger,
     private router: Router,
     private toast: ToasterService,
-    private requirementExportService: RequirementExportService
-  ) { }
+    private requirementExportService: RequirementExportService,
+    private requirementIdService: RequirementIdService,
+  ) {}
 
   @Selector()
   static getUserStories(state: UserStoriesStateModel) {
@@ -268,9 +270,12 @@ export class UserStoriesState {
   ) {
     const state = ctx.getState();
 
-    const newId = `US${state.userStories.length + 1}`;
+    const nextStoryId = this.requirementIdService.getNextRequirementId(
+      REQUIREMENT_TYPE.US,
+      true,
+    );
 
-    const newUserStory = { id: newId, ...userStory, tasks: [] };
+    const newUserStory = { id: `US${nextStoryId}`, ...userStory, tasks: [] };
     const updatedUserStories = [...state.userStories, newUserStory];
 
     const fileContent = JSON.stringify(

@@ -1,3 +1,5 @@
+import { RequirementType } from 'src/app/constants/app.constants';
+
 export interface IProject {
   project: string;
   metadata: IProjectMetadata;
@@ -6,6 +8,18 @@ export interface IProject {
 export interface IGenerationRange {
   max_count: number;
   isEnabled: boolean;
+}
+
+export interface IRequirementConfig {
+  enabled: boolean;
+  maxCount: number;
+}
+
+export interface IRequirements {
+  BRD: IRequirementConfig;
+  PRD: IRequirementConfig;
+  UIR: IRequirementConfig;
+  NFR: IRequirementConfig;
 }
 
 export interface IProjectMetadata {
@@ -18,6 +32,8 @@ export interface IProjectMetadata {
   createReqt?: boolean;
   id: string;
   createdAt: string;
+  requirementsPreferences: IRequirements;
+  requirementsIdCounter?: Record<RequirementType, number>;
 }
 
 export interface ICreateSolutionRequest {

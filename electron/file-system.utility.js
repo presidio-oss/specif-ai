@@ -141,13 +141,14 @@ async function appendFile({ path, content, featureFile }) {
   }
 
   try {
-    const files = await fsPromise.readdir(path);
-    let fileCount = 0;
-    files.forEach((file) => {
-      if (file.startsWith(keyName) && file.includes("-base")) {
-        fileCount++;
-      }
-    });
+    if (baseFileCount === -1) {
+      const files = await fsPromise.readdir(path);
+      baseFileCount = files.filter(
+        (file) => file.startsWith(keyName) && file.includes("-base")
+      ).length;
+    }
+
+    const fileCount = baseFileCount;
 
     let newFileName =
       featureFile === ""
@@ -157,7 +158,7 @@ async function appendFile({ path, content, featureFile }) {
 
     await fsPromise.writeFile(newFilePath, content, "utf-8");
 
-    if (directoryPath.includes("PRD") && featureFile === "") {
+    if (path.includes("PRD") && featureFile === "") {
       const prdFileName = `${keyName}${(fileCount + 1).toString().padStart(2, "0")}-feature.json`;
       const prdFilePath = pathModule.join(path, prdFileName);
       await fsPromise.writeFile(
@@ -166,6 +167,7 @@ async function appendFile({ path, content, featureFile }) {
         "utf-8",
       );
     }
+    return fileCount;
   } catch (err) {
     console.error("Error handling files:", err);
   }

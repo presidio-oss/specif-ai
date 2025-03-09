@@ -71,6 +71,17 @@ export class CreateSolutionComponent implements OnInit {
     );
   }
 
+  private initRequirementGroup(enabled: boolean = true, maxCount: number = 15) {
+    return new FormGroup({
+      enabled: new FormControl(enabled),
+      maxCount: new FormControl(maxCount, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(30),
+      ]),
+    });
+  }
+
   createSolutionForm() {
     return new FormGroup({
       name: new FormControl('', [
@@ -89,30 +100,24 @@ export class CreateSolutionComponent implements OnInit {
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
-      enableBRD: new FormControl(true),
-      enablePRD: new FormControl(true),
-      enableUIR: new FormControl(true),
-      enableNFR: new FormControl(true),
-      brd: new FormControl(15, [
-        Validators.required,
-        Validators.min(1),
-        Validators.max(30),
-      ]),
-      prd: new FormControl(15, [
-        Validators.required,
-        Validators.min(1),
-        Validators.max(30),
-      ]),
-      uir: new FormControl(15, [
-        Validators.required,
-        Validators.min(1),
-        Validators.max(30),
-      ]),
-      nfr: new FormControl(15, [
-        Validators.required,
-        Validators.min(1),
-        Validators.max(30),
-      ]),
+      requirementsPreferences: new FormGroup({
+        BRD: this.initRequirementGroup(),
+        PRD: this.initRequirementGroup(),
+        UIR: this.initRequirementGroup(),
+        NFR: this.initRequirementGroup(),
+      }),
+    });
+  }
+
+  onRequirementToggle(type: 'BRD' | 'PRD' | 'UIR' | 'NFR', enabled: boolean) {
+    const requirementGroup = this.solutionForm
+      .get('requirementsPreferences')
+      ?.get(type);
+
+    if (!requirementGroup) return;
+    requirementGroup.patchValue({
+      enabled,
+      maxCount: enabled ? 15 : 0,
     });
   }
 
