@@ -47,8 +47,6 @@ export class RequirementIdService {
     requirementsIdCounter: Record<RequirementType, number>;
   } {
     const metadata = this.store.selectSnapshot(ProjectsState.getMetadata);
-    console.log(metadata);
-
     return {
       ...metadata,
       requirementsIdCounter:

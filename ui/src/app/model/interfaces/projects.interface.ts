@@ -32,8 +32,8 @@ export interface IProjectMetadata {
   createReqt?: boolean;
   id: string;
   createdAt: string;
-  requirementsPreferences: IRequirements;
-  requirementsIdCounter?: Record<RequirementType, number>;
+  requirementsPreferences?: IRequirements;
+  requirementsIdCounter: Record<RequirementType, number>;
 }
 
 export interface ICreateSolutionRequest {
