@@ -186,8 +186,12 @@ export class ProjectsState {
         }),
       );
 
+      const { requirementsPreferences, ...metadataWithoutPreferences } =
+        metadata;
+
       metadata = {
-        ...metadata,
+        ...metadataWithoutPreferences,
+        ...(!metadata.cleanSolution && { requirementsPreferences }),
         requirementsIdCounter: {
           BRD: response?.brd?.length || 0,
           PRD: response?.prd?.length || 0,
