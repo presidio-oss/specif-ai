@@ -43,9 +43,7 @@ export class RequirementIdService {
     );
   }
 
-  private getMetadata(): Omit<IProjectMetadata, 'requirementsIdCounter'> & {
-    requirementsIdCounter: Record<RequirementType, number>;
-  } {
+  private getMetadata(): IProjectMetadata {
     const metadata = this.store.selectSnapshot(ProjectsState.getMetadata);
     return {
       ...metadata,
