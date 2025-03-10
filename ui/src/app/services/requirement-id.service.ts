@@ -27,8 +27,7 @@ export class RequirementIdService {
     autoIncrement = false,
   ): number {
     const metadata = this.getMetadata();
-
-    const currentId = metadata.requirementsIdCounter[requirementType] ?? 0;
+    const currentId = metadata[requirementType]?.counter ?? 0;
     const nextRequirementId = currentId + 1;
 
     if (autoIncrement) {
@@ -42,24 +41,27 @@ export class RequirementIdService {
     requirementCounters: Partial<Record<RequirementType, number>>,
   ): void {
     const metadata = this.getMetadata();
+    const updates = Object.entries(requirementCounters).reduce(
+      (acc, [type, count]) => ({
+        ...acc,
+        [type]: {
+          ...metadata[type as RequirementType],
+          counter: count,
+        },
+      }),
+      {},
+    );
 
     this.store.dispatch(
       new UpdateMetadata(metadata.id, {
         ...metadata,
-        requirementsIdCounter: {
-          ...metadata.requirementsIdCounter,
-          ...requirementCounters,
-        },
+        ...updates,
       }),
     );
   }
 
   private getMetadata(): IProjectMetadata {
-    const metadata = this.store.selectSnapshot(ProjectsState.getMetadata);
-    return {
-      ...metadata,
-      requirementsIdCounter: metadata.requirementsIdCounter || {},
-    };
+    return this.store.selectSnapshot(ProjectsState.getMetadata);
   }
 
   public async updateFeatureAndTaskIds(
@@ -175,8 +177,7 @@ export class RequirementIdService {
   }
 
   private isCounterMissing(type: RequirementType): boolean {
-    const metadata = this.store.selectSnapshot(ProjectsState.getMetadata);
-    const { requirementsIdCounter = {} } = metadata;
-    return requirementsIdCounter[type] === undefined;
+    const metadata = this.getMetadata();
+    return !metadata[type] || metadata[type].counter === undefined;
   }
 }

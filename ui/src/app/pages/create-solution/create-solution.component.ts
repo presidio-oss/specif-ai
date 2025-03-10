@@ -22,6 +22,7 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
 import {
   APP_CONSTANTS,
+  RootRequirementType,
   SOLUTION_CREATION_TOGGLE_MESSAGES,
 } from '../../constants/app.constants';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
@@ -72,14 +73,14 @@ export class CreateSolutionComponent implements OnInit {
   }
 
   private initRequirementGroup(enabled: boolean = true, maxCount: number = 15) {
-    return new FormGroup({
+    return {
       enabled: new FormControl(enabled),
       maxCount: new FormControl(maxCount, [
         Validators.required,
         Validators.min(0),
         Validators.max(30),
       ]),
-    });
+    };
   }
 
   createSolutionForm() {
@@ -100,20 +101,15 @@ export class CreateSolutionComponent implements OnInit {
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
-      requirementsPreferences: new FormGroup({
-        BRD: this.initRequirementGroup(),
-        PRD: this.initRequirementGroup(),
-        UIR: this.initRequirementGroup(),
-        NFR: this.initRequirementGroup(),
-      }),
+      BRD: new FormGroup(this.initRequirementGroup()),
+      PRD: new FormGroup(this.initRequirementGroup()),
+      UIR: new FormGroup(this.initRequirementGroup()),
+      NFR: new FormGroup(this.initRequirementGroup()),
     });
   }
 
-  onRequirementToggle(type: 'BRD' | 'PRD' | 'UIR' | 'NFR', enabled: boolean) {
-    const requirementGroup = this.solutionForm
-      .get('requirementsPreferences')
-      ?.get(type);
-
+  onRequirementToggle(type: RootRequirementType, enabled: boolean) {
+    const requirementGroup = this.solutionForm.get(type);
     if (!requirementGroup) return;
     requirementGroup.patchValue({
       enabled,

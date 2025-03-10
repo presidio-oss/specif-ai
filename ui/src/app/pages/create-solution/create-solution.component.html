@@ -151,10 +151,7 @@
                     <div class="mt-1.5">
                       <app-toggle
                         [isActive]="
-                          solutionForm
-                            .get('requirementsPreferences')
-                            ?.get('BRD')
-                            ?.get('enabled')?.value
+                          solutionForm.get('BRD')?.get('enabled')?.value
                         "
                         (toggleChange)="onRequirementToggle('BRD', $event)"
                         isPlainToggle="true"
@@ -166,20 +163,10 @@
                   </div>
                   <div
                     class="mt-4"
-                    *ngIf="
-                      solutionForm
-                        .get('requirementsPreferences')
-                        ?.get('BRD')
-                        ?.get('enabled')?.value
-                    "
+                    *ngIf="solutionForm.get('BRD')?.get('enabled')?.value"
                   >
-                    <div
-                      class="border rounded-lg p-4"
-                      formGroupName="requirementsPreferences"
-                    >
-                      <div formGroupName="BRD">
-                        <app-slider formControlName="maxCount"></app-slider>
-                      </div>
+                    <div class="border rounded-lg p-4" formGroupName="BRD">
+                      <app-slider formControlName="maxCount"></app-slider>
                     </div>
                   </div>
                 </div>
@@ -203,10 +190,7 @@
                     <div class="mt-1.5">
                       <app-toggle
                         [isActive]="
-                          solutionForm
-                            .get('requirementsPreferences')
-                            ?.get('PRD')
-                            ?.get('enabled')?.value
+                          solutionForm.get('PRD')?.get('enabled')?.value
                         "
                         (toggleChange)="onRequirementToggle('PRD', $event)"
                         isPlainToggle="true"
@@ -218,20 +202,10 @@
                   </div>
                   <div
                     class="mt-4"
-                    *ngIf="
-                      solutionForm
-                        .get('requirementsPreferences')
-                        ?.get('PRD')
-                        ?.get('enabled')?.value
-                    "
+                    *ngIf="solutionForm.get('PRD')?.get('enabled')?.value"
                   >
-                    <div
-                      class="border rounded-lg p-4"
-                      formGroupName="requirementsPreferences"
-                    >
-                      <div formGroupName="PRD">
-                        <app-slider formControlName="maxCount"></app-slider>
-                      </div>
+                    <div class="border rounded-lg p-4" formGroupName="PRD">
+                      <app-slider formControlName="maxCount"></app-slider>
                     </div>
                   </div>
                 </div>
@@ -253,10 +227,7 @@
                     <div class="mt-1.5">
                       <app-toggle
                         [isActive]="
-                          solutionForm
-                            .get('requirementsPreferences')
-                            ?.get('UIR')
-                            ?.get('enabled')?.value
+                          solutionForm.get('UIR')?.get('enabled')?.value
                         "
                         (toggleChange)="onRequirementToggle('UIR', $event)"
                         isPlainToggle="true"
@@ -268,20 +239,10 @@
                   </div>
                   <div
                     class="mt-4"
-                    *ngIf="
-                      solutionForm
-                        .get('requirementsPreferences')
-                        ?.get('UIR')
-                        ?.get('enabled')?.value
-                    "
+                    *ngIf="solutionForm.get('UIR')?.get('enabled')?.value"
                   >
-                    <div
-                      class="border rounded-lg p-4"
-                      formGroupName="requirementsPreferences"
-                    >
-                      <div formGroupName="UIR">
-                        <app-slider formControlName="maxCount"></app-slider>
-                      </div>
+                    <div class="border rounded-lg p-4" formGroupName="UIR">
+                      <app-slider formControlName="maxCount"></app-slider>
                     </div>
                   </div>
                 </div>
@@ -305,10 +266,7 @@
                     <div class="mt-1.5">
                       <app-toggle
                         [isActive]="
-                          solutionForm
-                            .get('requirementsPreferences')
-                            ?.get('NFR')
-                            ?.get('enabled')?.value
+                          solutionForm.get('NFR')?.get('enabled')?.value
                         "
                         (toggleChange)="onRequirementToggle('NFR', $event)"
                         isPlainToggle="true"
@@ -321,20 +279,10 @@
                   </div>
                   <div
                     class="mt-4"
-                    *ngIf="
-                      solutionForm
-                        .get('requirementsPreferences')
-                        ?.get('NFR')
-                        ?.get('enabled')?.value
-                    "
+                    *ngIf="solutionForm.get('NFR')?.get('enabled')?.value"
                   >
-                    <div
-                      class="border rounded-lg p-4"
-                      formGroupName="requirementsPreferences"
-                    >
-                      <div formGroupName="NFR">
-                        <app-slider formControlName="maxCount"></app-slider>
-                      </div>
+                    <div class="border rounded-lg p-4" formGroupName="NFR">
+                      <app-slider formControlName="maxCount"></app-slider>
                     </div>
                   </div>
                 </div>

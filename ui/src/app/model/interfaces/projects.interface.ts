@@ -11,15 +11,9 @@ export interface IGenerationRange {
 }
 
 export interface IRequirementConfig {
-  enabled: boolean;
-  maxCount: number;
-}
-
-export interface IRequirements {
-  BRD: IRequirementConfig;
-  PRD: IRequirementConfig;
-  UIR: IRequirementConfig;
-  NFR: IRequirementConfig;
+  enabled?: boolean;
+  maxCount?: number;
+  counter: number;
 }
 
 export interface IProjectMetadata {
@@ -32,8 +26,13 @@ export interface IProjectMetadata {
   createReqt?: boolean;
   id: string;
   createdAt: string;
-  requirementsPreferences?: IRequirements;
-  requirementsIdCounter: Record<RequirementType, number>;
+  BRD: IRequirementConfig;
+  PRD: IRequirementConfig;
+  UIR: IRequirementConfig;
+  NFR: IRequirementConfig;
+  BP: IRequirementConfig;
+  US: IRequirementConfig;
+  TASK: IRequirementConfig;
 }
 
 export interface ICreateSolutionRequest {

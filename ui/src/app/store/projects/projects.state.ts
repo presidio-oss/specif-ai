@@ -27,6 +27,7 @@ import {
   BP_FILE_KEYS,
   PRD_HEADINGS,
   REQUIREMENT_DISPLAY_NAME_MAP,
+  REQUIREMENT_TYPE,
   RequirementType,
 } from 'src/app/constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
@@ -168,38 +169,45 @@ export class ProjectsState {
           description: metadata.description,
           cleanSolution: metadata.cleanSolution,
           brdPreferences: {
-            max_count: metadata.requirementsPreferences.BRD.maxCount,
-            isEnabled: metadata.requirementsPreferences.BRD.enabled,
+            max_count: metadata.BRD.maxCount,
+            isEnabled: metadata.BRD.enabled,
           },
           prdPreferences: {
-            max_count: metadata.requirementsPreferences.PRD.maxCount,
-            isEnabled: metadata.requirementsPreferences.PRD.enabled,
+            max_count: metadata.PRD.maxCount,
+            isEnabled: metadata.PRD.enabled,
           },
           uirPreferences: {
-            max_count: metadata.requirementsPreferences.UIR.maxCount,
-            isEnabled: metadata.requirementsPreferences.UIR.enabled,
+            max_count: metadata.UIR.maxCount,
+            isEnabled: metadata.UIR.enabled,
           },
           nfrPreferences: {
-            max_count: metadata.requirementsPreferences.NFR.maxCount,
-            isEnabled: metadata.requirementsPreferences.NFR.enabled,
+            max_count: metadata.NFR.maxCount,
+            isEnabled: metadata.NFR.enabled,
           },
         }),
       );
 
-      const { requirementsPreferences, ...metadataWithoutPreferences } =
-        metadata;
+      const responseMap = {
+        [REQUIREMENT_TYPE.BRD]: response?.brd?.length || 0,
+        [REQUIREMENT_TYPE.PRD]: response?.prd?.length || 0,
+        [REQUIREMENT_TYPE.UIR]: response?.uir?.length || 0,
+        [REQUIREMENT_TYPE.NFR]: response?.nfr?.length || 0,
+        [REQUIREMENT_TYPE.US]: 0,
+        [REQUIREMENT_TYPE.TASK]: 0,
+        [REQUIREMENT_TYPE.BP]: 0,
+      };
 
       metadata = {
-        ...metadataWithoutPreferences,
-        ...(!metadata.cleanSolution && { requirementsPreferences }),
-        requirementsIdCounter: {
-          BRD: response?.brd?.length || 0,
-          PRD: response?.prd?.length || 0,
-          UIR: response?.uir?.length || 0,
-          NFR: response?.nfr?.length || 0,
-          US: 0,
-          TASK: 0,
-        },
+        ...metadata,
+        ...Object.entries(REQUIREMENT_TYPE).reduce(
+          (acc, [_, type]) => ({
+            ...acc,
+            [type]: metadata.cleanSolution
+              ? { counter: 0 }
+              : { ...metadata[type], counter: responseMap[type] },
+          }),
+          {},
+        ),
       };
 
       await this.appSystemService.createProject(metadata, projectName);
@@ -486,7 +494,7 @@ export class ProjectsState {
       `${state.selectedProject}/${path}`,
       fileContent,
       featureFile,
-      state.metadata?.requirementsIdCounter?.[path] || -1,
+      state.metadata?.[path]?.counter || -1,
     );
 
     if (!featureFile) {
@@ -507,9 +515,9 @@ export class ProjectsState {
   ) {
     const updatedMetadataContent = {
       ...state.metadata,
-      requirementsIdCounter: {
-        ...state.metadata.requirementsIdCounter,
-        [path]: baseFileCount + 1,
+      [path]: {
+        ...state.metadata[path],
+        counter: baseFileCount + 1,
       },
     };
 
@@ -518,18 +526,13 @@ export class ProjectsState {
       JSON.stringify(updatedMetadataContent),
     );
 
-    return {
-      updatedMetadataContent,
-      updatedProjects: state.projects.map((p) => {
-        if (p.metadata.id === state.metadata.id) {
-          return {
-            ...p,
-            metadata: updatedMetadataContent,
-          };
-        }
-        return p;
-      }),
-    };
+    const updatedProjects = state.projects.map((p) =>
+      p.metadata.id === state.metadata.id
+        ? { ...p, metadata: updatedMetadataContent }
+        : p,
+    );
+
+    return { updatedMetadataContent, updatedProjects };
   }
 
   @Action(UpdateFile)
