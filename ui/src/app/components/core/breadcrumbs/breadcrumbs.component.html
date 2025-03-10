@@ -1,24 +1,39 @@
-<nav class="flex" aria-label="Breadcrumb" *ngIf="breadcrumbs$ | async as breadcrumbs">
+<nav
+  class="flex"
+  aria-label="Breadcrumb"
+  *ngIf="breadcrumbs$ | async as breadcrumbs"
+>
   <!--Back button-->
   <div class="flex mr-3">
-    <button [disabled]="breadcrumbs.length < 1" (click)="navigateToPreviousPage()"
-        class="inline-flex items-center text-xs font-normal text-gray-300"
-        [ngClass]="{'hover:text-white': breadcrumbs.length > 0, 'text-gray-500': breadcrumbs.length < 1}">
-        <ng-icon class="text-lg" name="heroArrowLeft"></ng-icon>
+    <button
+      [disabled]="breadcrumbs.length < 1"
+      (click)="navigateToPreviousPage()"
+      class="inline-flex items-center text-xs font-normal text-secondary-300"
+      [ngClass]="{
+        'hover:text-white': breadcrumbs.length > 0,
+        'text-secondary-500': breadcrumbs.length < 1,
+      }"
+    >
+      <ng-icon class="text-lg" name="heroArrowLeft" strokeWidth="2"></ng-icon>
     </button>
   </div>
   <!--Solutions Breadcrumbs-->
   <ol class="inline-flex items-center space-x-1 md:space-x-2">
     <li class="inline-flex items-center">
-      <a routerLink="/apps" (click)="navigateTo({ label: 'Solutions', url: '/apps' })" class="inline-flex items-center text-sm font-normal text-gray-300 hover:text-white cursor-pointer"
-        [class.text-white]="breadcrumbs.length == 0" [class.font-semibold]="breadcrumbs.length == 0">
+      <a
+        routerLink="/apps"
+        (click)="navigateTo({ label: 'Solutions', url: '/apps' })"
+        class="inline-flex items-center text-sm font-normal text-secondary-300 hover:text-white cursor-pointer"
+        [class.text-white]="breadcrumbs.length == 0"
+        [class.font-semibold]="breadcrumbs.length == 0"
+      >
         <ng-icon class="text-sm mr-1" name="heroHome"></ng-icon>
         Solutions
       </a>
     </li>
     <li *ngFor="let breadcrumb of breadcrumbs; let last = last">
       <div class="flex items-center">
-        <span class="text-gray-300 text-xs">/</span>
+        <span class="text-secondary-300 text-xs">/</span>
         <span
           (click)="navigateTo(breadcrumb)"
           (keydown.enter)="navigateTo(breadcrumb)"
@@ -28,7 +43,7 @@
           [class.text-white]="last"
           [class.font-semibold]="last"
           [class.cursor-pointer]="breadcrumb.url"
-          class="ml-1 text-sm text-gray-300 hover:text-white md:ml-2 cursor-pointer"
+          class="ml-1 text-sm text-secondary-300 hover:text-white md:ml-2 cursor-pointer"
           [matTooltip]="breadcrumb.tooltipLabel || ''"
           >{{ breadcrumb.label }}</span
         >

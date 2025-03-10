@@ -178,6 +178,10 @@ export class UserStoriesComponent implements OnInit {
       this.metadata = res;
     });
 
+    this.store.dispatch(
+      new ReadFile(`${this.navigation.folderName}/${this.navigation.fileName}`),
+    );
+    
     this.isTokenAvailable = (() => {
       const tokenInfo = getJiraTokenInfo(this.navigation.projectId);
       return (
@@ -483,10 +487,6 @@ export class UserStoriesComponent implements OnInit {
       projectKey: this.metadata.integration.jira.jiraProjectKey,
       features: [],
     };
-
-    this.store.dispatch(
-      new ReadFile(`${this.navigation.folderName}/${this.navigation.fileName}`),
-    );
 
     requestPayload.epicName = this.requirementFile.title;
     requestPayload.epicDescription = this.requirementFile.requirement;
