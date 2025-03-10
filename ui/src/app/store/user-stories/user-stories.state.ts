@@ -102,47 +102,48 @@ export class UserStoriesState {
   }
 
   @Action(GetUserStories)
-  add(
+  async add(
     ctx: StateContext<UserStoriesStateModel>,
     { relativePath }: GetUserStories,
   ) {
     const state = ctx.getState();
-    this.appSystemService
-      .readFile(relativePath)
-      .then((res) => {
-        this.logger.debug(res, relativePath);
-        if (!res) {
-          ctx.patchState({
-            userStories: []
-          });
-          return;
-        }
-        const userStories: Array<IUserStory> = JSON.parse(res).features || [];
-        const stories: IUserStory[] = [];
-        const taskMap: { [key in string]: ITask[] } = {};
-        this.logger.debug('userStories ==>', userStories);
-        userStories.forEach((story: IUserStory) => {
-          stories.push({
-            id: story.id,
-            name: story.name,
-            description: story.description,
-            tasks: story.tasks,
-            archivedTasks: story.archivedTasks,
-            chatHistory: story.chatHistory,
-            storyTicketId: story.storyTicketId
-          });
-          this.logger.debug('story ==>', story);
-          taskMap[story.id] = story.tasks as ITask[];
+    try {
+      await this.requirementIdService.syncStoryAndTaskCounters();
+      const res = await this.appSystemService.readFile(relativePath);
+      this.logger.debug(res, relativePath);
+
+      if (!res) {
+        ctx.patchState({ userStories: [] });
+        return;
+      }
+
+      const userStories: Array<IUserStory> = JSON.parse(res).features || [];
+      const stories: IUserStory[] = [];
+      const taskMap: { [key in string]: ITask[] } = {};
+      this.logger.debug('userStories ==>', userStories);
+
+      userStories.forEach((story: IUserStory) => {
+        stories.push({
+          id: story.id,
+          name: story.name,
+          description: story.description,
+          tasks: story.tasks,
+          archivedTasks: story.archivedTasks,
+          chatHistory: story.chatHistory,
+          storyTicketId: story.storyTicketId,
         });
-        ctx.patchState({
-          userStories: [...stories],
-          fileContent: res,
-          taskMap: { ...state.taskMap, ...taskMap },
-        });
-      })
-      .catch((error) => {
-        this.logger.error('Error in reading file', error);
+        this.logger.debug('story ==>', story);
+        taskMap[story.id] = story.tasks as ITask[];
       });
+
+      ctx.patchState({
+        userStories: [...stories],
+        fileContent: res,
+        taskMap: { ...state.taskMap, ...taskMap },
+      });
+    } catch (error) {
+      this.logger.error('Error in reading file', error);
+    }
   }
 
   @Action(SetSelectedUserStory)
