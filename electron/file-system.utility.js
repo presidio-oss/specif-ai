@@ -124,7 +124,7 @@ function getDirectoryList(param) {
   }
 }
 
-async function appendFile({ path, content, featureFile }) {
+async function appendFile({ path, content, featureFile, baseFileCount }) {
   const keyName = pathModule.basename(path);
 
   try {
