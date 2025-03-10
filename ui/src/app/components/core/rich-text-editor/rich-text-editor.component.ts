@@ -13,12 +13,19 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { NGXLogger } from 'ngx-logger';
 import { htmlToMarkdown } from 'src/app/utils/html.utils';
-import { markdownToHtml } from 'src/app/utils/markdown.utils';
+import {
+  markdownToHtml,
+  MarkdownToHtmlOptions,
+} from 'src/app/utils/markdown.utils';
 import type { Level as HeadingLevel } from '@tiptap/extension-heading';
 import { CdkMenuModule } from '@angular/cdk/menu';
 import { NgClass, NgIf } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { heroChevronDown, heroBold, heroItalic } from '@ng-icons/heroicons/outline';
+import {
+  heroChevronDown,
+  heroBold,
+  heroItalic,
+} from '@ng-icons/heroicons/outline';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 type OnChangeCallback = (md: string) => void;
@@ -51,7 +58,8 @@ export class RichTextEditorComponent
   @Input('editable') editable = true;
   @Input('content') content = '## Hello There?';
   @Input('mode') mode: 'edit' | 'view' = 'edit';
-  @Input('class') class = '';
+  @Input('editorClass') editorClass = '';
+  @Input('maxChars') maxChars: number | undefined = undefined;
 
   editor: Editor | null = null;
   touched = false;
@@ -73,7 +81,18 @@ export class RichTextEditorComponent
   }
 
   private async setupEditor() {
-    let initialContent = await this.safeGetHtmlFromMarkdown(this.content);
+    let options = {};
+
+    if (this.mode == 'view') {
+      options = {
+        maxChars: this.maxChars,
+      };
+    }
+
+    let initialContent = await this.safeGetHtmlFromMarkdown(
+      this.content,
+      options,
+    );
 
     this.editor = new Editor({
       element: this.editorElement.nativeElement,
@@ -82,8 +101,10 @@ export class RichTextEditorComponent
       editorProps: {
         attributes: {
           class: `${
-            this.mode === 'edit' ? 'p-2.5 focus-visible:outline-none prose-secondary-edit' : ''
-          } rounded-lg disabled:bg-secondary-100 max-w-none prose prose-sm prose-p:m-0 prose-p:mb-[0.625rem] prose-li:m-0 ${this.class}`,
+            this.mode === 'edit'
+              ? 'p-2.5 focus-visible:outline-none prose-secondary-edit'
+              : ''
+          } rounded-lg disabled:bg-secondary-100 max-w-none prose prose-sm prose-p:m-0 prose-p:mb-[0.625rem] prose-li:m-0 ${this.editorClass}`,
         },
       },
       onUpdate: async ({ editor }) => {
@@ -125,12 +146,14 @@ export class RichTextEditorComponent
   // ControlValueAccessor methods
 
   writeValue(markdown: string): void {
-    console.log('writing value');
-    this.safeGetHtmlFromMarkdown(markdown).then((content) => {
-      if (this.editor) {
-        this.editor.commands.setContent(content);
-      }
-    });
+    if (this.editor) {
+      this.safeGetHtmlFromMarkdown(markdown).then((content) => {
+        console.log(content, this.editor);
+        this.editor?.commands.setContent(content);
+      });
+    } else {
+      this.content = markdown;
+    }
   }
 
   registerOnChange(fn: OnChangeCallback): void {
@@ -150,9 +173,12 @@ export class RichTextEditorComponent
     console.log(this.editable, 'setDisabledState');
   }
 
-  private async safeGetHtmlFromMarkdown(md: string) {
+  private async safeGetHtmlFromMarkdown(
+    md: string,
+    options?: MarkdownToHtmlOptions,
+  ) {
     try {
-      const response = await markdownToHtml(md);
+      const response = await markdownToHtml(md, options);
       return response.value;
     } catch (error) {
       this.logger.error('Error', error);

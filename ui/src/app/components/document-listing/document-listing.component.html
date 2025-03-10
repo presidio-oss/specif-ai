@@ -71,7 +71,7 @@
               class="flex flex-1 items-center justify-between truncate rounded-lg border border-secondary-200 bg-white hover:bg-secondary-50 transition-colors"
             >
               <div
-                class="flex-1 truncate p-4 text-sm rounded-lg"
+                class="flex-1 truncate p-4 text-sm rounded-lg flex flex-col gap-2"
                 (click)="navigateToEdit(item)"
                 (keydown.enter)="navigateToEdit(item)"
                 (keydown.space)="navigateToEdit(item); $event.preventDefault()"
@@ -81,17 +81,16 @@
                 <a class="font-semibold text-secondary-500">
                   {{ item.fileName.replace("-base.json", "") }}
                 </a>
-                <h1
-                  class="doc-section__item-title text-base pt-2 pb-1 font-medium truncate pr-[80px]"
-                >
-                  {{ item.content.title }}
-                </h1>
-                <ng-container *ngIf="item.content.requirement as requirement">
-                  <app-rich-text-editor
-                    class="prose-secondary-view text-wrap max-h-[20rem] overflow-y-auto" mode="view"
-                    [content]="getTruncatedRequirement(requirement) ?? ''" [editable]="false">
-                  </app-rich-text-editor>
-                </ng-container>
+                <div class="flex flex-col gap-1">
+                  <h1 class="doc-section__item-title text-base font-medium truncate pr-[80px]">
+                    {{ item.content.title }}
+                  </h1>
+                  <ng-container *ngIf="item.content.requirement as requirement">
+                    <app-rich-text-editor editorClass="prose-secondary-view text-wrap max-h-24 overflow-y-hidden prose-xs" mode="view"
+                      [content]="requirement" [editable]="false" [maxChars]=180>
+                    </app-rich-text-editor>
+                  </ng-container>
+                </div>
               </div>
               <div class="absolute top-4 right-4 flex space-x-2">
                 <app-button

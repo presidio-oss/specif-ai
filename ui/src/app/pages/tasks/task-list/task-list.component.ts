@@ -32,6 +32,7 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { SearchService } from '../../../services/search/search.service';
 import { BehaviorSubject } from 'rxjs';
+import { RichTextEditorComponent } from '../../../components/core/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-task-list',
@@ -48,6 +49,7 @@ import { BehaviorSubject } from 'rxjs';
     BadgeComponent,
     SearchInputComponent,
     MatTooltipModule,
+    RichTextEditorComponent,
   ],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
