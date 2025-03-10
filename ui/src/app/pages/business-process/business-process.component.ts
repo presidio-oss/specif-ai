@@ -46,6 +46,7 @@ import {
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-business-process',
@@ -66,6 +67,7 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
     ExpandDescriptionPipe,
     TruncateEllipsisPipe,
     NgIconComponent,
+    RichTextEditorComponent
   ],
   providers: [
     provideIcons({

@@ -43,65 +43,47 @@
         </div>
       </div>
 
-      <form
-        [formGroup]="requirementForm"
-        (ngSubmit)="mode === 'edit' ? updateRequirement() : addRequirement()"
-      >
-        <app-input-field
-          [required]="true"
-          elementPlaceHolder="Title"
-          elementId="title"
-          elementName="Title"
-          formControlName="title"
-        />
-        <app-error-message [errorControl]="requirementForm.get('title')" />
-
-        <app-textarea-field
-          [required]="true"
-          elementPlaceHolder="Description"
-          elementId="description"
-          elementName="Description"
-          formControlName="content"
-        />
-        <app-error-message [errorControl]="requirementForm.get('content')" />
-
+      <form [formGroup]="requirementForm" (ngSubmit)="mode === 'edit' ? updateRequirement() : addRequirement()">
+        <div class="flex flex-col gap-1.5">
+          <div class="flex flex-col gap-1">
+            <app-input-field [required]="true" elementPlaceHolder="Title" elementId="title" elementName="Title"
+              formControlName="title" />
+            <ng-container *ngIf="requirementForm.get('title')?.touched">
+              <span *ngIf="requirementForm.get('title')?.errors?.['required']" class="text-red-500 text-sm">
+                Title is required
+              </span>
+            </ng-container>
+          </div>
+      
+          <div class="flex flex-col gap-1.5">
+            <label for="elementId" class="block text-sm font-medium text-secondary-500">
+              Description
+              <span class="text-red-500 text-xs">*</span>
+            </label>
+            <div class="flex flex-col gap-1">
+              <app-rich-text-editor formControlName="content"></app-rich-text-editor>
+              <ng-container *ngIf="requirementForm.get('content')?.touched">
+                <span *ngIf="requirementForm.get('content')?.errors?.['required']" class="text-red-500 text-sm">
+                  Description is required
+                </span>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      
         <div class="flex items-start justify-between mt-4">
           <div class="flex-col">
             <div class="flex items-start gap-2">
-              <app-multi-upload
-                *ngIf="mode === 'add'"
-                (fileContent)="handleFileContent($event)"
-              ></app-multi-upload>
-              <app-button
-                buttonContent="Enhance with AI"
-                icon="heroSparklesSolid"
-                theme="secondary"
-                size="sm"
-                rounded="lg"
-                (click)="enhanceRequirementWithAI()"
-                [disabled]="requirementForm.invalid"
-              ></app-button>
+              <app-multi-upload *ngIf="mode === 'add'" (fileContent)="handleFileContent($event)"></app-multi-upload>
+              <app-button buttonContent="Enhance with AI" icon="heroSparklesSolid" theme="secondary" size="sm" rounded="lg"
+                (click)="enhanceRequirementWithAI()" [disabled]="requirementForm.invalid"></app-button>
             </div>
           </div>
           <div class="">
-            <app-button
-              buttonContent="Update"
-              theme="primary"
-              size="sm"
-              rounded="md"
-              *ngIf="mode === 'edit'"
-              type="submit"
-              [disabled]="requirementForm.invalid"
-            />
-            <app-button
-              buttonContent="Add"
-              theme="primary"
-              size="sm"
-              rounded="md"
-              *ngIf="mode === 'add'"
-              type="submit"
-              [disabled]="requirementForm.invalid"
-            />
+            <app-button buttonContent="Update" theme="primary" size="sm" rounded="md" *ngIf="mode === 'edit'" type="submit"
+              [disabled]="requirementForm.invalid" />
+            <app-button buttonContent="Add" theme="primary" size="sm" rounded="md" *ngIf="mode === 'add'" type="submit"
+              [disabled]="requirementForm.invalid" />
           </div>
         </div>
       </form>

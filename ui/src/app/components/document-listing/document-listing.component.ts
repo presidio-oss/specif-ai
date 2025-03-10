@@ -11,7 +11,7 @@ import { filter, map, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { IList } from '../../model/interfaces/IList';
 import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BadgeComponent } from '../core/badge/badge.component';
 import { ButtonComponent } from '../core/button/button.component';
 import { NgIconComponent } from '@ng-icons/core';
@@ -22,6 +22,7 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { RichTextEditorComponent } from "../core/rich-text-editor/rich-text-editor.component";
 
 @Component({
   selector: 'app-document-listing',
@@ -37,7 +38,9 @@ import { ExportFileFormat } from 'src/app/constants/export.constants';
     NgForOf,
     SearchInputComponent,
     MatMenuModule,
-  ],
+    RichTextEditorComponent,
+    NgClass
+],
 })
 export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(SearchInputComponent) searchInput!: SearchInputComponent;

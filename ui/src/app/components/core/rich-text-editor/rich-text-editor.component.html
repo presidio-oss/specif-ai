@@ -1,0 +1,62 @@
+<div
+    [ngClass]="['w-full flex flex-col', (mode=='edit'? 'rounded-xl shadow-sm border border-secondary-300 focus-visible:ring-1 focus-within:ring-primary-500 focus-within:border-primary-500 focus-within:outline-none':'')]">
+    <div *ngIf="mode=='edit'" class="flex items-center rounded-t-lg p-2 border-b border-b-secondary-200 gap-0.5">
+        <button type="button" [attr.data-state]="editor?.isActive('bold') == true ? 'on':'off'"
+            [ngClass]="['size-8', toolbarButtonClass, (editor?.isActive('bold') ? 'bg-green-500 text-white' : '')]"
+            (click)="toggleBold()" matTooltip="Bold" matTooltipPosition="above">
+            <ng-icon name="heroBold"></ng-icon>
+        </button>
+
+        <button type="button" [attr.data-state]="editor?.isActive('italic') == true ? 'on':'off'"
+            [ngClass]="['size-8', toolbarButtonClass, (editor?.isActive('italic') ? 'bg-green-500 text-white' : '')]"
+            (click)="toggleItalic()" matTooltip="Italic" matTooltipPosition="above">
+            <ng-icon name="heroItalic"></ng-icon>
+        </button>
+
+        <!-- Heading selector -->
+        <button type="button" [attr.data-state]="editor?.isActive('heading') == true ? 'on':'off'"
+            [cdkMenuTriggerFor]="headingMenu" [ngClass]="[toolbarButtonClass, 'h-8 w-10 flex items-center gap-1']"
+            matTooltip="Heading" matTooltipPosition="above">
+            <span>Aa</span>
+            <ng-icon name="heroChevronDown" size="10"></ng-icon>
+        </button>
+    </div>
+
+    <div #richTextEditor></div>
+</div>
+
+<!-- Heading Selector Menu -->
+
+<ng-template #headingMenu>
+    <div class="prose rounded-lg prose-headings:m-0 prose-p:m-0 border border-slate-200 bg-white py-1 shadow-lg flex flex-col items-stretch p-1 [&>button]:flex [&>button]:justify-start"
+        cdkMenu>
+        <button [attr.data-state]="editor?.isActive('paragraph') == true ? 'on':'off'" type="button" cdkMenuItem
+            (cdkMenuItemTriggered)="setHeadingLevel()" [class]="headingMenuItemClass">
+            <p>Normal Style</p>
+        </button>
+        <button [attr.data-state]="editor?.isActive('heading', {level: 1}) == true ? 'on':'off'" type="button"
+            cdkMenuItem (cdkMenuItemTriggered)="setHeadingLevel(1)" [class]="headingMenuItemClass">
+            <h1>Heading 1</h1>
+        </button>
+        <button [attr.data-state]="editor?.isActive('heading', {level: 2}) == true ? 'on':'off'" type="button"
+            cdkMenuItem (cdkMenuItemTriggered)="setHeadingLevel(2)" [class]="headingMenuItemClass">
+            <h2>Heading 2</h2>
+        </button>
+        <button [attr.data-state]="editor?.isActive('heading', {level: 3}) == true ? 'on':'off'" type="button"
+            cdkMenuItem (cdkMenuItemTriggered)="setHeadingLevel(3)" [class]="headingMenuItemClass">
+            <h3>Heading 3</h3>
+        </button>
+        <button [attr.data-state]="editor?.isActive('heading', {level: 4}) == true ? 'on':'off'" type="button"
+            cdkMenuItem (cdkMenuItemTriggered)="setHeadingLevel(4)" [class]="headingMenuItemClass">
+            <h4>Heading 4</h4>
+        </button>
+        <button [attr.data-state]="editor?.isActive('heading', {level: 5}) == true ? 'on':'off'" type="button"
+            cdkMenuItem (cdkMenuItemTriggered)="setHeadingLevel(5)" [class]="headingMenuItemClass">
+            <h5>Heading 5</h5>
+        </button>
+        <button [attr.data-state]="editor?.isActive('heading', {level: 6}) == true ? 'on':'off'" type="button"
+            cdkMenuItem (cdkMenuItemTriggered)="setHeadingLevel(6)" [class]="headingMenuItemClass">
+            <h6>Heading 6</h6>
+        </button>
+    </div>
+</ng-template>

@@ -88,54 +88,12 @@
                 >
                   {{ item.content.title }}
                 </h1>
-                <div *ngIf="item.folderName === requirementTypes.PRD">
-                  <ng-container *ngIf="item.content.requirement as requirement">
-                    <p class="text-gray-500 text-wrap">
-                      {{
-                        getTruncatedRequirement(
-                          item.content.requirement
-                            .split("Screens:")[0]
-                            .split("Personas:")[0]
-                        )
-                      }}
-                    </p>
-                    <div *ngIf="item.content.requirement?.includes('Screens:')">
-                      <h4 class="text-sm pt-2 pb-1 font-medium truncate">
-                        Screens:
-                      </h4>
-                      <p class="text-gray-500 text-wrap">
-                        {{
-                          getTruncatedRequirement(
-                            item.content.requirement
-                              .split("Screens:")[1]
-                              .split("Personas:")[0]
-                          )
-                        }}
-                      </p>
-                    </div>
-                    <div
-                      *ngIf="item.content.requirement?.includes('Personas:')"
-                    >
-                      <h4 class="text-sm pt-2 pb-1 font-medium truncate">
-                        Personas:
-                      </h4>
-                      <p class="text-gray-500 text-wrap">
-                        {{
-                          getTruncatedRequirement(
-                            item.content.requirement.split("Personas:").pop()
-                          )
-                        }}
-                      </p>
-                    </div>
-                  </ng-container>
-                </div>
-
-                <p
-                  *ngIf="item.folderName !== requirementTypes.PRD"
-                  class="text-[#666666] text-xs text-wrap leading-4"
-                >
-                  {{ getTruncatedRequirement(item.content.requirement) }}
-                </p>
+                <ng-container *ngIf="item.content.requirement as requirement">
+                  <app-rich-text-editor
+                    class="prose-secondary-view text-wrap max-h-[20rem] overflow-y-auto" mode="view"
+                    [content]="getTruncatedRequirement(requirement) ?? ''" [editable]="false">
+                  </app-rich-text-editor>
+                </ng-container>
               </div>
               <div class="absolute top-4 right-4 flex space-x-2">
                 <app-button

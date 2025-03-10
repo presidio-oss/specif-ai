@@ -48,16 +48,20 @@
         <div *ngIf="businessProcessForm.get('title')?.errors?.['required'] && businessProcessForm.get('title')?.touched" class="text-red-500 text-sm mt-1">
           Title is required
         </div>
-        <app-textarea-field
-          elementPlaceHolder="Description"
-          elementId="description"
-          elementName="Description"
-          formControlName="content"
-          [required]="true"
-          [rows]="12"
-        />
-        <div *ngIf="businessProcessForm.get('content')?.errors?.['required'] && businessProcessForm.get('content')?.touched" class="text-red-500 text-sm mt-1">
-          Description is required
+
+        <div class="flex flex-col gap-1.5">
+          <label class="block text-sm font-medium text-secondary-500">
+            Description
+            <span class="text-red-500 text-xs">*</span>
+          </label>
+          <div class="flex flex-col gap-1">
+            <app-rich-text-editor formControlName="content"></app-rich-text-editor>
+            <ng-container *ngIf="businessProcessForm.get('content')?.touched">
+              <span *ngIf="businessProcessForm.get('content')?.errors?.['required']" class="text-red-500 text-sm">
+                Description is required
+              </span>
+            </ng-container>
+          </div>
         </div>
         
         <div class="flex items-center justify-between mt-4">
