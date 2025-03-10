@@ -45,6 +45,7 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { catchError, switchMap, take } from 'rxjs';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-edit-solution',
@@ -64,6 +65,7 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
     NgIconComponent,
     ErrorMessageComponent,
     MatTooltipModule,
+    RichTextEditorComponent
   ],
   providers: [
     provideIcons({ 

@@ -47,7 +47,9 @@
         [formGroup]="requirementForm"
         (ngSubmit)="mode === 'edit' ? updateRequirement() : addRequirement()"
       >
-        <app-input-field
+        <div class="flex flex-col gap-2">
+          <div>
+            <app-input-field
           [required]="true"
           elementPlaceHolder="Title"
           elementId="title"
@@ -55,15 +57,20 @@
           formControlName="title"
         />
         <app-error-message [errorControl]="requirementForm.get('title')" />
+          </div>
 
-        <app-textarea-field
-          [required]="true"
-          elementPlaceHolder="Description"
-          elementId="description"
-          elementName="Description"
-          formControlName="content"
-        />
-        <app-error-message [errorControl]="requirementForm.get('content')" />
+        <div class="flex flex-col gap-1.5">
+          <label
+            for="elementId"
+            class="block text-sm font-medium text-secondary-500"
+          >
+            Description
+            <span class="text-red-500 text-xs">*</span>
+          </label>
+          <app-rich-text-editor formControlName="content"></app-rich-text-editor>
+          <app-error-message [errorControl]="requirementForm.get('content')" />
+        </div>
+        </div>
 
         <div class="flex items-start justify-between mt-4">
           <div class="flex-col">

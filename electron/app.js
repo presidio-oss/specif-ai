@@ -105,14 +105,14 @@ function createWindow() {
   });
 
   // Open the DevTools - uncomment this line before production build
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   // Add electron-reload to watch the electron directory
-  // require('electron-reload')(__dirname, {
-  //   electron: path.join(__dirname, "node_modules", ".bin", "electron"),
-  //   forceHardReset: true,
-  //   hardResetMethod: 'exit'
-  // });
+  require('electron-reload')(__dirname, {
+    electron: path.join(__dirname, "node_modules", ".bin", "electron"),
+    forceHardReset: true,
+    hardResetMethod: 'exit'
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
