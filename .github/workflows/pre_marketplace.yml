@@ -1,0 +1,140 @@
+name: Pre-Marketplace Build
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  build_and_push_staging:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+      staging_account_id: ${{ steps.get-aws-account.outputs.AWS_ACCOUNT_ID }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_STAGING_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.48.0
+
+      - name: Get AWS account ID
+        id: get-aws-account
+        run: |
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}" >> $GITHUB_OUTPUT
+          echo "::add-mask::${AWS_ACCOUNT_ID}"
+
+      - name: Build and Push to Staging
+        id: build
+        run: |
+          VERSION="${{ inputs.version }}"
+          IMAGE_NAME="hai-build-unified-image"
+          BUILD_ENV="build:prod"
+
+          echo "Building Docker image for Marketplace version: $VERSION"
+
+          # Build Docker image
+          docker build --build-arg BUILD_ENV=$BUILD_ENV --no-cache --progress=plain -t ${IMAGE_NAME}:$VERSION .
+
+          # Run security scan
+          echo "Running security scan..."
+          trivy image ${IMAGE_NAME}:$VERSION
+
+          # Get AWS account ID for outputs
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}" >> $GITHUB_OUTPUT
+
+          # Authenticate with Staging ECR
+          aws ecr get-login-password --region ${{ secrets.AWS_DEFAULT_REGION }} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com
+
+          # Tag and push the image to staging
+          docker tag ${IMAGE_NAME}:$VERSION ${AWS_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ secrets.MARKETPLACE_STAGING_REPO_NAME }}:$VERSION
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ secrets.MARKETPLACE_STAGING_REPO_NAME }}:$VERSION
+
+          echo "image_tag=${VERSION}" >> $GITHUB_OUTPUT
+
+          # Cleanup unused Docker images
+          docker image prune -af --filter "until=2h"
+
+      - name: Send Teams Notification
+        env:
+          NOTIFICATION_URL: ${{ secrets.MS_TEAMS_MARKETPLACE_CHANNEL_WEBHOOK_URL }}
+        run: |
+          if [[ -z "$NOTIFICATION_URL" ]]; then
+            echo "❌ ERROR: NOTIFICATION_URL is not set"
+            exit 1
+          fi
+
+          # Create JSON payload using jq
+          JSON_PAYLOAD=$(jq -n \
+            --arg version "${{ inputs.version }}" \
+            --arg repo "${{ secrets.MARKETPLACE_STAGING_REPO_NAME }}" \
+            '{
+              type: "message",
+              attachments: [{
+                contentType: "application/vnd.microsoft.card.adaptive",
+                content: {
+                  type: "AdaptiveCard",
+                  version: "1.5",
+                  body: [
+                    {
+                      type: "TextBlock",
+                      text: "✅ Pre-Marketplace Build Status",
+                      weight: "Bolder",
+                      size: "Medium"
+                    },
+                    {
+                      type: "TextBlock",
+                      text: "The image has been successfully pushed to the staging repository.",
+                      wrap: true
+                    },
+                    {
+                      type: "FactSet",
+                      facts: [
+                        {
+                          title: "Version",
+                          value: $version
+                        },
+                        {
+                          title: "Repository",
+                          value: ("JarvisAccount - ECR - " + $repo)
+                        }
+                      ]
+                    },
+                    {
+                      type: "TextBlock",
+                      text: "**Next Steps:**\nKindly validate the staging build and initiate the marketplace deployment workflow when ready.",
+                      wrap: true,
+                      spacing: "Medium"
+                    }
+                  ]
+                }
+              }]
+            }')
+
+          # Send notification
+          curl -X POST \
+            -H 'Content-type: application/json' \
+            --fail \
+            --silent \
+            --show-error \
+            --data "$JSON_PAYLOAD" "$NOTIFICATION_URL"

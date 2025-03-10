@@ -1,0 +1,143 @@
+name: Build Frontend and Backend
+
+on:
+  workflow_call:
+    inputs:
+      workflow_type:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+jobs:
+  determine_environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      version: ${{ inputs.version }}
+      is_release: ${{ steps.set-env.outputs.is_release }}
+    steps:
+      - name: Determine environment and release type
+        id: set-env
+        run: |
+          if [[ "${{ inputs.workflow_type }}" == "release" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "Production release v${{ inputs.version }}"
+          else
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "Development build v${{ inputs.version }}"
+          fi
+
+  build_frontend:
+    needs: [determine_environment]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+
+      - name: Restore Frontend Cache
+        uses: actions/cache@v4
+        with:
+          path: ui/node_modules
+          key: ${{ runner.os }}-npm-${{ github.ref_name }}-${{ hashFiles('ui/package-lock.json') }}
+
+      - name: Set Build Environment
+        id: set-build-env
+        run: |
+          # Check for main branch with commit message
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            if [[ "${{ needs.determine_environment.outputs.is_release }}" == "true" ]]; then
+              # For release commits on main
+              echo "BUILD_ENV=build:prod" >> $GITHUB_OUTPUT
+            else
+              # For regular commits on main
+              echo "BUILD_ENV=build:dev" >> $GITHUB_OUTPUT
+            fi
+          else
+            # Default to dev build for any other situation
+            echo "BUILD_ENV=build:dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Frontend
+        working-directory: ui
+        run: |
+          npm run ${{ steps.set-build-env.outputs.BUILD_ENV }}
+
+      - name: Upload Frontend Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ui/dist/
+
+  build_backend:
+    needs: [determine_environment]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Image Name
+        id: set-image-name
+        run: |
+          # Check for main branch with commit message
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            if [[ "${{ needs.determine_environment.outputs.is_release }}" == "true" ]]; then
+              # For release commits on main
+              echo "IMAGE_NAME=${{ secrets.PROD_IMAGE_NAME }}" >> $GITHUB_OUTPUT
+            else
+              # For regular commits on main
+              echo "IMAGE_NAME=${{ secrets.DEV_IMAGE_NAME }}" >> $GITHUB_OUTPUT
+            fi
+          else
+            # Default to dev image name
+            echo "IMAGE_NAME=${{ secrets.DEV_IMAGE_NAME }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION  }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
+
+      - name: Get AWS account ID
+        id: get-aws-account
+        run: |
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}" >> $GITHUB_OUTPUT
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: true
+
+      - name: Get Short Commit SHA
+        id: get-sha
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD || echo "${GITHUB_SHA:0:7}")
+          echo "COMMIT_SHA=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+          echo "Using short commit SHA: ${COMMIT_SHA}"
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: |
+            ${{ steps.get-aws-account.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ steps.set-image-name.outputs.IMAGE_NAME }}:${{ steps.get-sha.outputs.COMMIT_SHA }}
+            ${{ steps.get-aws-account.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ steps.set-image-name.outputs.IMAGE_NAME }}:latest

@@ -1,0 +1,131 @@
+name: Push to Marketplace
+
+on:
+  workflow_dispatch:
+
+jobs:
+  push_to_marketplace:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: get-version
+        run: |
+          VERSION=$(node -e "console.log(require('./package.json').version);")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Version: $VERSION"
+
+      - name: Configure AWS credentials for staging
+        id: aws-credentials-staging
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_STAGING_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}-staging
+
+      - name: Extract staging account ID
+        id: extract-staging-account
+        run: |
+          STAGING_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "::add-mask::$STAGING_ACCOUNT_ID"
+          echo "STAGING_ACCOUNT_ID=$STAGING_ACCOUNT_ID" >> $GITHUB_ENV
+
+      - name: Pull from staging ECR
+        run: |
+          # Authenticate with Staging ECR
+          aws ecr get-login-password --region ${{ secrets.AWS_DEFAULT_REGION }} | docker login --username AWS --password-stdin ${STAGING_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com
+
+          # Pull from staging ECR
+          docker pull ${STAGING_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ secrets.MARKETPLACE_STAGING_REPO_NAME }}:${VERSION}
+
+      - name: Configure AWS credentials for marketplace
+        id: aws-credentials-marketplace
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_MARKETPLACE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}-marketplace
+
+      - name: Push to Marketplace ECR
+        run: |
+          # Get marketplace account ID
+          MARKETPLACE_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+
+          # Run security scan
+          echo "Running final security scan..."
+          trivy image ${STAGING_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ secrets.MARKETPLACE_STAGING_REPO_NAME }}:${VERSION}
+
+          # Authenticate with Marketplace ECR
+          aws ecr get-login-password --region ${{ secrets.AWS_DEFAULT_REGION }} | docker login --username AWS --password-stdin ${MARKETPLACE_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com
+
+          # Tag and push to marketplace
+          docker tag ${STAGING_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ secrets.MARKETPLACE_STAGING_REPO_NAME }}:${VERSION} \
+            ${MARKETPLACE_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ secrets.AWS_MARKETPLACE_PRODUCT_NAME }}/${{ secrets.AWS_MARKETPLACE_REPO_NAME }}:${VERSION}
+
+          docker push ${MARKETPLACE_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ secrets.AWS_MARKETPLACE_PRODUCT_NAME }}/${{ secrets.AWS_MARKETPLACE_REPO_NAME }}:${VERSION}
+
+          # Cleanup unused Docker images
+          docker image prune -af --filter "until=2h"
+
+      - name: Send Teams Notification
+        env:
+          NOTIFICATION_URL: ${{ secrets.MS_TEAMS_MARKETPLACE_CHANNEL_WEBHOOK_URL }}
+        run: |
+          if [[ -z "$NOTIFICATION_URL" ]]; then
+            echo "❌ ERROR: NOTIFICATION_URL is not set"
+            exit 1
+          fi
+
+          # Create JSON payload using jq
+          JSON_PAYLOAD=$(jq -n \
+            --arg version "${VERSION}" \
+            --arg repo "${{ secrets.AWS_MARKETPLACE_PRODUCT_NAME }}/${{ secrets.AWS_MARKETPLACE_REPO_NAME }}" \
+            '{
+              type: "message",
+              attachments: [{
+                contentType: "application/vnd.microsoft.card.adaptive",
+                content: {
+                  type: "AdaptiveCard",
+                  version: "1.5",
+                  body: [
+                    {
+                      type: "TextBlock",
+                      text: "✅ Marketplace Deployment Status",
+                      weight: "Bolder",
+                      size: "Medium"
+                    },
+                    {
+                      type: "TextBlock",
+                      text: "Successfully deployed to AWS Marketplace.",
+                      wrap: true
+                    },
+                    {
+                      type: "FactSet",
+                      facts: [
+                        {
+                          title: "Version",
+                          value: $version
+                        },
+                        {
+                          title: "Repository",
+                          value: ("OfficialPresidioAccount - ECR - " + $repo)
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }]
+            }')
+
+          # Send notification
+          curl -X POST \
+            -H 'Content-type: application/json' \
+            --fail \
+            --silent \
+            --show-error \
+            --data "$JSON_PAYLOAD" "$NOTIFICATION_URL"

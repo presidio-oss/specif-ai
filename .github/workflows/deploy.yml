@@ -1,0 +1,73 @@
+name: Deploy Frontend and Backend
+
+on:
+  workflow_call:
+    inputs:
+      workflow_type:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+jobs:
+  determine_environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      version: ${{ inputs.version }}
+      is_release: ${{ steps.set-env.outputs.is_release }}
+    steps:
+      - name: Determine environment and release type
+        id: set-env
+        run: |
+          if [[ "${{ inputs.workflow_type }}" == "release" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "Production release v${{ inputs.version }}"
+          else
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "Development build v${{ inputs.version }}"
+          fi
+
+  # Backend deployment job
+  deploy_backend:
+    needs: [determine_environment]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION  }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
+
+      - name: Force new deployment of ECS service
+        run: |
+          # Set environment-specific variables
+          if [[ "${{ needs.determine_environment.outputs.environment }}" == "production" ]]; then
+            CLUSTER_NAME="${{ secrets.PROD_ECS_CLUSTER_NAME }}"
+            SERVICE_NAME="${{ secrets.PROD_ECS_SERVICE_NAME }}"
+          else
+            CLUSTER_NAME="${{ secrets.DEV_ECS_CLUSTER_NAME }}"
+            SERVICE_NAME="${{ secrets.DEV_ECS_SERVICE_NAME }}"
+          fi
+
+          echo "Forcing new deployment for cluster: $CLUSTER_NAME, service: $SERVICE_NAME"
+
+          # Force new deployment of ECS service
+          aws ecs update-service \
+            --cluster $CLUSTER_NAME \
+            --service $SERVICE_NAME \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_DEFAULT_REGION }} > /dev/null
+
+            echo "✅ Deployment triggered successfully"
