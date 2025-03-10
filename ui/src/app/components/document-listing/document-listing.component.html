@@ -5,7 +5,7 @@
   <div class="mb-4">
     <div class="flex items-center mt-2 justify-between">
       <div class="flex items-center">
-        <h1 class="text-normal font-semibold text-gray-700">
+        <h1 class="text-normal font-semibold text-secondary-700">
           {{ getDescription(projectList[0].folderName) }}
         </h1>
         <app-badge [badgeText]="projectList.length" />
@@ -19,9 +19,7 @@
           rounded="lg"
           (click)="navigateToAdd(projectList[0].id, projectList[0].folderName)"
         />
-        <ng-container
-          *ngIf="documentList$ | async as documentList"
-        >
+        <ng-container *ngIf="documentList$ | async as documentList">
           <app-button
             [disabled]="documentList.length == 0"
             icon="heroArrowDownTray"
@@ -70,7 +68,7 @@
             class="col-span-1 flex rounded-md shadow-sm relative"
           >
             <div
-              class="flex flex-1 items-center justify-between truncate rounded-lg border border-gray-200 bg-white hover:bg-secondary-50 transition-colors"
+              class="flex flex-1 items-center justify-between truncate rounded-lg border border-secondary-200 bg-white hover:bg-secondary-50 transition-colors"
             >
               <div
                 class="flex-1 truncate p-4 text-sm rounded-lg"
@@ -108,10 +106,12 @@
                   *ngIf="item.folderName === 'BP'"
                   (click)="navigateToBPFlow(item)"
                   (keydown.enter)="navigateToBPFlow(item)"
-                  (keydown.space)="navigateToBPFlow(item); $event.preventDefault()"
+                  (keydown.space)="
+                    navigateToBPFlow(item); $event.preventDefault()
+                  "
                   role="button"
                   tabindex="0"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent bg-white text-gray-400 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent bg-white text-secondary-400 hover:bg-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 >
                   <ng-icon
                     class="text-xl"
@@ -128,13 +128,13 @@
 </div>
 
 <ng-template #noProjectList>
-  <p class="text-center text-gray-500">No project list available.</p>
+  <p class="text-center text-secondary-500">No project list available.</p>
 </ng-template>
 
 <ng-template #noDocuments>
-  <p class="text-center text-gray-500">No documents available.</p>
+  <p class="text-center text-secondary-500">No documents available.</p>
 </ng-template>
 
 <ng-template #noSearchResults>
-  <p class="text-center text-gray-500">No search results found.</p>
+  <p class="text-center text-secondary-500">No search results found.</p>
 </ng-template>

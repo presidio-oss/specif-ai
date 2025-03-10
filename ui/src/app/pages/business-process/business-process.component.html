@@ -45,7 +45,13 @@
           formControlName="title"
           [required]="true"
         />
-        <div *ngIf="businessProcessForm.get('title')?.errors?.['required'] && businessProcessForm.get('title')?.touched" class="text-red-500 text-sm mt-1">
+        <div
+          *ngIf="
+            businessProcessForm.get('title')?.errors?.['required'] &&
+            businessProcessForm.get('title')?.touched
+          "
+          class="text-danger-500 text-sm mt-1"
+        >
           Title is required
         </div>
 
@@ -63,7 +69,7 @@
             </ng-container>
           </div>
         </div>
-        
+
         <div class="flex items-center justify-between mt-4">
           <div class="flex-col">
             <div class="flex items-center">
@@ -73,7 +79,11 @@
                 theme="secondary"
                 size="sm"
                 rounded="lg"
-                (click)="mode === 'add' ? addBusinessProcess(true) : updateBusinessProcess(true)"
+                (click)="
+                  mode === 'add'
+                    ? addBusinessProcess(true)
+                    : updateBusinessProcess(true)
+                "
                 [disabled]="checkFormValidity()"
               ></app-button>
             </div>
@@ -101,15 +111,17 @@
         </div>
       </div>
       <div *ngIf="selectedBRDs.length > 0" class="mt-4">
-        <h2 class="text-sm font-medium text-gray-900">Included BRDs</h2>
+        <h2 class="text-sm font-medium text-secondary-900">Included BRDs</h2>
         <div class="mt-2 flex flex-wrap">
           <div *ngFor="let brd of selectedBRDs" class="m-1">
-            <div class="flex items-center bg-gray-200 px-2 py-1 rounded-md">
+            <div
+              class="flex items-center bg-secondary-200 px-2 py-1 rounded-md"
+            >
               <span class="text-sm font-medium">{{
-                  brd.fileName.split("-")[0]
-                }}</span>
+                brd.fileName.split("-")[0]
+              }}</span>
               <button
-                class="ml-2 text-gray-600 hover:text-gray-800"
+                class="ml-2 text-secondary-600 hover:text-secondary-800"
                 (click)="removeBRD(brd)"
               >
                 &times;
@@ -119,15 +131,17 @@
         </div>
       </div>
       <div class="mt-4" *ngIf="selectedPRDs.length > 0">
-        <h2 class="text-sm font-medium text-gray-900">Included PRDs</h2>
+        <h2 class="text-sm font-medium text-secondary-900">Included PRDs</h2>
         <div class="mt-2 flex flex-wrap">
           <div *ngFor="let prd of selectedPRDs" class="m-1">
-            <div class="flex items-center bg-gray-200 px-2 py-1 rounded-md">
+            <div
+              class="flex items-center bg-secondary-200 px-2 py-1 rounded-md"
+            >
               <span class="text-sm font-medium">{{
-                  prd.fileName.split("-")[0]
-                }}</span>
+                prd.fileName.split("-")[0]
+              }}</span>
               <button
-                class="ml-2 text-gray-600 hover:text-gray-800"
+                class="ml-2 text-secondary-600 hover:text-secondary-800"
                 (click)="removePRD(prd)"
               >
                 &times;
@@ -137,24 +151,31 @@
         </div>
       </div>
       <!-- Display empty message if no documents are present -->
-      <div *ngIf="selectedPRDs.length === 0 && selectedBRDs.length === 0" class="py-10">
-        <div *ngIf="businessProcessForm.errors?.['noPrdOrBrd']" class="text-red-500 text-center text-xs mt-1">
+      <div
+        *ngIf="selectedPRDs.length === 0 && selectedBRDs.length === 0"
+        class="py-10"
+      >
+        <div
+          *ngIf="businessProcessForm.errors?.['noPrdOrBrd']"
+          class="text-danger-500 text-center text-xs mt-1"
+        >
           Please select at least one PRD or BRD.
         </div>
       </div>
     </div>
 
     <div class="bg-white shadow rounded-lg col-span-12 lg:col-span-5">
-      <div class="flex justify-center rounded-lg bg-gray-100 w-full">
+      <div class="flex justify-center rounded-lg bg-secondary-100 w-full">
         <div class="tabs w-full max-w-4xl overflow-hidden flex rounded-t-lg">
           <button
             *ngIf="mode === 'edit'"
             (click)="switchTab('chat')"
-            class="tab flex-grow text-center py-3 text-sm font-semibold border-r-2 border-gray-300"
+            class="tab flex-grow text-center py-3 text-sm font-semibold border-r-2 border-secondary-300"
             [ngClass]="{
-              'bg-gray-100 text-gray-700 hover:bg-gray-200':
+              'bg-secondary-100 text-secondary-700 hover:bg-secondary-200':
                 activeTab !== 'chat',
-              'bg-gray-700 text-white hover:bg-gray-600': activeTab === 'chat',
+              'bg-secondary-700 text-white hover:bg-secondary-600':
+                activeTab === 'chat',
             }"
           >
             Chat
@@ -163,9 +184,9 @@
             (click)="switchTab('includeFiles')"
             class="tab flex-grow text-center py-3 text-sm font-semibold"
             [ngClass]="{
-              'bg-gray-100 text-gray-700 hover:bg-gray-200':
+              'bg-secondary-100 text-secondary-700 hover:bg-secondary-200':
                 activeTab !== 'includeFiles',
-              'bg-gray-700 text-white hover:bg-gray-600':
+              'bg-secondary-700 text-white hover:bg-secondary-600':
                 activeTab === 'includeFiles',
             }"
           >
@@ -184,9 +205,9 @@
                   class="tab px-3 py-2 text-sm font-semibold rounded-t-md border-b-2"
                   [class.active]="selectedTab === requirementTypes.PRD"
                   [ngClass]="{
-                    'border-indigo-600 text-indigo-600':
+                    'border-primary-600 text-primary-600':
                       selectedTab === requirementTypes.PRD,
-                    'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300':
+                    'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-secondary-300':
                       selectedTab !== requirementTypes.PRD,
                   }"
                 >
@@ -197,9 +218,9 @@
                   class="tab px-3 py-2 text-sm font-semibold rounded-t-md border-b-2"
                   [class.active]="selectedTab === requirementTypes.BRD"
                   [ngClass]="{
-                    'border-indigo-600 text-indigo-600':
+                    'border-primary-600 text-primary-600':
                       selectedTab === requirementTypes.BRD,
-                    'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300':
+                    'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-secondary-300':
                       selectedTab !== requirementTypes.BRD,
                   }"
                 >
@@ -213,7 +234,15 @@
                     class="grid grid-cols-1 gap-3 sm:gap-3 lg:gap-3 overflow-y-auto mt-4 doc-section-height auto-rows-max"
                   >
                     <ng-container *ngFor="let item of list">
-                      <div *ngIf="(selectedTab === requirementTypes.PRD && item.folderName === requirementTypes.PRD) || (selectedTab === requirementTypes.BRD && item.folderName === requirementTypes.BRD)" class="col-span-1 flex h-fit">
+                      <div
+                        *ngIf="
+                          (selectedTab === requirementTypes.PRD &&
+                            item.folderName === requirementTypes.PRD) ||
+                          (selectedTab === requirementTypes.BRD &&
+                            item.folderName === requirementTypes.BRD)
+                        "
+                        class="col-span-1 flex h-fit"
+                      >
                         <div class="flex items-center m-2">
                           <input
                             type="checkbox"
@@ -233,12 +262,12 @@
                                 selectedTab
                               )
                             "
-                            class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            class="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
                           />
                         </div>
                         <div class="flex-1 truncate rounded-md shadow-sm">
                           <div
-                            class="flex-1 flex flex-col justify-start rounded-lg border border-gray-200 bg-white"
+                            class="flex-1 flex flex-col justify-start rounded-lg border border-secondary-200 bg-white"
                           >
                             <!-- Adjusted class here -->
                             <div class="px-3 py-2 text-sm">
@@ -250,19 +279,22 @@
                               </h1>
                               <p
                                 *ngIf="item.folderName !== requirementTypes.PRD"
-                                class="text-gray-500 text-xs text-wrap leading-tight"
+                                class="text-secondary-500 text-xs text-wrap leading-tight"
                               >
                                 {{
-                                  item.content.requirement | truncateWithEllipsis
+                                  item.content.requirement
+                                    | truncateWithEllipsis
                                 }}
                               </p>
                               <div
                                 *ngIf="item.folderName === requirementTypes.PRD"
                               >
                                 <ng-container
-                                  *ngIf="item.content.requirement as requirement"
+                                  *ngIf="
+                                    item.content.requirement as requirement
+                                  "
                                 >
-                                  <p class="text-gray-500 text-wrap">
+                                  <p class="text-secondary-500 text-wrap">
                                     {{
                                       item.content.requirement
                                         .split("Screens:")[0]
@@ -282,7 +314,7 @@
                                     >
                                       Screens:
                                     </h4>
-                                    <p class="text-gray-500 text-wrap">
+                                    <p class="text-secondary-500 text-wrap">
                                       {{
                                         item.content.requirement
                                           .split("Screens:")[1]
@@ -303,7 +335,7 @@
                                     >
                                       Personas:
                                     </h4>
-                                    <p class="text-gray-500 text-wrap">
+                                    <p class="text-secondary-500 text-wrap">
                                       {{
                                         item.content.requirement
                                           .split("Personas:")
@@ -322,7 +354,7 @@
                 </div>
                 <ng-template #noDocuments>
                   <div class="py-10">
-                    <h2 class="text-center text-gray-500">
+                    <h2 class="text-center text-secondary-500">
                       No documents available
                     </h2>
                   </div>

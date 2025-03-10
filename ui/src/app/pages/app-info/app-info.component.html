@@ -16,13 +16,17 @@
           <li
             class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50"
             [ngClass]="{
-              'bg-secondary-50 border border-secondary-300': selectedFolder?.title === 'solution',
+              'bg-secondary-50 border border-secondary-300':
+                selectedFolder?.title === 'solution',
               'bg-white': selectedFolder?.title !== 'solution',
             }"
             (click)="selectFolder({ name: 'solution', children: [] })"
             (keydown.enter)="selectFolder({ name: 'solution', children: [] })"
-            (keydown.space)="selectFolder({ name: 'solution', children: [] }); $event.preventDefault()"
-            role="button" 
+            (keydown.space)="
+              selectFolder({ name: 'solution', children: [] });
+              $event.preventDefault()
+            "
+            role="button"
             tabindex="0"
           >
             <div class="flex items-center">
@@ -65,78 +69,79 @@
 
           <ng-container *ngFor="let folder of directories; index as i">
             <li
-            *ngIf="!isArchived(folder)"
-            class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50"
-            [ngClass]="{
-              'bg-secondary-50 border border-secondary-300': selectedFolder?.title === folder.name,
-              'bg-white': selectedFolder?.title !== folder.name,
-            }"
-            (click)="selectFolder(folder)"
-            (keydown.enter)="selectFolder(folder)"
-            (keydown.space)="selectFolder(folder); $event.preventDefault()"
-            role="button" 
-            tabindex="0"
-          >
-            <div class="flex items-center">
-              <ng-icon
-                class="w-5 h-5 text-xl mr-2"
-                *ngIf="folder.name === 'BRD'"
-                [ngClass]="{
-                  'text-primary-600': selectedFolder?.title === folder.name,
-                  'text-secondary-500': selectedFolder?.title !== folder.name,
-                }"
-                name="heroBriefcase"
-              ></ng-icon>
-              <ng-icon
-                class="w-5 h-5 text-xl mr-2"
-                *ngIf="folder.name === 'PRD'"
-                [ngClass]="{
-                  'text-primary-600': selectedFolder?.title === folder.name,
-                  'text-secondary-500': selectedFolder?.title !== folder.name,
-                }"
-                name="heroSquares2x2"
-              ></ng-icon>
-              <ng-icon
-                class="w-5 h-5 text-xl mr-2"
-                *ngIf="folder.name === 'NFR'"
-                [ngClass]="{
-                  'text-primary-600': selectedFolder?.title === folder.name,
-                  'text-secondary-500': selectedFolder?.title !== folder.name,
-                }"
-                name="heroCube"
-              ></ng-icon>
+              *ngIf="!isArchived(folder)"
+              class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50"
+              [ngClass]="{
+                'bg-secondary-50 border border-secondary-300':
+                  selectedFolder?.title === folder.name,
+                'bg-white': selectedFolder?.title !== folder.name,
+              }"
+              (click)="selectFolder(folder)"
+              (keydown.enter)="selectFolder(folder)"
+              (keydown.space)="selectFolder(folder); $event.preventDefault()"
+              role="button"
+              tabindex="0"
+            >
+              <div class="flex items-center">
+                <ng-icon
+                  class="w-5 h-5 text-xl mr-2"
+                  *ngIf="folder.name === 'BRD'"
+                  [ngClass]="{
+                    'text-primary-600': selectedFolder?.title === folder.name,
+                    'text-secondary-500': selectedFolder?.title !== folder.name,
+                  }"
+                  name="heroBriefcase"
+                ></ng-icon>
+                <ng-icon
+                  class="w-5 h-5 text-xl mr-2"
+                  *ngIf="folder.name === 'PRD'"
+                  [ngClass]="{
+                    'text-primary-600': selectedFolder?.title === folder.name,
+                    'text-secondary-500': selectedFolder?.title !== folder.name,
+                  }"
+                  name="heroSquares2x2"
+                ></ng-icon>
+                <ng-icon
+                  class="w-5 h-5 text-xl mr-2"
+                  *ngIf="folder.name === 'NFR'"
+                  [ngClass]="{
+                    'text-primary-600': selectedFolder?.title === folder.name,
+                    'text-secondary-500': selectedFolder?.title !== folder.name,
+                  }"
+                  name="heroCube"
+                ></ng-icon>
 
-              <ng-icon
-                class="w-5 h-5 text-xl mr-2"
-                *ngIf="folder.name === 'UIR'"
-                [ngClass]="{
-                  'text-primary-600': selectedFolder?.title === folder.name,
-                  'text-secondary-500': selectedFolder?.title !== folder.name,
-                }"
-                name="heroWindow"
-              ></ng-icon>
-              <ng-icon
-                *ngIf="folder.name === 'BP'"
-                class="text-xl w-5 h-5 mr-2"
-                [ngClass]="{
-                  'text-primary-600': selectedFolder?.title === folder.name,
-                  'text-secondary-500': selectedFolder?.title !== folder.name,
-                }"
-                name="heroSquare3Stack3d"
-              >
-              </ng-icon>
-              <h4
-                class="text-sm font-medium"
-                [ngClass]="{
-                  'text-primary-600': selectedFolder?.title === folder.name,
-                  'text-secondary-500': selectedFolder?.title !== folder.name,
-                }"
-              >
-                {{ getDescription(folder.name) }}
-              </h4>
-            </div>
-            <app-badge [badgeText]="folder.children.length" />
-          </li>
+                <ng-icon
+                  class="w-5 h-5 text-xl mr-2"
+                  *ngIf="folder.name === 'UIR'"
+                  [ngClass]="{
+                    'text-primary-600': selectedFolder?.title === folder.name,
+                    'text-secondary-500': selectedFolder?.title !== folder.name,
+                  }"
+                  name="heroWindow"
+                ></ng-icon>
+                <ng-icon
+                  *ngIf="folder.name === 'BP'"
+                  class="text-xl w-5 h-5 mr-2"
+                  [ngClass]="{
+                    'text-primary-600': selectedFolder?.title === folder.name,
+                    'text-secondary-500': selectedFolder?.title !== folder.name,
+                  }"
+                  name="heroSquare3Stack3d"
+                >
+                </ng-icon>
+                <h4
+                  class="text-sm font-medium"
+                  [ngClass]="{
+                    'text-primary-600': selectedFolder?.title === folder.name,
+                    'text-secondary-500': selectedFolder?.title !== folder.name,
+                  }"
+                >
+                  {{ getDescription(folder.name) }}
+                </h4>
+              </div>
+              <app-badge [badgeText]="folder.children.length" />
+            </li>
           </ng-container>
           <ng-container *ngFor="let folder of haiFolder">
             <li
@@ -148,25 +153,37 @@
                   class="text-secondary-500 w-5 h-5 text-xl mr-2"
                   [name]="getIconName(folder.key)"
                 ></ng-icon>
-                <h4 class="text-sm text-secondary-500 font-medium">{{ folder.value }}</h4>
+                <h4 class="text-sm text-secondary-500 font-medium">
+                  {{ folder.value }}
+                </h4>
               </div>
               <app-button
                 buttonContent="Add"
                 theme="secondary"
                 size="xs"
                 rounded="lg"
-                (click)="folder.key === 'BP' ? navigateToBPAdd() : navigateToAdd(folder.key)"
+                (click)="
+                  folder.key === 'BP'
+                    ? navigateToBPAdd()
+                    : navigateToAdd(folder.key)
+                "
               />
             </li>
           </ng-container>
           <li
             (click)="selectFolder({ name: 'app-integrations', children: [] })"
-            (keydown.enter)="selectFolder({ name: 'app-integrations', children: [] })"
-            (keydown.space)="selectFolder({ name: 'app-integrations', children: [] }); $event.preventDefault()"
-            role="button" 
+            (keydown.enter)="
+              selectFolder({ name: 'app-integrations', children: [] })
+            "
+            (keydown.space)="
+              selectFolder({ name: 'app-integrations', children: [] });
+              $event.preventDefault()
+            "
+            role="button"
             tabindex="0"
             [ngClass]="{
-              'bg-secondary-50 border border-secondary-300': selectedFolder?.title === 'app-integrations',
+              'bg-secondary-50 border border-secondary-300':
+                selectedFolder?.title === 'app-integrations',
               'bg-white': selectedFolder?.title !== 'app-integrations',
             }"
             class="flex cursor-pointer items-center justify-between p-2.5 rounded-lg bg-white hover:bg-secondary-50"
@@ -201,35 +218,50 @@
     <!-- Left column -->
     <section aria-labelledby="section-1-title" class="col-span-2 h-full">
       <div class="overflow-hidden rounded-lg bg-white shadow h-full">
-        <div *ngIf="selectedFolder?.title !== 'solution' && selectedFolder?.title !== 'app-integrations'" class="h-full">
+        <div
+          *ngIf="
+            selectedFolder?.title !== 'solution' &&
+            selectedFolder?.title !== 'app-integrations'
+          "
+          class="h-full"
+        >
           <app-document-listing
             *ngIf="directoryContainsFolder(selectedFolder?.title, directories)"
             [folder]="selectedFolder"
           />
-          <div *ngIf="!directoryContainsFolder(selectedFolder?.title, directories)" class="flex items-center justify-center h-full">
-              No documents available.
+          <div
+            *ngIf="!directoryContainsFolder(selectedFolder?.title, directories)"
+            class="flex items-center justify-center h-full"
+          >
+            No documents available.
           </div>
         </div>
         <div class="p-6" *ngIf="selectedFolder?.title === 'solution'">
-          <h1 class="text-title font-semibold text-gray-700 mb-3 pb-3 border-b">
+          <h1
+            class="text-title font-semibold text-secondary-700 mb-3 pb-3 border-b"
+          >
             Solution Information
           </h1>
           <div class="h-[calc(100vh-275px)] overflow-auto">
             <h1 class="text-xl capitalize">{{ appInfo.name }}</h1>
-            <p class="text-gray-700 pt-2 pb-3">{{ appInfo.description }}</p>
+            <p class="text-secondary-700 pt-2 pb-3">
+              {{ appInfo.description }}
+            </p>
             <div class="py-3 flex gap-3" *ngIf="appInfo.technicalDetails">
               <div>
                 <ng-icon class="text-2xl" name="heroServerStack"></ng-icon>
               </div>
               <div>
-                <div class="text-gray-500 text-xs">Technical Details</div>
+                <div class="text-secondary-500 text-xs">Technical Details</div>
                 <div>{{ appInfo.technicalDetails }}</div>
               </div>
             </div>
           </div>
         </div>
         <div class="p-6" *ngIf="selectedFolder?.title === 'app-integrations'">
-          <h1 class="text-title font-semibold text-secondary-950 mb-3 pb-3 border-b">
+          <h1
+            class="text-title font-semibold text-secondary-950 mb-3 pb-3 border-b"
+          >
             App Integrations
           </h1>
           <app-accordion
@@ -246,9 +278,12 @@
                 {{ APP_MESSAGES.JIRA_ACCORDION }}
               </p>
             </div>
-            <div class="flex justify-start pb-4">              
-              <p class="text-sm font-normal text-secondary-500" [innerHTML]="APP_MESSAGES.JIRA_PREREQUISITE"></p>
-            </div>            
+            <div class="flex justify-start pb-4">
+              <p
+                class="text-sm font-normal text-secondary-500"
+                [innerHTML]="APP_MESSAGES.JIRA_PREREQUISITE"
+              ></p>
+            </div>
             <div [formGroup]="jiraForm" class="grid grid-cols-2 gap-6 w-full">
               <div class="flex items-start gap-2">
                 <div class="flex-1">
@@ -302,9 +337,7 @@
 
             <div class="mt-6 flex justify-end items-center">
               <app-button
-                [buttonContent]="
-                  isJiraConnected ? 'Disconnect' : 'Connect'
-                "
+                [buttonContent]="isJiraConnected ? 'Disconnect' : 'Connect'"
                 [theme]="isJiraConnected ? 'danger' : 'primary'"
                 size="sm"
                 (click)="
