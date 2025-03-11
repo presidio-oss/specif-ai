@@ -53,12 +53,10 @@ export class AnalyticsManager implements AnalyticsTracker {
   trackResponseTime<T>(source: AnalyticsEventSource) {
     const startTime = Date.now();
 
-    // If analytics are disabled, return an identity operator (passes data through unchanged)
     if (!this.isEnabled) {
       return (observable: Observable<T>): Observable<T> => observable;
     }
 
-    // Otherwise, return the timing operator
     return (observable: Observable<T>): Observable<T> => {
       let status = AnalyticsEventStatus.SUCCESS;
       

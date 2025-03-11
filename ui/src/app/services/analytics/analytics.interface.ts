@@ -1,18 +1,38 @@
-import { Observable, OperatorFunction } from 'rxjs';
-import { AnalyticsEventSource } from './events/analytics.events';
+import { OperatorFunction } from 'rxjs';
+import {
+  AnalyticsEvents,
+  AnalyticsEventSource,
+} from './events/analytics.events';
 
 export interface AnalyticsTracker {
   /**
    * Tracks an event with the given name and properties.
    * @param eventName - The name of the event to track.
    * @param properties - Optional additional properties associated with the event.
+   * @example
+   * // Track an event with additional properties
+   * analyticsManager.trackEvent(AnalyticsEvents.ITEM_PURCHASED, {
+   *   itemId: 'product-123',
+   *   price: 19.99,
+   *   currency: 'USD'
+   * });
    */
-  trackEvent(eventName: string, properties?: Record<string, any>): void;
+  trackEvent(eventName: AnalyticsEvents, properties?: Record<string, any>): void;
 
   /**
    * Captures and logs an exception.
    * @param error - The error object to be captured.
    * @param properties - Optional additional properties to log with the error.
+   * @example
+   * try {
+   *   // Operation that failed
+   * } catch (error) {
+   *   analyticsManager.captureException(error, {
+   *     userId: 'user-456',
+   *     operation: 'data-import',
+   *     attemptNumber: 2
+   *   });
+   * }
    */
   captureException(error: Error, properties?: Record<string, any>): void;
 
@@ -21,9 +41,7 @@ export interface AnalyticsTracker {
    * it first emits a value or an error.
    *
    * @param source - The source identifier for the analytics event.
-   *
    * @example
-   * // Usage example
    * someObservable$.pipe(
    *   analyticsManager.trackResponseTime(AnalyticsEventSource.SOURCE)
    * ).subscribe(data => {
