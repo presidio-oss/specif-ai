@@ -70,7 +70,9 @@ export class AnalyticsManager implements AnalyticsTracker {
           this.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, {
             durationMs: duration,
             source,
-            status
+            status,
+            model: this.currentLLMConfig.model,
+            provider: this.currentLLMConfig.provider
           });
         })
       );
