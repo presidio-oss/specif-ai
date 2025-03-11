@@ -5,7 +5,7 @@ import posthog from 'posthog-js';
 import {
   AnalyticsEvents,
   AnalyticsEventSource,
-  AnalyticsEventStatus,
+  AnalyticsEventStatus
 } from '../events/analytics.events';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { Store } from '@ngxs/store';
@@ -13,21 +13,18 @@ import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { catchError, finalize, Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AnalyticsManager implements AnalyticsTracker {
   private isEnabled: boolean;
-  private deviceId: string;
   private currentLLMConfig!: LLMConfigModel;
 
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
-    LLMConfigState.getConfig,
+    LLMConfigState.getConfig
   );
 
   constructor(private store: Store) {
     this.isEnabled = environment.ENABLE_POSTHOG || false;
-    this.deviceId = this.getDeviceId();
-    console.log('Device ID', this.deviceId);
 
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
@@ -44,7 +41,7 @@ export class AnalyticsManager implements AnalyticsTracker {
 
   trackEvent(
     eventName: AnalyticsEvents,
-    properties: Record<string, any> = {},
+    properties: Record<string, any> = {}
   ): void {
     if (!this.isEnabled) {
       return;
@@ -55,11 +52,18 @@ export class AnalyticsManager implements AnalyticsTracker {
 
   trackResponseTime<T>(source: AnalyticsEventSource) {
     const startTime = Date.now();
+
+    // If analytics are disabled, return an identity operator (passes data through unchanged)
+    if (!this.isEnabled) {
+      return (observable: Observable<T>): Observable<T> => observable;
+    }
+
+    // Otherwise, return the timing operator
     return (observable: Observable<T>): Observable<T> => {
       let status = AnalyticsEventStatus.SUCCESS;
       
       return observable.pipe(
-        catchError(error => {
+        catchError((error) => {
           status = AnalyticsEventStatus.FAILURE;
           throw error;
         }),
@@ -68,14 +72,10 @@ export class AnalyticsManager implements AnalyticsTracker {
           this.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, {
             durationMs: duration,
             source,
-            status,
+            status
           });
         })
       );
     };
-  }
-
-  private getDeviceId() {
-    return posthog.get_distinct_id();
   }
 }
