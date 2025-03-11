@@ -2,11 +2,15 @@ import { Injectable } from '@angular/core';
 import { AnalyticsTracker } from '../analytics.interface';
 import { environment } from 'src/environments/environment';
 import posthog from 'posthog-js';
-import { AnalyticsEvents } from '../events/analytics.events';
+import {
+  AnalyticsEvents,
+  AnalyticsEventSource,
+  AnalyticsEventStatus,
+} from '../events/analytics.events';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { Store } from '@ngxs/store';
 import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
-import { Observable } from 'rxjs';
+import { catchError, finalize, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -47,6 +51,28 @@ export class AnalyticsManager implements AnalyticsTracker {
     }
 
     posthog.capture(eventName, properties);
+  }
+
+  trackResponseTime<T>(source: AnalyticsEventSource) {
+    const startTime = Date.now();
+    return (observable: Observable<T>): Observable<T> => {
+      let status = AnalyticsEventStatus.SUCCESS;
+      
+      return observable.pipe(
+        catchError(error => {
+          status = AnalyticsEventStatus.FAILURE;
+          throw error;
+        }),
+        finalize(() => {
+          const duration = Date.now() - startTime;
+          this.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, {
+            durationMs: duration,
+            source,
+            status,
+          });
+        })
+      );
+    };
   }
 
   private getDeviceId() {

@@ -175,7 +175,6 @@ export class AiChatComponent implements OnInit {
   }
 
   getSuggestion() {
-    const startTime = Date.now()
     this.loadingChat = true;
     const suggestionPayload: suggestionPayload = {
       ...this.basePayload,
@@ -184,37 +183,26 @@ export class AiChatComponent implements OnInit {
       selectedSuggestion: this.selectedSuggestion,
     };
     this.chatService
-    .generateSuggestions(suggestionPayload).subscribe({
+    .generateSuggestions(suggestionPayload)
+    .pipe(this.analyticsManager.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
+    .subscribe({
       next: (response: Array<''>) => {
         this.chatSuggestions = response;
         this.localSuggestions.push(...response);
         this.loadingChat = false;
         this.responseStatus = false; 
         this.smoothScroll();
-        const stopTime = Date.now() - startTime;
-        this.analyticsManager.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, { 
-          durationMs: stopTime,
-          source: AnalyticsEventSource.GENERATE_SUGGESTIONS, 
-          status: AnalyticsEventStatus.SUCCESS 
-        });
       },
       error: (err) => {
         this.toastService.showError(ERROR_MESSAGES.GENERATE_SUGGESTIONS_FAILED);
         this.loadingChat = false;
         this.responseStatus = false; 
         this.smoothScroll();
-        const stopTime = Date.now() - startTime;
-        this.analyticsManager.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, { 
-          durationMs: stopTime,
-          source: AnalyticsEventSource.GENERATE_SUGGESTIONS, 
-          status: AnalyticsEventStatus.SUCCESS 
-        });
       }
     });
   }
 
   finalCall(message: string) {
-    const startTime = Date.now();
     let payload: conversePayload = {
       ...this.basePayload,
       chatHistory: this.chatHistory
@@ -231,15 +219,10 @@ export class AiChatComponent implements OnInit {
     else payload = { ...payload, prd: this.prd, us: this.userStory };
     this.chatService
       .chatWithLLM(this.chatType, payload)
+      .pipe(this.analyticsManager.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
       .subscribe((response) => {
         this.generateLoader = false;
         this.chatHistory = [...this.chatHistory, { assistant: response }];
-        const stopTime = Date.now() - startTime;
-        this.analyticsManager.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, { 
-          durationMs: stopTime,
-          source: AnalyticsEventSource.AI_CHAT, 
-          status: AnalyticsEventStatus.SUCCESS 
-        });
         this.returnChatHistory();
         this.getSuggestion();
       });
