@@ -128,10 +128,13 @@ function getDirectoryList(param) {
 async function getBaseFileCount({ path }) {
   const keyName = pathModule.basename(path);
   try {
-    const files = await fsPromise.readdir(path);
-    return files.filter(
-      (file) => file.startsWith(keyName) && file.includes("-base")
-    ).length;
+    if (fs.existsSync(path)) {
+      const files = await fsPromise.readdir(path);
+      return files.filter(
+        (file) => file.startsWith(keyName) && file.includes("-base")
+      ).length;
+    }
+    return 0;
   } catch (err) {
     console.error("Error reading files in directory:", err);
   }

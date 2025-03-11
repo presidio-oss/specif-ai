@@ -26,7 +26,7 @@ export class RequirementIdService {
 
   public getNextRequirementId(requirementType: RequirementType): number {
     const metadata = this.getMetadata();
-    const currentId = metadata[requirementType]?.counter ?? 0;
+    const currentId = metadata[requirementType]?.count ?? 0;
     const nextRequirementId = currentId + 1;
 
     return nextRequirementId;
@@ -41,7 +41,7 @@ export class RequirementIdService {
         ...acc,
         [type]: {
           ...metadata[type as RequirementType],
-          counter: count,
+          count: count,
         },
       }),
       {},
@@ -188,7 +188,7 @@ export class RequirementIdService {
 
   public isCounterMissing(type: RequirementType): boolean {
     const metadata = this.getMetadata();
-    return !metadata[type] || metadata[type].counter === undefined;
+    return !metadata[type] || metadata[type].count === undefined;
   }
 
   private async getMissingRootRequirementCounters(
@@ -197,7 +197,7 @@ export class RequirementIdService {
     const metadata = this.getMetadata();
     const folders = Object.values(FOLDER).filter((folder) => {
       const data = metadata[folder as RequirementType];
-      return !data || data.counter === undefined;
+      return !data || data.count === undefined;
     });
 
     if (!folders.length) return {};

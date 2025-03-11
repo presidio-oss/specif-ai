@@ -13,7 +13,7 @@ export interface IGenerationRange {
 export interface IRequirementConfig {
   enabled?: boolean;
   maxCount?: number;
-  counter: number;
+  count: number;
 }
 
 export interface IProjectMetadata {

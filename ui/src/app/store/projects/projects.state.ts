@@ -205,8 +205,8 @@ export class ProjectsState {
           (acc, [_, type]) => ({
             ...acc,
             [type]: metadata.cleanSolution
-              ? { counter: 0 }
-              : { ...metadata[type], counter: responseMap[type] },
+              ? { count: 0 }
+              : { ...metadata[type], count: responseMap[type] },
           }),
           {},
         ),
@@ -500,7 +500,7 @@ export class ProjectsState {
       `${state.selectedProject}/${path}`,
       fileContent,
       featureFile,
-      state.metadata?.[path]?.counter || -1,
+      state.metadata?.[path]?.count || -1,
     );
 
     if (!featureFile) {
@@ -523,7 +523,7 @@ export class ProjectsState {
       ...state.metadata,
       [path]: {
         ...state.metadata[path],
-        counter: baseFileCount + 1,
+        count: baseFileCount + 1,
       },
     };
 
