@@ -4,6 +4,7 @@ import { ProjectsState } from '../store/projects/projects.state';
 import { UpdateMetadata } from '../store/projects/projects.actions';
 import {
   FILTER_STRINGS,
+  FOLDER,
   REQUIREMENT_TYPE,
   REQUIREMENT_TYPE_FOLDER_MAP,
   RequirementType,
@@ -11,6 +12,7 @@ import {
 import { IProjectMetadata } from '../model/interfaces/projects.interface';
 import { AppSystemService } from './app-system/app-system.service';
 import { NGXLogger } from 'ngx-logger';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -22,24 +24,17 @@ export class RequirementIdService {
     private readonly logger: NGXLogger,
   ) {}
 
-  public getNextRequirementId(
-    requirementType: RequirementType,
-    autoIncrement = false,
-  ): number {
+  public getNextRequirementId(requirementType: RequirementType): number {
     const metadata = this.getMetadata();
     const currentId = metadata[requirementType]?.counter ?? 0;
     const nextRequirementId = currentId + 1;
 
-    if (autoIncrement) {
-      this.updateRequirementCounters({ [requirementType]: nextRequirementId });
-    }
-
     return nextRequirementId;
   }
 
-  public updateRequirementCounters(
+  public async updateRequirementCounters(
     requirementCounters: Partial<Record<RequirementType, number>>,
-  ): void {
+  ): Promise<void> {
     const metadata = this.getMetadata();
     const updates = Object.entries(requirementCounters).reduce(
       (acc, [type, count]) => ({
@@ -52,11 +47,13 @@ export class RequirementIdService {
       {},
     );
 
-    this.store.dispatch(
-      new UpdateMetadata(metadata.id, {
-        ...metadata,
-        ...updates,
-      }),
+    await lastValueFrom(
+      this.store.dispatch(
+        new UpdateMetadata(metadata.id, {
+          ...metadata,
+          ...updates,
+        }),
+      ),
     );
   }
 
@@ -169,15 +166,46 @@ export class RequirementIdService {
       const { storyIdCounter, taskIdCounter } =
         await this.updateFeatureAndTaskIds(project, missingCounters);
 
-      this.updateRequirementCounters({
+      await this.updateRequirementCounters({
         [REQUIREMENT_TYPE.US]: storyIdCounter - 1,
         [REQUIREMENT_TYPE.TASK]: taskIdCounter - 1,
       });
     }
   }
+  public async syncRootRequirementCounters(projectName: string): Promise<void> {
+    const missingCounters =
+      await this.getMissingRootRequirementCounters(projectName);
 
-  private isCounterMissing(type: RequirementType): boolean {
+    if (Object.keys(missingCounters).length) {
+      await this.updateRequirementCounters(missingCounters);
+    }
+  }
+
+  public isCounterMissing(type: RequirementType): boolean {
     const metadata = this.getMetadata();
     return !metadata[type] || metadata[type].counter === undefined;
+  }
+
+  private async getMissingRootRequirementCounters(
+    projectName: string,
+  ): Promise<Partial<Record<RequirementType, number>>> {
+    const metadata = this.getMetadata();
+    const folders = Object.values(FOLDER).filter((folder) => {
+      const data = metadata[folder as RequirementType];
+      return !data || data.counter === undefined;
+    });
+
+    if (!folders.length) return {};
+
+    const entries = await Promise.all(
+      folders.map(async (folder) => {
+        const count = await this.appSystemService.getBaseFileCount(
+          `${projectName}/${folder}`,
+        );
+        return [folder, count] as [RequirementType, number];
+      }),
+    );
+
+    return Object.fromEntries(entries);
   }
 }

@@ -55,6 +55,13 @@ export class AppSystemService {
     });
   }
 
+  async getBaseFileCount(relativePath: string) {
+    const directory = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
+    return await this.electronService.invokeFunction('getBaseFileCount', {
+      path: `${directory}/${relativePath}`,
+    });
+  }
+
   async createNewFile(
     relativePathWithFileName: string,
     content: any,

@@ -227,9 +227,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
       ),
     );
 
-    this.requirementIdService.updateRequirementCounters({
-      [REQUIREMENT_TYPE.TASK]: nextTaskId - 1,
-    });
+    this.requirementIdService
+      .updateRequirementCounters({
+        [REQUIREMENT_TYPE.TASK]: nextTaskId - 1,
+      })
+      .then();
 
     setTimeout(() => {
       this.getLatestUserStories();

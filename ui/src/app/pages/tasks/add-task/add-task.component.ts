@@ -210,8 +210,14 @@ export class AddTaskComponent implements OnDestroy {
     } else {
       const nextTaskId = this.requirementIdService.getNextRequirementId(
         REQUIREMENT_TYPE.TASK,
-        true,
       );
+
+      this.requirementIdService
+        .updateRequirementCounters({
+          [REQUIREMENT_TYPE.TASK]: nextTaskId,
+        })
+        .then();
+
       this.taskForm.patchValue({
         id: `TASK${nextTaskId}`,
       });

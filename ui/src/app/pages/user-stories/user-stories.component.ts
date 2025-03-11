@@ -344,10 +344,12 @@ export class UserStoriesComponent implements OnInit {
       ),
     );
 
-    this.requirementIdService.updateRequirementCounters({
-      [REQUIREMENT_TYPE.US]: nextIds.story - 1,
-      [REQUIREMENT_TYPE.TASK]: --nextIds.task - 1,
-    });
+    this.requirementIdService
+      .updateRequirementCounters({
+        [REQUIREMENT_TYPE.US]: nextIds.story - 1,
+        [REQUIREMENT_TYPE.TASK]: nextIds.task - 1,
+      })
+      .then();
 
     setTimeout(() => {
       this.getLatestUserStories();

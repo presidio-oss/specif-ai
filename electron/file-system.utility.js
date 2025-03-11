@@ -16,6 +16,7 @@ const utilityFunctionMap = {
   readMetadataFile: readMetadataFile,
   createRequestedDirectory: createRequestedDirectory,
   archiveFile: archiveFile,
+  getBaseFileCount: getBaseFileCount,
 };
 
 function createDirectoryWithMetadata(param) {
@@ -124,6 +125,18 @@ function getDirectoryList(param) {
   }
 }
 
+async function getBaseFileCount({ path }) {
+  const keyName = pathModule.basename(path);
+  try {
+    const files = await fsPromise.readdir(path);
+    return files.filter(
+      (file) => file.startsWith(keyName) && file.includes("-base")
+    ).length;
+  } catch (err) {
+    console.error("Error reading files in directory:", err);
+  }
+}
+
 async function appendFile({ path, content, featureFile, baseFileCount }) {
   const keyName = pathModule.basename(path);
 
@@ -142,10 +155,7 @@ async function appendFile({ path, content, featureFile, baseFileCount }) {
 
   try {
     if (baseFileCount === -1) {
-      const files = await fsPromise.readdir(path);
-      baseFileCount = files.filter(
-        (file) => file.startsWith(keyName) && file.includes("-base")
-      ).length;
+      baseFileCount = await getBaseFileCount({ path });
     }
 
     const fileCount = baseFileCount;

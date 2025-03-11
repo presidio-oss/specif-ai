@@ -32,6 +32,7 @@ import {
 } from 'src/app/constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
 
 export class ProjectStateModel {
   projects!: IProject[];
@@ -76,6 +77,7 @@ export class ProjectsState {
     private router: Router,
     private toast: ToasterService,
     private requirementExportService: RequirementExportService,
+    private requirementIdService: RequirementIdService,
   ) {}
 
   @Selector()
@@ -297,6 +299,10 @@ export class ProjectsState {
             (indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB)
           );
         },
+      );
+
+      await this.requirementIdService.syncRootRequirementCounters(
+        project.project,
       );
 
       patchState({

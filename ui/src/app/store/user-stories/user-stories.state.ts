@@ -273,8 +273,11 @@ export class UserStoriesState {
 
     const nextStoryId = this.requirementIdService.getNextRequirementId(
       REQUIREMENT_TYPE.US,
-      true,
     );
+
+    await this.requirementIdService.updateRequirementCounters({
+      [REQUIREMENT_TYPE.US]: nextStoryId,
+    });
 
     const newUserStory = { id: `US${nextStoryId}`, ...userStory, tasks: [] };
     const updatedUserStories = [...state.userStories, newUserStory];
