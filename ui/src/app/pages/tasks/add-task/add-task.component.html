@@ -49,7 +49,7 @@
               <span class="text-red-500 text-xs">*</span>
             </label>
             <div class="flex flex-col gap-1">
-              <app-rich-text-editor formControlName="acceptance" editorClass="max-h-80 overflow-y-auto"></app-rich-text-editor>
+              <app-rich-text-editor formControlName="acceptance" editorClass="h-80 overflow-y-auto"></app-rich-text-editor>
               <ng-container *ngIf="taskForm.get('acceptance')?.touched">
                 <span *ngIf="taskForm.get('acceptance')?.errors?.['required']" class="text-red-500 text-sm">
                   Task Description is required

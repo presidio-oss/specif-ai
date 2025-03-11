@@ -1,3 +1,5 @@
+import { CdkMenuModule } from '@angular/cdk/menu';
+import { NgClass, NgIf } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -9,24 +11,22 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  heroBold,
+  heroChevronDown,
+  heroItalic,
+} from '@ng-icons/heroicons/outline';
 import { Editor } from '@tiptap/core';
-import StarterKit from '@tiptap/starter-kit';
+import type { Level as HeadingLevel } from '@tiptap/extension-heading';
 import { NGXLogger } from 'ngx-logger';
 import { htmlToMarkdown } from 'src/app/utils/html.utils';
 import {
   markdownToHtml,
   MarkdownToHtmlOptions,
 } from 'src/app/utils/markdown.utils';
-import type { Level as HeadingLevel } from '@tiptap/extension-heading';
-import { CdkMenuModule } from '@angular/cdk/menu';
-import { NgClass, NgIf } from '@angular/common';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  heroChevronDown,
-  heroBold,
-  heroItalic,
-} from '@ng-icons/heroicons/outline';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { TiptapExtensions } from 'src/app/utils/tiptap.utils';
 
 type OnChangeCallback = (md: string) => void;
 type OnTouchedCallback = () => void;
@@ -96,7 +96,7 @@ export class RichTextEditorComponent
 
     this.editor = new Editor({
       element: this.editorElement.nativeElement,
-      extensions: [StarterKit],
+      extensions: TiptapExtensions,
       content: initialContent,
       editorProps: {
         attributes: {

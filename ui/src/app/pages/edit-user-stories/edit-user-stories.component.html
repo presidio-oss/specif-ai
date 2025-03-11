@@ -62,7 +62,7 @@
               <span class="text-red-500 text-xs">*</span>
             </label>
             <div class="flex flex-col gap-1">
-              <app-rich-text-editor formControlName="description" editorClass="max-h-80 overflow-y-auto" mode="edit"></app-rich-text-editor>
+              <app-rich-text-editor formControlName="description" editorClass="h-80 overflow-y-auto" mode="edit"></app-rich-text-editor>
               <ng-container *ngIf="userStoryForm.get('description')?.touched">
                 <span *ngIf="userStoryForm.get('description')?.errors?.['required']" class="text-red-500 text-sm">
                   Description is required
