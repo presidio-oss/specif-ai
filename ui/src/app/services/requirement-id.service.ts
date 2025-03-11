@@ -166,12 +166,17 @@ export class RequirementIdService {
       const { storyIdCounter, taskIdCounter } =
         await this.updateFeatureAndTaskIds(project, missingCounters);
 
-      await this.updateRequirementCounters({
-        [REQUIREMENT_TYPE.US]: storyIdCounter - 1,
-        [REQUIREMENT_TYPE.TASK]: taskIdCounter - 1,
-      });
+      const countersToUpdate = Object.fromEntries(
+        missingCounters.map((type) => [
+          type,
+          type === REQUIREMENT_TYPE.US ? storyIdCounter - 1 : taskIdCounter - 1,
+        ]),
+      );
+
+      await this.updateRequirementCounters(countersToUpdate);
     }
   }
+
   public async syncRootRequirementCounters(projectName: string): Promise<void> {
     const missingCounters =
       await this.getMissingRootRequirementCounters(projectName);
