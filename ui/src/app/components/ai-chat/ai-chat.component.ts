@@ -150,6 +150,7 @@ export class AiChatComponent implements OnInit {
       const feedbackData = {
         type: this.feedbackType,
         text: this.feedbackText,
+        message: this.feedbackMessage.assistant,
         source: AnalyticsEventSource.AI_CHAT,
         status: AnalyticsEventStatus.SUCCESS,
       };
