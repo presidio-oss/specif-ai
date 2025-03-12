@@ -4,7 +4,7 @@ import {
   AnalyticsEventSource,
 } from './events/analytics.events';
 
-export interface AnalyticsTracker {
+export abstract class AnalyticsTracker {
   /**
    * Tracks an event with the given name and properties.
    * @param eventName - The name of the event to track.
@@ -17,7 +17,7 @@ export interface AnalyticsTracker {
    *   currency: 'USD'
    * });
    */
-  trackEvent(eventName: AnalyticsEvents, properties?: Record<string, any>): void;
+  abstract trackEvent(eventName: AnalyticsEvents, properties?: Record<string, any>): void;
 
   /**
    * Captures and logs an exception.
@@ -34,7 +34,7 @@ export interface AnalyticsTracker {
    *   });
    * }
    */
-  captureException(error: Error, properties?: Record<string, any>): void;
+  abstract captureException(error: Error, properties?: Record<string, any>): void;
 
   /**
    * Tracks the time from when the observable is subscribed to until
@@ -48,5 +48,5 @@ export interface AnalyticsTracker {
    *   // Handle response
    * });
    */
-  trackResponseTime<T>(source: AnalyticsEventSource): OperatorFunction<T, T>;
+  abstract trackResponseTime<T>(source: AnalyticsEventSource): OperatorFunction<T, T>;
 }
