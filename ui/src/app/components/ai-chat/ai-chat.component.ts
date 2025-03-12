@@ -25,7 +25,9 @@ import {
   heroPaperClip,
   heroInformationCircle,
   heroXMark,
-  heroDocumentText
+  heroDocumentText,
+  heroHandThumbUp,
+  heroHandThumbDown
 } from '@ng-icons/heroicons/outline';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid'
 import { environment } from '../../../environments/environment';
@@ -59,11 +61,16 @@ import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src
       heroInformationCircle,
       heroXMark,
       heroSparklesSolid,
+      heroHandThumbUp,
+      heroHandThumbDown,
       heroDocumentText
     })
   ]
 })
 export class AiChatComponent implements OnInit {
+  isFeedbackModalOpen: boolean = false;
+  feedbackType: 'like' | 'dislike' | null = null;
+  feedbackText: string = '';
   protected readonly APP_MESSAGES = APP_MESSAGES;
   protected readonly TOOLTIP_CONTENT = TOOLTIP_CONTENT;
   protected readonly themeConfiguration = environment.ThemeConfiguration;
@@ -115,6 +122,33 @@ export class AiChatComponent implements OnInit {
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  openFeedbackModal(chat: any, type: 'like' | 'dislike') {
+    this.isFeedbackModalOpen = true;
+    this.feedbackType = type;
+    this.feedbackText = '';
+  }
+
+  closeFeedbackModal() {
+    this.isFeedbackModalOpen = false;
+    this.feedbackType = null;
+    this.feedbackText = '';
+  }
+
+  submitFeedback() {
+    if (this.feedbackType) {
+      const feedbackData = {
+        type: this.feedbackType,
+        text: this.feedbackText
+      };
+      this.analyticsManager.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, {
+        source: AnalyticsEventSource.AI_CHAT,
+        status: AnalyticsEventStatus.SUCCESS,
+        ...feedbackData
+      });
+    }
+    this.closeFeedbackModal();
   }
 
   constructor(

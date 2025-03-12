@@ -1,6 +1,7 @@
 export enum AnalyticsEvents {
   LLM_CONFIG_SAVED = 'LLM Config Saved',
-  LLM_RESPONSE_TIME = 'LLM Response Time'
+  LLM_RESPONSE_TIME = 'LLM Response Time',
+  FEEDBACK_SUBMITTED = 'Feedback Submitted'
 }
 
 export enum AnalyticsEventSource {

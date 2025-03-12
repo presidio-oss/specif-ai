@@ -104,7 +104,7 @@
                   class="w-6 h-6"
                 />
               </div>
-              <div class="flex-1 max-w-[75%]">
+              <div class="flex-1 max-w-[75%] relative">
                 <div
                   class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200"
                 >
@@ -133,6 +133,42 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Unified feedback badge with two buttons -->
+                <div
+                  class="flex items-center justify-end mr-2 relative z-10 -mt-3"
+                >
+                  <div
+                    class="flex items-center bg-white rounded-full shadow-sm border border-secondary-200 p-0.5"
+                  >
+                    <button
+                      class="text-xs text-success-600 p-1.5 rounded-full flex items-center transition-colors duration-200 hover:bg-secondary-50"
+                      (click)="
+                        openFeedbackModal(chat, 'like');
+                        $event.stopPropagation()
+                      "
+                      matTooltip="Like"
+                    >
+                      <ng-icon name="heroHandThumbUp" class="text-sm"></ng-icon>
+                    </button>
+
+                    <div class="h-4 w-px bg-secondary-200"></div>
+
+                    <button
+                      class="text-xs text-danger-600 p-1.5 rounded-full flex items-center transition-colors duration-200 hover:bg-secondary-50"
+                      (click)="
+                        openFeedbackModal(chat, 'dislike');
+                        $event.stopPropagation()
+                      "
+                      matTooltip="Dislike"
+                    >
+                      <ng-icon
+                        name="heroHandThumbDown"
+                        class="text-sm"
+                      ></ng-icon>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -156,6 +192,37 @@
       </div>
 
       <div #scrollToBottom></div>
+    </div>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div
+    *ngIf="isFeedbackModalOpen"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+  >
+    <div class="bg-white rounded-lg p-6 w-96">
+      <h3 class="text-lg font-medium mb-4">
+        {{ feedbackType === "like" ? "Like" : "Dislike" }} Feedback
+      </h3>
+      <textarea
+        [(ngModel)]="feedbackText"
+        placeholder="Optional feedback"
+        class="w-full h-24 p-2 border border-secondary-200 rounded-lg"
+      ></textarea>
+      <div class="flex justify-end gap-2 mt-4">
+        <button
+          class="bg-secondary-200 text-secondary-700 px-4 py-2 rounded-lg"
+          (click)="closeFeedbackModal()"
+        >
+          Cancel
+        </button>
+        <button
+          class="bg-primary-600 text-white px-4 py-2 rounded-lg"
+          (click)="submitFeedback()"
+        >
+          Submit
+        </button>
+      </div>
     </div>
   </div>
 
