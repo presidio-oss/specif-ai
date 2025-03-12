@@ -7,6 +7,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -19,6 +20,7 @@ import {
   heroItalic,
 } from '@ng-icons/heroicons/outline';
 import { Editor } from '@tiptap/core';
+import { Subject, debounceTime } from 'rxjs';
 import type { Level as HeadingLevel } from '@tiptap/extension-heading';
 import { NGXLogger } from 'ngx-logger';
 import { htmlToMarkdown } from 'src/app/utils/html.utils';
@@ -47,7 +49,7 @@ type OnTouchedCallback = () => void;
   viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold })],
 })
 export class RichTextEditorComponent
-  implements AfterViewInit, ControlValueAccessor, OnChanges
+  implements AfterViewInit, ControlValueAccessor, OnChanges, OnDestroy
 {
   toolbarButtonClass =
     'flex items-center justify-center rounded-md text-sm font-medium transition-colors text-slate-900 hover:bg-slate-50 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-slate-100 data-[state=on]:text-slate-900 bg-transparent p-0';
@@ -63,12 +65,15 @@ export class RichTextEditorComponent
 
   editor: Editor | null = null;
   touched = false;
+  private editorUpdate$ = new Subject<string>();
 
   // default callbacks
   @Output('change') onChange = new EventEmitter<string>();
   @Output('touch') onTouched = new EventEmitter();
 
-  constructor(private logger: NGXLogger) {}
+  constructor(private logger: NGXLogger) {
+    this.setupEditorUpdateSubscription();
+  }
 
   ngAfterViewInit(): void {
     this.setupEditor();
@@ -107,13 +112,9 @@ export class RichTextEditorComponent
           } rounded-lg disabled:bg-secondary-100 max-w-none prose prose-sm prose-p:m-0 prose-p:mb-[0.625rem] prose-li:m-0 ${this.editorClass}`,
         },
       },
-      onUpdate: async ({ editor }) => {
+      onUpdate: ({ editor }) => {
         this.markAsTouched();
-        const parseResponse = await this.safeGetMarkdownFromHtml(
-          editor.getHTML(),
-        );
-        this.content = parseResponse as string;
-        this.onChange.emit(parseResponse as string);
+        this.editorUpdate$.next(editor.getHTML());
       },
       editable: this.mode == 'edit' ? this.editable : false,
     });
@@ -185,6 +186,20 @@ export class RichTextEditorComponent
     }
 
     return '';
+  }
+
+  private setupEditorUpdateSubscription() {
+    this.editorUpdate$
+      .pipe(debounceTime(500))
+      .subscribe(async (html) => {
+        const parseResponse = await this.safeGetMarkdownFromHtml(html);
+        this.content = parseResponse as string;
+        this.onChange.emit(parseResponse as string);
+      });
+  }
+
+  ngOnDestroy() {
+    this.editorUpdate$.complete();
   }
 
   private async safeGetMarkdownFromHtml(html: string) {
