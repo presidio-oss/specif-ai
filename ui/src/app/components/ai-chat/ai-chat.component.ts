@@ -1,4 +1,5 @@
 import {
+  assertInInjectionContext,
   Component,
   EventEmitter,
   Input,
@@ -29,7 +30,7 @@ import {
   heroHandThumbUp,
   heroHandThumbDown
 } from '@ng-icons/heroicons/outline';
-import { heroSparklesSolid } from '@ng-icons/heroicons/solid'
+import { heroHandThumbDownSolid, heroHandThumbUpSolid, heroSparklesSolid } from '@ng-icons/heroicons/solid'
 import { environment } from '../../../environments/environment';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { ProjectsState } from 'src/app/store/projects/projects.state';
@@ -63,7 +64,9 @@ import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src
       heroSparklesSolid,
       heroHandThumbUp,
       heroHandThumbDown,
-      heroDocumentText
+      heroDocumentText,
+      heroHandThumbUpSolid,
+      heroHandThumbDownSolid
     })
   ]
 })
@@ -116,6 +119,7 @@ export class AiChatComponent implements OnInit {
 
   selectedFiles: File[] = [];
   selectedFilesContent: string = '';
+  feedbackMessage: any = {};
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -126,6 +130,7 @@ export class AiChatComponent implements OnInit {
 
   openFeedbackModal(chat: any, type: 'like' | 'dislike') {
     this.isFeedbackModalOpen = true;
+    this.feedbackMessage = chat;
     this.feedbackType = type;
     this.feedbackText = '';
   }
@@ -133,21 +138,24 @@ export class AiChatComponent implements OnInit {
   closeFeedbackModal() {
     this.isFeedbackModalOpen = false;
     this.feedbackType = null;
+    this.feedbackMessage = null;
     this.feedbackText = '';
   }
 
   submitFeedback() {
+    if (this.feedbackMessage.assistant) {
+      this.feedbackMessage.isLiked = this.feedbackType === 'like';
+    }
     if (this.feedbackType) {
       const feedbackData = {
         type: this.feedbackType,
-        text: this.feedbackText
-      };
-      this.analyticsManager.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, {
+        text: this.feedbackText,
         source: AnalyticsEventSource.AI_CHAT,
         status: AnalyticsEventStatus.SUCCESS,
-        ...feedbackData
-      });
+      };
+      this.analyticsManager.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, feedbackData);
     }
+    this.returnChatHistory();
     this.closeFeedbackModal();
   }
 
