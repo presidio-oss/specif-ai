@@ -70,7 +70,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
-  analyticsManager = inject(AnalyticsManager)
+  analyticsManager = AnalyticsManager.getInstance();
   dialog = inject(MatDialog);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();

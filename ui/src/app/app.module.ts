@@ -49,6 +49,7 @@ import { ButtonComponent } from './components/core/button/button.component';
 import { AuthService } from './services/auth/auth.service';
 import { AuthInterceptor } from './interceptor/auth.interceptor';
 import { AuthStateService } from './services/auth/auth-state.service';
+import { AnalyticsManager } from './services/analytics/managers/analytics.manager';
 
 @NgModule({
   declarations: [AppComponent],
@@ -115,6 +116,7 @@ import { AuthStateService } from './services/auth/auth-state.service';
     AuthStateService,
     AuthService,
     UtilityService,
+    AnalyticsManager,
     SpreadSheetService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
@@ -128,7 +130,7 @@ import { AuthStateService } from './services/auth/auth-state.service';
     },
     {
       provide: APP_INITIALIZER,
-      deps: [Sentry.TraceService],
+      deps: [Sentry.TraceService, AnalyticsManager],
       multi: true,
       useFactory: () => () => {},
     },

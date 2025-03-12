@@ -94,6 +94,8 @@ export class AiChatComponent implements OnInit {
     ChatSettingsState.getConfig,
   );
 
+  analyticsManager = AnalyticsManager.getInstance();
+
   @Output() getContent: EventEmitter<any> = new EventEmitter<any>();
   @Output() updateChatHistory: EventEmitter<any> = new EventEmitter<any>();
   @ViewChild('scrollToBottom') scrollToBottom: any;
@@ -165,7 +167,6 @@ export class AiChatComponent implements OnInit {
     private utilityService: UtilityService,
     private store: Store,
     private toastService: ToasterService,
-    private analyticsManager: AnalyticsManager
   ) {}
 
   smoothScroll() {
