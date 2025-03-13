@@ -364,8 +364,8 @@ export class AiChatComponent implements OnInit {
         isLiked: this.feedbackType === 'like' ? '1' : '0',
         text: this.feedbackText,
         message: this.feedbackMessage.assistant,
-        source: AnalyticsEventSource.AI_CHAT,
-        status: AnalyticsEventStatus.SUCCESS,
+        source: `${AnalyticsEventSource.AI_CHAT} for ${this.chatType}`,
+        status: AnalyticsEventStatus.SUCCESS
       });
     }
     this.returnChatHistory();
