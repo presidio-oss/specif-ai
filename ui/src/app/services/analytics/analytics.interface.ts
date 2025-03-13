@@ -17,7 +17,10 @@ export abstract class AnalyticsTracker {
    *   currency: 'USD'
    * });
    */
-  abstract trackEvent(eventName: AnalyticsEvents, properties?: Record<string, any>): void;
+  abstract trackEvent(
+    eventName: AnalyticsEvents,
+    properties?: Record<string, any>,
+  ): void;
 
   /**
    * Captures and logs an exception.
@@ -34,7 +37,10 @@ export abstract class AnalyticsTracker {
    *   });
    * }
    */
-  abstract captureException(error: Error, properties?: Record<string, any>): void;
+  abstract captureException(
+    error: Error,
+    properties?: Record<string, any>,
+  ): void;
 
   /**
    * Tracks the time from when the observable is subscribed to until
@@ -48,5 +54,18 @@ export abstract class AnalyticsTracker {
    *   // Handle response
    * });
    */
-  abstract trackResponseTime<T>(source: AnalyticsEventSource): OperatorFunction<T, T>;
+  abstract trackResponseTime<T>(
+    source: AnalyticsEventSource,
+  ): OperatorFunction<T, T>;
+
+  /**
+   * Initializes the analytics tracking service with the necessary configuration.
+   * This method should be called before any tracking methods are used to ensure
+   * the analytics service is properly configured and ready to capture events.
+   *
+   * @example
+   * // Initialize analytics during application startup
+   * analyticsManager.initAnalytics();
+   */
+  abstract initAnalytics(): void;
 }
