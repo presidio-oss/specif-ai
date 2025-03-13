@@ -36,6 +36,8 @@ import { Router } from '@angular/router';
 import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/analytics-utils';
+import { CoreService } from 'src/app/services/core/core.service';
+import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-settings',
@@ -49,6 +51,12 @@ import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services
     NgIf,
     ButtonComponent,
   ],
+  providers: [
+    { 
+      provide: 'icons', 
+      useValue: { heroExclamationTriangle } 
+    }
+  ]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
@@ -76,6 +84,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   dialog = inject(MatDialog);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
+  analyticsWarning: string = '';
 
   constructor(
     private modalRef: MatDialogRef<SettingsComponent>,
@@ -83,7 +92,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef,
-    private analyticsTracker: AnalyticsTracker
+    private analyticsTracker: AnalyticsTracker,
+    private core: CoreService
   ) {
     this.workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
   }
@@ -119,6 +129,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.core.getAppConfig().subscribe({
+      next: (config: any) => {
+        if (!this.analyticsTracker.isConfigValid(config)) {
+          this.analyticsEnabled.setValue(false);
+          this.analyticsEnabled.disable({ onlySelf: true });
+          this.analyticsWarning = 'Warning: Analytics configuration is missing. Please update the settings.';
+        } else {
+          this.analyticsEnabled.enable({ onlySelf: true });
+          this.analyticsWarning = '';
+        }
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch PostHog configuration:', error);
+      },
+    });
     this.subscriptions.add(
       this.llmConfig$.subscribe((config) => {
         this.currentLLMConfig = config;
@@ -215,7 +240,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const model = this.selectedModel.value;
     const analyticsEnabled = this.analyticsEnabled.value;
 
-    // Update analytics state if changed
     if (analyticsEnabled !== this.initialAnalyticsState) {
       this.updateAnalyticsState(analyticsEnabled);
       this.initialAnalyticsState = analyticsEnabled;

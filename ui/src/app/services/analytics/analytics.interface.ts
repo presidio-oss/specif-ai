@@ -68,4 +68,12 @@ export abstract class AnalyticsTracker {
    * analyticsManager.initAnalytics();
    */
   abstract initAnalytics(): void;
+
+  /**
+   * Validate the given configuration object.
+   * @param config - The configuration object to validate.
+   * @returns A boolean indicating whether the configuration is valid.
+   */
+  abstract isConfigValid(config: any): boolean;
 }
+

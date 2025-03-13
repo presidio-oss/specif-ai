@@ -35,6 +35,10 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
     });
   }
 
+  isConfigValid(config: { key?: string; host?: string }): boolean {
+    return !!config.key && !!config.host;
+}
+
   private isAnalyticsEnabled(): boolean {
     return getAnalyticsToggleState();
   }
@@ -75,7 +79,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
           if (!this.isAnalyticsEnabled()) {
             return;
           }
-          
+
           const duration = Date.now() - startTime;
           this.trackEvent(AnalyticsEvents.LLM_RESPONSE_TIME, {
             durationMs: duration,
@@ -107,6 +111,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
           this.isPostHogInitialized = true;
         } else {
           console.error('Invalid PostHog configuration received from backend.');
+          this.isPostHogInitialized = false;
         }
       },
       error: (error) => {
