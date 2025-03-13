@@ -357,10 +357,11 @@ export class AiChatComponent implements OnInit {
   submitFeedback() {
     if (this.feedbackMessage.assistant) {
       this.feedbackMessage.isLiked = this.feedbackType === 'like';
+      this.feedbackType === 'like' ? '1' : '0'
     }
     if (this.feedbackType) {
       this.analyticsTracker.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, {
-        type: this.feedbackType,
+        isLiked: this.feedbackType === 'like' ? '1' : '0',
         text: this.feedbackText,
         message: this.feedbackMessage.assistant,
         source: AnalyticsEventSource.AI_CHAT,
