@@ -222,7 +222,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   closeModal() {
-    // Reset to initial values
     this.analyticsEnabled.setValue(this.initialAnalyticsState);
     
     this.store.dispatch(
