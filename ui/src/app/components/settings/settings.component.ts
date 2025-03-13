@@ -35,6 +35,7 @@ import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
 import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
+import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/analytics-utils';
 
 @Component({
   selector: 'app-settings',
@@ -58,6 +59,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   filteredModels: string[] = [];
   selectedModel: FormControl = new FormControl();
   selectedProvider: FormControl = new FormControl();
+  analyticsEnabled: FormControl = new FormControl();
   errorMessage: string = '';
   hasChanges: boolean = false;
   workingDir: string | null;
@@ -65,6 +67,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
   private initialModel: string = '';
   private initialProvider: string = '';
+  private initialAnalyticsState: boolean = false;
   protected themeConfiguration = environment.ThemeConfiguration;
 
   electronService = inject(ElectronService);
@@ -127,8 +130,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.hasChanges = false;
       }),
     );
+
+    const analyticsState = getAnalyticsToggleState();
+    this.analyticsEnabled.setValue(analyticsState);
+    this.initialAnalyticsState = analyticsState;
+
     this.onModelChange();
     this.onProviderChange();
+    this.onAnalyticsToggleChange();
   }
 
   onModelChange() {
@@ -138,9 +147,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         .subscribe((res) => {
           this.updateFilteredModels(this.selectedProvider.value);
           this.errorMessage = '';
-          this.hasChanges =
-            this.selectedModel.value !== this.initialModel ||
-            this.selectedProvider.value !== this.initialProvider;
+          this.checkForChanges();
           this.cdr.markForCheck();
         }),
     );
@@ -154,19 +161,45 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.updateFilteredModels(res);
           this.selectedModel.setValue(ProviderModelMap[res][0]);
           this.errorMessage = '';
-          this.hasChanges =
-            this.selectedModel.value !== this.initialModel ||
-            this.selectedProvider.value !== this.initialProvider;
+          this.checkForChanges();
           this.cdr.detectChanges();
         }),
     );
+  }
+
+  onAnalyticsToggleChange() {
+    this.subscriptions.add(
+      this.analyticsEnabled.valueChanges
+        .pipe(distinctUntilChanged())
+        .subscribe((enabled) => {
+          this.checkForChanges();
+          this.cdr.markForCheck();
+        }),
+    );
+  }
+
+  checkForChanges() {
+    this.hasChanges =
+      this.selectedModel.value !== this.initialModel ||
+      this.selectedProvider.value !== this.initialProvider ||
+      this.analyticsEnabled.value !== this.initialAnalyticsState;
   }
 
   updateFilteredModels(provider: string) {
     this.filteredModels = ProviderModelMap[provider] || [];
   }
 
+  updateAnalyticsState(enabled: boolean): void {
+    setAnalyticsToggleState(enabled);
+    if (enabled) {
+      this.analyticsTracker.initAnalytics();
+    }
+  }
+
   closeModal() {
+    // Reset to initial values
+    this.analyticsEnabled.setValue(this.initialAnalyticsState);
+    
     this.store.dispatch(
       new SetLLMConfig({
         ...this.currentLLMConfig,
@@ -180,6 +213,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   onSave() {
     const provider = this.selectedProvider.value;
     const model = this.selectedModel.value;
+    const analyticsEnabled = this.analyticsEnabled.value;
+
+    // Update analytics state if changed
+    if (analyticsEnabled !== this.initialAnalyticsState) {
+      this.updateAnalyticsState(analyticsEnabled);
+      this.initialAnalyticsState = analyticsEnabled;
+    }
 
     this.authService.verifyProviderConfig(provider, model).subscribe({
       next: (response) => {
@@ -203,6 +243,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
             provider: provider,
             model: model,
+            analyticsEnabled: analyticsEnabled,
             source: AnalyticsEventSource.LLM_SETTINGS,
             status: AnalyticsEventStatus.SUCCESS
           })
@@ -213,6 +254,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
             provider: provider,
             model: model,
+            analyticsEnabled: analyticsEnabled,
             source: AnalyticsEventSource.LLM_SETTINGS,
             status: AnalyticsEventStatus.FAILURE
           });

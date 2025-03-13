@@ -120,6 +120,27 @@
       </div>
     </div>
 
+    <!-- Analytics Toggle -->
+    <div class="space-y-1">
+      <div class="flex items-center justify-between">
+        <label for="analyticsToggle" class="block text-secondary-500">
+          Enable Analytics Tracking
+        </label>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input 
+            type="checkbox" 
+            id="analyticsToggle"
+            [formControl]="analyticsEnabled" 
+            class="sr-only peer"
+          >
+          <div class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+        </label>
+      </div>
+      <p class="text-xs text-secondary-400">
+        Help us improve by allowing anonymous usage data collection. This data helps us enhance your experience and prioritize features.
+      </p>
+    </div>
+
     <!-- Save and Cancel Buttons -->
     <div
       *ngIf="hasChanges"
