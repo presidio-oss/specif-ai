@@ -15,7 +15,7 @@ import { ChatService } from '../../services/chat/chat.service';
 import { UtilityService } from '../../services/utility.service';
 import { TOOLTIP_CONTENT, APP_MESSAGES, CHAT_TYPES, TOASTER_MESSAGES } from '../../constants/app.constants';
 import { Store } from '@ngxs/store';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { ChatSettings } from 'src/app/model/interfaces/ChatSettings';
 import { ChatSettingsState } from 'src/app/store/chat-settings/chat-settings.state';
 import { FormsModule } from '@angular/forms';
@@ -40,6 +40,7 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ERROR_MESSAGES } from '../../constants/app.constants';
 import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
+import { analyticsEnabledSubject } from 'src/app/services/analytics/utils/analytics.utils';
 @Component({
   selector: 'app-chat',
   templateUrl: './ai-chat.component.html',
@@ -89,6 +90,9 @@ export class AiChatComponent implements OnInit {
 
   metadata: any = {};
   isKbAvailable: boolean = false;
+  showFeedbackBadge = false;
+  private subscription: Subscription = new Subscription();
+
 
   chatSettings$: Observable<ChatSettings> = this.store.select(
     ChatSettingsState.getConfig,
@@ -128,37 +132,6 @@ export class AiChatComponent implements OnInit {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
 
-  openFeedbackModal(chat: any, type: 'like' | 'dislike') {
-    this.isFeedbackModalOpen = true;
-    this.feedbackMessage = chat;
-    this.feedbackType = type;
-    this.feedbackText = '';
-  }
-
-  closeFeedbackModal() {
-    this.isFeedbackModalOpen = false;
-    this.feedbackType = null;
-    this.feedbackMessage = null;
-    this.feedbackText = '';
-  }
-
-  submitFeedback() {
-    if (this.feedbackMessage.assistant) {
-      this.feedbackMessage.isLiked = this.feedbackType === 'like';
-    }
-    if (this.feedbackType) {
-      this.analyticsTracker.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, {
-        type: this.feedbackType,
-        text: this.feedbackText,
-        message: this.feedbackMessage.assistant,
-        source: AnalyticsEventSource.AI_CHAT,
-        status: AnalyticsEventStatus.SUCCESS,
-      });
-    }
-    this.returnChatHistory();
-    this.closeFeedbackModal();
-  }
-
   constructor(
     private chatService: ChatService,
     private utilityService: UtilityService,
@@ -180,6 +153,12 @@ export class AiChatComponent implements OnInit {
     this.store.select(ProjectsState.getMetadata).subscribe((res) => {
       this.metadata = res;
     });
+
+    this.subscription.add(
+      analyticsEnabledSubject.subscribe(enabled => {
+        this.showFeedbackBadge = enabled;
+      })
+    );
 
     this.isKbAvailable = !!this.metadata.integration?.bedrock?.kbId;
 
@@ -359,6 +338,37 @@ export class AiChatComponent implements OnInit {
       };
       reader.readAsText(file);
     });
+  }
+
+  openFeedbackModal(chat: any, type: 'like' | 'dislike') {
+    this.isFeedbackModalOpen = true;
+    this.feedbackMessage = chat;
+    this.feedbackType = type;
+    this.feedbackText = '';
+  }
+
+  closeFeedbackModal() {
+    this.isFeedbackModalOpen = false;
+    this.feedbackType = null;
+    this.feedbackMessage = null;
+    this.feedbackText = '';
+  }
+
+  submitFeedback() {
+    if (this.feedbackMessage.assistant) {
+      this.feedbackMessage.isLiked = this.feedbackType === 'like';
+    }
+    if (this.feedbackType) {
+      this.analyticsTracker.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, {
+        type: this.feedbackType,
+        text: this.feedbackText,
+        message: this.feedbackMessage.assistant,
+        source: AnalyticsEventSource.AI_CHAT,
+        status: AnalyticsEventStatus.SUCCESS,
+      });
+    }
+    this.returnChatHistory();
+    this.closeFeedbackModal();
   }
 
   converse(message: string) {

@@ -35,7 +35,7 @@ import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
 import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
-import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/analytics-utils';
+import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/utils/analytics.utils';
 import { CoreService } from 'src/app/services/core/core.service';
 import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
 
@@ -134,6 +134,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
         if (!this.analyticsTracker.isConfigValid(config)) {
           this.analyticsEnabled.setValue(false);
           this.analyticsEnabled.disable({ onlySelf: true });
+          this.updateAnalyticsState(false);
+          this.hasChanges = false;
           this.analyticsWarning = 'Warning: Analytics configuration is missing. Please update the settings.';
         } else {
           this.analyticsEnabled.enable({ onlySelf: true });

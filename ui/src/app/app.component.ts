@@ -71,14 +71,14 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private checkAnalyticsPermission() {
-    const localStorageKey = 'ANALYTICS_PERMISSION_REQUESTED';
-    const analyticsPermission = localStorage.getItem(localStorageKey);
+    const ANALYTICS_PERMISSION_REQUESTED = 'analyticsPermissionRequested';
+    const analyticsPermission = localStorage.getItem(ANALYTICS_PERMISSION_REQUESTED);
     if (analyticsPermission !== 'true') {
       this.dialog.open(AnalyticsModalComponent, {
         width: '600px',
         disableClose: true,
       });
-      localStorage.setItem(localStorageKey, 'true');
+      localStorage.setItem(ANALYTICS_PERMISSION_REQUESTED, 'true');
     }
   }
 }

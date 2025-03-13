@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AnalyticsTracker } from '../analytics.interface';
-import { getAnalyticsToggleState } from 'src/app/services/analytics/analytics-utils';
+import { getAnalyticsToggleState } from 'src/app/services/analytics/utils/analytics.utils';
 import posthog from 'posthog-js';
 import {
   AnalyticsEvents,
