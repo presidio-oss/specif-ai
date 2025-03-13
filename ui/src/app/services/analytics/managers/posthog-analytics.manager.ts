@@ -15,9 +15,7 @@ import { catchError, finalize, Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class AnalyticsManager implements AnalyticsTracker {
-  private static instance: AnalyticsManager;
-
+export class PostHogAnalyticsManager implements AnalyticsTracker {
   private isEnabled: boolean;
   private currentLLMConfig!: LLMConfigModel;
 
@@ -26,8 +24,6 @@ export class AnalyticsManager implements AnalyticsTracker {
   );
 
   constructor(private store: Store) {
-    AnalyticsManager.instance = this;
-
     this.isEnabled = environment.ENABLE_POSTHOG || false;
 
     if (this.isEnabled) {
@@ -38,12 +34,7 @@ export class AnalyticsManager implements AnalyticsTracker {
 
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
-      console.log('Config changes', this.currentLLMConfig);
     });
-  }
-
-  public static getInstance(): AnalyticsManager {
-    return AnalyticsManager.instance;
   }
 
   captureException(error: Error, properties: Record<string, any> = {}): void {

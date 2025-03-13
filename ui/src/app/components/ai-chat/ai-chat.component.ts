@@ -38,8 +38,8 @@ import { ToggleComponent } from '../toggle/toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ERROR_MESSAGES } from '../../constants/app.constants';
-import { AnalyticsManager } from 'src/app/services/analytics/managers/analytics.manager';
 import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
+import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 @Component({
   selector: 'app-chat',
   templateUrl: './ai-chat.component.html',
@@ -94,8 +94,6 @@ export class AiChatComponent implements OnInit {
     ChatSettingsState.getConfig,
   );
 
-  analyticsManager = AnalyticsManager.getInstance();
-
   @Output() getContent: EventEmitter<any> = new EventEmitter<any>();
   @Output() updateChatHistory: EventEmitter<any> = new EventEmitter<any>();
   @ViewChild('scrollToBottom') scrollToBottom: any;
@@ -149,14 +147,13 @@ export class AiChatComponent implements OnInit {
       this.feedbackMessage.isLiked = this.feedbackType === 'like';
     }
     if (this.feedbackType) {
-      const feedbackData = {
+      this.analyticsTracker.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, {
         type: this.feedbackType,
         text: this.feedbackText,
         message: this.feedbackMessage.assistant,
         source: AnalyticsEventSource.AI_CHAT,
         status: AnalyticsEventStatus.SUCCESS,
-      };
-      this.analyticsManager.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, feedbackData);
+      });
     }
     this.returnChatHistory();
     this.closeFeedbackModal();
@@ -167,6 +164,7 @@ export class AiChatComponent implements OnInit {
     private utilityService: UtilityService,
     private store: Store,
     private toastService: ToasterService,
+    private analyticsTracker: AnalyticsTracker
   ) {}
 
   smoothScroll() {
@@ -228,7 +226,7 @@ export class AiChatComponent implements OnInit {
     };
     this.chatService
     .generateSuggestions(suggestionPayload)
-    .pipe(this.analyticsManager.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
+    .pipe(this.analyticsTracker.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
     .subscribe({
       next: (response: Array<''>) => {
         this.chatSuggestions = response;
@@ -263,7 +261,7 @@ export class AiChatComponent implements OnInit {
     else payload = { ...payload, prd: this.prd, us: this.userStory };
     this.chatService
       .chatWithLLM(this.chatType, payload)
-      .pipe(this.analyticsManager.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
+      .pipe(this.analyticsTracker.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
       .subscribe((response) => {
         this.generateLoader = false;
         this.chatHistory = [...this.chatHistory, { assistant: response }];

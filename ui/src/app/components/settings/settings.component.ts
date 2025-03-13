@@ -33,8 +33,8 @@ import { environment } from 'src/environments/environment';
 import { ElectronService } from 'src/app/services/electron/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
-import { AnalyticsManager } from 'src/app/services/analytics/managers/analytics.manager';
 import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
+import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 
 @Component({
   selector: 'app-settings',
@@ -70,7 +70,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
-  analyticsManager = AnalyticsManager.getInstance();
   dialog = inject(MatDialog);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
@@ -81,6 +80,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef,
+    private analyticsTracker: AnalyticsTracker
   ) {
     this.workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
   }
@@ -200,7 +200,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
               this.modalRef.close(true);
             });
           });
-          this.analyticsManager.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
+          this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
             provider: provider,
             model: model,
             source: AnalyticsEventSource.LLM_SETTINGS,
@@ -210,7 +210,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.errorMessage =
             'Connection Failed! Please verify your model credentials in the backend configuration.';
           this.cdr.markForCheck();
-          this.analyticsManager.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
+          this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
             provider: provider,
             model: model,
             source: AnalyticsEventSource.LLM_SETTINGS,
@@ -221,7 +221,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.errorMessage = 'LLM configuration verification failed. Please contact your admin for technical support.';
         this.cdr.markForCheck();
-        this.analyticsManager.captureException(error);
+        this.analyticsTracker.captureException(error);
       },
     });
   }
