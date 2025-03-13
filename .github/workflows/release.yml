@@ -1,0 +1,98 @@
+name: Release Workflow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: "Choose release type"
+        required: true
+        default: "release"
+        type: choice
+        options:
+          - release
+      push_to_marketplace:
+        description: "Push to marketplace"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  determine_workflow:
+    runs-on: ubuntu-latest
+    outputs:
+      workflow_type: ${{ steps.set-workflow.outputs.workflow_type }}
+      version: ${{ steps.set-workflow.outputs.version }}
+      environment: ${{ steps.set-workflow.outputs.environment }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Determine workflow type and version
+        id: set-workflow
+        run: |
+          # Get version from package.json
+          VERSION=$(node -e "console.log(require('./package.json').version);")
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+          # Set workflow type and environment based on trigger
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "workflow_type=release" >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "Running release workflow v${VERSION}"
+          else
+            echo "workflow_type=development" >> $GITHUB_OUTPUT
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "Running development workflow v${VERSION}"
+          fi
+
+  init_dependencies:
+    needs: [determine_workflow]
+    uses: ./.github/workflows/init.yml
+    with:
+      version: ${{ needs.determine_workflow.outputs.version }}
+      workflow_type: ${{ needs.determine_workflow.outputs.workflow_type }}
+
+  build:
+    needs: [determine_workflow, init_dependencies]
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ needs.determine_workflow.outputs.version }}
+      environment: ${{ needs.determine_workflow.outputs.environment }}
+    secrets:
+      AWS_OIDC_ROLE_ARN: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      DEV_IMAGE_NAME: ${{ secrets.DEV_IMAGE_NAME }}
+      PROD_IMAGE_NAME: ${{ secrets.PROD_IMAGE_NAME }}
+      ELECTRON_S3_BUCKET: ${{ secrets.ELECTRON_S3_BUCKET }}
+      APPLE_CSC_SECRET_NAME: ${{ secrets.APPLE_CSC_SECRET_NAME }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+
+  deploy:
+    needs: [determine_workflow, build]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      version: ${{ needs.determine_workflow.outputs.version }}
+      workflow_type: ${{ needs.determine_workflow.outputs.workflow_type }}
+      environment: ${{ needs.determine_workflow.outputs.environment }}
+    secrets: inherit
+
+  create_release:
+    needs: [determine_workflow, deploy]
+    if: ${{ needs.determine_workflow.outputs.workflow_type == 'release' }}
+    uses: ./.github/workflows/create-release.yml
+    with:
+      version: ${{ needs.determine_workflow.outputs.version }}
+
+  notify:
+    needs:
+      - determine_workflow
+      - deploy
+    uses: ./.github/workflows/notify.yml
+    with:
+      version: ${{ needs.determine_workflow.outputs.version }}
+      environment: ${{ needs.determine_workflow.outputs.environment }}
+    secrets: inherit
