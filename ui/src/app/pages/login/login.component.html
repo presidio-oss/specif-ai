@@ -49,6 +49,14 @@
         <div class="space-y-6 px-6 pt-4 pb-8">
           <div>
             <app-input-field
+              formControlName="email"
+              elementPlaceHolder="Your Email"
+              elementName="User Email"
+            />
+            <app-error-message [errorControl]="loginForm.get('email')" />
+          </div>
+          <div>
+            <app-input-field
               formControlName="appUrl"
               elementPlaceHolder="Your Server URL"
               elementName="App URL"

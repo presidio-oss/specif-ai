@@ -16,6 +16,7 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
 import { environment } from '../../../environments/environment';
 import { NgIf } from '@angular/common';
+import posthog from 'posthog-js';
 
 @Component({
   selector: 'app-login',
@@ -32,6 +33,7 @@ import { NgIf } from '@angular/common';
 })
 export class LoginComponent implements OnInit {
   loginForm = new FormGroup({
+    email: new FormControl('', Validators.required),
     appUrl: new FormControl('', Validators.required),
     passcode: new FormControl('', Validators.required),
     directoryPath: new FormControl(
@@ -50,21 +52,30 @@ export class LoginComponent implements OnInit {
 
   async ngOnInit() {
     this.authService.setIsLoggedIn(false);
-    const config = await this.electronService.getStoreValue("APP_CONFIG") || {};
+    const config =
+      (await this.electronService.getStoreValue('APP_CONFIG')) || {};
 
     const appUrl = config.appUrl || localStorage.getItem(APP_CONSTANTS.APP_URL);
-    const passcode = config.password || localStorage.getItem(APP_CONSTANTS.APP_PASSCODE_KEY);
-    const directoryPath = config.directoryPath || localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
+    const email = config.email || localStorage.getItem(APP_CONSTANTS.USER_NAME);
+    const passcode =
+      config.password || localStorage.getItem(APP_CONSTANTS.APP_PASSCODE_KEY);
+    const directoryPath =
+      config.directoryPath || localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
 
-    if (appUrl && passcode) {
+    if (appUrl && passcode && email) {
       this.loginForm.patchValue({
         appUrl: appUrl as string,
         passcode: atob(passcode as string),
+        email: email as string,
         directoryPath: directoryPath as string,
       });
 
       // Auto-login if values are present in localStorage
-      if (localStorage.getItem(APP_CONSTANTS.APP_URL) && localStorage.getItem(APP_CONSTANTS.APP_PASSCODE_KEY)) {
+      if (
+        localStorage.getItem(APP_CONSTANTS.USER_NAME) &&
+        localStorage.getItem(APP_CONSTANTS.APP_URL) &&
+        localStorage.getItem(APP_CONSTANTS.APP_PASSCODE_KEY)
+      ) {
         this.login();
       }
     }
@@ -73,21 +84,27 @@ export class LoginComponent implements OnInit {
   login() {
     this.loginForm.markAllAsTouched();
     if (this.loginForm.valid) {
-      const { appUrl, passcode } = this.loginForm.getRawValue() as {
+      const { appUrl, passcode, email } = this.loginForm.getRawValue() as {
         appUrl: string;
         passcode: string;
+        email: string;
       };
       const updatedAppUrl = appUrl.trim().replace(/\/+$/, '');
 
       const newConfig = {
         appUrl: updatedAppUrl,
+        email: email,
         password: btoa(passcode),
-        directoryPath: this.loginForm.get('directoryPath')!.value
+        directoryPath: this.loginForm.get('directoryPath')!.value,
       };
-      
-      this.electronService.setStoreValue("APP_CONFIG", newConfig);
+
+      this.electronService.setStoreValue('APP_CONFIG', newConfig);
       localStorage.setItem(APP_CONSTANTS.APP_URL, updatedAppUrl as string);
-      localStorage.setItem(APP_CONSTANTS.WORKING_DIR, newConfig.directoryPath as string);
+      localStorage.setItem(
+        APP_CONSTANTS.WORKING_DIR,
+        newConfig.directoryPath as string,
+      );
+      localStorage.setItem(APP_CONSTANTS.USER_NAME, email as string);
       this.logger.debug('Login attempt', updatedAppUrl);
 
       this.authService
@@ -104,11 +121,14 @@ export class LoginComponent implements OnInit {
             );
 
             this.authService.setIsLoggedIn(true);
-            this.routerService.navigate(['/apps']).catch((err) => this.logger.error(err));
+            this.routerService
+              .navigate(['/apps'])
+              .catch((err) => this.logger.error(err));
           },
           error: (_) => {
             this.authService.setIsLoggedIn(false);
             localStorage.removeItem(APP_CONSTANTS.APP_URL);
+            localStorage.removeItem(APP_CONSTANTS.USER_NAME);
             localStorage.removeItem(APP_CONSTANTS.APP_PASSCODE_KEY);
             this.toastService.showError(
               'Your Server URL or passcode is incorrect. Please try again',
@@ -124,9 +144,10 @@ export class LoginComponent implements OnInit {
       this.logger.debug('response', response);
       if (response.length > 0) {
         this.loginForm.get('directoryPath')!.setValue(response[0]);
-        const currentConfig = await this.electronService.getStoreValue("APP_CONFIG") || {};
+        const currentConfig =
+          (await this.electronService.getStoreValue('APP_CONFIG')) || {};
         const updatedConfig = { ...currentConfig, directoryPath: response[0] };
-        this.electronService.setStoreValue("APP_CONFIG", updatedConfig);
+        this.electronService.setStoreValue('APP_CONFIG', updatedConfig);
         localStorage.setItem(APP_CONSTANTS.WORKING_DIR, response[0]);
       }
     } catch (error) {

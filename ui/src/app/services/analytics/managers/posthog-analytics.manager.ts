@@ -12,6 +12,7 @@ import { Store } from '@ngxs/store';
 import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { catchError, finalize, Observable } from 'rxjs';
 import { CoreService } from '../../core/core.service';
+import { APP_CONSTANTS } from 'src/app/constants/app.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -134,5 +135,8 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
       capture_performance: false,
       disable_session_recording: true,
     });
+
+    const email = localStorage.getItem(APP_CONSTANTS.USER_NAME);
+    posthog.setPersonProperties({ username: email });
   }
 }

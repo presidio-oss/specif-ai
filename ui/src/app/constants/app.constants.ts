@@ -4,6 +4,7 @@ export const APP_CONSTANTS = {
   WORKING_DIR: 'WORKING_DIR',
   VERSION: 'APP_VERSION',
   APP_URL: 'APP_URL',
+  USER_NAME: 'EMAIL',
   APP_PASSCODE_KEY: 'APP_PASSCODE_KEY',
 };
 export const FILTER_STRINGS = { BASE: 'base', FEATURE: 'feature', ARCHIVED: 'archived' };
