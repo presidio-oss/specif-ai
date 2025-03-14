@@ -29,6 +29,11 @@ export class AuthStateService {
     return !!encodedPasscode && !!appUrl;
   }
 
+  public isUsernameSet(): boolean {
+    const username = localStorage.getItem(APP_CONSTANTS.USER_NAME);
+    return !!username;
+  }
+
   setIsLoggedIn(isLoggedIn: boolean) {
     this.loggedInSubject.next(isLoggedIn);
   }

@@ -100,15 +100,17 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
       return;
     }
 
+    const username = localStorage.getItem(APP_CONSTANTS.USER_NAME) ?? '';
     if (this.isPostHogInitialized) {
       console.log('PostHog already initialized, skipping re-initialization.');
+      posthog.setPersonProperties({ username: username });
       return;
     }
 
     this.core.getAppConfig().subscribe({
       next: (config) => {
         if (config.key && config.host) {
-          this.initPostHog(config.key, config.host);
+          this.initPostHog(config.key, config.host, username);
           this.isPostHogInitialized = true;
         } else {
           console.error('Invalid PostHog configuration received from backend.');
@@ -124,7 +126,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
     });
   }
 
-  private initPostHog(key: string, host: string) {
+  private initPostHog(key: string, host: string, username: string) {
     posthog.init(key, {
       api_host: host,
       person_profiles: 'always',
@@ -135,8 +137,6 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
       capture_performance: false,
       disable_session_recording: true,
     });
-
-    const username = localStorage.getItem(APP_CONSTANTS.USER_NAME);
     posthog.setPersonProperties({ username: username });
   }
 }

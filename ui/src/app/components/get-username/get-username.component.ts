@@ -47,7 +47,7 @@ export class GetUsernameComponent {
         this.errorMessage = 'Failed to save your username. Please try again.';
       }
     } else {
-      this.errorMessage = 'Please enter a valid username address.';
+      this.errorMessage = 'Please enter a valid username.';
     }
   }
 }
