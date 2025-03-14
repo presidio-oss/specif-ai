@@ -11,15 +11,10 @@ from langchain_aws.retrievers import AmazonKnowledgeBasesRetriever
 from decorators.require_access_token import require_access_code
 from config.exceptions import CustomAppException
 from config.logging_config import logger
-from utils.common_utils import render_template, get_template_env
+from utils.common_utils import render_template, get_template_env, get_template
 from utils.llm_utils import LLMUtils
 from llm.prompts import (
     p_process_flow_chart,
-    p_add_business_process,
-    p_update_business_process,
-    p_update_user_story,
-    p_add_task,
-    p_update_task,
 )
 from llm import build_llm_handler
 from schemas.schemas import (
@@ -316,7 +311,7 @@ def create_task():
     logger.info(f"Request {g.request_id}: Entered <create_task>")
     try:
         data = request.get_json()
-        task_template = jinja_template_env.get_template('07_task.jinja2')
+        task_template = get_template('07_task.jinja2')
         task_req = task_template.render(
             name=data["name"], userstories=data["description"], extraContext=data["extraContext"], technologies=data['technicalDetails']
         )
@@ -357,7 +352,7 @@ def update_task():
     logger.info(f"Request {g.request_id}: Entered <update_task>")
     data = request.get_json()
     llm_response_dict = {}
-    template = render_template(p_update_task)
+    template = get_template('14_update_task.jinja2')
     reqDesc = data["reqDesc"]
     taskId = data["taskId"]
     fileContent = data["fileContent"]
@@ -415,7 +410,7 @@ def add_task():
     logger.info(f"Request {g.request_id}: Entered <add_task>")
     data = request.get_json()
     llm_response_dict = {}
-    template = render_template(p_add_task)
+    template = get_template('13_add_task.jinja2')
     reqDesc = data["reqDesc"]
     taskId = data["taskId"]
     fileContent = data["fileContent"]
@@ -473,7 +468,7 @@ def update_user_story():
     logger.info(f"Request {g.request_id}: Entered <update_user_story>")
     data = request.get_json()
     llm_response_dict = {}
-    template = render_template(p_update_user_story)
+    template = get_template("12_update_user_story.jinja2")
     reqDesc = data["reqDesc"]
     featureId = data["featureId"]
     featureRequest = data["featureRequest"]
@@ -596,7 +591,7 @@ def add_business_process():
     logger.info(f"Request {g.request_id}: Entered <add_business_process>")
     data = request.get_json()
     llm_response_dict = {}
-    template = render_template(p_add_business_process)
+    template = get_template("09_add_business_process.jinja2")
     newReqt = data["reqt"]
     BRDS = " ".join(data["selectedBRDs"])
     PRDS = " ".join(data["selectedPRDs"])
@@ -643,7 +638,7 @@ def update_business_process():
     logger.info(f"Request {g.request_id}: Entered <update_business_process>")
     data = request.get_json()
     llm_response_dict = {}  # Initialize the variable here
-    template = render_template(p_update_business_process)
+    template = get_template("10_update_business_process.jinja2")
     updatedReqt = data["updatedReqt"]
     BRDS = " ".join(data["selectedBRDs"])
     PRDS = " ".join(data["selectedPRDs"])

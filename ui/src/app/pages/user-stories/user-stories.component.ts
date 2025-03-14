@@ -53,6 +53,7 @@ import { SearchService } from '../../services/search/search.service';
 import { BehaviorSubject, map } from 'rxjs';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 
 @Component({
   selector: 'app-user-stories',
@@ -103,12 +104,14 @@ export class UserStoriesComponent implements OnInit {
   };
 
   userStories$ = this.store.select(UserStoriesState.getUserStories).pipe(
-    map(stories => stories.map(story => ({
-      ...story,
-      formattedDescription: this.formatDescriptionForView(story.description)
-    })))
+    map((stories) =>
+      stories.map((story) => ({
+        ...story,
+        formattedDescription: this.formatDescriptionForView(story.description),
+      })),
+    ),
   );
-  
+
   filteredUserStories$ = this.searchService.filterItems(
     this.userStories$,
     this.searchTerm$,
@@ -189,7 +192,7 @@ export class UserStoriesComponent implements OnInit {
     this.store.dispatch(
       new ReadFile(`${this.navigation.folderName}/${this.navigation.fileName}`),
     );
-    
+
     this.isTokenAvailable = (() => {
       const tokenInfo = getJiraTokenInfo(this.navigation.projectId);
       return (
@@ -575,11 +578,10 @@ export class UserStoriesComponent implements OnInit {
     });
   }
 
-  private formatDescriptionForView(description: string | undefined): string | null {
+  private formatDescriptionForView(
+    description: string | undefined,
+  ): string | null {
     if (!description) return null;
-    return truncateMarkdown(description, {
-      maxChars: 180,
-      ellipsis: true,
-    });
+    return processUserStoryContentForView(description, 90);
   }
 }

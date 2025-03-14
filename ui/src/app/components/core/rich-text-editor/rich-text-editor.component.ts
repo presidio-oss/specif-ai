@@ -26,10 +26,10 @@ import {
   heroChevronDown,
   heroItalic,
 } from '@ng-icons/heroicons/outline';
-import { Editor, JSONContent } from '@tiptap/core';
+import { Editor } from '@tiptap/core';
 import type { Level as HeadingLevel } from '@tiptap/extension-heading';
 import { NGXLogger } from 'ngx-logger';
-import { debounceTime, Subject, Subscription } from 'rxjs';
+import { debounce, Subject, Subscription, timer } from 'rxjs';
 import { htmlToMarkdown } from 'src/app/utils/html.utils';
 import {
   markdownToHtml,
@@ -89,6 +89,7 @@ export class RichTextEditorComponent
   private touchedSubscription?: Subscription;
 
   isEmpty = true;
+  isInvalid = false;
 
   // default callbacks
   @Output('change') onChange = new EventEmitter<ValueType>();
@@ -156,6 +157,7 @@ export class RichTextEditorComponent
     });
 
     this.isEmpty = this.editor.$doc.textContent.length === 0;
+    this.onChange.emit(this.value);
   }
 
   toggleBold() {
@@ -216,7 +218,11 @@ export class RichTextEditorComponent
 
   private setupEditorUpdateSubscription() {
     this.editorUpdate$
-      .pipe(debounceTime(500))
+      .pipe(
+        debounce(() => {
+          return this.isInvalid ? timer(0) : timer(500);
+        }),
+      )
       .subscribe(async (value: string) => {
         const md = await this.safeGetMarkdownFromHtml(value);
         this.onChange.emit(md as string);
@@ -252,8 +258,11 @@ export class RichTextEditorComponent
 
   validate(control: AbstractControl): ValidationErrors | null {
     if (this.isEmpty) {
+      this.isInvalid = true;
       return { required: true };
     }
+
+    this.isInvalid = false;
     return null;
   }
 }

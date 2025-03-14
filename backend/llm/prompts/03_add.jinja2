@@ -7,7 +7,7 @@
 {% elif type == 'PRD' %}
 {% set requirementType = 'Product Requirements' %}
 {% set context = 'prd.jinja2' %}
-{% set format = '{"title": <title>,"requirement": "<requirement> Screens: <Screen Description> Personas: <Persona Description>"}' %}
+{% set format = '{"title": <title>, "requirement": "<requirement>  \\n#### Screens:  \\n<Screen Description>  \\n#### Personas:  \\n<Persona Description>"}' %}
 {% elif type == 'NFR' %}
 {% set requirementType = 'Non-Functional Requirements' %}
 {% set context = 'nfr.jinja2' %}
@@ -37,6 +37,8 @@ Output Structure should be a valid JSON: Here is the sample Structure. Follow th
   "LLMreqt": {{format}}
 }
 
-New requirement should be strictly in string format.
+Special Instructions:
+1. You are allowed to use for the new requirement. You MUST ONLY use valid Markdown according to the following rules:
+    {% include 'markdown_rules.jinja2' %}
 
 Output only valid JSON. Do not include ```json ``` on start and end of the response.

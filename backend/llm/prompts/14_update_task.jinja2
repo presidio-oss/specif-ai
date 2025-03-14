@@ -45,13 +45,8 @@ STRICT:
 Special Instructions:
 1. id returned in the response should be same id sent to you (Task Id -> <taskId> in json response)
 2. Strictly return ONLY ONE OBJECT in the response tasks array.
-3. Your response MUST ONLY use valid Markdown consisting EXCLUSIVELY of:
-    - Headings: #, ##, ###, ####, #####, ######
-    - Bold: **bold text**
-    - Italic: _italic text_
-    - Lists: Ordered (1., 2., 3.) and Unordered (*, -)
-    - Horizontal Rules: ---, ***, or ___
-    - ABSOLUTELY NOTHING ELSE is permitted. Do not use links, images, or any other Markdown formatting beyond these listed.
+3. You are allowed to use Markdown for the description of the task. You MUST ONLY use valid Markdown according to the following rules:
+    {% include 'markdown_rules.jinja2' %}
 
 STRICT:
 (!) return a list of task ONLY: no other headers, footers, or additional text
