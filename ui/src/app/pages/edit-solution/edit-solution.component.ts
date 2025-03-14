@@ -330,11 +330,16 @@ ${chat.assistant}`,
   }
 
   updateChatHistory(chatHistory: any) {
+    // Persist updated chatHistory with isLiked attribute
     this.store.dispatch(
       new UpdateFile(this.absoluteFilePath, {
         requirement: this.requirementForm.get('content')?.value,
         title: this.requirementForm.get('title')?.value,
-        chatHistory,
+        chatHistory: chatHistory.map((item: any) =>
+          item.assistant && item.isLiked !== undefined
+            ? { ...item, isLiked: item.isLiked }
+            : item,
+        ),
       }),
     );
   }

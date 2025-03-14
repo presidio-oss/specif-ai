@@ -1,4 +1,5 @@
 # Third-party imports
+from decorators.require_access_token import require_access_code
 from flask import Blueprint, request, g, jsonify
 
 # Local application imports
@@ -11,24 +12,16 @@ from llm import build_llm_handler
 # API Blueprint
 common_api = Blueprint('common_api', __name__)
 
-
-@common_api.route("/api/hello", methods=["GET"])
-def test():
-    logger.info("Entered <test>")
-    try:
-        response = {
-            'llm': {
-                'provider': g.current_provider,
-                'model': g.current_model
-            }
-        }
-        logger.info("Response: %s", response)
-    except Exception as e:
-        logger.error("An unexpected error occurred: %s", str(e))
-        raise CustomAppException(f"An error occurred: {str(e)}", status_code=500) from e
-    logger.info("Exited <test>")
-    return jsonify(response)
-
+@require_access_code()
+@common_api.route('/api/app/config')
+def get_analytics_config():
+    """
+    Endpoint to provide PostHog configuration
+    """
+    return jsonify({
+        'key': get_env_variable(EnvVariables.POSTHOG_KEY),
+        'host': get_env_variable(EnvVariables.POSTHOG_HOST)
+    })
 
 @common_api.route("/api/llm-config/defaults", methods=["GET"])
 def get_default_llm_config():

@@ -297,7 +297,14 @@ ${chat.assistant}`,
     const newFileName = this.config.fileName.replace('base', 'feature');
     this.store.dispatch(
       new UpdateTask(
-        { ...this.taskForm.getRawValue(), chatHistory: data },
+        {
+          ...this.taskForm.getRawValue(),
+          chatHistory: data.map((item: any) =>
+            item.assistant && item.isLiked !== undefined
+              ? { ...item, isLiked: item.isLiked }
+              : item,
+          ),
+        },
         `${this.selectedProject}/${this.config.folderName}/${newFileName}`,
         false,
       ),
