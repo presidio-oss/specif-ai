@@ -31,8 +31,9 @@ import { TOASTER_MESSAGES } from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { SearchService } from '../../../services/search/search.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { RichTextEditorComponent } from '../../../components/core/rich-text-editor/rich-text-editor.component';
+import { processTaskContentForView } from 'src/app/utils/task.utils';
 
 @Component({
   selector: 'app-task-list',
@@ -79,7 +80,13 @@ export class TaskListComponent implements OnInit, OnDestroy {
     featureName: string;
     reqId: string;
   };
-  taskList$ = this.store.select(UserStoriesState.getTaskList);
+  taskList$ = this.store.select(UserStoriesState.getTaskList).pipe(
+    map(tasks => tasks.map(task => ({
+      ...task,
+      formattedAcceptance: this.formatTaskForView(task.acceptance)
+    })))
+  );
+  
   filteredTaskList$ = this.searchService.filterItems(
     this.taskList$,
     this.searchTerm$,
@@ -258,5 +265,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
       }),
     );
     this.getLatestUserStories();
+  }
+
+  private formatTaskForView(acceptance: string | undefined): string | null {
+    if (!acceptance) return null;
+    return processTaskContentForView(acceptance, 180);
   }
 }

@@ -15,7 +15,7 @@
             {{ payload.name }}
           </h1>
           <ng-container *ngIf="payload.description as description">
-            <app-rich-text-editor mode="view" [content]="description" editorClass="prose-secondary-view prose-xs" [maxChars]=180>
+            <app-rich-text-editor mode="view" [content]="description" editorClass="prose-secondary-view prose-xs">
             </app-rich-text-editor>
           </ng-container>
         </div>

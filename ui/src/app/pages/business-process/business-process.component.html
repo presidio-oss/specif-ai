@@ -274,8 +274,8 @@
                                 {{ item.content.title }}
                               </h1>
                               <ng-container *ngIf="item.content.requirement as requirement">
-                                <app-rich-text-editor editorClass="prose-secondary-view text-wrap max-h-24 overflow-y-hidden prose-xs" mode="view"
-                                  [content]="requirement" [editable]="false" [maxChars]=120>
+                                <app-rich-text-editor editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs" mode="view"
+                                  [content]="truncatePRDandBRDRequirement(item.content.requirement, item.folderName)" [editable]="false">
                                 </app-rich-text-editor>
                               </ng-container>
                             </div>

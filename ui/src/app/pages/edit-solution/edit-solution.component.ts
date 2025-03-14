@@ -38,6 +38,8 @@ import { ConfirmationDialogComponent } from '../../components/confirmation-dialo
 import {
   CONFIRMATION_DIALOG,
   ERROR_MESSAGES,
+  FOLDER_REQUIREMENT_TYPE_MAP,
+  REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
@@ -45,6 +47,7 @@ import { catchError, switchMap, take } from 'rxjs';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
+import { processPRDContentForEdit } from "../../utils/prd.utils";
 
 @Component({
   selector: 'app-edit-solution',
@@ -204,7 +207,6 @@ export class EditSolutionComponent {
       this.oldContent = res.requirement;
       this.requirementForm.patchValue({
         title: res.title,
-        content: res.requirement,
         epicticketid: res.epicTicketId,
       });
       this.chatHistory = res.chatHistory || [];
@@ -340,6 +342,9 @@ ${chat.assistant}`,
       this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
       this.selectedFileContent$.subscribe((res: any) => {
         this.oldContent = res.requirement;
+        // const processedContent = this.folderName === FOLDER_REQUIREMENT_TYPE_MAP[REQUIREMENT_TYPE.PRD] 
+        //   ? processPRDContentForEdit(res.requirement)
+        //   : res.requirement;
         this.requirementForm.patchValue({
           title: res.title,
           content: res.requirement,

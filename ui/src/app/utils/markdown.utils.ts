@@ -1,31 +1,39 @@
-import rehypeStringify from 'rehype-stringify';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-// @ts-expect-error - this package doesn't have ts types
-import rehypeTruncate from 'rehype-truncate';
-import { unified } from 'unified';
+import markdownit from 'markdown-it';
+const mdit = markdownit();
+// @ts-expect-error no types
+import truncateMarkdownLib from 'markdown-truncate';
 
 export type MarkdownToHtmlOptions = {
   maxChars?: number;
 };
 
-const markdownToHtml = async (md: string, options: MarkdownToHtmlOptions = {}) => {
-  const { maxChars } = options;
+const markdownToHtml = (
+  mdInput: string,
+  options: MarkdownToHtmlOptions = {},
+) => {
+  try {
+    const { maxChars } = options;
+    let md = mdInput;
 
-  const html = await unified()
-    .use(remarkParse)
-    .use(remarkRehype)
-    .use(
-      rehypeTruncate,
-      {
-        disable: maxChars == undefined || maxChars == null,
-        maxChars: maxChars,
-      }
-    )
-    .use(rehypeStringify)
-    .process(md);
-
-  return html;
+    if (maxChars) {
+      md = truncateMarkdown(mdInput, { maxChars: maxChars, ellipsis: true });
+    }
+    const html = mdit.render(md ?? '');
+    return html;
+  } catch (error) {
+    console.error(error);
+    return '';
+  }
 };
 
-export { markdownToHtml };
+const truncateMarkdown = (
+  md: string,
+  { maxChars, ellipsis = true }: { maxChars: number; ellipsis?: boolean },
+) => {
+  return truncateMarkdownLib(md, {
+    limit: maxChars,
+    ellipsis,
+  });
+};
+
+export { markdownToHtml, truncateMarkdown };

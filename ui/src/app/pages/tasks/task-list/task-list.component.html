@@ -58,7 +58,7 @@
         >
           <app-list-item
             [payload]="{
-              description: task.acceptance,
+              description: task.formattedAcceptance ?? '',
               name: task.list,
               id: task.id,
               jiraTicketId: task.subTaskTicketId,
