@@ -150,10 +150,10 @@
                   <div class="flex items-center">
                     <div class="mt-1.5">
                       <app-toggle
-                        [isActive]="solutionForm.get('enableBRD')?.value"
-                        (toggleChange)="
-                          solutionForm.get('enableBRD')?.setValue($event)
+                        [isActive]="
+                          solutionForm.get('BRD')?.get('enabled')?.value
                         "
+                        (toggleChange)="onRequirementToggle('BRD', $event)"
                         isPlainToggle="true"
                       ></app-toggle>
                     </div>
@@ -163,10 +163,10 @@
                   </div>
                   <div
                     class="mt-4"
-                    *ngIf="solutionForm.get('enableBRD')?.value"
+                    *ngIf="solutionForm.get('BRD')?.get('enabled')?.value"
                   >
-                    <div class="border rounded-lg p-4">
-                      <app-slider formControlName="brd"></app-slider>
+                    <div class="border rounded-lg p-4" formGroupName="BRD">
+                      <app-slider formControlName="maxCount"></app-slider>
                     </div>
                   </div>
                 </div>
@@ -189,10 +189,10 @@
                   <div class="flex items-center">
                     <div class="mt-1.5">
                       <app-toggle
-                        [isActive]="solutionForm.get('enablePRD')?.value"
-                        (toggleChange)="
-                          solutionForm.get('enablePRD')?.setValue($event)
+                        [isActive]="
+                          solutionForm.get('PRD')?.get('enabled')?.value
                         "
+                        (toggleChange)="onRequirementToggle('PRD', $event)"
                         isPlainToggle="true"
                       ></app-toggle>
                     </div>
@@ -202,10 +202,10 @@
                   </div>
                   <div
                     class="mt-4"
-                    *ngIf="solutionForm.get('enablePRD')?.value"
+                    *ngIf="solutionForm.get('PRD')?.get('enabled')?.value"
                   >
-                    <div class="border rounded-lg p-4">
-                      <app-slider formControlName="prd"></app-slider>
+                    <div class="border rounded-lg p-4" formGroupName="PRD">
+                      <app-slider formControlName="maxCount"></app-slider>
                     </div>
                   </div>
                 </div>
@@ -226,10 +226,10 @@
                   <div class="flex items-center">
                     <div class="mt-1.5">
                       <app-toggle
-                        [isActive]="solutionForm.get('enableUIR')?.value"
-                        (toggleChange)="
-                          solutionForm.get('enableUIR')?.setValue($event)
+                        [isActive]="
+                          solutionForm.get('UIR')?.get('enabled')?.value
                         "
+                        (toggleChange)="onRequirementToggle('UIR', $event)"
                         isPlainToggle="true"
                       ></app-toggle>
                     </div>
@@ -239,10 +239,10 @@
                   </div>
                   <div
                     class="mt-4"
-                    *ngIf="solutionForm.get('enableUIR')?.value"
+                    *ngIf="solutionForm.get('UIR')?.get('enabled')?.value"
                   >
-                    <div class="border rounded-lg p-4">
-                      <app-slider formControlName="uir"></app-slider>
+                    <div class="border rounded-lg p-4" formGroupName="UIR">
+                      <app-slider formControlName="maxCount"></app-slider>
                     </div>
                   </div>
                 </div>
@@ -265,10 +265,10 @@
                   <div class="flex items-center">
                     <div class="mt-1.5">
                       <app-toggle
-                        [isActive]="solutionForm.get('enableNFR')?.value"
-                        (toggleChange)="
-                          solutionForm.get('enableNFR')?.setValue($event)
+                        [isActive]="
+                          solutionForm.get('NFR')?.get('enabled')?.value
                         "
+                        (toggleChange)="onRequirementToggle('NFR', $event)"
                         isPlainToggle="true"
                       ></app-toggle>
                     </div>
@@ -279,10 +279,10 @@
                   </div>
                   <div
                     class="mt-4"
-                    *ngIf="solutionForm.get('enableNFR')?.value"
+                    *ngIf="solutionForm.get('NFR')?.get('enabled')?.value"
                   >
-                    <div class="border rounded-lg p-4">
-                      <app-slider formControlName="nfr"></app-slider>
+                    <div class="border rounded-lg p-4" formGroupName="NFR">
+                      <app-slider formControlName="maxCount"></app-slider>
                     </div>
                   </div>
                 </div>
