@@ -36,6 +36,7 @@ export class AuthStateService {
   logout(errorMessage?: string) {
     localStorage.removeItem(APP_CONSTANTS.APP_PASSCODE_KEY);
     localStorage.removeItem(APP_CONSTANTS.APP_URL);
+    localStorage.removeItem(APP_CONSTANTS.USER_NAME);
     this.setIsLoggedIn(false);
     this.router.navigate(['/login']).then(() => {
       if (errorMessage) {

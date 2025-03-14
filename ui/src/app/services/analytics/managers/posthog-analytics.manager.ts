@@ -136,7 +136,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
       disable_session_recording: true,
     });
 
-    const email = localStorage.getItem(APP_CONSTANTS.USER_NAME);
-    posthog.setPersonProperties({ username: email });
+    const username = localStorage.getItem(APP_CONSTANTS.USER_NAME);
+    posthog.setPersonProperties({ username: username });
   }
 }

@@ -15,7 +15,7 @@ import { AuthService } from 'src/app/services/auth/auth.service';
   imports: [ReactiveFormsModule, FormsModule, CommonModule],
 })
 export class GetUsernameComponent {
-  userNameForm = new FormControl('', [Validators.required, Validators.email]);
+  userNameForm = new FormControl('', [Validators.required]);
   errorMessage: string | null = null;
 
   constructor(
@@ -34,20 +34,20 @@ export class GetUsernameComponent {
         const userName = this.userNameForm.value ?? '';
         const newConfig = {
           ...this.electronService.getStoreValue('APP_CONFIG'),
-          email: userName,
+          username: userName,
         };
-        
+
         this.electronService.setStoreValue('APP_CONFIG', newConfig);
-        localStorage.setItem(APP_CONSTANTS.USER_EMAIL, userName);
+        localStorage.setItem(APP_CONSTANTS.USER_NAME, userName);
         this.authService.setIsLoggedIn(true);
 
         this.dialogRef.close(userName);
       } catch (error) {
         console.error('Error storing username:', error);
-        this.errorMessage = 'Failed to save your email. Please try again.';
+        this.errorMessage = 'Failed to save your username. Please try again.';
       }
     } else {
-      this.errorMessage = 'Please enter a valid email address.';
+      this.errorMessage = 'Please enter a valid username address.';
     }
   }
 }

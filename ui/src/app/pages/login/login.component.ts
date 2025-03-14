@@ -33,7 +33,7 @@ import posthog from 'posthog-js';
 })
 export class LoginComponent implements OnInit {
   loginForm = new FormGroup({
-    email: new FormControl('', Validators.required),
+    username: new FormControl('', Validators.required),
     appUrl: new FormControl('', Validators.required),
     passcode: new FormControl('', Validators.required),
     directoryPath: new FormControl(
@@ -56,17 +56,17 @@ export class LoginComponent implements OnInit {
       (await this.electronService.getStoreValue('APP_CONFIG')) || {};
 
     const appUrl = config.appUrl || localStorage.getItem(APP_CONSTANTS.APP_URL);
-    const email = config.email || localStorage.getItem(APP_CONSTANTS.USER_NAME);
+    const username = config.username || localStorage.getItem(APP_CONSTANTS.USER_NAME);
     const passcode =
       config.password || localStorage.getItem(APP_CONSTANTS.APP_PASSCODE_KEY);
     const directoryPath =
       config.directoryPath || localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
 
-    if (appUrl && passcode && email) {
+    if (appUrl && passcode && username) {
       this.loginForm.patchValue({
         appUrl: appUrl as string,
         passcode: atob(passcode as string),
-        email: email as string,
+        username: username as string,
         directoryPath: directoryPath as string,
       });
 
@@ -84,16 +84,16 @@ export class LoginComponent implements OnInit {
   login() {
     this.loginForm.markAllAsTouched();
     if (this.loginForm.valid) {
-      const { appUrl, passcode, email } = this.loginForm.getRawValue() as {
+      const { appUrl, passcode, username } = this.loginForm.getRawValue() as {
         appUrl: string;
         passcode: string;
-        email: string;
+        username: string;
       };
       const updatedAppUrl = appUrl.trim().replace(/\/+$/, '');
 
       const newConfig = {
         appUrl: updatedAppUrl,
-        email: email,
+        username: username,
         password: btoa(passcode),
         directoryPath: this.loginForm.get('directoryPath')!.value,
       };
@@ -104,7 +104,7 @@ export class LoginComponent implements OnInit {
         APP_CONSTANTS.WORKING_DIR,
         newConfig.directoryPath as string,
       );
-      localStorage.setItem(APP_CONSTANTS.USER_NAME, email as string);
+      localStorage.setItem(APP_CONSTANTS.USER_NAME, username as string);
       this.logger.debug('Login attempt', updatedAppUrl);
 
       this.authService

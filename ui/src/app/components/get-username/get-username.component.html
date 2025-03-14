@@ -3,7 +3,7 @@
     <h2 class="text-xl font-semibold text-secondary-800 mb-4">
       We're updating!
     </h2>
-    <p class="text-gray-600 mb-4">Please enter your email:</p>
+    <p class="text-gray-600 mb-4">Please enter your username:</p>
     
     <div *ngIf="errorMessage" class="mb-4 p-2 bg-red-50 text-red-600 rounded">
       {{ errorMessage }}
@@ -11,18 +11,18 @@
     
     <form (ngSubmit)="storeName()">
       <input
-        type="email"
+        type="username"
         class="border border-gray-300 rounded px-4 py-2 mb-4 w-full"
         [formControl]="userNameForm"
-        placeholder="Enter your email"
+        placeholder="Enter your username"
       />
       
       <div *ngIf="userNameForm.touched && userNameForm.errors?.['required']" class="mb-2 text-red-600 text-sm">
-        Email is required
+        Username is required
       </div>
       
-      <div *ngIf="userNameForm.touched && userNameForm.errors?.['email']" class="mb-2 text-red-600 text-sm">
-        Please enter a valid email address
+      <div *ngIf="userNameForm.touched && userNameForm.errors?.['username']" class="mb-2 text-red-600 text-sm">
+        Please enter a valid username
       </div>
       
       <div class="flex justify-end space-x-4">
