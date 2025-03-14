@@ -16,7 +16,7 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
 import { environment } from '../../../environments/environment';
 import { NgIf } from '@angular/common';
-import posthog from 'posthog-js';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-login',
@@ -90,8 +90,13 @@ export class LoginComponent implements OnInit {
         username: string;
       };
       const updatedAppUrl = appUrl.trim().replace(/\/+$/, '');
+      let userId = localStorage.getItem(APP_CONSTANTS.USER_ID);
+      if (!userId) {
+        userId = uuidv4();
+      }
 
       const newConfig = {
+        userId: userId,
         appUrl: updatedAppUrl,
         username: username,
         password: btoa(passcode),
@@ -105,6 +110,7 @@ export class LoginComponent implements OnInit {
         newConfig.directoryPath as string,
       );
       localStorage.setItem(APP_CONSTANTS.USER_NAME, username as string);
+      localStorage.setItem(APP_CONSTANTS.USER_ID, userId as string);
       this.logger.debug('Login attempt', updatedAppUrl);
 
       this.authService

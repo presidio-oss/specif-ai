@@ -6,6 +6,7 @@ export const APP_CONSTANTS = {
   APP_URL: 'APP_URL',
   USER_NAME: 'USER_NAME',
   APP_PASSCODE_KEY: 'APP_PASSCODE_KEY',
+  USER_ID: 'USER_ID',
 };
 export const FILTER_STRINGS = { BASE: 'base', FEATURE: 'feature', ARCHIVED: 'archived' };
 export const CHAT_TYPES = {

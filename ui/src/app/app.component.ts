@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsModalComponent } from './components/analytics-modal/analytics-modal.component';
+import { AnalyticsTracker } from './services/analytics/analytics.interface';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,8 @@ export class AppComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   store = inject(Store);
   dialog = inject(MatDialog);
-
+  analyticsTracker = inject(AnalyticsTracker);
+  
   private subscriptions: Subscription[] = [];
 
   ngOnInit() {
@@ -79,6 +81,8 @@ export class AppComponent implements OnInit, OnDestroy {
         disableClose: true,
       });
       localStorage.setItem(ANALYTICS_PERMISSION_REQUESTED, 'true');
+      return;
     }
+    this.analyticsTracker.initAnalytics();
   }
 }
