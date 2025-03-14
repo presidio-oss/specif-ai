@@ -76,12 +76,12 @@ export class LoginComponent implements OnInit {
         localStorage.getItem(APP_CONSTANTS.APP_URL) &&
         localStorage.getItem(APP_CONSTANTS.APP_PASSCODE_KEY)
       ) {
-        this.login();
+        await this.login();
       }
     }
   }
 
-  login() {
+  async login() {
     this.loginForm.markAllAsTouched();
     if (this.loginForm.valid) {
       const { appUrl, passcode, username } = this.loginForm.getRawValue() as {
@@ -90,7 +90,8 @@ export class LoginComponent implements OnInit {
         username: string;
       };
       const updatedAppUrl = appUrl.trim().replace(/\/+$/, '');
-      let userId = localStorage.getItem(APP_CONSTANTS.USER_ID);
+      const electronStoreValue = await this.electronService.getStoreValue('APP_CONFIG');
+      let userId = electronStoreValue?.userId;
       if (!userId) {
         userId = uuidv4();
       }
