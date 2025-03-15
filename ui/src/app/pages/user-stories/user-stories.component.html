@@ -83,7 +83,7 @@
     <div class="h-full overflow-y-auto">
       <app-list-item
         [payload]="{
-          description: userStory.description,
+          description: userStory.formattedDescription ?? '',
           name: userStory.name,
           id: userStory.id,
           jiraTicketId: userStory.storyTicketId,

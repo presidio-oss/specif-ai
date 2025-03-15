@@ -50,8 +50,10 @@ import {
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 
 @Component({
   selector: 'app-user-stories',
@@ -101,12 +103,21 @@ export class UserStoriesComponent implements OnInit {
     data: {},
   };
 
-  userStories$ = this.store.select(UserStoriesState.getUserStories);
+  userStories$ = this.store.select(UserStoriesState.getUserStories).pipe(
+    map((stories) =>
+      stories.map((story) => ({
+        ...story,
+        formattedDescription: this.formatDescriptionForView(story.description),
+      })),
+    ),
+  );
+
   filteredUserStories$ = this.searchService.filterItems(
     this.userStories$,
     this.searchTerm$,
     (story: IUserStory) => [story.id, story.name, story.storyTicketId],
   );
+
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   selectedFileContent$ = this.store.select(
     ProjectsState.getSelectedFileContent,
@@ -181,7 +192,7 @@ export class UserStoriesComponent implements OnInit {
     this.store.dispatch(
       new ReadFile(`${this.navigation.folderName}/${this.navigation.fileName}`),
     );
-    
+
     this.isTokenAvailable = (() => {
       const tokenInfo = getJiraTokenInfo(this.navigation.projectId);
       return (
@@ -565,5 +576,12 @@ export class UserStoriesComponent implements OnInit {
         console.error('Error updating feature.json:', error);
       },
     });
+  }
+
+  private formatDescriptionForView(
+    description: string | undefined,
+  ): string | null {
+    if (!description) return null;
+    return processUserStoryContentForView(description, 90);
   }
 }

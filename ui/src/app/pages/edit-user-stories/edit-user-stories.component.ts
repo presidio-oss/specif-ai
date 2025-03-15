@@ -43,6 +43,7 @@ import { ArchiveUserStory } from '../../store/user-stories/user-stories.actions'
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-edit-user-stories',
@@ -59,6 +60,7 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
     AiChatComponent,
     MultiUploadComponent,
     MatTooltipModule,
+    RichTextEditorComponent
   ],
   providers: [
     provideIcons({ 

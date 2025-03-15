@@ -25,7 +25,7 @@ Output Structure should be a valid JSON: Here is the sample Structure. Follow th
     "features": [
         {
             "id": "<featureId>"
-            "<feature name>": "[description of feature] Acceptance Criteria: [acceptance criteria for the feature as sentences]"
+            "<feature name>": "[description of feature]  \n#### Acceptance Criteria:  \n[acceptance criteria for the feature as sentences]"
         }
     ]
 }
@@ -34,6 +34,8 @@ Output Structure should be a valid JSON: Here is the sample Structure. Follow th
 Special Instruction:
 1. id returned in the response should be same id sent to you (User Story Id -> <featureId> in json response)
 2. Strictly return ONLY ONE OBJECT in the response features array.
+3. You are allowed to use Markdown for the description of the feature. You MUST ONLY use valid Markdown according to the following rules:
+    {% include 'markdown_rules.jinja2' %}
 
 STRICT:
 (!) return a list of features ONLY: no other headers, footers, or additional text

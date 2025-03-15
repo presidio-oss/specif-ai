@@ -10,13 +10,18 @@ Output Structure should be a valid JSON: Here is the sample Structure:
 {
   "prd": [
     {
-      "id": "PRD1", "title": <title> ,"requirement": "[Product Requirement in one to two lines] Screens: [Screen Description] Personas: [Persona Description]"
+      "id": "PRD1", "title": <title> ,"requirement": "[Product Requirement in one to two lines]  \n#### Screens:  \n[Screen Description]  \n#### Personas:  \n[Persona Description]"
     },
     {
-      "id": "PRD2", "title": <title> ,"requirement": "[Product Requirement in one to two lines] Screens: [Screen Description] Personas: [Persona Description]"
+      "id": "PRD2", "title": <title> ,"requirement": "[Product Requirement in one to two lines]  \n#### Screens:  \n[Screen Description]  \n#### Personas:  \n[Persona Description]"
     }...
   ]
 }
+
+Special Instructions:
+1. You are allowed to use Markdown for the requirement part of product requirement. You MUST ONLY use valid Markdown according to the following rules:
+  {% include 'markdown_rules.jinja2' %}
+  - Please do no make the intro/ product requirement paragraph bold.
 
 Please ensure the requirements are descriptive and also clear, concise. Output only valid JSON. Do not include ```json ``` on start and end of the response.
 Generate Product Requirements with a maximum count of {{ max_count|default(30) }}. Sort all requirements based on business impact (High to Medium to Low).

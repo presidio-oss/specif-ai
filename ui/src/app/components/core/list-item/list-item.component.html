@@ -3,19 +3,22 @@
     <div
       class="flex flex-1 items-center justify-between truncate rounded-lg border border-secondary-200 bg-white cursor-pointer hover:bg-secondary-50 transition-colors relative"
     >
-      <div class="flex-1 truncate p-4 text-sm">
+      <div class="flex-1 truncate p-4 text-sm flex flex-col gap-2">
         <a class="font-semibold text-secondary-500 text-sm">
           {{ tag }}
           <span *ngIf="payload.jiraTicketId"
             >&bull; {{ payload.jiraTicketId }}</span
           >
         </a>
-        <h1 class="text-secondary-900 text-base font-medium truncate mt-2">
-          {{ payload.name }}
-        </h1>
-        <p class="text-secondary-500 text-xs leading-4 pt-2 text-wrap">
-          {{ payload.description | truncateWithEllipsis }}
-        </p>
+        <div class="flex flex-col gap-1">
+          <h1 class="text-secondary-900 text-base font-medium truncate">
+            {{ payload.name }}
+          </h1>
+          <ng-container *ngIf="payload.description as description">
+            <app-rich-text-editor mode="view" [content]="description" editorClass="prose-secondary-view prose-xs">
+            </app-rich-text-editor>
+          </ng-container>
+        </div>
       </div>
       <div class="flex-shrink-0 pr-2 justify-between gap-x-6">
         <ng-content />

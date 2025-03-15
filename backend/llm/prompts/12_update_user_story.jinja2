@@ -42,7 +42,7 @@ STRICT:
     "features": [
         {
             "id": "<featureId>"
-            "<feature name>": "[description of feature] Acceptance Criteria: [acceptance criteria for the feature as sentences]"
+            "<feature name>": "[description of feature]  \n#### Acceptance Criteria:  \n[acceptance criteria for the feature as sentences]"
         }
     ]
 }
@@ -64,6 +64,8 @@ Special Instructions:
    - In order to streamline user account management.
    - As an admin user.
    - I want to have a centralized dashboard for managing user accounts.
+6. You are allowed to use Markdown for the description of the feature. You MUST ONLY use valid Markdown according to the following rules:
+    {% include 'markdown_rules.jinja2' %}
 
 STRICT:
 (!) Return a list of features ONLY: no headers, footers, or additional text.

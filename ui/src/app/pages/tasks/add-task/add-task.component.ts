@@ -44,6 +44,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-add-task',
@@ -61,6 +62,7 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
     MultiUploadComponent,
     ErrorMessageComponent,
     MatTooltipModule,
+    RichTextEditorComponent
   ],
   providers: [
     provideIcons({

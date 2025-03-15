@@ -37,7 +37,7 @@ STRICT:
     "tasks": [
         {
             "id": "<taskId>"
-            "<task name>": "[description of the task] Acceptance Criteria: [acceptance criteria for the task as sentences]"
+            "<task name>": "[description of the task]  \n#### Acceptance Criteria:  \n[acceptance criteria for the task as sentences]"
         }
     ]
 }
@@ -45,6 +45,8 @@ STRICT:
 Special Instructions:
 1. id returned in the response should be same id sent to you (Task Id -> <taskId> in json response)
 2. Strictly return ONLY ONE OBJECT in the response tasks array.
+3. You are allowed to use Markdown for the description of the task. You MUST ONLY use valid Markdown according to the following rules:
+    {% include 'markdown_rules.jinja2' %}
 
 STRICT:
 (!) return a list of task ONLY: no other headers, footers, or additional text

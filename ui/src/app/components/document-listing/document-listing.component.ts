@@ -11,7 +11,7 @@ import { filter, map, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { IList } from '../../model/interfaces/IList';
 import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BadgeComponent } from '../core/badge/badge.component';
 import { ButtonComponent } from '../core/button/button.component';
 import { NgIconComponent } from '@ng-icons/core';
@@ -22,6 +22,9 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
+import { processPRDContentForView } from '../../utils/prd.utils';
+import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 
 @Component({
   selector: 'app-document-listing',
@@ -37,7 +40,9 @@ import { ExportFileFormat } from 'src/app/constants/export.constants';
     NgForOf,
     SearchInputComponent,
     MatMenuModule,
-  ],
+    RichTextEditorComponent,
+    NgClass
+],
 })
 export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(SearchInputComponent) searchInput!: SearchInputComponent;
@@ -48,8 +53,8 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
 
   appInfo: any = {};
   originalDocumentList$: Observable<IList[]> = this.store.select(ProjectsState.getSelectedFileContents);
-  documentList$!: Observable<(IList & { id: string })[]>;
-  filteredDocumentList$!: Observable<(IList & { id: string })[]>;
+  documentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
+  filteredDocumentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
   selectedFolder: any = {};
   private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({ title: '', id: '' });
   private subscription: Subscription = new Subscription();
@@ -86,6 +91,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
         documents.map((doc) => ({
           ...doc,
           id: folder.id,
+          formattedRequirement: this.formatRequirementForView(doc.content?.requirement, doc.folderName)
         })),
       ),
     );
@@ -255,7 +261,18 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     return getDescriptionFromInput(input);
   }
 
-  getTruncatedRequirement(requirement: string | undefined): string | null {
-    return truncateWithEllipsis(requirement);
+  private formatRequirementForView(requirement: string | undefined, folderName: string): string | null {
+    if (!requirement) return null;
+    
+    const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folderName];
+
+    if (requirementType === this.requirementTypes.PRD) {
+      return processPRDContentForView(requirement, 150); // 150 chars per section
+    }
+
+    return truncateMarkdown(requirement, {
+      maxChars: 180,
+      ellipsis: true,
+    });
   }
 }

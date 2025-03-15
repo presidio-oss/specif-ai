@@ -4,7 +4,7 @@ import os
 # Third-party imports
 from typing import Optional, TypeVar
 from git import Repo
-from jinja2 import BaseLoader, Environment, FileSystemLoader
+from jinja2 import BaseLoader, Environment, FileSystemLoader, Template
 from pydantic import ValidationError
 
 # Local application imports
@@ -18,6 +18,11 @@ def render_template(prompt_src: str) -> str:
     env = Environment(loader=BaseLoader(), autoescape=True)
     template = env.from_string(prompt_src)
     return template
+
+
+def get_template(prompt_src: str) -> Template:
+    env = get_template_env()
+    return env.get_template(prompt_src)
 
 
 def get_template_env() -> Environment:

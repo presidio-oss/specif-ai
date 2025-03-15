@@ -71,7 +71,7 @@
               class="flex flex-1 items-center justify-between truncate rounded-lg border border-secondary-200 bg-white hover:bg-secondary-50 transition-colors"
             >
               <div
-                class="flex-1 truncate p-4 text-sm rounded-lg"
+                class="flex-1 truncate p-4 text-sm rounded-lg flex flex-col gap-2"
                 (click)="navigateToEdit(item)"
                 (keydown.enter)="navigateToEdit(item)"
                 (keydown.space)="navigateToEdit(item); $event.preventDefault()"
@@ -81,59 +81,16 @@
                 <a class="font-semibold text-secondary-500">
                   {{ item.fileName.replace("-base.json", "") }}
                 </a>
-                <h1
-                  class="doc-section__item-title text-base pt-2 pb-1 font-medium truncate pr-[80px]"
-                >
-                  {{ item.content.title }}
-                </h1>
-                <div *ngIf="item.folderName === requirementTypes.PRD">
+                <div class="flex flex-col gap-1">
+                  <h1 class="doc-section__item-title text-base font-medium truncate pr-[80px]">
+                    {{ item.content.title }}
+                  </h1>
                   <ng-container *ngIf="item.content.requirement as requirement">
-                    <p class="text-secondary-500 text-wrap">
-                      {{
-                        getTruncatedRequirement(
-                          item.content.requirement
-                            .split("Screens:")[0]
-                            .split("Personas:")[0]
-                        )
-                      }}
-                    </p>
-                    <div *ngIf="item.content.requirement?.includes('Screens:')">
-                      <h4 class="text-sm pt-2 pb-1 font-medium truncate">
-                        Screens:
-                      </h4>
-                      <p class="text-secondary-500 text-wrap">
-                        {{
-                          getTruncatedRequirement(
-                            item.content.requirement
-                              .split("Screens:")[1]
-                              .split("Personas:")[0]
-                          )
-                        }}
-                      </p>
-                    </div>
-                    <div
-                      *ngIf="item.content.requirement?.includes('Personas:')"
-                    >
-                      <h4 class="text-sm pt-2 pb-1 font-medium truncate">
-                        Personas:
-                      </h4>
-                      <p class="text-secondary-500 text-wrap">
-                        {{
-                          getTruncatedRequirement(
-                            item.content.requirement.split("Personas:").pop()
-                          )
-                        }}
-                      </p>
-                    </div>
+                    <app-rich-text-editor editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs" mode="view"
+                      [content]="item.formattedRequirement ?? ''" [editable]="false">
+                    </app-rich-text-editor>
                   </ng-container>
                 </div>
-
-                <p
-                  *ngIf="item.folderName !== requirementTypes.PRD"
-                  class="text-[#666666] text-xs text-wrap leading-4"
-                >
-                  {{ getTruncatedRequirement(item.content.requirement) }}
-                </p>
               </div>
               <div class="absolute top-4 right-4 flex space-x-2">
                 <app-button
