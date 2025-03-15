@@ -25,6 +25,8 @@ import {
   heroBold,
   heroChevronDown,
   heroItalic,
+  heroListBullet,
+  heroNumberedList,
 } from '@ng-icons/heroicons/outline';
 import { Editor } from '@tiptap/core';
 import type { Level as HeadingLevel } from '@tiptap/extension-heading';
@@ -61,7 +63,7 @@ type OnTouchedCallback = () => void;
     },
   ],
   imports: [CdkMenuModule, NgClass, NgIf, NgIcon, MatTooltipModule],
-  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold })],
+  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList })],
 })
 export class RichTextEditorComponent
   implements
@@ -166,6 +168,14 @@ export class RichTextEditorComponent
 
   toggleItalic() {
     this.editor?.chain().focus().toggleItalic().run();
+  }
+
+  toggleBulletList() {
+    this.editor?.chain().focus().toggleBulletList().run();
+  }
+
+  toggleOrderedList() {
+    this.editor?.chain().focus().toggleOrderedList().run();
   }
 
   setHeadingLevel(level?: HeadingLevel) {

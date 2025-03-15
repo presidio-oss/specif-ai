@@ -1,24 +1,40 @@
 <div
     [ngClass]="['w-full flex flex-col', (mode=='edit'? 'rounded-xl shadow-sm border border-secondary-300 focus-visible:ring-1 focus-within:ring-primary-500 focus-within:border-primary-500 focus-within:outline-none':'')]">
     <div *ngIf="mode=='edit'" class="flex items-center rounded-t-xl p-2 border-b border-b-secondary-200 gap-0.5">
-        <button type="button" [attr.data-state]="editor?.isActive('bold') == true ? 'on':'off'"
-            [ngClass]="['size-8', toolbarButtonClass, (editor?.isActive('bold') ? 'bg-green-500 text-white' : '')]"
-            (click)="toggleBold()" matTooltip="Bold" matTooltipPosition="above">
-            <ng-icon name="heroBold"></ng-icon>
-        </button>
-
-        <button type="button" [attr.data-state]="editor?.isActive('italic') == true ? 'on':'off'"
-            [ngClass]="['size-8', toolbarButtonClass, (editor?.isActive('italic') ? 'bg-green-500 text-white' : '')]"
-            (click)="toggleItalic()" matTooltip="Italic" matTooltipPosition="above">
-            <ng-icon name="heroItalic"></ng-icon>
-        </button>
-
         <!-- Heading selector -->
         <button type="button" [attr.data-state]="editor?.isActive('heading') == true ? 'on':'off'"
             [cdkMenuTriggerFor]="headingMenu" [ngClass]="[toolbarButtonClass, 'h-8 w-10 flex items-center gap-1']"
             matTooltip="Heading" matTooltipPosition="above">
             <span>Aa</span>
             <ng-icon name="heroChevronDown" size="10"></ng-icon>
+        </button>
+
+        <div data-orientation="vertical" role="none" class="shrink-0 border-l border-l-secondary-300 mx-1 w-[1px] h-5"></div>
+        
+        <button type="button" [attr.data-state]="editor?.isActive('bold') == true ? 'on':'off'"
+            [ngClass]="['size-8', toolbarButtonClass]"
+            (click)="toggleBold()" matTooltip="Bold" matTooltipPosition="above">
+            <ng-icon name="heroBold"></ng-icon>
+        </button>
+
+        <button type="button" [attr.data-state]="editor?.isActive('italic') == true ? 'on':'off'"
+            [ngClass]="['size-8', toolbarButtonClass]"
+            (click)="toggleItalic()" matTooltip="Italic" matTooltipPosition="above">
+            <ng-icon name="heroItalic"></ng-icon>
+        </button>
+
+        <div data-orientation="vertical" role="none" class="shrink-0 border-l border-l-secondary-300 mx-1 w-[1px] h-5"></div>
+
+        <button type="button" [attr.data-state]="editor?.isActive('orderedList') == true ? 'on':'off'"
+            [ngClass]="['size-8', toolbarButtonClass]"
+            (click)="toggleOrderedList()" matTooltip="Numbered List" matTooltipPosition="above">
+            <ng-icon name="heroNumberedList" size="16"></ng-icon>
+        </button>
+
+        <button type="button" [attr.data-state]="editor?.isActive('bulletList') == true ? 'on':'off'"
+            [ngClass]="['size-8', toolbarButtonClass]"
+            (click)="toggleBulletList()" matTooltip="Bullet List" matTooltipPosition="above">
+            <ng-icon name="heroListBullet" size="18"></ng-icon>
         </button>
     </div>
 
