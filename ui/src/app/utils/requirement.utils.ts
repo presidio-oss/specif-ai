@@ -147,48 +147,39 @@ const combineSections = (sections: Section[]): string => {
     .join('\n\n');
 };
 
-export const processRequirementContentForEdit = (
+export const processRequirementContentForView = (
   content: string,
-  sectionNames: Array<string>,
+  options: {
+    maxChars?: number;
+    sectionNames?: Array<string>;
+  },
 ): string => {
   if (!content) {
     return content;
   }
 
+  const { maxChars, sectionNames = [] } = options;
+
   // Split content into sections
-  const sections = splitContent(content, sectionNames);
+  let sections = splitContent(content, sectionNames);
+
+  if (maxChars) {
+    // Truncate each section's content while preserving headers
+    sections = sections.map((section) => {
+      if (section.type === 'main') {
+        return {
+          ...section,
+          content: truncateText(section.content, maxChars),
+        };
+      } else {
+        return {
+          ...section,
+          content: truncateText(section.content, maxChars),
+        };
+      }
+    });
+  }
 
   // Combine truncated sections
   return combineSections(sections);
-};
-
-export const processRequirementContentForView = (
-  content: string,
-  maxChars: number,
-  sectionNames: Array<string>,
-): string => {
-  if (!content) {
-    return content;
-  }
-
-  // Split content into sections
-  const sections = splitContent(content, sectionNames);
-
-  // Truncate each section's content while preserving headers
-  const truncatedSections = sections.map((section) => {
-    if (section.type === 'main') {
-      return {
-        ...section,
-        content: truncateText(section.content, maxChars),
-      };
-    } else {
-      return {
-        ...section,
-        content: truncateText(section.content, maxChars),
-      };
-    }
-  });
-
-  // Combine truncated sections
-  return combineSections(truncatedSections);
 };

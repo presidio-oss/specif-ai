@@ -610,6 +610,6 @@ export class UserStoriesComponent implements OnInit {
     description: string | undefined,
   ): string | null {
     if (!description) return null;
-    return processUserStoryContentForView(description, 90);
+    return processUserStoryContentForView(description, 180);
   }
 }

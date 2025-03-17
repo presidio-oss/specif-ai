@@ -38,6 +38,7 @@ import { BehaviorSubject, map } from 'rxjs';
 import { RichTextEditorComponent } from '../../../components/core/rich-text-editor/rich-text-editor.component';
 import { processTaskContentForView } from 'src/app/utils/task.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
+import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 
 @Component({
   selector: 'app-task-list',
@@ -85,12 +86,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
     reqId: string;
   };
   taskList$ = this.store.select(UserStoriesState.getTaskList).pipe(
-    map(tasks => tasks.map(task => ({
-      ...task,
-      formattedAcceptance: this.formatTaskForView(task.acceptance)
-    })))
+    map((tasks) =>
+      tasks.map((task) => ({
+        ...task,
+        formattedAcceptance: this.formatTaskForView(task.acceptance),
+      })),
+    ),
   );
-  
+
   filteredTaskList$ = this.searchService.filterItems(
     this.taskList$,
     this.searchTerm$,
@@ -294,5 +297,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
   private formatTaskForView(acceptance: string | undefined): string | null {
     if (!acceptance) return null;
     return processTaskContentForView(acceptance, 180);
+  }
+
+  formatUserStoryDescriptionForView(
+    description: string | undefined,
+  ): string | null {
+    if (!description) return null;
+    return processUserStoryContentForView(description);
   }
 }

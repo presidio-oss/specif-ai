@@ -8,12 +8,10 @@
         {{ selectedUserStory.id }}:
         {{ selectedUserStory?.name }}
       </h1>
-      <app-rich-text-editor
-        [content]="selectedUserStory?.description || ''"
-        [editable]="false"
-        mode="view"
-        editorClass="prose-secondary-edit text-wrap"
-      ></app-rich-text-editor>
+      <ng-container *ngIf="formatUserStoryDescriptionForView(selectedUserStory?.description) as formattedStoryDescription">
+        <app-rich-text-editor [content]="formattedStoryDescription" [editable]="false" mode="view"
+          editorClass="prose-secondary-edit text-wrap"></app-rich-text-editor>
+      </ng-container>
     </div>
     <div class="col-span-8 p-4 bg-white rounded-lg shadow">
       <div class="flex items-center justify-between gap-4">
