@@ -27,13 +27,17 @@ import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
 import { ClipboardService } from '../../../services/clipboard.service';
-import { TOASTER_MESSAGES } from 'src/app/constants/app.constants';
+import {
+  REQUIREMENT_TYPE,
+  TOASTER_MESSAGES,
+} from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { SearchService } from '../../../services/search/search.service';
 import { BehaviorSubject, map } from 'rxjs';
 import { RichTextEditorComponent } from '../../../components/core/rich-text-editor/rich-text-editor.component';
 import { processTaskContentForView } from 'src/app/utils/task.utils';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
 
 @Component({
   selector: 'app-task-list',
@@ -103,6 +107,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private featureService: FeatureService,
     private loadingService: LoadingService,
     private toastService: ToasterService,
+    private requirementIdService: RequirementIdService,
   ) {
     this.userStoryId = this.activatedRoute.snapshot.paramMap.get('userStoryId');
     this.logger.debug('userStoryId', this.userStoryId);
@@ -212,12 +217,31 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   updateWithUserStories(userStories: IUserStory, regenerate: boolean = false) {
+    let nextTaskId = this.requirementIdService.getNextRequirementId(
+      REQUIREMENT_TYPE.TASK,
+    );
+
+    const processedUserStory = {
+      ...userStories,
+      tasks: userStories.tasks?.map((task) => ({
+        ...task,
+        id: `TASK${nextTaskId++}`,
+      })),
+    };
+
     this.store.dispatch(
       new EditUserStory(
         `${this.config.folderName}/${this.config.newFileName}`,
-        userStories,
+        processedUserStory,
       ),
     );
+
+    this.requirementIdService
+      .updateRequirementCounters({
+        [REQUIREMENT_TYPE.TASK]: nextTaskId - 1,
+      })
+      .then();
+
     setTimeout(() => {
       this.getLatestUserStories();
       this.loadingService.setLoading(false);

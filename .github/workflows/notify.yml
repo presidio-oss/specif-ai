@@ -1,0 +1,332 @@
+name: Send Notifications
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+        description: 'Either "development", "production", or "marketplace"'
+    secrets:
+      MS_TEAMS_DEV_CHANNEL_WEBHOOK_URL:
+        required: true
+      MS_TEAMS_PROD_CHANNEL_WEBHOOK_URL:
+        required: true
+      MS_TEAMS_MARKETPLACE_CHANNEL_WEBHOOK_URL:
+        required: true
+      AWS_MARKETPLACE_PRODUCT_NAME:
+        required: false
+      AWS_MARKETPLACE_REPO_NAME:
+        required: false
+
+jobs:
+  send_notification:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Artifact Download Links
+        id: generate-links
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Getting artifact IDs..."
+          WINDOWS_ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[] | select(.name=="windows-electron-build") | .id')
+          MACOS_INTEL_ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[] | select(.name=="macos-intel-build") | .id')
+          MACOS_ARM64_ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[] | select(.name=="macos-arm64-build") | .id')
+
+          # Generate URLs
+          WINDOWS_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${WINDOWS_ARTIFACT_ID}"
+          MACOS_INTEL_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${MACOS_INTEL_ARTIFACT_ID}"
+          MACOS_ARM64_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${MACOS_ARM64_ARTIFACT_ID}"
+
+          # Store URLs in environment variables
+          echo "::add-mask::$WINDOWS_URL"
+          echo "::add-mask::$MACOS_INTEL_URL"
+          echo "::add-mask::$MACOS_ARM64_URL"
+          echo "WINDOWS_URL=$WINDOWS_URL" >> $GITHUB_ENV
+          echo "MACOS_INTEL_URL=$MACOS_INTEL_URL" >> $GITHUB_ENV
+          echo "MACOS_ARM64_URL=$MACOS_ARM64_URL" >> $GITHUB_ENV
+
+          echo "✅ Windows Artifact URL: $WINDOWS_URL"
+          echo "✅ macOS Intel Artifact URL: $MACOS_INTEL_URL"
+          echo "✅ macOS ARM64 Artifact URL: $MACOS_ARM64_URL"
+
+      - name: Send Development Release Notification
+        if: inputs.environment == 'development'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTIFICATION_URL: ${{ secrets.MS_TEAMS_DEV_CHANNEL_WEBHOOK_URL }}
+          BUILD_VERSION: ${{ inputs.version }}
+        run: |
+          # Get commit details
+          COMMIT_SHA=${{ github.sha }}
+          COMMIT_SHORT_SHA=${COMMIT_SHA:0:7}
+
+          # Get commit message, author and timestamp (IST - UTC+5:30)
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s" $COMMIT_SHA)
+          COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an" $COMMIT_SHA)
+          TIMESTAMP=$(TZ=":Asia/Kolkata" date "+%d-%b-%Y %I:%M %p IST")
+
+          # Prepare the simple notification with download links and commit info
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"type\": \"message\",
+            \"attachments\": [
+              {
+                \"contentType\": \"application/vnd.microsoft.card.adaptive\",
+                \"content\": {
+                  \"type\": \"AdaptiveCard\",
+                  \"version\": \"1.5\",
+                  \"body\": [
+                    {
+                      \"type\": \"TextBlock\",
+                      \"text\": \"✅ Development Build Successful\",
+                      \"weight\": \"Bolder\",
+                      \"size\": \"Medium\"
+                    },
+                    {
+                      \"type\": \"FactSet\",
+                      \"facts\": [
+                        {
+                          \"title\": \"Version\",
+                          \"value\": \"v${BUILD_VERSION}\"
+                        },
+                        {
+                          \"title\": \"Built at\",
+                          \"value\": \"$TIMESTAMP\"
+                        },
+                        {
+                          \"title\": \"Commit\",
+                          \"value\": \"${COMMIT_SHORT_SHA} - ${COMMIT_MSG}\"
+                        },
+                        {
+                          \"title\": \"Author\",
+                          \"value\": \"$COMMIT_AUTHOR\"
+                        }
+                      ]
+                    },
+                    {
+                      \"type\": \"ActionSet\",
+                      \"actions\": [
+                        {
+                          \"type\": \"Action.OpenUrl\",
+                          \"title\": \"Windows Build\",
+                          \"url\": \"$WINDOWS_URL\",
+                          \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/888/888882.png\"
+                        },
+                        {
+                          \"type\": \"Action.OpenUrl\",
+                          \"title\": \"Mac Intel Build\",
+                          \"url\": \"$MACOS_INTEL_URL\",
+                          \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/2/2235.png\"
+                        },
+                        {
+                          \"type\": \"Action.OpenUrl\",
+                          \"title\": \"Mac ARM64 Build\",
+                          \"url\": \"$MACOS_ARM64_URL\",
+                          \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/2/2235.png\"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }" $NOTIFICATION_URL
+
+      - name: Send Marketplace Notification
+        if: inputs.environment == 'marketplace'
+        env:
+          NOTIFICATION_URL: ${{ secrets.MS_TEAMS_MARKETPLACE_CHANNEL_WEBHOOK_URL }}
+          BUILD_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ -z "$NOTIFICATION_URL" ]]; then
+            echo "❌ ERROR: NOTIFICATION_URL is not set"
+            exit 1
+          fi
+
+          # Create JSON payload using jq
+          JSON_PAYLOAD=$(jq -n \
+            --arg version "$BUILD_VERSION" \
+            --arg repo "${{ secrets.AWS_MARKETPLACE_PRODUCT_NAME }}/${{ secrets.AWS_MARKETPLACE_REPO_NAME }}" \
+            '{
+              type: "message",
+              attachments: [{
+                contentType: "application/vnd.microsoft.card.adaptive",
+                content: {
+                  type: "AdaptiveCard",
+                  version: "1.5",
+                  body: [
+                    {
+                      type: "TextBlock",
+                      text: "✅ Marketplace Deployment Status",
+                      weight: "Bolder",
+                      size: "Medium"
+                    },
+                    {
+                      type: "TextBlock",
+                      text: "Successfully deployed to AWS Marketplace.",
+                      wrap: true
+                    },
+                    {
+                      type: "FactSet",
+                      facts: [
+                        {
+                          title: "Version",
+                          value: $version
+                        },
+                        {
+                          title: "Repository",
+                          value: ("Official Presidio Account - ECR - " + $repo)
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }]
+            }')
+
+          # Send notification
+          curl -X POST \
+            -H 'Content-type: application/json' \
+            --fail \
+            --silent \
+            --show-error \
+            --data "$JSON_PAYLOAD" "$NOTIFICATION_URL"
+
+      - name: Send Production Release Notification
+        if: inputs.environment == 'production'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTIFICATION_URL: ${{ secrets.MS_TEAMS_PROD_CHANNEL_WEBHOOK_URL }}
+          BUILD_VERSION: ${{ inputs.version }}
+        run: |
+          echo "Preparing release notification for v${BUILD_VERSION}"
+
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/v${BUILD_VERSION}"
+
+          # Process changelog
+          CHANGELOG_CONTENT=$(sed -n "/## \[$BUILD_VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d')
+
+          # Format changelog sections
+          FORMATTED_CHANGELOG=""
+          while IFS= read -r line; do
+            if [[ $line =~ ^###[[:space:]](.+)$ ]]; then
+              SECTION="${BASH_REMATCH[1]}"
+              FORMATTED_CHANGELOG="${FORMATTED_CHANGELOG}**${SECTION}**\\n\\n"
+            elif [[ $line =~ ^-[[:space:]](.+)$ ]]; then
+              ITEM="${BASH_REMATCH[1]}"
+              FORMATTED_CHANGELOG="${FORMATTED_CHANGELOG}• ${ITEM}\\n\\n"
+            fi
+          done <<< "$CHANGELOG_CONTENT"
+
+          # Escape special characters
+          FORMATTED_CHANGELOG=$(echo "$FORMATTED_CHANGELOG" | sed 's/"/\\"/g')
+
+          # Prepare the notification with UI components
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"type\": \"message\",
+            \"attachments\": [
+              {
+                \"contentType\": \"application/vnd.microsoft.card.adaptive\",
+                \"content\": {
+                  \"type\": \"AdaptiveCard\",
+                  \"version\": \"1.5\",
+                  \"body\": [
+                    {
+                      \"type\": \"ColumnSet\",
+                      \"columns\": [
+                        {
+                          \"type\": \"Column\",
+                          \"width\": \"auto\",
+                          \"items\": [
+                            {
+                              \"type\": \"Image\",
+                              \"url\": \"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\",
+                              \"size\": \"Small\",
+                              \"style\": \"Person\"
+                            }
+                          ]
+                        },
+                        {
+                          \"type\": \"Column\",
+                          \"width\": \"stretch\",
+                          \"items\": [
+                            {
+                              \"type\": \"TextBlock\",
+                              \"text\": \"Release Announcement\",
+                              \"size\": \"Medium\",
+                              \"weight\": \"Bolder\"
+                            },
+                            {
+                              \"type\": \"TextBlock\",
+                              \"text\": \"Specifai v${BUILD_VERSION}\",
+                              \"size\": \"Small\",
+                              \"isSubtle\": true
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      \"type\": \"TextBlock\",
+                      \"text\": \"✅ A new release is ready for download!\",
+                      \"wrap\": true,
+                      \"size\": \"Medium\"
+                    },
+                    {
+                      \"type\": \"TextBlock\",
+                      \"text\": \"**What's New**\",
+                      \"wrap\": true,
+                      \"weight\": \"Bolder\",
+                      \"size\": \"Medium\"
+                    },
+                    {
+                      \"type\": \"TextBlock\",
+                      \"text\": \"${FORMATTED_CHANGELOG}\",
+                      \"wrap\": true,
+                      \"isSubtle\": false,
+                      \"separator\": true,
+                      \"spacing\": \"Large\"
+                    },
+                    {
+                      \"type\": \"ActionSet\",
+                      \"actions\": [
+                        {
+                          \"type\": \"Action.OpenUrl\",
+                          \"title\": \"Windows Download\",
+                          \"url\": \"$WINDOWS_URL\",
+                          \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/888/888882.png\"
+                        },
+                        {
+                          \"type\": \"Action.OpenUrl\",
+                          \"title\": \"macOS Intel\",
+                          \"url\": \"$MACOS_INTEL_URL\",
+                          \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/2/2235.png\"
+                        },
+                        {
+                          \"type\": \"Action.OpenUrl\",
+                          \"title\": \"macOS ARM64\",
+                          \"url\": \"$MACOS_ARM64_URL\",
+                          \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/2/2235.png\"
+                        },
+                        {
+                          \"type\": \"Action.OpenUrl\",
+                          \"title\": \"Full Release Notes\",
+                          \"url\": \"$RELEASE_URL\",
+                          \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25284.png\"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }" $NOTIFICATION_URL

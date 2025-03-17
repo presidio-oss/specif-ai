@@ -215,7 +215,7 @@ export class BusinessProcessComponent implements OnInit {
     selectedPRDs: any[];
   }) {
     this.store.dispatch(
-      new CreateFile(`${this.folderName}/`, {
+      new CreateFile(`${this.folderName}`, {
         requirement: fileData.requirement,
         title: fileData.title,
         selectedBRDs: fileData.selectedBRDs,

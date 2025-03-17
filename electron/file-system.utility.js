@@ -16,6 +16,7 @@ const utilityFunctionMap = {
   readMetadataFile: readMetadataFile,
   createRequestedDirectory: createRequestedDirectory,
   archiveFile: archiveFile,
+  getBaseFileCount: getBaseFileCount,
 };
 
 function createDirectoryWithMetadata(param) {
@@ -124,7 +125,22 @@ function getDirectoryList(param) {
   }
 }
 
-async function appendFile({ path, content, featureFile }) {
+async function getBaseFileCount({ path }) {
+  const keyName = pathModule.basename(path);
+  try {
+    if (fs.existsSync(path)) {
+      const files = await fsPromise.readdir(path);
+      return files.filter(
+        (file) => file.startsWith(keyName) && file.includes("-base")
+      ).length;
+    }
+    return 0;
+  } catch (err) {
+    console.error("Error reading files in directory:", err);
+  }
+}
+
+async function appendFile({ path, content, featureFile, baseFileCount }) {
   const keyName = pathModule.basename(path);
 
   try {
@@ -141,13 +157,11 @@ async function appendFile({ path, content, featureFile }) {
   }
 
   try {
-    const files = await fsPromise.readdir(path);
-    let fileCount = 0;
-    files.forEach((file) => {
-      if (file.startsWith(keyName) && file.includes("-base")) {
-        fileCount++;
-      }
-    });
+    if (baseFileCount === -1) {
+      baseFileCount = await getBaseFileCount({ path });
+    }
+
+    const fileCount = baseFileCount;
 
     let newFileName =
       featureFile === ""
@@ -157,7 +171,7 @@ async function appendFile({ path, content, featureFile }) {
 
     await fsPromise.writeFile(newFilePath, content, "utf-8");
 
-    if (directoryPath.includes("PRD") && featureFile === "") {
+    if (path.includes("PRD") && featureFile === "") {
       const prdFileName = `${keyName}${(fileCount + 1).toString().padStart(2, "0")}-feature.json`;
       const prdFilePath = pathModule.join(path, prdFileName);
       await fsPromise.writeFile(
@@ -166,6 +180,7 @@ async function appendFile({ path, content, featureFile }) {
         "utf-8",
       );
     }
+    return fileCount;
   } catch (err) {
     console.error("Error handling files:", err);
   }

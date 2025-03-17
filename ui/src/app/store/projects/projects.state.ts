@@ -26,10 +26,12 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import {
   BP_FILE_KEYS,
   REQUIREMENT_DISPLAY_NAME_MAP,
+  REQUIREMENT_TYPE,
   RequirementType,
 } from 'src/app/constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
 
 export class ProjectStateModel {
   projects!: IProject[];
@@ -74,6 +76,7 @@ export class ProjectsState {
     private router: Router,
     private toast: ToasterService,
     private requirementExportService: RequirementExportService,
+    private requirementIdService: RequirementIdService,
   ) {}
 
   @Selector()
@@ -167,23 +170,46 @@ export class ProjectsState {
           description: metadata.description,
           cleanSolution: metadata.cleanSolution,
           brdPreferences: {
-            max_count: metadata.brd,
-            isEnabled: metadata.enableBRD,
+            max_count: metadata.BRD.maxCount,
+            isEnabled: metadata.BRD.enabled,
           },
           prdPreferences: {
-            max_count: metadata.prd,
-            isEnabled: metadata.enablePRD,
+            max_count: metadata.PRD.maxCount,
+            isEnabled: metadata.PRD.enabled,
           },
           uirPreferences: {
-            max_count: metadata.uir,
-            isEnabled: metadata.enableUIR,
+            max_count: metadata.UIR.maxCount,
+            isEnabled: metadata.UIR.enabled,
           },
           nfrPreferences: {
-            max_count: metadata.nfr,
-            isEnabled: metadata.enableNFR,
+            max_count: metadata.NFR.maxCount,
+            isEnabled: metadata.NFR.enabled,
           },
         }),
       );
+
+      const responseMap = {
+        [REQUIREMENT_TYPE.BRD]: response?.brd?.length || 0,
+        [REQUIREMENT_TYPE.PRD]: response?.prd?.length || 0,
+        [REQUIREMENT_TYPE.UIR]: response?.uir?.length || 0,
+        [REQUIREMENT_TYPE.NFR]: response?.nfr?.length || 0,
+        [REQUIREMENT_TYPE.US]: 0,
+        [REQUIREMENT_TYPE.TASK]: 0,
+        [REQUIREMENT_TYPE.BP]: 0,
+      };
+
+      metadata = {
+        ...metadata,
+        ...Object.entries(REQUIREMENT_TYPE).reduce(
+          (acc, [_, type]) => ({
+            ...acc,
+            [type]: metadata.cleanSolution
+              ? { count: 0 }
+              : { ...metadata[type], count: responseMap[type] },
+          }),
+          {},
+        ),
+      };
 
       await this.appSystemService.createProject(metadata, projectName);
 
@@ -269,6 +295,10 @@ export class ProjectsState {
             (indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB)
           );
         },
+      );
+
+      await this.requirementIdService.syncRootRequirementCounters(
+        project.project,
       );
 
       patchState({
@@ -455,17 +485,56 @@ export class ProjectsState {
 
   @Action(CreateFile)
   async createFile(
-    { getState }: StateContext<ProjectStateModel>,
+    { getState, patchState }: StateContext<ProjectStateModel>,
     { path, content, featureFile }: CreateFile,
   ) {
     const state = getState();
     this.logger.debug('Creating file:', path, content);
     const fileContent = JSON.stringify(content);
-    await this.appSystemService.createNewFile(
+
+    const baseFileCount = await this.appSystemService.createNewFile(
       `${state.selectedProject}/${path}`,
       fileContent,
       featureFile,
+      state.metadata?.[path]?.count || -1,
     );
+
+    if (!featureFile) {
+      const { updatedMetadataContent, updatedProjects } =
+        await this.updateRequirementCounterMetadata(state, path, baseFileCount);
+
+      patchState({
+        projects: updatedProjects,
+        metadata: updatedMetadataContent,
+      });
+    }
+  }
+
+  private async updateRequirementCounterMetadata(
+    state: ProjectStateModel,
+    path: string,
+    baseFileCount: number,
+  ) {
+    const updatedMetadataContent = {
+      ...state.metadata,
+      [path]: {
+        ...state.metadata[path],
+        count: baseFileCount + 1,
+      },
+    };
+
+    await this.appSystemService.createFileWithContent(
+      `${state.selectedProject}/.metadata.json`,
+      JSON.stringify(updatedMetadataContent),
+    );
+
+    const updatedProjects = state.projects.map((p) =>
+      p.metadata.id === state.metadata.id
+        ? { ...p, metadata: updatedMetadataContent }
+        : p,
+    );
+
+    return { updatedMetadataContent, updatedProjects };
   }
 
   @Action(UpdateFile)

@@ -46,14 +46,15 @@ import { BadgeComponent } from '../../components/core/badge/badge.component';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import {
   CONFIRMATION_DIALOG,
+  REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
 import { BehaviorSubject, map } from 'rxjs';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
-import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
 
 @Component({
   selector: 'app-user-stories',
@@ -138,6 +139,7 @@ export class UserStoriesComponent implements OnInit {
     private jiraService: JiraService,
     private electronService: ElectronService,
     private toast: ToasterService,
+    private requirementIdService: RequirementIdService,
   ) {
     this.navigation = getNavigationParams(this.router.getCurrentNavigation());
     this.store.dispatch(
@@ -330,13 +332,38 @@ export class UserStoriesComponent implements OnInit {
     userStories: IUserStory[],
     regenerate: boolean = false,
   ) {
+    const nextIds = {
+      story: this.requirementIdService.getNextRequirementId(
+        REQUIREMENT_TYPE.US,
+      ),
+      task: this.requirementIdService.getNextRequirementId(
+        REQUIREMENT_TYPE.TASK,
+      ),
+    };
+
+    const processedUserStories = userStories.map((userStory) => ({
+      ...userStory,
+      id: `US${nextIds.story++}`,
+      tasks: userStory.tasks?.map((task) => ({
+        ...task,
+        id: `TASK${nextIds.task++}`,
+      })),
+    }));
+
     this.store.dispatch(
       new CreateFile(
         `${this.navigation.folderName}`,
-        { features: userStories },
+        { features: processedUserStories },
         this.navigation.fileName.replace(/\-base.json$/, ''),
       ),
     );
+
+    this.requirementIdService
+      .updateRequirementCounters({
+        [REQUIREMENT_TYPE.US]: nextIds.story - 1,
+        [REQUIREMENT_TYPE.TASK]: nextIds.task - 1,
+      })
+      .then();
 
     setTimeout(() => {
       this.getLatestUserStories();

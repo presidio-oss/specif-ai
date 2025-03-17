@@ -1,0 +1,290 @@
+name: Build Components
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+        description: 'Either "development" or "production"'
+    secrets:
+      AWS_OIDC_ROLE_ARN:
+        required: true
+      AWS_DEFAULT_REGION:
+        required: true
+      DEV_IMAGE_NAME:
+        required: true
+      PROD_IMAGE_NAME:
+        required: true
+      ELECTRON_S3_BUCKET:
+        required: true
+      APPLE_CSC_SECRET_NAME:
+        required: true
+      APPLE_ID:
+        required: true
+      APPLE_APP_SPECIFIC_PASSWORD:
+        required: true
+
+jobs:
+  build_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+
+      - name: Restore Frontend Cache
+        uses: actions/cache@v4
+        with:
+          path: ui/node_modules
+          key: ${{ runner.os }}-npm-${{ github.ref_name }}-${{ hashFiles('ui/package-lock.json') }}
+
+      - name: Build Frontend
+        working-directory: ui
+        run: |
+          if [[ "${{ inputs.environment }}" == "development" ]]; then
+            npm run build:dev
+          else
+            npm run build:prod
+          fi
+
+      - name: Upload Frontend Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ui/dist/
+
+  build_backend:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
+
+      - name: Get AWS account ID
+        id: get-aws-account
+        run: |
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}" >> $GITHUB_OUTPUT
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: true
+
+      - name: Get Short Commit SHA
+        id: get-sha
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD || echo "${GITHUB_SHA:0:7}")
+          echo "COMMIT_SHA=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+          echo "Using short commit SHA: ${COMMIT_SHA}"
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: |
+            ${{ steps.get-aws-account.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ inputs.environment == 'production' && secrets.PROD_IMAGE_NAME || secrets.DEV_IMAGE_NAME }}:${{ inputs.environment == 'production' && inputs.version || format('{0}-{1}', inputs.version, steps.get-sha.outputs.COMMIT_SHA) }}
+            ${{ steps.get-aws-account.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ inputs.environment == 'production' && secrets.PROD_IMAGE_NAME || secrets.DEV_IMAGE_NAME }}:latest
+
+  build_electron_windows:
+    needs: [build_frontend]
+    runs-on: windows-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Short Commit SHA
+        id: get-sha
+        shell: pwsh
+        run: |
+          $COMMIT_SHA = (git rev-parse --short HEAD) 2>$null
+          if (-not $COMMIT_SHA) {
+            $COMMIT_SHA = $env:GITHUB_SHA.Substring(0,7)
+          }
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $env:GITHUB_OUTPUT
+          echo "Using short commit SHA: $COMMIT_SHA"
+
+      - name: Configure AWS credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+
+      - name: Restore Electron Cache
+        uses: actions/cache@v4
+        with:
+          path: electron/node_modules
+          key: ${{ runner.os }}-npm-electron-${{ github.ref_name }}-${{ hashFiles('electron/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-electron-${{ github.ref_name }}-
+            ${{ runner.os }}-npm-electron-
+
+      - name: Download Frontend Build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ui/dist/
+
+      - name: Copy Frontend to Electron Directory
+        run: |
+          cp -r ui/dist/ui electron/
+
+      - name: Install Dependencies and Build Electron
+        run: |
+          cd electron
+          npm install
+          npm run package:win
+
+      - name: Package Windows Build
+        run: |
+          cd electron
+          $VERSION = (node -e "console.log(require('./package.json').version);" | Out-String).Trim()
+          Compress-Archive -Path dist/win-unpacked/* -DestinationPath win-unpacked.zip
+
+          # Upload to S3 for long-term storage
+          aws s3 cp win-unpacked.zip s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/win-unpacked.zip
+
+      - name: Upload Windows Build as GitHub Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-electron-build
+          path: electron/win-unpacked.zip
+          retention-days: 90
+
+  build_electron_mac:
+    needs: [build_frontend]
+    runs-on: macos-15
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Short Commit SHA
+        id: get-sha
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD || echo "${GITHUB_SHA:0:7}")
+          echo "COMMIT_SHA=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+          echo "Using short commit SHA: ${COMMIT_SHA}"
+
+      - name: Configure AWS credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+
+      - name: Restore Electron Cache
+        uses: actions/cache@v4
+        with:
+          path: electron/node_modules
+          key: ${{ runner.os }}-npm-electron-${{ github.ref_name }}-${{ hashFiles('electron/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-electron-${{ github.ref_name }}-
+            ${{ runner.os }}-npm-electron-
+
+      - name: Download Frontend Build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ui/dist/
+
+      - name: Fetch Apple Developer Certificate
+        run: |
+          CSC_DATA=$(aws secretsmanager get-secret-value --secret-id ${{ secrets.APPLE_CSC_SECRET_NAME }} --query SecretString --output text)
+          echo "::add-mask::$CSC_DATA"
+          # Extract credentials and mask them
+          CSC_LINK=$(echo $CSC_DATA | jq -r '.CSC_LINK')
+          CSC_KEY_PASSWORD=$(echo $CSC_DATA | jq -r '.CSC_KEY_PASSWORD')
+
+          # Mask sensitive values before setting them as environment variables
+          echo "::add-mask::$CSC_LINK"
+          echo "::add-mask::$CSC_KEY_PASSWORD"
+
+          # Set the masked values as environment variables
+          echo "CSC_LINK=$CSC_LINK" >> $GITHUB_ENV
+          echo "CSC_KEY_PASSWORD=$CSC_KEY_PASSWORD" >> $GITHUB_ENV
+
+      - name: Copy Frontend to Electron Directory
+        run: |
+          cp -r ui/dist/ui electron/
+
+      - name: Install Dependencies and Build Electron
+        run: |
+          cd electron
+          npm install
+          npm run package:mac
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+
+      - name: Package and Upload to S3
+        id: package_and_upload
+        run: |
+          cd electron
+          VERSION=$(node -e "console.log(require('./package.json').version);")
+
+          # Get DMG file paths
+          INTEL_DMG=$(find dist -name "*.dmg" -not -name "*arm*.dmg" -type f)
+          ARM_DMG=$(find dist -name "*arm*.dmg" -type f)
+          echo "::add-mask::$INTEL_DMG"
+          echo "::add-mask::$ARM_DMG"
+          echo "INTEL_DMG=$INTEL_DMG" >> $GITHUB_ENV
+          echo "ARM_DMG=$ARM_DMG" >> $GITHUB_ENV
+
+          # Upload to S3 for long-term storage
+          aws s3 cp "$INTEL_DMG" "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/darwin/$VERSION/intel/${{steps.get-sha.outputs.COMMIT_SHA}}/$(basename "$INTEL_DMG")"
+          aws s3 cp "$ARM_DMG" "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/darwin/$VERSION/arm64/${{steps.get-sha.outputs.COMMIT_SHA}}/$(basename "$ARM_DMG")"
+
+      - name: Upload macOS Intel Build as GitHub Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-intel-build
+          path: electron/${{ env.INTEL_DMG }}
+          retention-days: 90
+
+      - name: Upload macOS ARM64 Build as GitHub Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64-build
+          path: electron/${{ env.ARM_DMG }}
+          retention-days: 90

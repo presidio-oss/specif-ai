@@ -219,3 +219,10 @@ export const FOLDER_REQUIREMENT_TYPE_MAP = {
 
 export type RequirementType =
   (typeof REQUIREMENT_TYPE)[keyof typeof REQUIREMENT_TYPE];
+
+export type RootRequirementType = Exclude<
+  RequirementType,
+  | typeof REQUIREMENT_TYPE.BP
+  | typeof REQUIREMENT_TYPE.TASK
+  | typeof REQUIREMENT_TYPE.US
+>;
