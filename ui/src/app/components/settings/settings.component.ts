@@ -19,7 +19,7 @@ import {
 } from '../../store/llm-config/llm-config.actions';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { AuthService } from '../../services/auth/auth.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -51,12 +51,12 @@ import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
     NgIf,
     ButtonComponent,
   ],
-  providers: [
-    { 
-      provide: 'icons', 
-      useValue: { heroExclamationTriangle } 
-    }
-  ]
+    providers: [
+      provideIcons({ 
+        heroExclamationTriangle
+      })
+    ]
+  
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
@@ -136,7 +136,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.analyticsEnabled.disable({ onlySelf: true });
           this.updateAnalyticsState(false);
           this.hasChanges = false;
-          this.analyticsWarning = 'Warning: Analytics configuration is missing. Please update the settings.';
+          this.analyticsWarning = 'Analytics configuration is missing. Please update the settings.';
         } else {
           this.analyticsEnabled.enable({ onlySelf: true });
           this.analyticsWarning = '';

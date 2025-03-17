@@ -142,7 +142,11 @@
         Help us improve by allowing anonymous usage data collection. This data
         helps us enhance your experience and prioritize features.
       </p>
-      <p *ngIf="analyticsWarning" class="py-2 text-warning-600 rounded text-xs">
+      <p
+        *ngIf="analyticsWarning"
+        class="py-2 text-warning-600 rounded text-xs flex items-center"
+      >
+        <ng-icon name="heroExclamationTriangle" class="mr-1"></ng-icon>
         {{ analyticsWarning }}
       </p>
     </div>
