@@ -9,6 +9,7 @@ import {
   GetUserStories,
   SetCurrentConfig,
   SetSelectedProject,
+  BulkEditUserStories,
 } from '../../store/user-stories/user-stories.actions';
 import { ProjectsState } from '../../store/projects/projects.state';
 import {
@@ -592,7 +593,7 @@ export class UserStoriesComponent implements OnInit {
         );
 
         this.store.dispatch(
-          new EditUserStory(
+          new BulkEditUserStories(
             `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
             updatedFeatures,
           ),

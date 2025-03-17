@@ -13,6 +13,7 @@ import {
   SetSelectedUserStory,
   UpdateTask,
   ExportUserStories,
+  BulkEditUserStories,
 } from './user-stories.actions';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { NGXLogger } from 'ngx-logger';
@@ -425,5 +426,42 @@ export class UserStoriesState {
       this.logger.error(message);
       this.toast.showError(message);
     }
+  }
+
+  @Action(BulkEditUserStories)
+  async bulkEditUserStories(
+    ctx: StateContext<UserStoriesStateModel>,
+    { filePath, userStories }: BulkEditUserStories,
+  ) {
+    const state = ctx.getState();
+    
+    // Create a map of story updates for O(1) lookup
+    const storyUpdatesMap = new Map<string, IUserStory>(
+      userStories.map(story => [story.id, story])
+    );
+
+    // Update existing stories with new data from the map
+    const updatedUserStories = state.userStories.map(story => {
+      const updatedStory = storyUpdatesMap.get(story.id);
+      if (updatedStory) {
+        return { ...story, ...updatedStory };
+      }
+      return story;
+    });
+
+    const fileContent = JSON.stringify({
+      features: updatedUserStories,
+      archivedFeatures: JSON.parse(state.fileContent).archivedFeatures || [],
+    });
+
+    await this.appSystemService.createFileWithContent(
+      `${state.selectedProject}/${filePath}`,
+      fileContent,
+    );
+
+    ctx.patchState({
+      userStories: updatedUserStories,
+      fileContent: fileContent
+    });
   }
 }
