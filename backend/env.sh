@@ -28,3 +28,6 @@ export AWS_BEDROCK_ACCESS_KEY=""
 export AWS_BEDROCK_SECRET_KEY=""
 export AWS_BEDROCK_SESSION_TOKEN=""
 export AWS_REGION=""
+
+# Gemini
+export GEMINI_API_KEY=""

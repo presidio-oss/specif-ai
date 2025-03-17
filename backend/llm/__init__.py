@@ -6,6 +6,8 @@ from llm.providers.openai_handler import OpenAIHandler
 from llm.providers.openai_native_handler import OpenAINativeHandler
 from llm.providers.bedrock_handler import AWSBedrockHandler
 from llm.providers.anthropic_handler import AnthropicHandler
+from llm.providers.ollama_handler import OllamaHandler
+from llm.providers.gemini_handler import GeminiHandler
 
 
 # Supported LLM providers
@@ -14,6 +16,8 @@ class LLMProvider(Enum):
     OPENAI_NATIVE = 'openai-native'
     ANTHROPIC = 'anthropic'
     BEDROCK = 'bedrock'
+    OLLAMA = 'ollama'
+    GEMINI = 'gemini'
 
 
 def build_llm_handler(provider: str, **kwargs):
@@ -42,5 +46,9 @@ def build_llm_handler(provider: str, **kwargs):
             return AnthropicHandler(**kwargs)
         case LLMProvider.BEDROCK.value:
             return AWSBedrockHandler(**kwargs)
+        case LLMProvider.OLLAMA.value:
+            return OllamaHandler(**kwargs)
+        case LLMProvider.GEMINI.value:
+            return GeminiHandler(**kwargs)
         case _:
             raise Exception(f'Invalid provider: {provider}, Allowed values: {provider_list}')
