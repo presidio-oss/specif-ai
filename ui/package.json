@@ -31,7 +31,6 @@
     "@angular/platform-browser": "^16.2.0",
     "@angular/platform-browser-dynamic": "^16.2.0",
     "@angular/router": "^16.2.0",
-    "@atlaskit/editor-bitbucket-transformer": "^9.1.0",
     "@atlaskit/editor-json-transformer": "^8.24.0",
     "@atlaskit/editor-markdown-transformer": "^5.16.0",
     "@electron/remote": "^2.1.2",
@@ -85,6 +84,7 @@
     "remark-stringify": "^11.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "unified": "^11.0.5",
     "uuid": "^10.0.0",
     "xlsx": "^0.18.5",
     "zone.js": "~0.13.0"

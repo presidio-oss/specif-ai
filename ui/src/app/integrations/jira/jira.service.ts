@@ -13,13 +13,10 @@ import { JIRA_TOAST } from '../../constants/toast.constant';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { environment } from '../../../environments/environment';
 import { MarkdownTransformer } from '@atlaskit/editor-markdown-transformer';
-import { JSONDocNode, JSONTransformer } from '@atlaskit/editor-json-transformer';
-import { BitbucketTransformer } from "@atlaskit/editor-bitbucket-transformer";
-import { defaultSchema } from '@atlaskit/adf-schema/schema-default';
+import { JSONTransformer } from '@atlaskit/editor-json-transformer';
 
 const atlasMarkdownTransformer = new MarkdownTransformer();
 const atlasJsonTransformer = new JSONTransformer();
-const atlasBitbucketTransformer = new BitbucketTransformer(defaultSchema);
 
 @Injectable({
   providedIn: 'root',
