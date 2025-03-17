@@ -95,7 +95,7 @@ export class UserStoriesExportStrategy implements ExportStrategy {
       }
       case EXPORT_FILE_FORMATS.EXCEL: {
         const transformedData = this.transformData(data.prdId, preparedData);
-        const fileName = `${projectName}_${REQUIREMENT_TYPE.PRD.toLowerCase()}`;
+        const fileName = `${projectName}_${REQUIREMENT_TYPE.US.toLowerCase()}`;
         this.exportToExcel(transformedData, fileName);
         break;
       }

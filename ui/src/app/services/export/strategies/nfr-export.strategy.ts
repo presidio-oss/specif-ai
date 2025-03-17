@@ -10,6 +10,6 @@ export class NFRExportStrategy extends BaseRequirementExportStrategy {
     logger: NGXLogger,
     clipboardService: ClipboardService,
   ) {
-    super(logger, REQUIREMENT_TYPE.BP, exportService, clipboardService);
+    super(logger, REQUIREMENT_TYPE.NFR, exportService, clipboardService);
   }
 }
