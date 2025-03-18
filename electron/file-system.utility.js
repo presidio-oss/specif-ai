@@ -34,9 +34,15 @@ function readDirectoryMetadata(param) {
   return projects
     .filter((project) => !project.startsWith("."))
     .map((project) => {
-      const metadata = readMetadataFile({ path: `${path}/${project}` });
-      return { metadata, project };
-    });
+      try {
+        const metadata = readMetadataFile({ path: `${path}/${project}` });
+        return { metadata, project };
+      } catch (error) {
+        console.error(`Error reading metadata for project ${project}:`, error);
+        return null;
+      }
+    })
+    .filter(Boolean); 
 }
 
 function readMetadataFile(param) {
