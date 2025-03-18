@@ -1,5 +1,5 @@
 <div
-    [ngClass]="['w-full flex flex-col', (mode=='edit'? 'rounded-xl shadow-sm border border-secondary-300 focus-visible:ring-1 focus-within:ring-primary-500 focus-within:border-primary-500 focus-within:outline-none':'')]">
+    [ngClass]="['w-full flex flex-col', (mode=='edit'? 'rounded-xl shadow-sm border border-secondary-300 focus-within:border-primary-500 focus-within:ring-primary-500 focus-within:ring-1 focus-within:outline-none':'')]">
     <div *ngIf="mode=='edit'" class="flex items-center rounded-t-xl p-2 border-b border-b-secondary-200 gap-0.5">
         <!-- Heading selector -->
         <button type="button" [attr.data-state]="editor?.isActive('heading') == true ? 'on':'off'"

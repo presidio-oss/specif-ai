@@ -38,17 +38,21 @@
         (ngSubmit)="mode === 'add' ? addTask() : updateTask()"
       >
         <div class="p-4 flex flex-col gap-1.5">
-          <div class="flex flex-col gap-1">
+          <div class="flex flex-col">
             <app-input-field [required]="true" elementPlaceHolder="Task Name" elementId="add-task-name" elementName="Task Name"
               formControlName="list" />
-            <app-error-message [errorControl]="taskForm.get('list')" />
+            <ng-container *ngIf="taskForm.get('list')?.touched">
+              <span *ngIf="taskForm.get('list')?.errors?.['required']" class="text-red-500 text-sm">
+                Task Name is required
+              </span>
+            </ng-container>
           </div>
           <div class="flex flex-col gap-1.5">
             <label for="elementId" class="block text-sm font-medium text-secondary-500">
               Task Description
               <span class="text-red-500 text-xs">*</span>
             </label>
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-1.5">
               <app-rich-text-editor formControlName="acceptance" editorClass="h-80 overflow-y-auto"></app-rich-text-editor>
               <ng-container *ngIf="taskForm.get('acceptance')?.touched">
                 <span *ngIf="taskForm.get('acceptance')?.errors?.['required']" class="text-red-500 text-sm">
