@@ -99,7 +99,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     this.filteredDocumentList$ = this.searchService.filterItems(
       this.documentList$,
       this.searchTerm$,
-      (doc) => [doc.fileName, doc.content?.title],
+      (doc) => [doc.fileName, doc.content?.title, doc.content?.epicTicketId],
     );
   }
 
