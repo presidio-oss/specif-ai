@@ -66,44 +66,38 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between mt-4">
-          <div class="flex-col">
-            <div class="flex items-center">
-              <app-button
-                buttonContent="Enhance with AI"
-                icon="heroSparklesSolid"
-                theme="secondary"
-                size="sm"
-                rounded="lg"
-                (click)="
-                  mode === 'add'
-                    ? addBusinessProcess(true)
-                    : updateBusinessProcess(true)
-                "
-                [disabled]="checkFormValidity()"
-              ></app-button>
-            </div>
-          </div>
-          <div>
-            <app-button
-              buttonContent="Update"
-              theme="primary"
-              size="sm"
-              rounded="md"
-              *ngIf="mode === 'edit'"
-              (click)="updateBusinessProcess()"
-              [disabled]="checkFormValidity()"
-            />
-            <app-button
-              buttonContent="Add"
-              theme="primary"
-              size="sm"
-              rounded="md"
-              *ngIf="mode === 'add'"
-              [disabled]="checkFormValidity()"
-              (click)="addBusinessProcess()"
-            />
-          </div>
+        <div class="flex justify-end gap-2 p-4 border-t border-secondary-200">
+          <app-button
+            buttonContent="Enhance with AI"
+            icon="heroSparklesSolid"
+            theme="secondary_outline"
+            size="sm"
+            rounded="lg"
+            (click)="
+              mode === 'add'
+                ? addBusinessProcess(true)
+                : updateBusinessProcess(true)
+            "
+            [disabled]="checkFormValidity()"
+          ></app-button>
+          <app-button
+            buttonContent="Update"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'edit'"
+            (click)="updateBusinessProcess()"
+            [disabled]="checkFormValidity()"
+          />
+          <app-button
+            buttonContent="Add"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'add'"
+            [disabled]="checkFormValidity()"
+            (click)="addBusinessProcess()"
+          />
         </div>
       </div>
       <div *ngIf="selectedBRDs.length > 0" class="mt-4">
