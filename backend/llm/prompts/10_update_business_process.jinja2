@@ -42,6 +42,8 @@ STRICT:
 (!) Do not include any other flows that are not part of the client request description.
 (!) Ensure each step in the generated business process is directly and demonstrably related to fulfilling the actions described in the Client Request.  Eliminate any steps that are generic, implied from the app description, or not directly contributing to the Client Request's objective.
 (!) Focus description ONLY on PROCESS FLOW: actions and data. EXCLUDE application properties.
+(!) You are allowed to use Markdown for the requirement of the final business process flow. You MUST ONLY use valid Markdown according to the following rules:
+    {% include 'markdown_rules.jinja2' %}
 
 Output Structure should be a valid JSON: Here is the sample Structure:
 

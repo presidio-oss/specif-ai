@@ -55,16 +55,25 @@ export class AppSystemService {
     });
   }
 
+  async getBaseFileCount(relativePath: string) {
+    const directory = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
+    return await this.electronService.invokeFunction('getBaseFileCount', {
+      path: `${directory}/${relativePath}`,
+    });
+  }
+
   async createNewFile(
     relativePathWithFileName: string,
     content: any,
     featureFile: string,
-  ) {
+    baseFileCount: number,
+  ): Promise<number> {
     const directory = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
-    await this.electronService.invokeFunction('appendFile', {
+    return await this.electronService.invokeFunction('appendFile', {
       content,
       path: `${directory}/${relativePathWithFileName}`,
       featureFile,
+      baseFileCount,
     });
   }
 

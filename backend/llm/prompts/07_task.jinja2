@@ -60,27 +60,27 @@ RESPONSE FORMAT EXAMPLE
     {
       "id": "TASK1",
       "name": <task 1>
-      "acceptance": "[description of the task 1] Acceptance Criteria: [acceptance criteria for the task 1 as sentences]"
+      "acceptance": "[description of the task 1]  \n#### Acceptance Criteria:  \n[acceptance criteria for the task 1 as sentences]"
     },
     {
       "id": "TASK2",
       "name": <task 2>
-      "acceptance": "[description of the task 2] Acceptance Criteria: [acceptance criteria for the task 2 as sentences]"
+      "acceptance": "[description of the task 2]  \n#### Acceptance Criteria:  \n[acceptance criteria for the task 2 as sentences]"
     },
     {
       "id": "TASK3",
       "name": <task 3>
-      "acceptance": "[description of the task 3] Acceptance Criteria: [acceptance criteria for the task 3 as sentences]"
+      "acceptance": "[description of the task 3]  \n#### Acceptance Criteria:  \n[acceptance criteria for the task 3 as sentences]"
     },
     {
       "id": "TASK4",
       "name": <task 4>
-      "acceptance": "[description of the task 4] Acceptance Criteria: [acceptance criteria for the task 4 as sentences]"
+      "acceptance": "[description of the task 4]  \n#### Acceptance Criteria:  \n[acceptance criteria for the task 4 as sentences]"
     },
     {
       "id": "TASK5",
       "name": <task 5>
-      "acceptance": "[description of the task 5] Acceptance Criteria: [acceptance criteria for the task 5 as sentences]"
+      "acceptance": "[description of the task 5]  \n#### Acceptance Criteria:  \n[acceptance criteria for the task 5 as sentences]"
     },
     ...
   ]
@@ -133,3 +133,5 @@ STRICTLY ENFORCE:
 (!) Only reference technologies specified in technical details(if any)
 (!) Tasks must add up to fulfill complete user story requirement
 (!) No project setup tasks
+(!) You are allowed to use Markdown for the description of the task. You MUST ONLY use valid Markdown according to the following rules:
+    {% include 'markdown_rules.jinja2' %}

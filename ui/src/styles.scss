@@ -5,6 +5,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .prose-xs {
+    @apply text-xs;
+  }
+}
+
 // Import Font
 @font-face {
   font-family: Geist;

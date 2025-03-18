@@ -13,6 +13,7 @@ import {
   SetSelectedUserStory,
   UpdateTask,
   ExportUserStories,
+  BulkEditUserStories,
 } from './user-stories.actions';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { NGXLogger } from 'ngx-logger';
@@ -22,6 +23,7 @@ import { Router } from '@angular/router';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
 import { REQUIREMENT_TYPE } from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
 
 export interface UserStoriesStateModel {
   userStories: IUserStory[];
@@ -58,8 +60,9 @@ export class UserStoriesState {
     private logger: NGXLogger,
     private router: Router,
     private toast: ToasterService,
-    private requirementExportService: RequirementExportService
-  ) { }
+    private requirementExportService: RequirementExportService,
+    private requirementIdService: RequirementIdService,
+  ) {}
 
   @Selector()
   static getUserStories(state: UserStoriesStateModel) {
@@ -100,47 +103,48 @@ export class UserStoriesState {
   }
 
   @Action(GetUserStories)
-  add(
+  async add(
     ctx: StateContext<UserStoriesStateModel>,
     { relativePath }: GetUserStories,
   ) {
     const state = ctx.getState();
-    this.appSystemService
-      .readFile(relativePath)
-      .then((res) => {
-        this.logger.debug(res, relativePath);
-        if (!res) {
-          ctx.patchState({
-            userStories: []
-          });
-          return;
-        }
-        const userStories: Array<IUserStory> = JSON.parse(res).features || [];
-        const stories: IUserStory[] = [];
-        const taskMap: { [key in string]: ITask[] } = {};
-        this.logger.debug('userStories ==>', userStories);
-        userStories.forEach((story: IUserStory) => {
-          stories.push({
-            id: story.id,
-            name: story.name,
-            description: story.description,
-            tasks: story.tasks,
-            archivedTasks: story.archivedTasks,
-            chatHistory: story.chatHistory,
-            storyTicketId: story.storyTicketId
-          });
-          this.logger.debug('story ==>', story);
-          taskMap[story.id] = story.tasks as ITask[];
+    try {
+      await this.requirementIdService.syncStoryAndTaskCounters();
+      const res = await this.appSystemService.readFile(relativePath);
+      this.logger.debug(res, relativePath);
+
+      if (!res) {
+        ctx.patchState({ userStories: [] });
+        return;
+      }
+
+      const userStories: Array<IUserStory> = JSON.parse(res).features || [];
+      const stories: IUserStory[] = [];
+      const taskMap: { [key in string]: ITask[] } = {};
+      this.logger.debug('userStories ==>', userStories);
+
+      userStories.forEach((story: IUserStory) => {
+        stories.push({
+          id: story.id,
+          name: story.name,
+          description: story.description,
+          tasks: story.tasks,
+          archivedTasks: story.archivedTasks,
+          chatHistory: story.chatHistory,
+          storyTicketId: story.storyTicketId,
         });
-        ctx.patchState({
-          userStories: [...stories],
-          fileContent: res,
-          taskMap: { ...state.taskMap, ...taskMap },
-        });
-      })
-      .catch((error) => {
-        this.logger.error('Error in reading file', error);
+        this.logger.debug('story ==>', story);
+        taskMap[story.id] = story.tasks as ITask[];
       });
+
+      ctx.patchState({
+        userStories: [...stories],
+        fileContent: res,
+        taskMap: { ...state.taskMap, ...taskMap },
+      });
+    } catch (error) {
+      this.logger.error('Error in reading file', error);
+    }
   }
 
   @Action(SetSelectedUserStory)
@@ -268,9 +272,15 @@ export class UserStoriesState {
   ) {
     const state = ctx.getState();
 
-    const newId = `US${state.userStories.length + 1}`;
+    const nextStoryId = this.requirementIdService.getNextRequirementId(
+      REQUIREMENT_TYPE.US,
+    );
 
-    const newUserStory = { id: newId, ...userStory, tasks: [] };
+    await this.requirementIdService.updateRequirementCounters({
+      [REQUIREMENT_TYPE.US]: nextStoryId,
+    });
+
+    const newUserStory = { id: `US${nextStoryId}`, ...userStory, tasks: [] };
     const updatedUserStories = [...state.userStories, newUserStory];
 
     const fileContent = JSON.stringify(
@@ -416,5 +426,42 @@ export class UserStoriesState {
       this.logger.error(message);
       this.toast.showError(message);
     }
+  }
+
+  @Action(BulkEditUserStories)
+  async bulkEditUserStories(
+    ctx: StateContext<UserStoriesStateModel>,
+    { filePath, userStories }: BulkEditUserStories,
+  ) {
+    const state = ctx.getState();
+    
+    // Create a map of story updates for O(1) lookup
+    const storyUpdatesMap = new Map<string, IUserStory>(
+      userStories.map(story => [story.id, story])
+    );
+
+    // Update existing stories with new data from the map
+    const updatedUserStories = state.userStories.map(story => {
+      const updatedStory = storyUpdatesMap.get(story.id);
+      if (updatedStory) {
+        return { ...story, ...updatedStory };
+      }
+      return story;
+    });
+
+    const fileContent = JSON.stringify({
+      features: updatedUserStories,
+      archivedFeatures: JSON.parse(state.fileContent).archivedFeatures || [],
+    });
+
+    await this.appSystemService.createFileWithContent(
+      `${state.selectedProject}/${filePath}`,
+      fileContent,
+    );
+
+    ctx.patchState({
+      userStories: updatedUserStories,
+      fileContent: fileContent
+    });
   }
 }

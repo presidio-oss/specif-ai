@@ -38,38 +38,32 @@
         </div>
       </div>
       <div>
-        <app-input-field
-          elementPlaceHolder="Title"
-          elementId="title"
-          elementName="Title"
-          formControlName="title"
-          [required]="true"
-        />
-        <div
-          *ngIf="
-            businessProcessForm.get('title')?.errors?.['required'] &&
-            businessProcessForm.get('title')?.touched
-          "
-          class="text-danger-500 text-sm mt-1"
-        >
-          Title is required
-        </div>
-        <app-textarea-field
-          elementPlaceHolder="Description"
-          elementId="description"
-          elementName="Description"
-          formControlName="content"
-          [required]="true"
-          [rows]="12"
-        />
-        <div
-          *ngIf="
-            businessProcessForm.get('content')?.errors?.['required'] &&
-            businessProcessForm.get('content')?.touched
-          "
-          class="text-danger-500 text-sm mt-1"
-        >
-          Description is required
+        <div class="flex flex-col gap-1.5">
+          <div class="flex flex-col">
+            <app-input-field elementPlaceHolder="Title" elementId="title" elementName="Title" formControlName="title"
+              [required]="true" />
+            <div *ngIf="
+                              businessProcessForm.get('title')?.errors?.['required'] &&
+                              businessProcessForm.get('title')?.touched
+                            " class="text-danger-500 text-sm">
+              Title is required
+            </div>
+          </div>
+        
+          <div class="flex flex-col gap-1.5">
+            <label class="block text-sm font-medium text-secondary-500">
+              Description
+              <span class="text-red-500 text-xs">*</span>
+            </label>
+            <div class="flex flex-col gap-1.5">
+              <app-rich-text-editor formControlName="content" editorClass="h-80 overflow-y-auto"></app-rich-text-editor>
+              <ng-container *ngIf="businessProcessForm.get('content')?.touched">
+                <span *ngIf="businessProcessForm.get('content')?.errors?.['required']" class="text-red-500 text-sm">
+                  Description is required
+                </span>
+              </ng-container>
+            </div>
+          </div>
         </div>
 
         <div class="flex items-center justify-between mt-4">
@@ -272,81 +266,18 @@
                             class="flex-1 flex flex-col justify-start rounded-lg border border-secondary-200 bg-white"
                           >
                             <!-- Adjusted class here -->
-                            <div class="px-3 py-2 text-sm">
+                            <div class="px-3 py-2 text-sm flex flex-col gap-1">
                               <a class="font-semibold text-secondary-600">
                                 {{ item.fileName.replace("-base.json", "") }}
                               </a>
-                              <h1 class="text-base font-medium truncate mt-2">
+                              <h1 class="text-base font-medium truncate">
                                 {{ item.content.title }}
                               </h1>
-                              <p
-                                *ngIf="item.folderName !== requirementTypes.PRD"
-                                class="text-secondary-500 text-xs text-wrap leading-tight"
-                              >
-                                {{
-                                  item.content.requirement
-                                    | truncateWithEllipsis
-                                }}
-                              </p>
-                              <div
-                                *ngIf="item.folderName === requirementTypes.PRD"
-                              >
-                                <ng-container
-                                  *ngIf="
-                                    item.content.requirement as requirement
-                                  "
-                                >
-                                  <p class="text-secondary-500 text-wrap">
-                                    {{
-                                      item.content.requirement
-                                        .split("Screens:")[0]
-                                        .split("Personas:")[0]
-                                        | truncateWithEllipsis
-                                    }}
-                                  </p>
-                                  <div
-                                    *ngIf="
-                                      item.content.requirement?.includes(
-                                        'Screens:'
-                                      )
-                                    "
-                                  >
-                                    <h4
-                                      class="text-sm pt-2 pb-1 font-medium truncate"
-                                    >
-                                      Screens:
-                                    </h4>
-                                    <p class="text-secondary-500 text-wrap">
-                                      {{
-                                        item.content.requirement
-                                          .split("Screens:")[1]
-                                          .split("Personas:")[0]
-                                          | truncateWithEllipsis
-                                      }}
-                                    </p>
-                                  </div>
-                                  <div
-                                    *ngIf="
-                                      item.content.requirement?.includes(
-                                        'Personas:'
-                                      )
-                                    "
-                                  >
-                                    <h4
-                                      class="text-sm pt-2 pb-1 font-medium truncate"
-                                    >
-                                      Personas:
-                                    </h4>
-                                    <p class="text-secondary-500 text-wrap">
-                                      {{
-                                        item.content.requirement
-                                          .split("Personas:")
-                                          .pop() | truncateWithEllipsis
-                                      }}
-                                    </p>
-                                  </div>
-                                </ng-container>
-                              </div>
+                              <ng-container *ngIf="item.content.requirement as requirement">
+                                <app-rich-text-editor editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs" mode="view"
+                                  [content]="truncatePRDandBRDRequirement(item.content.requirement, item.folderName)" [editable]="false">
+                                </app-rich-text-editor>
+                              </ng-container>
                             </div>
                           </div>
                         </div>

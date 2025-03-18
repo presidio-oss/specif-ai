@@ -1,0 +1,93 @@
+name: Create GitHub Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-electron-build
+          path: release-assets/windows
+
+      - name: Download macOS Intel Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-intel-build
+          path: release-assets/macos-intel
+
+      - name: Download macOS ARM64 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-arm64-build
+          path: release-assets/macos-arm64
+
+      - name: Rename files with consistent naming convention
+        run: |
+          VERSION="${{ inputs.version }}"
+          echo "Creating consistently named assets for version $VERSION"
+
+          # Create directory for renamed files
+          mkdir -p renamed-assets
+
+          # Rename Windows artifact
+          WIN_ZIP=$(find release-assets/windows -name "*.zip" -type f | head -1)
+          if [[ -n "$WIN_ZIP" ]]; then
+            cp "$WIN_ZIP" "renamed-assets/Specif.AI-${VERSION}-windows.zip"
+            echo "✅ Created Windows artifact: Specif.AI-${VERSION}-windows.zip"
+          else
+            echo "❌ No Windows zip file found"
+          fi
+
+          # Rename macOS Intel artifact
+          MAC_INTEL_DMG=$(find release-assets/macos-intel -name "*.dmg" -type f | head -1)
+          if [[ -n "$MAC_INTEL_DMG" ]]; then
+            cp "$MAC_INTEL_DMG" "renamed-assets/Specif.AI-${VERSION}-mac-intel.dmg"
+            echo "✅ Created macOS Intel artifact: Specif.AI-${VERSION}-mac-intel.dmg"
+          else
+            echo "❌ No macOS Intel DMG file found"
+          fi
+
+          # Rename macOS ARM artifact
+          MAC_ARM_DMG=$(find release-assets/macos-arm64 -name "*.dmg" -type f | head -1)
+          if [[ -n "$MAC_ARM_DMG" ]]; then
+            cp "$MAC_ARM_DMG" "renamed-assets/Specif.AI-${VERSION}-mac-arm64.dmg"
+            echo "✅ Created macOS ARM64 artifact: Specif.AI-${VERSION}-mac-arm64.dmg"
+          else
+            echo "❌ No macOS ARM64 DMG file found"
+          fi
+
+          echo "📦 Final release assets:"
+          ls -la renamed-assets/
+
+      - name: Modify Changelog
+        run: |
+          VERSION="${{ inputs.version }}"
+          CHANGELOG_CONTENT=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d')
+          echo "$CHANGELOG_CONTENT" > CHANGELOG-MOD.md
+
+      - name: Create Release with Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: v${{ inputs.version }}
+          name: Release v${{ inputs.version }}
+          draft: true
+          files: |
+            renamed-assets/Specif.AI-${{ inputs.version }}-windows.zip
+            renamed-assets/Specif.AI-${{ inputs.version }}-mac-intel.dmg
+            renamed-assets/Specif.AI-${{ inputs.version }}-mac-arm64.dmg
+          body_path: CHANGELOG-MOD.md
+          fail_on_unmatched_files: false

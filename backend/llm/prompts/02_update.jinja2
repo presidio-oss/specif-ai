@@ -7,7 +7,7 @@
 {% elif type == 'PRD' %}
 {% set requirementType = 'Product Requirements' %}
 {% set context = 'prd.jinja2' %}
-{% set format = '{"title": <title>, "requirement": "<requirement> Screens: <Screen Description> Personas: <Persona Description>"}' %}
+{% set format = '{"title": <title>, "requirement": "<requirement>  \\n#### Screens:  \\n<Screen Description>  \\n#### Personas:  \\n<Persona Description>"}' %}
 {% elif type == 'NFR' %}
 {% set requirementType = 'Non-Functional Requirements' %}
 {% set context = 'nfr.jinja2' %}
@@ -37,11 +37,13 @@ Context:
 Based on the above context, update the existing requirement by incorporating the client's requests and the information from the provided file content. Strictly don't eliminate the content given by the client. Instead groom and expand it.
 Keep the responses very concise and to the point.
 
-Output Structure should be a valid JSON: Here is the sample Structure:
+Output Structure MUST be a valid JSON: Here is the sample Structure:
 {
   "updated": {{format}}
 }
 
-Updated requirement should be strictly in string format.
+Special Instructions:
+1. You are allowed to use for the updated requirement description. You MUST ONLY use valid Markdown according to the following rules:
+    {% include 'markdown_rules.jinja2' %}
 
 Output only valid JSON. Do not include ```json ``` on start and end of the response.

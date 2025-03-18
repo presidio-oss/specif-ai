@@ -27,11 +27,18 @@ import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
 import { ClipboardService } from '../../../services/clipboard.service';
-import { TOASTER_MESSAGES } from 'src/app/constants/app.constants';
+import {
+  REQUIREMENT_TYPE,
+  TOASTER_MESSAGES,
+} from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { SearchService } from '../../../services/search/search.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
+import { RichTextEditorComponent } from '../../../components/core/rich-text-editor/rich-text-editor.component';
+import { processTaskContentForView } from 'src/app/utils/task.utils';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
+import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 
 @Component({
   selector: 'app-task-list',
@@ -48,6 +55,7 @@ import { BehaviorSubject } from 'rxjs';
     BadgeComponent,
     SearchInputComponent,
     MatTooltipModule,
+    RichTextEditorComponent,
   ],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
@@ -77,7 +85,15 @@ export class TaskListComponent implements OnInit, OnDestroy {
     featureName: string;
     reqId: string;
   };
-  taskList$ = this.store.select(UserStoriesState.getTaskList);
+  taskList$ = this.store.select(UserStoriesState.getTaskList).pipe(
+    map((tasks) =>
+      tasks.map((task) => ({
+        ...task,
+        formattedAcceptance: this.formatTaskForView(task.acceptance),
+      })),
+    ),
+  );
+
   filteredTaskList$ = this.searchService.filterItems(
     this.taskList$,
     this.searchTerm$,
@@ -94,6 +110,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private featureService: FeatureService,
     private loadingService: LoadingService,
     private toastService: ToasterService,
+    private requirementIdService: RequirementIdService,
   ) {
     this.userStoryId = this.activatedRoute.snapshot.paramMap.get('userStoryId');
     this.logger.debug('userStoryId', this.userStoryId);
@@ -203,12 +220,31 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   updateWithUserStories(userStories: IUserStory, regenerate: boolean = false) {
+    let nextTaskId = this.requirementIdService.getNextRequirementId(
+      REQUIREMENT_TYPE.TASK,
+    );
+
+    const processedUserStory = {
+      ...userStories,
+      tasks: userStories.tasks?.map((task) => ({
+        ...task,
+        id: `TASK${nextTaskId++}`,
+      })),
+    };
+
     this.store.dispatch(
       new EditUserStory(
         `${this.config.folderName}/${this.config.newFileName}`,
-        userStories,
+        processedUserStory,
       ),
     );
+
+    this.requirementIdService
+      .updateRequirementCounters({
+        [REQUIREMENT_TYPE.TASK]: nextTaskId - 1,
+      })
+      .then();
+
     setTimeout(() => {
       this.getLatestUserStories();
       this.loadingService.setLoading(false);
@@ -256,5 +292,17 @@ export class TaskListComponent implements OnInit, OnDestroy {
       }),
     );
     this.getLatestUserStories();
+  }
+
+  private formatTaskForView(acceptance: string | undefined): string | null {
+    if (!acceptance) return null;
+    return processTaskContentForView(acceptance, 180);
+  }
+
+  formatUserStoryDescriptionForView(
+    description: string | undefined,
+  ): string | null {
+    if (!description) return null;
+    return processUserStoryContentForView(description);
   }
 }

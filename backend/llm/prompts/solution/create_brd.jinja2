@@ -18,5 +18,9 @@ Output Structure should be a valid JSON: Here is the sample Structure:
   ]
 }
 
+Special Instructions:
+1. You are allowed to use Markdown for the requirement part of business requirement. You MUST ONLY use valid Markdown according to the following rules:
+  {% include 'markdown_rules.jinja2' %}
+
 Please ensure the requirements are clear and comprehensive. Output only valid JSON. Do not include ```json ``` on the start and end of the response.
 Generate Business Requirements with a maximum count of {{ max_count|default(30) }}. Sort all requirements based on business impact (High to Medium to Low).

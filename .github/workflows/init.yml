@@ -1,0 +1,40 @@
+name: Initialize Dependencies
+
+on:
+  workflow_call:
+    inputs:
+      workflow_type:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+jobs:
+  init_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+          cache: "npm"
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Initialize Frontend Dependencies
+        working-directory: ui
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=3072"
+          npm ci
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ui/node_modules
+          key: ${{ runner.os }}-npm-${{ github.ref_name }}-${{ hashFiles('ui/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-${{ github.ref_name }}-
+            ${{ runner.os }}-npm-

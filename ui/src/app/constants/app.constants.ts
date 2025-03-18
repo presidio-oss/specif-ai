@@ -192,13 +192,6 @@ export const TOOLTIP_CONTENT = {
   IMPORT_FROM_CODE_BUTTON: 'Import from Code',
 };
 
-export const PRD_HEADINGS = {
-  SCREENS: 'Screens: ',
-  PERSONAS: 'Personas: ',
-  SCREENS_FORMATTED: '\n\nScreens:\n',
-  PERSONAS_FORMATTED: '\n\nPersonas:\n',
-};
-
 export const FOLDER = {
   BRD: 'BRD',
   PRD: 'PRD',
@@ -228,3 +221,10 @@ export const FOLDER_REQUIREMENT_TYPE_MAP = {
 
 export type RequirementType =
   (typeof REQUIREMENT_TYPE)[keyof typeof REQUIREMENT_TYPE];
+
+export type RootRequirementType = Exclude<
+  RequirementType,
+  | typeof REQUIREMENT_TYPE.BP
+  | typeof REQUIREMENT_TYPE.TASK
+  | typeof REQUIREMENT_TYPE.US
+>;

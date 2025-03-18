@@ -10,6 +10,6 @@ export class UIRExportStrategy extends BaseRequirementExportStrategy {
     logger: NGXLogger,
     clipboardService: ClipboardService,
   ) {
-    super(logger, REQUIREMENT_TYPE.BP, exportService, clipboardService);
+    super(logger, REQUIREMENT_TYPE.UIR, exportService, clipboardService);
   }
 }

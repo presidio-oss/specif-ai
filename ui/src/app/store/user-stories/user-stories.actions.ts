@@ -106,3 +106,12 @@ export class ExportUserStories {
 
   constructor(public exportOptions: ExportRequirementDataOptions) {}
 }
+
+export class BulkEditUserStories {
+  static readonly type = '[UserStories] Bulk Edit User Stories';
+
+  constructor(
+    readonly filePath: string,
+    readonly userStories: IUserStory[],
+  ) {}
+}

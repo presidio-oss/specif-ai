@@ -38,13 +38,15 @@ import { ConfirmationDialogComponent } from '../../components/confirmation-dialo
 import {
   CONFIRMATION_DIALOG,
   ERROR_MESSAGES,
-  PRD_HEADINGS,
+  FOLDER_REQUIREMENT_TYPE_MAP,
+  REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { catchError, switchMap, take } from 'rxjs';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-edit-solution',
@@ -64,6 +66,7 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
     NgIconComponent,
     ErrorMessageComponent,
     MatTooltipModule,
+    RichTextEditorComponent
   ],
   providers: [
     provideIcons({ 
@@ -154,9 +157,6 @@ export class EditSolutionComponent {
     };
     this.featureService.updateRequirement(body).subscribe(
       (data) => {
-        data.updated.requirement = data.updated.requirement
-          .replace(PRD_HEADINGS.SCREENS, PRD_HEADINGS.SCREENS_FORMATTED)
-          .replace(PRD_HEADINGS.PERSONAS, PRD_HEADINGS.PERSONAS_FORMATTED);
         this.store.dispatch(
           new UpdateFile(this.absoluteFilePath, {
             requirement: data.updated.requirement,
@@ -206,7 +206,6 @@ export class EditSolutionComponent {
       this.oldContent = res.requirement;
       this.requirementForm.patchValue({
         title: res.title,
-        content: res.requirement,
         epicticketid: res.epicTicketId,
       });
       this.chatHistory = res.chatHistory || [];
@@ -251,13 +250,6 @@ export class EditSolutionComponent {
       };
       this.featureService.addRequirement(body).subscribe(
         (data) => {
-          data.LLMreqt.requirement.replace(
-            PRD_HEADINGS.SCREENS,
-            PRD_HEADINGS.SCREENS_FORMATTED,
-          ).replace(
-            PRD_HEADINGS.PERSONAS,
-            PRD_HEADINGS.PERSONAS_FORMATTED,
-          );
           this.store.dispatch(
             new CreateFile(`${this.folderName}`, {
               requirement: data.LLMreqt.requirement,

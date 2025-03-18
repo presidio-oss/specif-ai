@@ -32,3 +32,6 @@ export AWS_REGION=""
 # PostHog creds
 export POSTHOG_KEY=""
 export POSTHOG_HOST=""
+
+# Gemini
+export GEMINI_API_KEY=""

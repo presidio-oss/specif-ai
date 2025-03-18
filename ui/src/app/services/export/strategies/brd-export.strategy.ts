@@ -10,6 +10,6 @@ export class BRDExportStrategy extends BaseRequirementExportStrategy {
     logger: NGXLogger,
     clipboardService: ClipboardService,
   ) {
-    super(logger, REQUIREMENT_TYPE.BP, exportService, clipboardService);
+    super(logger, REQUIREMENT_TYPE.BRD, exportService, clipboardService);
   }
 }

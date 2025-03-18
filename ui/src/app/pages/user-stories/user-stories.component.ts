@@ -9,6 +9,7 @@ import {
   GetUserStories,
   SetCurrentConfig,
   SetSelectedProject,
+  BulkEditUserStories,
 } from '../../store/user-stories/user-stories.actions';
 import { ProjectsState } from '../../store/projects/projects.state';
 import {
@@ -46,12 +47,15 @@ import { BadgeComponent } from '../../components/core/badge/badge.component';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import {
   CONFIRMATION_DIALOG,
+  REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
 
 @Component({
   selector: 'app-user-stories',
@@ -101,12 +105,21 @@ export class UserStoriesComponent implements OnInit {
     data: {},
   };
 
-  userStories$ = this.store.select(UserStoriesState.getUserStories);
+  userStories$ = this.store.select(UserStoriesState.getUserStories).pipe(
+    map((stories) =>
+      stories.map((story) => ({
+        ...story,
+        formattedDescription: this.formatDescriptionForView(story.description),
+      })),
+    ),
+  );
+
   filteredUserStories$ = this.searchService.filterItems(
     this.userStories$,
     this.searchTerm$,
     (story: IUserStory) => [story.id, story.name, story.storyTicketId],
   );
+
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   selectedFileContent$ = this.store.select(
     ProjectsState.getSelectedFileContent,
@@ -127,6 +140,7 @@ export class UserStoriesComponent implements OnInit {
     private jiraService: JiraService,
     private electronService: ElectronService,
     private toast: ToasterService,
+    private requirementIdService: RequirementIdService,
   ) {
     this.navigation = getNavigationParams(this.router.getCurrentNavigation());
     this.store.dispatch(
@@ -177,6 +191,10 @@ export class UserStoriesComponent implements OnInit {
     this.store.select(ProjectsState.getMetadata).subscribe((res) => {
       this.metadata = res;
     });
+
+    this.store.dispatch(
+      new ReadFile(`${this.navigation.folderName}/${this.navigation.fileName}`),
+    );
 
     this.isTokenAvailable = (() => {
       const tokenInfo = getJiraTokenInfo(this.navigation.projectId);
@@ -315,13 +333,38 @@ export class UserStoriesComponent implements OnInit {
     userStories: IUserStory[],
     regenerate: boolean = false,
   ) {
+    const nextIds = {
+      story: this.requirementIdService.getNextRequirementId(
+        REQUIREMENT_TYPE.US,
+      ),
+      task: this.requirementIdService.getNextRequirementId(
+        REQUIREMENT_TYPE.TASK,
+      ),
+    };
+
+    const processedUserStories = userStories.map((userStory) => ({
+      ...userStory,
+      id: `US${nextIds.story++}`,
+      tasks: userStory.tasks?.map((task) => ({
+        ...task,
+        id: `TASK${nextIds.task++}`,
+      })),
+    }));
+
     this.store.dispatch(
       new CreateFile(
         `${this.navigation.folderName}`,
-        { features: userStories },
+        { features: processedUserStories },
         this.navigation.fileName.replace(/\-base.json$/, ''),
       ),
     );
+
+    this.requirementIdService
+      .updateRequirementCounters({
+        [REQUIREMENT_TYPE.US]: nextIds.story - 1,
+        [REQUIREMENT_TYPE.TASK]: nextIds.task - 1,
+      })
+      .then();
 
     setTimeout(() => {
       this.getLatestUserStories();
@@ -484,10 +527,6 @@ export class UserStoriesComponent implements OnInit {
       features: [],
     };
 
-    this.store.dispatch(
-      new ReadFile(`${this.navigation.folderName}/${this.navigation.fileName}`),
-    );
-
     requestPayload.epicName = this.requirementFile.title;
     requestPayload.epicDescription = this.requirementFile.requirement;
     requestPayload.epicTicketId = this.requirementFile.epicTicketId
@@ -554,7 +593,7 @@ export class UserStoriesComponent implements OnInit {
         );
 
         this.store.dispatch(
-          new EditUserStory(
+          new BulkEditUserStories(
             `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
             updatedFeatures,
           ),
@@ -565,5 +604,12 @@ export class UserStoriesComponent implements OnInit {
         console.error('Error updating feature.json:', error);
       },
     });
+  }
+
+  private formatDescriptionForView(
+    description: string | undefined,
+  ): string | null {
+    if (!description) return null;
+    return processUserStoryContentForView(description, 180);
   }
 }

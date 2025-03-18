@@ -37,42 +37,34 @@
         (ngSubmit)="mode === 'edit' ? updateUserStory() : addUserStory()"
       >
         <div class="p-4">
-          <app-input-field
-            [required]="true"
-            elementPlaceHolder="Name"
-            elementId="name"
-            elementName="Name"
-            formControlName="name"
-          />
-          <div
-            *ngIf="
-              userStoryForm.get('name')?.invalid &&
-              (userStoryForm.get('name')?.dirty ||
-                userStoryForm.get('name')?.touched)
-            "
-            class="text-danger-500 text-sm mt-1"
-          >
-            <div *ngIf="userStoryForm.get('name')?.errors?.['required']">
-              Name is required.
+          <div class="flex flex-col w-full gap-1.5">
+            <div>
+              <app-input-field [required]="true" elementPlaceHolder="Name" elementId="name" elementName="Name"
+                formControlName="name" />
+              <div *ngIf="
+                                    userStoryForm.get('name')?.invalid &&
+                                    (userStoryForm.get('name')?.dirty ||
+                                      userStoryForm.get('name')?.touched)
+                                  " class="text-danger-500 text-sm mt-1">
+                <div *ngIf="userStoryForm.get('name')?.errors?.['required']">
+                  Name is required.
+                </div>
+              </div>
             </div>
-          </div>
-          <app-textarea-field
-            [required]="true"
-            elementPlaceHolder="Description"
-            elementId="description"
-            elementName="Description"
-            formControlName="description"
-          />
-          <div
-            *ngIf="
-              userStoryForm.get('description')?.invalid &&
-              (userStoryForm.get('description')?.dirty ||
-                userStoryForm.get('description')?.touched)
-            "
-            class="text-danger-500 text-sm mt-1"
-          >
-            <div *ngIf="userStoryForm.get('description')?.errors?.['required']">
-              Description is required.
+            <div class="flex flex-col gap-1.5">
+              <label class="block text-sm font-medium text-secondary-500">
+                Description
+                <span class="text-red-500 text-xs">*</span>
+              </label>
+              <div class="flex flex-col gap-1.5">
+                <app-rich-text-editor formControlName="description" editorClass="h-80 overflow-y-auto"
+                  mode="edit"></app-rich-text-editor>
+                <ng-container *ngIf="userStoryForm.get('description')?.touched">
+                  <span *ngIf="userStoryForm.get('description')?.errors?.['required']" class="text-red-500 text-sm">
+                    Description is required
+                  </span>
+                </ng-container>
+              </div>
             </div>
           </div>
           <app-multi-upload

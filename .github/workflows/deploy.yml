@@ -1,0 +1,131 @@
+name: Deploy Frontend and Backend
+
+on:
+  workflow_call:
+    inputs:
+      workflow_type:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+        description: 'Either "development" or "production"'
+
+jobs:
+  deploy_backend:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION  }}
+          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
+
+      - name: Get Short Commit SHA
+        id: get-sha
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD || echo "${GITHUB_SHA:0:7}")
+          echo "COMMIT_SHA=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+          echo "Using short commit SHA: ${COMMIT_SHA}"
+
+      - name: Update CloudFormation Stack
+        run: |
+          # Get AWS Account ID
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+
+          # Set environment-specific variables
+          if [[ "${{ inputs.environment }}" == "production" ]]; then
+            IMAGE_NAME="${{ secrets.PROD_IMAGE_NAME }}"
+            STACK_NAME="${{ secrets.PROD_STACK_NAME }}"
+          else
+            IMAGE_NAME="${{ secrets.DEV_IMAGE_NAME }}"
+            STACK_NAME="${{ secrets.DEV_STACK_NAME }}"
+          fi
+
+          # Function to check and wait for stack status
+          wait_for_stack_status() {
+            local stack_name=$1
+            local desired_status=$2
+            local current_status=""
+
+            while true; do
+              current_status=$(aws cloudformation describe-stacks \
+                --stack-name $stack_name \
+                --query 'Stacks[0].StackStatus' \
+                --output text)
+
+              echo "Current stack status: $current_status"
+
+              if [ "$current_status" == "$desired_status" ]; then
+                echo "✅ Stack reached desired status: $desired_status"
+                return 0
+              elif [[ "$current_status" == *"ROLLBACK"* || "$current_status" == *"FAILED"* ]]; then
+                # Get the reason for the failure
+                FAILURE_REASON=$(aws cloudformation describe-stack-events \
+                  --stack-name $stack_name \
+                  --query 'StackEvents[?ResourceStatus==`UPDATE_FAILED`].ResourceStatusReason' \
+                  --output text)
+                echo "❌ Stack update failed: $FAILURE_REASON"
+                return 1
+              elif [[ "$current_status" == *"IN_PROGRESS"* ]]; then
+                echo "⏳ Stack update in progress... waiting 30 seconds"
+                sleep 30
+              else
+                echo "❌ Unexpected stack status: $current_status"
+                return 1
+              fi
+            done
+          }
+
+          # Check if stack is already being updated
+          INITIAL_STATUS=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].StackStatus' \
+            --output text)
+
+          if [[ "$INITIAL_STATUS" == *"IN_PROGRESS"* ]]; then
+            echo "⚠️ Stack update already in progress. Waiting for it to complete..."
+            wait_for_stack_status $STACK_NAME "UPDATE_COMPLETE" || exit 1
+          fi
+
+          # Construct container image URL with commit SHA
+          CONTAINER_IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${{secrets.AWS_DEFAULT_REGION}}.amazonaws.com/${IMAGE_NAME}:${{ inputs.environment == 'production' && inputs.version || format('{0}-{1}', inputs.version, steps.get-sha.outputs.COMMIT_SHA) }}"
+          echo "Constructing parameters list for stack update..."
+
+          # Build parameters list dynamically
+          paramslist=""
+          for paramval in $(aws cloudformation describe-stacks --stack-name specif-ai-dev --query "Stacks[].Parameters[].ParameterKey" --output text)
+          do
+              if [ "$paramval" == "ContainerImage" ]
+              then
+                  paramslist+="ParameterKey=${paramval},ParameterValue=${CONTAINER_IMAGE} "
+              else
+                  paramslist+="ParameterKey=${paramval},UsePreviousValue=true "
+              fi
+          done
+
+          echo "Updating CloudFormation stack with new container image: $CONTAINER_IMAGE"
+
+          # Update stack with dynamic parameters
+          aws cloudformation update-stack \
+            --stack-name $STACK_NAME \
+            --use-previous-template \
+            --parameters $paramslist \
+            --region ${{ secrets.AWS_DEFAULT_REGION }} > /dev/null
+
+          echo "✅ Stack update initiated successfully"
+
+          # Wait for stack update to complete
+          echo "Waiting for stack update to complete..."
+          wait_for_stack_status $STACK_NAME "UPDATE_COMPLETE" || exit 1

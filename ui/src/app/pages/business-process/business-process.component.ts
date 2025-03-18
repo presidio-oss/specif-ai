@@ -42,10 +42,15 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NGXLogger } from 'ngx-logger';
 import {
   CONFIRMATION_DIALOG,
+  FOLDER_REQUIREMENT_TYPE_MAP,
+  REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
+import { processPRDContentForView } from 'src/app/utils/prd.utils';
+import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 
 @Component({
   selector: 'app-business-process',
@@ -66,6 +71,7 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
     ExpandDescriptionPipe,
     TruncateEllipsisPipe,
     NgIconComponent,
+    RichTextEditorComponent
   ],
   providers: [
     provideIcons({
@@ -209,7 +215,7 @@ export class BusinessProcessComponent implements OnInit {
     selectedPRDs: any[];
   }) {
     this.store.dispatch(
-      new CreateFile(`${this.folderName}/`, {
+      new CreateFile(`${this.folderName}`, {
         requirement: fileData.requirement,
         title: fileData.title,
         selectedBRDs: fileData.selectedBRDs,
@@ -635,6 +641,15 @@ export class BusinessProcessComponent implements OnInit {
     } else {
       this.businessProcessForm.setErrors(null);
     }
+  }
+
+  truncatePRDandBRDRequirement(requirement:string, folderName:string){
+    const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folderName];
+    if (requirementType === REQUIREMENT_TYPE.PRD){
+      return processPRDContentForView(requirement, 64);
+    }
+
+    return truncateMarkdown(requirement, {maxChars: 180});
   }
 
   canDeactivate(): boolean {

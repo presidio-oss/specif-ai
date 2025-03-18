@@ -40,24 +40,31 @@
         [formGroup]="requirementForm"
         (ngSubmit)="mode === 'edit' ? updateRequirement() : addRequirement()"
       >
-        <div class="p-4">
-          <app-input-field
-            [required]="true"
-            elementPlaceHolder="Title"
-            elementId="title"
-            elementName="Title"
-            formControlName="title"
-          />
-          <app-error-message [errorControl]="requirementForm.get('title')" />
+        <div class="p-4 flex flex-col gap-1.5">
+          <div class="flex flex-col">
+            <app-input-field [required]="true" elementPlaceHolder="Title" elementId="title" elementName="Title"
+              formControlName="title" />
+            <ng-container *ngIf="requirementForm.get('title')?.touched">
+              <span *ngIf="requirementForm.get('title')?.errors?.['required']" class="text-red-500 text-sm">
+                Title is required
+              </span>
+            </ng-container>
+          </div>
 
-          <app-textarea-field
-            [required]="true"
-            elementPlaceHolder="Description"
-            elementId="description"
-            elementName="Description"
-            formControlName="content"
-          />
-          <app-error-message [errorControl]="requirementForm.get('content')" />
+          <div class="flex flex-col gap-1.5">
+            <label for="elementId" class="block text-sm font-medium text-secondary-500">
+              Description
+              <span class="text-red-500 text-xs">*</span>
+            </label>
+            <div class="flex flex-col gap-1.5">
+              <app-rich-text-editor formControlName="content" editorClass="h-80 overflow-y-auto"></app-rich-text-editor>
+              <ng-container *ngIf="requirementForm.get('content')?.touched">
+                <span *ngIf="requirementForm.get('content')?.errors?.['required']" class="text-red-500 text-sm">
+                  Description is required
+                </span>
+              </ng-container>
+            </div>
+          </div>
 
           <app-multi-upload
             *ngIf="mode === 'add'"
