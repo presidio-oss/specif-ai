@@ -43,8 +43,6 @@ Thumbs.db
 # Electron-specific
 .electron-vue/
 
-package-lock.json
-
 # Ignore test coverage output
 coverage/
 
