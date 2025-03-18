@@ -1,7 +1,7 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthStateService } from '../services/auth/auth-state.service';
-import { GetUsernameComponent } from '../components/get-username/get-username.component';
+import { UserProfileDialogComponent } from '../components/user-profile-dialog/user-profile-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 export const AuthGuard: CanActivateFn = (route, state) => {
@@ -17,7 +17,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   }
 
   if(!authState.isUsernameSet()) {
-    dialog.open(GetUsernameComponent, {
+    dialog.open(UserProfileDialogComponent, {
       width: '600px',
       disableClose: true,
     });

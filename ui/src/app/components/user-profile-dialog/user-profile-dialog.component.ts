@@ -8,18 +8,18 @@ import { ElectronService } from 'src/app/services/electron/electron.service';
 import { AuthService } from 'src/app/services/auth/auth.service';
 
 @Component({
-  selector: 'app-get-username',
-  templateUrl: './get-username.component.html',
-  styleUrls: ['./get-username.component.scss'],
+  selector: 'user-profile-dialog',
+  templateUrl: './user-profile-dialog.component.html',
+  styleUrls: ['./user-profile-dialog.component.scss'],
   standalone: true,
   imports: [ReactiveFormsModule, FormsModule, CommonModule],
 })
-export class GetUsernameComponent {
+export class UserProfileDialogComponent {
   userNameForm = new FormControl('', [Validators.required]);
   errorMessage: string | null = null;
 
   constructor(
-    private dialogRef: MatDialogRef<GetUsernameComponent>,
+    private dialogRef: MatDialogRef<UserProfileDialogComponent>,
     private electronService: ElectronService,
     private authService: AuthService,
   ) {
