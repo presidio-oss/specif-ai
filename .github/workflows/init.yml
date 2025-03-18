@@ -28,7 +28,7 @@ jobs:
         working-directory: ui
         run: |
           export NODE_OPTIONS="--max-old-space-size=3072"
-          npm install --force
+          npm ci
 
       - name: Cache Dependencies
         uses: actions/cache@v4
@@ -38,31 +38,3 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-${{ github.ref_name }}-
             ${{ runner.os }}-npm-
-
-  init_electron:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "23"
-          cache: "npm"
-          cache-dependency-path: electron/package-lock.json
-
-      - name: Initialize Electron Dependencies
-        working-directory: electron
-        run: |
-          export NODE_OPTIONS="--max-old-space-size=3072"
-          npm install --force
-
-      - name: Cache Dependencies
-        uses: actions/cache@v4
-        with:
-          path: electron/node_modules
-          key: ${{ runner.os }}-npm-electron-${{ github.ref_name }}-${{ hashFiles('electron/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-electron-${{ github.ref_name }}-
-            ${{ runner.os }}-npm-electron-

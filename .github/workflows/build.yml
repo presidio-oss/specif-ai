@@ -142,15 +142,6 @@ jobs:
         with:
           node-version: 23
 
-      - name: Restore Electron Cache
-        uses: actions/cache@v4
-        with:
-          path: electron/node_modules
-          key: ${{ runner.os }}-npm-electron-${{ github.ref_name }}-${{ hashFiles('electron/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-electron-${{ github.ref_name }}-
-            ${{ runner.os }}-npm-electron-
-
       - name: Download Frontend Build
         uses: actions/download-artifact@v4
         with:
@@ -212,15 +203,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 23
-
-      - name: Restore Electron Cache
-        uses: actions/cache@v4
-        with:
-          path: electron/node_modules
-          key: ${{ runner.os }}-npm-electron-${{ github.ref_name }}-${{ hashFiles('electron/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-electron-${{ github.ref_name }}-
-            ${{ runner.os }}-npm-electron-
 
       - name: Download Frontend Build
         uses: actions/download-artifact@v4
