@@ -52,6 +52,7 @@
               formControlName="username"
               elementPlaceHolder="Your Username"
               elementName="Username"
+              [required]="true"
             />
             <app-error-message [errorControl]="loginForm.get('username')" />
           </div>
@@ -60,6 +61,7 @@
               formControlName="appUrl"
               elementPlaceHolder="Your Server URL"
               elementName="App URL"
+              [required]="true"
             />
             <app-error-message [errorControl]="loginForm.get('appUrl')" />
           </div>
@@ -69,6 +71,7 @@
               elementPlaceHolder="Passcode"
               formControlName="passcode"
               elementName="App Passcode"
+              [required]="true"
             />
             <app-error-message [errorControl]="loginForm.get('passcode')" />
           </div>
