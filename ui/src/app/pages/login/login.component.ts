@@ -83,6 +83,12 @@ export class LoginComponent implements OnInit {
 
   async login() {
     this.loginForm.markAllAsTouched();
+    const username = this.loginForm.get('username')?.value?.trim();
+    if (!username) {
+      this.toastService.showError('Username is invalid.');
+      this.loginForm.get('username')?.setValue('');
+      return;
+    }
     if (this.loginForm.valid) {
       const { appUrl, passcode, username } = this.loginForm.getRawValue() as {
         appUrl: string;
