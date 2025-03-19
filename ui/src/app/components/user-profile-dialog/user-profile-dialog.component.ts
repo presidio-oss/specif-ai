@@ -15,7 +15,10 @@ import { AuthService } from 'src/app/services/auth/auth.service';
   imports: [ReactiveFormsModule, FormsModule, CommonModule],
 })
 export class UserProfileDialogComponent {
-  userNameForm = new FormControl('', [Validators.required]);
+  userNameForm = new FormControl('', [
+    Validators.required,
+    Validators.pattern(/^(?!\s*$).+/),
+  ]);
   errorMessage: string | null = null;
 
   constructor(
