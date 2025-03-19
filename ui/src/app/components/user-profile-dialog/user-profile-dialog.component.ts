@@ -51,6 +51,7 @@ export class UserProfileDialogComponent {
       }
     } else {
       this.errorMessage = 'Please enter a valid username.';
+      this.userNameForm.reset();
     }
   }
 }
