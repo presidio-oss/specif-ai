@@ -2,27 +2,6 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 type IpcListener = (event: IpcRendererEvent, ...args: any[]) => void;
 
-interface ElectronAPI {
-  openFile: () => Promise<{ filePath: string; fileContent: string } | null>;
-  getSuggestions: (data: any) => Promise<any>;
-  saveFile: (fileContent: string, filePath: { rootPath: string; fileName: string } | null) => Promise<string | null>;
-  openDirectory: () => Promise<string[]>;
-  getStoreValue: (key: string) => Promise<any>;
-  setStoreValue: (key: string, value: any) => Promise<boolean>;
-  loadURL: (serverConfig: string) => void;
-  invoke: (channel: string, ...args: any[]) => Promise<any>;
-  send: (channel: string, ...args: any[]) => void;
-  on: (channel: string, listener: IpcListener) => void;
-  once: (channel: string, listener: IpcListener) => void;
-  removeListener: (channel: string, listener: IpcListener) => void;
-}
-
-declare global {
-  interface Window {
-    electronAPI: ElectronAPI;
-  }
-}
-
 contextBridge.exposeInMainWorld('electronAPI', {
   openFile: () => ipcRenderer.invoke('dialog:openFile'),
   getSuggestions: (data: any) => ipcRenderer.invoke('chat:getSuggestions', data),
