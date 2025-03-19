@@ -1,6 +1,6 @@
-const { z } = require('zod');
+import { z } from 'zod';
 
-const getSuggestionsSchema = z.object({
+export const getSuggestionsSchema = z.object({
   name: z.string().nonempty(),
   description: z.string().nonempty(),
   type: z.string().nonempty(),
@@ -9,5 +9,3 @@ const getSuggestionsSchema = z.object({
   selectedSuggestion: z.string().optional(),
   knowledgeBase: z.string().optional(),
 });
-
-module.exports = { getSuggestionsSchema };

@@ -1,32 +1,44 @@
-const { app, ipcMain, BrowserWindow, dialog, shell } = require("electron");
-const path = require("path");
-const fs = require("fs");
-const express = require("express");
-const axios = require("axios");
-require("dotenv").config({
+import { app, ipcMain, BrowserWindow, dialog, shell } from "electron";
+import path from "path";
+import fs from "fs";
+import axios from "axios";
+import dotenv from "dotenv";
+import { IncomingMessage, ServerResponse } from "http";
+import net from "net";
+import { exec } from "child_process";
+import { createServer } from "http";
+import Store from 'electron-store';
+
+dotenv.config({
   path: app.isPackaged
     ? path.join(process.resourcesPath, ".env")
     : path.resolve(process.cwd(), ".env"),
 });
-const getSuggestions = require('./ipc/handlers/chat/get-suggestions');
+
+// Import types
+import {getSuggestions} from './ipc/handlers/chat/get-suggestions';
+import { utilityFunctionMap } from "./file-system.utility";
 
 const indexPath = app.isPackaged
   ? path.join(process.resourcesPath, "ui")
   : path.resolve(process.cwd(), "ui");
-const net = require("net");
-const { exec } = require("child_process");
-let store;
 
-(async () => {
-  const Store = (await import("electron-store")).default;
-  store = new Store();
-})();
+let store: Store;
 
-ipcMain.handle("store-get", async (event, key) => {
+// Initialize electron-store
+const initStore = async () => {
+  try {
+    store = new Store();
+  } catch (error) {
+    console.error('Failed to initialize electron-store:', error);
+  }
+};
+
+ipcMain.handle("store-get", async (_event: Electron.IpcMainInvokeEvent, key: string) => {
   return store ? store.get(key) : null;
 });
 
-ipcMain.handle("store-set", async (event, key, value) => {
+ipcMain.handle("store-set", async (_event: Electron.IpcMainInvokeEvent, key: string, value: any) => {
   if (store) {
     store.set(key, value);
     return true;
@@ -36,8 +48,7 @@ ipcMain.handle("store-set", async (event, key, value) => {
 
 ipcMain.handle("reloadApp", () => onAppReload());
 
-// Register handler for removeStoreValue
-ipcMain.handle("removeStoreValue", async (event, key) => {
+ipcMain.handle("removeStoreValue", async (_event: Electron.IpcMainInvokeEvent, key: string) => {
   if (store) {
     store.delete(key);
     return true;
@@ -45,37 +56,14 @@ ipcMain.handle("removeStoreValue", async (event, key) => {
   return false;
 });
 
-// Update env variable ENABLE_SENTRY in sentry.env to true for enabling sentry.
-// Also update SENTRY_DSN, SENTRY_ENVIRONMENT, SENTRY_RELEASE values accordingly.
-const enableSentry = process.env.ENABLE_SENTRY;
-const authServer = express();
-authServer.disable("x-powered-by");
-
-const themeConfiguration = JSON.parse(process.env.THEME_CONFIGURATION);
+const themeConfiguration = JSON.parse(process.env.THEME_CONFIGURATION || '{}');
 
 ipcMain.handle("get-theme-configuration", () => themeConfiguration);
 
-if (enableSentry) {
-  console.debug("Configuring sentry for the electron application.");
-  const { init, IPCMode } = require("@sentry/electron/main");
-  init({
-    dsn: process.env.SENTRY_DSN,
-    debug: false, // Set debug value to false for production and true for development or debugging
-    ipcMode: IPCMode.Protocol,
-    environment: process.env.SENTRY_ENVIRONMENT,
-    release: process.env.SENTRY_RELEASE,
-  });
-} else {
-  console.debug("Sentry configuration is disabled.");
-}
+let mainWindow: BrowserWindow | null = null;
+let clientId: string, clientSecret: string, redirectUri: string;
 
-const { utilityFunctionMap } = require("./file-system.utility");
-
-let mainWindow;
-let clientId, clientSecret, redirectUri;
-
-// Set the path to the icon file
-function getIconPath() {
+function getIconPath(): string {
   const icons = themeConfiguration.appIcons;
   if (process.platform === "darwin") {
     return path.join(__dirname, icons.mac);
@@ -93,42 +81,34 @@ function createWindow() {
     minHeight: 850,
     height: 850,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "preload.js"), // Note: This will be compiled from preload.ts
       contextIsolation: true,
-      enableRemoteModule: false,
       nodeIntegration: false,
     },
-    // Uncomment the below line to set the icon for the application
     icon: path.join(__dirname, getIconPath()),
   });
 
-  mainWindow.loadFile(`${indexPath}/index.html`).then(() => {
-    console.debug("Welcome Page loaded successfully");
-  });
-
-  // Open the DevTools - uncomment this line before production build
-  // mainWindow.webContents.openDevTools();
-
-  // Add electron-reload to watch the electron directory
-  // require('electron-reload')(__dirname, {
-  //   electron: path.join(__dirname, "node_modules", ".bin", "electron"),
-  //   forceHardReset: true,
-  //   hardResetMethod: 'exit'
-  // });
+    mainWindow.loadFile(`${indexPath}/index.html`, { 
+      query: {},
+      hash: 'apps'  // Set default route
+    }).then(() => {
+      console.debug("Welcome Page loaded successfully");
+    }).catch((error) => {
+      console.error("Failed to load welcome page:", error);
+    });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
     app.quit();
   });
 
-  mainWindow.on("reload", () => onAppReload());
-
   mainWindow.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await initStore();
   createWindow();
 
   app.on("activate", () => {
@@ -138,27 +118,29 @@ app.whenReady().then(() => {
   });
 
   app.on("window-all-closed", () => app.quit());
-  mainWindow.webContents.setWindowOpenHandler(() => {
-    return { action: "deny" };
-  });
 
-  mainWindow.webContents.on(
-    "did-fail-load",
-    (event, errorCode, errorDescription, validatedURL) => {
-      if (errorCode === -6) {
-        // ERR_FILE_NOT_FOUND
-        console.error(
-          `Failed to load URL: ${validatedURL}, error: ${errorDescription}`
-        );
-        onAppReload();
+  if (mainWindow) {
+    mainWindow.webContents.setWindowOpenHandler(() => {
+      return { action: "deny" };
+    });
+
+    mainWindow.webContents.on(
+      "did-fail-load",
+      (_event: Electron.Event, errorCode: number, errorDescription: string, validatedURL: string) => {
+        if (errorCode === -6) {
+          console.error(
+            `Failed to load URL: ${validatedURL}, error: ${errorDescription}`
+          );
+          onAppReload();
+        }
       }
-    }
-  );
+    );
+  }
 
-  ipcMain.handle("kill-port", async (event, port) => {
+  ipcMain.handle("kill-port", async (_event: Electron.IpcMainInvokeEvent, port: number) => {
     if (process.platform === "win32") {
       try {
-        const { stdout } = await new Promise((resolve, reject) => {
+        const { stdout } = await new Promise<{stdout: string, stderr: string}>((resolve, reject) => {
           exec(`netstat -ano | findstr :${port}`, (error, stdout, stderr) => {
             if (error) reject(error);
             else resolve({ stdout, stderr });
@@ -168,7 +150,7 @@ app.whenReady().then(() => {
         const pids = [...new Set(
           stdout.trim().split('\n')
                 .map(line => line.trim().split(/\s+/)[4])
-                .filter(pid => pid && pid !== "0")  // Filter out empty or system PIDs
+                .filter(pid => pid && pid !== "0")
         )];
 
         if (pids.length === 0) {
@@ -176,12 +158,11 @@ app.whenReady().then(() => {
           return { success: false, message: "No valid process found" };
         }
         
-        // Kill each PID
         for (const pid of pids) {
-          await new Promise((resolve, reject) => {
-            exec(`taskkill /F /PID ${pid}`, (error, stdout, stderr) => {
+          await new Promise<void>((resolve, reject) => {
+            exec(`taskkill /F /PID ${pid}`, (error) => {
               if (error) reject(error);
-              else resolve({ stdout, stderr });
+              else resolve();
             });
           });
         }
@@ -191,11 +172,11 @@ app.whenReady().then(() => {
           startServer(port);
         }, 1000);
         
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error killing port ${port}:`, error.message);
       }
     } else {
-      exec(`lsof -i tcp:${port} | grep LISTEN | awk '{print $2}' | xargs kill -9`, (error, stdout, stderr) => {
+      exec(`lsof -i tcp:${port} | grep LISTEN | awk '{print $2}' | xargs kill -9`, (error) => {
         if (error) {
           console.error(`Error killing port ${port}:`, error.message);
         } else {
@@ -208,19 +189,16 @@ app.whenReady().then(() => {
     }
   });
 
-  app.on("reload", () => onAppReload());
-
-  function generateState() {
+  function generateState(): string {
     return Math.random().toString(36).substring(2);
   }
 
   ipcMain.on("start-server", () => {
-    // Auth Server used for Jira Integration OAuth Process
     const port = 49153;
     startServer(port);
   });
 
-  ipcMain.on("start-jira-oauth", (event, oauthParams) => {
+  ipcMain.on("start-jira-oauth", async (event: Electron.IpcMainEvent, oauthParams: { clientId: string; clientSecret: string; redirectUri: string }) => {
     console.debug("Received OAuth parameters.");
     clientId = oauthParams.clientId;
     clientSecret = oauthParams.clientSecret;
@@ -234,10 +212,14 @@ app.whenReady().then(() => {
     const authURL = `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${clientId}&scope=read%3Ajira-user%20read%3Ajira-work%20write%3Ajira-work%20offline_access&redirect_uri=${encodeURIComponent(redirectUri)}&state=${generateState()}&response_type=code&prompt=consent`;
 
     console.log("Opening authorization URL.");
-    shell.openExternal(authURL).then();
+    try {
+      await shell.openExternal(authURL);
+    } catch (error) {
+      console.error("Failed to open authorization URL:", error);
+    }
   });
 
-  ipcMain.on("refresh-jira-token", async (event, { refreshToken }) => {
+  ipcMain.on("refresh-jira-token", async (event: Electron.IpcMainEvent, { refreshToken }: { refreshToken: string }) => {
     console.debug("Received refresh token request.");
     try {
       const authResponse = await exchangeToken("refresh_token", refreshToken);
@@ -250,7 +232,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle("dialog:openFile", async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog();
+    const { canceled, filePaths } = await dialog.showOpenDialog({});
     if (canceled) {
       return null;
     } else {
@@ -262,36 +244,39 @@ app.whenReady().then(() => {
 
   ipcMain.handle(
     "dialog:saveFile",
-    async (event, fileContent, options = null) => {
+    async (_event: Electron.IpcMainInvokeEvent, fileContent: string, options: { rootPath: string; fileName: string } | null) => {
+      if (!options) return null;
+
       let filePath = options.rootPath;
 
       if (!filePath) {
-        const response = await dialog.showSaveDialog();
-        filePath = response.filePath;
+        const response = await dialog.showSaveDialog({});
+        filePath = response.filePath || '';
         if (response.canceled) {
           return null;
         }
       }
-      const dirForSave = `${filePath}/${options.fileName.split(options.fileName.split("/").pop())[0]}`;
+      
+      const dirForSave = `${filePath}/${options.fileName.split(options.fileName.split("/").pop()!)[0]}`;
       if (!fs.existsSync(dirForSave)) {
         fs.mkdirSync(dirForSave, { recursive: true });
       }
       fs.writeFileSync(`${filePath}/${options.fileName}`, fileContent, "utf-8");
       return filePath;
-    },
+    }
   );
 
-  ipcMain.handle('chat:getSuggestions', async (event, data) => {
+  ipcMain.handle('chat:getSuggestions', async (_event: Electron.IpcMainInvokeEvent, data: any) => {
     try {
-      const result = await getSuggestions(event, data);
+      const result = await getSuggestions(_event, data);
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error handling chat:getSuggestions:', error.message);
       throw error;
     }
   });
 
-  ipcMain.handle("dialog:openDirectory", async (_event, _message) => {
+  ipcMain.handle("dialog:openDirectory", async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       properties: ["openDirectory"],
     });
@@ -302,43 +287,25 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle("invokeCustomFunction", async (event, message) => {
+  ipcMain.handle("invokeCustomFunction", async (_event: Electron.IpcMainInvokeEvent, message: { functionName: string; params: any }) => {
     console.debug("message on invokeCustomFunction.");
     console.debug("map: ", utilityFunctionMap);
-    return utilityFunctionMap[message.functionName](message.params);
+    const fn = utilityFunctionMap[message.functionName as keyof typeof utilityFunctionMap];
+    return fn(message.params);
   });
 
-  // New handler to show error message
-  ipcMain.handle("show-error-message", async (event, errorMessage) => {
-    mainWindow.webContents.send("display-error", errorMessage);
+  ipcMain.handle("show-error-message", async (_event: Electron.IpcMainInvokeEvent, errorMessage: string) => {
+    mainWindow?.webContents.send("display-error", errorMessage);
   });
 
-  authServer.get("/callback", async (req, res) => {
-    const authorizationCode = req.query.code;
-    try {
-      const authResponse = await exchangeToken(
-        "authorization_code",
-        authorizationCode,
-      );
-      mainWindow.webContents.send("oauth-reply", authResponse);
-      res.send("Authentication successful. You can close this tab.");
-    } catch (error) {
-      console.error(
-        "Error exchanging authorization code for access token.",
-      );
-      res.status(500).send("Authentication failed.");
-    }
-  });
-
-  ipcMain.on("load-url", (event, serverConfig) => {
+  ipcMain.on("load-url", (_event: Electron.IpcMainEvent, serverConfig: string) => {
     if (serverConfig && isValidUrl(serverConfig)) {
-      mainWindow
-        .loadURL(serverConfig)
+      mainWindow?.loadURL(serverConfig)
         .then(() => {
           console.debug("URL loaded successfully");
         })
-        .catch((error) => {
-          console.error("Failed to load URL.");
+        .catch((error: Error) => {
+          console.error("Failed to load URL:", error.message);
         });
     } else {
       console.error("Invalid or no server URL provided.");
@@ -350,16 +317,42 @@ ipcMain.handle("get-style-url", () => {
   return path.join(process.resourcesPath, "tailwind.output.css");
 });
 
-function startServer(port) {
+const authServer = createServer((req: IncomingMessage, res: ServerResponse) => {
+  if (req.method === "GET" && req.url?.startsWith("/callback")) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const authorizationCode = url.searchParams.get("code");
+    if (authorizationCode) {
+      exchangeToken("authorization_code", authorizationCode)
+        .then((authResponse) => {
+          mainWindow?.webContents.send("oauth-reply", authResponse);
+          res.writeHead(200, { "Content-Type": "text/plain" });
+          res.end("Authentication successful. You can close this tab.");
+        })
+        .catch((error) => {
+          console.error("Error exchanging authorization code for access token.");
+          res.writeHead(500, { "Content-Type": "text/plain" });
+          res.end("Authentication failed.");
+        });
+    } else {
+      res.writeHead(400, { "Content-Type": "text/plain" });
+      res.end("Missing authorization code.");
+    }
+  } else {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Not Found.");
+  }
+});
+
+function startServer(port: number) {
   const server = net.createServer();
-  server.once("error", (err) => {
+  server.once("error", (err: NodeJS.ErrnoException) => {
     if (err.code === "EADDRINUSE") {
-      mainWindow.webContents.send(
+      mainWindow?.webContents.send(
         "port-error",
         `Port ${port} is already in use by another application.`
       );
     } else {
-      mainWindow.webContents.send(
+      mainWindow?.webContents.send(
         "port-error",
         `Failed to start server: ${err.message}`
       );
@@ -372,17 +365,17 @@ function startServer(port) {
       console.debug(
         `OAuth callback server listening on http://localhost:${port}/callback`
       );
-      mainWindow.webContents.send("server-started");
+      mainWindow?.webContents.send("server-started");
     });
 
-    authServer.on("error", (err) => {
+    authServer.on("error", (err: NodeJS.ErrnoException) => {
       if (err.code === "EADDRINUSE") {
-        mainWindow.webContents.send(
+        mainWindow?.webContents.send(
           "port-error",
           `Port ${port} is already in use.`
         );
       } else {
-        mainWindow.webContents.send(
+        mainWindow?.webContents.send(
           "port-error",
           `Server error: ${err.message}`
         );
@@ -392,9 +385,23 @@ function startServer(port) {
   server.listen(port);
 }
 
-async function exchangeToken(grantType, codeOrToken) {
+interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: string;
+}
+
+async function exchangeToken(grantType: string, codeOrToken: string) {
   const tokenUrl = "https://auth.atlassian.com/oauth/token";
-  const params = {
+  const params: {
+    grant_type: string;
+    client_id: string;
+    client_secret: string;
+    redirect_uri?: string;
+    code?: string;
+    refresh_token?: string;
+  } = {
     grant_type: grantType,
     client_id: clientId,
     client_secret: clientSecret,
@@ -407,7 +414,7 @@ async function exchangeToken(grantType, codeOrToken) {
     params.refresh_token = codeOrToken;
   }
 
-  const response = await axios.post(tokenUrl, params, {
+  const response = await axios.post<TokenResponse>(tokenUrl, params, {
     headers: {
       "Content-Type": "application/json",
     },
@@ -429,10 +436,10 @@ async function exchangeToken(grantType, codeOrToken) {
   };
 }
 
-async function getCloudId(accessToken) {
+async function getCloudId(accessToken: string): Promise<string | null> {
   const accessibleResourcesUrl =
     "https://api.atlassian.com/oauth/token/accessible-resources";
-  const cloudIdResponse = await axios.get(accessibleResourcesUrl, {
+  const cloudIdResponse = await axios.get<Array<{ id: string }>>(accessibleResourcesUrl, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: "application/json",
@@ -444,13 +451,18 @@ async function getCloudId(accessToken) {
 }
 
 function onAppReload() {
-  mainWindow.loadFile(`${indexPath}/index.html`).then(() => {
+  const currentHash = mainWindow?.webContents.getURL().split('#')[1] || '';
+  mainWindow?.loadFile(`${indexPath}/index.html`, { 
+    query: {},
+    hash: currentHash || 'apps'
+  }).then(() => {
     console.debug("Welcome Page reloaded successfully");
+  }).catch((error) => {
+    console.error("Failed to reload welcome page:", error);
   });
 }
 
-// Helper function to validate URLs
-function isValidUrl(url) {
+function isValidUrl(url: string): boolean {
   try {
     new URL(url);
     return true;
