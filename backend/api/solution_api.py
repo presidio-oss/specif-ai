@@ -21,6 +21,7 @@ from schemas.schemas import (
     create_process_flow_chart_schema,
 )
 from config.executor import ExecutorConfig
+from schemas.schemas import create_prds_schema
 
 
 solution_api = Blueprint('solution_api', __name__)
@@ -240,6 +241,63 @@ def add_solution_reqt():
     logger.info(f"Request {g.request_id}: Exited <add_solution_reqt>")
     return merged_data
 
+@solution_api.route("/api/solutions/prds", methods=["POST"])
+@require_access_code()
+def create_prds():
+    logger.info(f"Request {g.request_id}: Entered <create_prds>")
+    data: any
+    try:
+        data = create_prds_schema.load(request.get_json())
+    except ValidationError as err:
+        logger.error(
+            f"Request {g.request_id}: Payload validation failed: {err.messages}"
+        )
+        raise CustomAppException(
+            "Payload validation failed.", status_code=400
+        ) from err
+
+    try:
+
+        create_prds_template = get_template("create_prd.jinja2")
+        app_data = data.get("app", {})
+        create_prds_req = create_prds_template.render(
+            brds=data["brds"],
+            extraContext=data.get("extraContext", ""),
+            app_technical_details=app_data.get("technicalDetails"),
+            app_name=app_data.get("name"),
+            app_description=app_data.get("description"),
+        )
+
+        # Create LLM handler
+        llm_handler = build_llm_handler(
+            provider=g.current_provider, model_id=g.current_model
+        )
+
+        # Prepare message and invoke LLM
+        llm_message = LLMUtils.prepare_messages(prompt=create_prds_req)
+        llm_response = llm_handler.invoke(messages=llm_message)
+
+        try:
+            prds = json.loads(llm_response)
+            logger.info(f"Request {g.request_id}: Exited <create_stories>")
+            return prds
+        except json.JSONDecodeError as exc:
+            logger.error(
+                f"Request {g.request_id}: Failed to parse LLM response: {llm_response}"
+            )
+            raise CustomAppException(
+                "Invalid JSON format. Please try again.",
+                status_code=500,
+                payload={"raw_llm_response": llm_response},
+            ) from exc
+    except Exception as e:
+        logger.error(
+            f"Request {g.request_id}: An unexpected error occurred in <create_prds>: {str(e)}"
+        )
+        raise CustomAppException(
+            "An unexpected error occurred while creating the prds from brds.",
+            status_code=500,
+        ) from e
 
 @solution_api.route("/api/solutions/stories", methods=["POST"])
 @require_access_code()
