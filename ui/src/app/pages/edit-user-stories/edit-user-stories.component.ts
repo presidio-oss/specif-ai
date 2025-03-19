@@ -238,7 +238,6 @@ export class EditUserStoriesComponent implements OnDestroy {
         }),
       );
       this.allowFreeRedirection = true;
-      console.log('DEBUG: ', this.entityType, this.existingUserForm.id);
 
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
