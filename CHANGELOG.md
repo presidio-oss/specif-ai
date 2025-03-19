@@ -4,7 +4,7 @@
 
 ### Enhancements
 
-- Added a rich markdown editor across PRD, BRD, NFR, UIR, BP, User Story, and Task.
+- Added a rich text markdown editor across PRD, BRD, NFR, UIR, BP, User Story, and Task.
 - Improved UI consistency and styling across upload code components.
 - Added Gemini and Ollama (Backend) support
 - Improved the numbering system at the solution level.
