@@ -5,6 +5,8 @@ import { ToasterService } from '../toaster/toaster.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
+import { Observable } from 'rxjs';
+import { suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +21,12 @@ export class ElectronService {
   ) {
     if (this.isElectron()) {
       this.electronAPI = window.electronAPI; // Access Electron APIs through preload
+    }
+  }
+
+  async getSuggestions(payload: suggestionPayload) {
+    if (this.electronAPI) {
+      return this.electronAPI.invoke('chat:getSuggestions', payload);
     }
   }
 
@@ -197,6 +205,7 @@ interface ElectronAPI {
   removeListener: (channel: string, listener: (...args: any[]) => void) => void;
   getStyleUrl: () => string;
   reloadApp: () => void;
+  getSuggestions(payload: suggestionPayload): Promise<void>;
 }
 
 // Extend the global Window interface to include electronAPI

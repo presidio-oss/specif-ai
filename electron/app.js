@@ -8,6 +8,7 @@ require("dotenv").config({
     ? path.join(process.resourcesPath, ".env")
     : path.resolve(process.cwd(), ".env"),
 });
+const getSuggestions = require('./ipc/handlers/chat/get-suggestions');
 
 const indexPath = app.isPackaged
   ? path.join(process.resourcesPath, "ui")
@@ -279,6 +280,16 @@ app.whenReady().then(() => {
       return filePath;
     },
   );
+
+  ipcMain.handle('chat:getSuggestions', async (event, data) => {
+    try {
+      const result = await getSuggestions(event, data);
+      return result;
+    } catch (error) {
+      console.error('Error handling chat:getSuggestions:', error.message);
+      throw error;
+    }
+  });
 
   ipcMain.handle("dialog:openDirectory", async (_event, _message) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({

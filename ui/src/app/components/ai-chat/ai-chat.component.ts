@@ -19,7 +19,7 @@ import { ChatSettings } from 'src/app/model/interfaces/ChatSettings';
 import { ChatSettingsState } from 'src/app/store/chat-settings/chat-settings.state';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { 
+import {
   heroDocumentPlus,
   heroCheck,
   heroPaperClip,
@@ -27,7 +27,7 @@ import {
   heroXMark,
   heroDocumentText
 } from '@ng-icons/heroicons/outline';
-import { heroSparklesSolid } from '@ng-icons/heroicons/solid'
+import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { environment } from '../../../environments/environment';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { ProjectsState } from 'src/app/store/projects/projects.state';
@@ -35,6 +35,7 @@ import { ToggleComponent } from '../toggle/toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ERROR_MESSAGES } from '../../constants/app.constants';
+import { ElectronService } from '../../services/electron/electron.service';
 @Component({
   selector: 'app-chat',
   templateUrl: './ai-chat.component.html',
@@ -117,6 +118,7 @@ export class AiChatComponent implements OnInit {
 
   constructor(
     private chatService: ChatService,
+    private electronService: ElectronService,
     private utilityService: UtilityService,
     private store: Store,
     private toastService: ToasterService,
@@ -179,22 +181,21 @@ export class AiChatComponent implements OnInit {
       suggestions: this.localSuggestions,
       selectedSuggestion: this.selectedSuggestion,
     };
-    this.chatService
-    .generateSuggestions(suggestionPayload).subscribe({
-      next: (response: Array<''>) => {
+    this.electronService
+      .getSuggestions(suggestionPayload)
+      .then((response: Array<''>) => {
         this.chatSuggestions = response;
         this.localSuggestions.push(...response);
         this.loadingChat = false;
-        this.responseStatus = false; 
+        this.responseStatus = false;
         this.smoothScroll();
-      },
-      error: (err) => {
+      })
+      .catch((err) => {
         this.toastService.showError(ERROR_MESSAGES.GENERATE_SUGGESTIONS_FAILED);
         this.loadingChat = false;
-        this.responseStatus = false; 
+        this.responseStatus = false;
         this.smoothScroll();
-      }
-    });
+      });
   }
 
   finalCall(message: string) {

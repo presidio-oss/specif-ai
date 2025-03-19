@@ -23,22 +23,26 @@
     "@electron/fuses": "^1.8.0",
     "@electron/rebuild": "^3.6.0",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^8.2.2",
     "electron": "^31.2.1",
     "electron-builder": "^24.13.3",
     "electron-reload": "^2.0.0-alpha.1",
+    "onchange": "^7.1.0",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.14",
-    "concurrently": "^8.2.2",
-    "onchange": "^7.1.0"
+    "tailwindcss": "^3.4.14"
   },
   "dependencies": {
+    "@azure/openai": "^2.0.0",
     "@sentry/electron": "^5.3.0",
     "axios": "^1.7.7",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "electron-notarize": "^1.2.2",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^10.0.0",
-    "express": "^4.21.0"
+    "express": "^4.21.0",
+    "handlebars": "^4.7.8",
+    "openai": "^4.87.4",
+    "zod": "^3.24.2"
   },
   "build": {
     "files": "!build-assets${/*}",

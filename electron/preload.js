@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
   openFile: () => ipcRenderer.invoke("dialog:openFile"),
+  getSuggestions: (data) => ipcRenderer.invoke("chat:getSuggestions", data),
   saveFile: (fileContent, filePath) =>
     ipcRenderer.invoke("dialog:saveFile", fileContent, filePath),
   openDirectory: () => ipcRenderer.invoke("dialog:openDirectory"),
