@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@azure/openai": "^2.0.0",
+    "@langchain/aws": "^0.1.7",
     "@sentry/electron": "^5.3.0",
     "axios": "^1.7.7",
     "dotenv": "^16.4.7",
@@ -41,6 +42,7 @@
     "electron-store": "^10.0.0",
     "express": "^4.21.0",
     "handlebars": "^4.7.8",
+    "langchain": "^0.3.19",
     "openai": "^4.87.4",
     "zod": "^3.24.2"
   },

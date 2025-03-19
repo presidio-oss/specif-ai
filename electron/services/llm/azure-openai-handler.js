@@ -1,9 +1,13 @@
-// const { AzureOpenAI } = require("@azure/openai");
 const { AzureOpenAI } = require("openai");
 const LLMHandler = require("./llm-handler");
 
 class AzureOpenAIHandler extends LLMHandler {
-  constructor(apiKey, endpoint, deploymentId) {
+  constructor(
+    apiKey,
+    endpoint,
+    deploymentId,
+    apiVersion = process.env.AZURE_API_VERSION
+  ) {
     super();
     if (!apiKey || !endpoint || !deploymentId) {
       throw new Error(
@@ -13,10 +17,12 @@ class AzureOpenAIHandler extends LLMHandler {
     this.apiKey = apiKey;
     this.endpoint = endpoint;
     this.deploymentId = deploymentId;
+    this.apiVersion = apiVersion;
     this.client = new AzureOpenAI({
       apiKey: this.apiKey,
       endpoint: this.endpoint,
       deployment: this.deploymentId,
+      apiVersion: this.apiVersion,
     });
   }
 

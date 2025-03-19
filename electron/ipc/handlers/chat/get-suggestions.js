@@ -11,8 +11,10 @@ const handlebarsService = new HandlebarsService(templateDir);
 const azureOpenAIHandler = new AzureOpenAIHandler(
   process.env.AZURE_API_KEY,
   process.env.AZURE_BASE_URL,
-  process.env.AZURE_DEPLOYMENT_ID
+  process.env.AZURE_DEPLOYMENT_ID,
+  process.env.AZURE_API_VERSION
 );
+
 console.log('[get-suggestions] AzureOpenAIHandler initialized with API key:', azureOpenAIHandler.AZURE_BASE_URL);
 
 async function getSuggestions(event, data) {
