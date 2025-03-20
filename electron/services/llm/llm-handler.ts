@@ -1,13 +1,4 @@
-export interface Message {
-  role: string;
-  content: string;
-  [key: string]: any;  // Allow additional properties to match backend flexibility
-}
-
-export interface ModelInfo {
-  id: string;
-  [key: string]: any;
-}
+import { Message, ModelInfo, LLMConfig } from './llm-types';
 
 export abstract class LLMHandler {
   protected config: Record<string, any> = {};
@@ -41,7 +32,7 @@ export abstract class LLMHandler {
    * Checks if the LLM configuration is valid.
    * @returns True if the configuration is valid, False otherwise.
    */
-  abstract isValid(): boolean;
+  abstract isValid(): boolean | Promise<boolean>;
 }
 
 export default LLMHandler;

@@ -12,13 +12,14 @@ import { Store } from '@ngxs/store';
 import {
   AvailableProviders,
   ProviderModelMap,
+  HIDE_MODEL_DROPDOWN,
 } from '../../constants/llm.models.constants';
 import {
   SetLLMConfig,
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIconComponent } from '@ng-icons/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { AuthService } from '../../services/auth/auth.service';
@@ -33,6 +34,7 @@ import { environment } from 'src/environments/environment';
 import { ElectronService } from 'src/app/services/electron/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
+import { LLM_PROVIDER_CONFIGS, ProviderField } from '../../constants/llm-provider-config';
 
 @Component({
   selector: 'app-settings',
@@ -54,15 +56,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
   currentLLMConfig!: LLMConfigModel;
   availableProviders = AvailableProviders;
   filteredModels: string[] = [];
-  selectedModel: FormControl = new FormControl();
-  selectedProvider: FormControl = new FormControl();
+  currentProviderFields: ProviderField[] = [];
+  hideModelDropdown: boolean = false;
+  configForm!: FormGroup;
   errorMessage: string = '';
   hasChanges: boolean = false;
   workingDir: string | null;
   appName = environment.ThemeConfiguration.appName;
   private subscriptions: Subscription = new Subscription();
-  private initialModel: string = '';
-  private initialProvider: string = '';
   protected themeConfiguration = environment.ThemeConfiguration;
 
   electronService = inject(ElectronService);
@@ -78,16 +79,173 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
   ) {
     this.workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
+    this.initForm();
   }
 
-  /**
-   * Prompts the user to select a root directory, saves the selected directory to local storage,
-   * and navigates to the '/apps' route or reloads the current page based on the current URL.
-   *
-   * @return {Promise<void>} A promise that resolves when the directory selection and navigation are complete.
-   */
+  private initForm() {
+    this.configForm = this.fb.group({
+      provider: ['', Validators.required],
+      model: [''],
+      config: this.fb.group({})
+    });
+  }
+
+  private updateConfigFields(provider: string) {
+    const providerConfig = LLM_PROVIDER_CONFIGS[provider];
+    if (!providerConfig) return;
+
+    this.currentProviderFields = providerConfig.fields;
+    if (!this.configForm) return;
+    const configGroup = this.configForm.get('config') as FormGroup;
+    if (!configGroup) return;
+
+    // Remove all existing controls
+    Object.keys(configGroup.controls).forEach(key => {
+      configGroup.removeControl(key);
+    });
+
+    // Add new controls based on provider fields
+    providerConfig.fields.forEach(field => {
+      configGroup.addControl(
+        field.name,
+        this.fb.control(
+          field.defaultValue !== undefined ? field.defaultValue : '',
+          field.required ? [Validators.required] : []
+        )
+      );
+    });
+  }
+
+  ngOnInit(): void {
+    if (this.configForm) {
+      // Set initial default values
+      const defaultProvider = AvailableProviders[0].key;
+      const defaultModel = ProviderModelMap[defaultProvider][0];
+      
+      this.configForm.patchValue({
+        provider: defaultProvider,
+        model: defaultModel,
+        config: {}
+      });
+
+      this.subscriptions.add(
+        this.llmConfig$.subscribe((config) => {
+          this.currentLLMConfig = config;
+          
+          // If config is empty or invalid, use defaults
+          const provider = config?.provider || defaultProvider;
+          const model = config?.model || ProviderModelMap[provider][0];
+          
+          this.updateFilteredModels(provider);
+          this.updateConfigFields(provider);
+          
+          // Then patch all values including config
+          this.configForm?.patchValue({
+            provider,
+            model,
+            config: config?.config || {}
+          }, { emitEvent: false });
+          
+          this.hasChanges = false;
+        }),
+      );
+
+      this.subscriptions.add(
+        this.configForm.valueChanges.pipe(distinctUntilChanged()).subscribe(() => {
+          this.hasChanges = true;
+          this.errorMessage = '';
+        })
+      );
+
+      const providerControl = this.configForm.get('provider');
+      const modelControl = this.configForm.get('model');
+      if (providerControl && modelControl) {
+        this.subscriptions.add(
+          providerControl.valueChanges.subscribe(provider => {
+            this.hideModelDropdown = HIDE_MODEL_DROPDOWN.includes(provider);
+            this.updateFilteredModels(provider);
+            this.updateConfigFields(provider);
+            
+            // Update model field validation and value based on provider
+            if (this.hideModelDropdown) {
+              modelControl.clearValidators();
+              modelControl.setValue('');
+            } else {
+              modelControl.setValidators(Validators.required);
+              modelControl.setValue(ProviderModelMap[provider][0]);
+            }
+            modelControl.updateValueAndValidity();
+          })
+        );
+      }
+    }
+  }
+
+  updateFilteredModels(provider: string) {
+    this.filteredModels = ProviderModelMap[provider] || [];
+  }
+
+  closeModal() {
+    this.configForm?.patchValue({
+      provider: this.currentLLMConfig.provider,
+      model: this.currentLLMConfig.model,
+      config: this.currentLLMConfig.config || {}
+    });
+    this.modalRef.close(false);
+  }
+
+  onSave() {
+    if (!this.configForm?.valid) return;
+
+    const formValue = this.configForm.value;
+    const provider = formValue.provider;
+    // Use form model value or let the handler determine it from config
+    const model = this.hideModelDropdown ? '' : formValue.model;
+
+    // Store current values before verification
+    const previousConfig = {
+      provider: this.currentLLMConfig.provider,
+      model: this.currentLLMConfig.model,
+      config: this.currentLLMConfig.config
+    };
+
+    this.electronService.verifyLLMConfig(provider, model, formValue.config).then((response) => {
+      if (response.status === 'success') {
+        const newConfig = {
+          ...this.currentLLMConfig,
+          provider: formValue.provider,
+          model: response.model, // Use the actual model ID from the handler
+          config: formValue.config
+        };
+        this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
+          this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
+            const providerDisplayName =
+              this.availableProviders.find((p) => p.key === provider)
+                ?.displayName || provider;
+            this.toasterService.showSuccess(
+              `${providerDisplayName} : ${response.model} is configured successfully.`,
+            );
+            this.modalRef.close(true);
+          });
+        });
+      } else {
+        // On verification failure, revert to previous working configuration
+        this.store.dispatch(new SetLLMConfig(previousConfig)).subscribe(() => {
+          this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
+            this.errorMessage = 'Connection Failed! Please verify your model credentials.';
+            this.cdr.markForCheck();
+          });
+        });
+      }
+    }).catch((error) => {
+      this.errorMessage = 'LLM configuration verification failed. Please verify your credentials.';
+      this.cdr.markForCheck();
+    });
+  }
+
   async selectRootDirectory(): Promise<void> {
     const response = await this.electronService.openDirectory();
     this.logger.debug(response);
@@ -110,104 +268,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   openFolderSelector() {
     this.selectRootDirectory().then();
     this.modalRef.close(true);
-  }
-
-  ngOnInit(): void {
-    this.subscriptions.add(
-      this.llmConfig$.subscribe((config) => {
-        this.currentLLMConfig = config;
-        this.updateFilteredModels(config?.provider);
-        this.selectedModel.setValue(config.model);
-        this.selectedProvider.setValue(config.provider);
-        this.initialModel = config.model;
-        this.initialProvider = config.provider;
-        this.hasChanges = false;
-      }),
-    );
-    this.onModelChange();
-    this.onProviderChange();
-  }
-
-  onModelChange() {
-    this.subscriptions.add(
-      this.selectedModel.valueChanges
-        .pipe(distinctUntilChanged())
-        .subscribe((res) => {
-          this.updateFilteredModels(this.selectedProvider.value);
-          this.errorMessage = '';
-          this.hasChanges =
-            this.selectedModel.value !== this.initialModel ||
-            this.selectedProvider.value !== this.initialProvider;
-          this.cdr.markForCheck();
-        }),
-    );
-  }
-
-  onProviderChange() {
-    this.subscriptions.add(
-      this.selectedProvider.valueChanges
-        .pipe(distinctUntilChanged())
-        .subscribe((res) => {
-          this.updateFilteredModels(res);
-          this.selectedModel.setValue(ProviderModelMap[res][0]);
-          this.errorMessage = '';
-          this.hasChanges =
-            this.selectedModel.value !== this.initialModel ||
-            this.selectedProvider.value !== this.initialProvider;
-          this.cdr.detectChanges();
-        }),
-    );
-  }
-
-  updateFilteredModels(provider: string) {
-    this.filteredModels = ProviderModelMap[provider] || [];
-  }
-
-  closeModal() {
-    this.store.dispatch(
-      new SetLLMConfig({
-        ...this.currentLLMConfig,
-        model: this.initialModel,
-        provider: this.initialProvider,
-      }),
-    );
-    this.modalRef.close(false);
-  }
-
-  onSave() {
-    const provider = this.selectedProvider.value;
-    const model = this.selectedModel.value;
-
-    this.authService.verifyProviderConfig(provider, model).subscribe({
-      next: (response) => {
-        if (response.status === 'success') {
-          const newConfig = {
-            ...this.currentLLMConfig,
-            model: model,
-            provider: provider,
-          };
-          this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
-            this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
-              const providerDisplayName =
-                this.availableProviders.find((p) => p.key === provider)
-                  ?.displayName || provider;
-              this.toasterService.showSuccess(
-                `${providerDisplayName} : ${model} is configured successfully.`,
-              );
-              this.modalRef.close(true);
-            });
-          });
-        } else {
-          this.errorMessage =
-            'Connection Failed! Please verify your model credentials in the backend configuration.';
-          this.cdr.markForCheck();
-        }
-      },
-      error: (error) => {
-        this.errorMessage = 'LLM configuration verification failed. Please contact your admin for technical support.';
-        this.cdr.markForCheck();
-      },
-    });
   }
 
   logout() {

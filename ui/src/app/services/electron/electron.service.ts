@@ -24,13 +24,23 @@ export class ElectronService {
     }
   }
 
-  async getSuggestions(payload: suggestionPayload) {
-    if (this.electronAPI) {
-      return this.electronAPI.invoke('chat:getSuggestions', payload);
-    }
+async getSuggestions(payload: suggestionPayload) {
+  if (this.electronAPI) {
+    return this.electronAPI.invoke('chat:getSuggestions', payload);
   }
+}
 
-  async killPort(port: number): Promise<void> {
+async verifyLLMConfig(provider: string, model: string, config: Record<string, any> = {}) {
+  if (this.electronAPI) {
+    return this.electronAPI.invoke('verify-llm-config', {
+      provider,
+      model,
+      config
+    });
+  }
+}
+
+async killPort(port: number): Promise<void> {
     if (this.electronAPI) {
       this.electronAPI.invoke('kill-port', port);
     }
@@ -206,6 +216,13 @@ interface ElectronAPI {
   getStyleUrl: () => string;
   reloadApp: () => void;
   getSuggestions(payload: suggestionPayload): Promise<void>;
+  verifyLLMConfig(provider: string, model: string, config?: Record<string, any>): Promise<{
+    status: 'success' | 'failed';
+    message: string;
+    provider: string;
+    model: string;
+    testResponse?: string;
+  }>;
 }
 
 // Extend the global Window interface to include electronAPI

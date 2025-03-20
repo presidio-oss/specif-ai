@@ -24,8 +24,9 @@
   },
   "include": [
     "**/*.ts",
-    "**/*.d.ts"
-, "preload.ts"  ],
+    "**/*.d.ts", 
+    "preload.ts"  
+],
     "exclude": [
       "node_modules",
       "dist",

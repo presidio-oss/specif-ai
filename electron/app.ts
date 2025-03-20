@@ -8,6 +8,8 @@ import net from "net";
 import { exec } from "child_process";
 import { createServer } from "http";
 import Store from 'electron-store';
+import { store as storeService } from './services/store';
+import { verifyConfig } from "./ipc/handlers/llm/verify-config";
 
 dotenv.config({
   path: app.isPackaged
@@ -23,38 +25,29 @@ const indexPath = app.isPackaged
   ? path.join(process.resourcesPath, "ui")
   : path.resolve(process.cwd(), "ui");
 
-let store: Store;
+// Initialize store and setup IPC handlers
+try {
+  const store = new Store();
+  storeService.initialize(store);
 
-// Initialize electron-store
-const initStore = async () => {
-  try {
-    store = new Store();
-  } catch (error) {
-    console.error('Failed to initialize electron-store:', error);
-  }
-};
+  ipcMain.handle("store-get", async (_event: Electron.IpcMainInvokeEvent, key: string) => {
+    return storeService.get(key);
+  });
 
-ipcMain.handle("store-get", async (_event: Electron.IpcMainInvokeEvent, key: string) => {
-  return store ? store.get(key) : null;
-});
-
-ipcMain.handle("store-set", async (_event: Electron.IpcMainInvokeEvent, key: string, value: any) => {
-  if (store) {
-    store.set(key, value);
+  ipcMain.handle("store-set", async (_event: Electron.IpcMainInvokeEvent, key: string, value: any) => {
+    storeService.set(key, value);
     return true;
-  }
-  return false;
-});
+  });
+
+  ipcMain.handle("removeStoreValue", async (_event: Electron.IpcMainInvokeEvent, key: string) => {
+    storeService.delete(key);
+    return true;
+  });
+} catch (error) {
+  console.error('Failed to initialize electron-store:', error);
+}
 
 ipcMain.handle("reloadApp", () => onAppReload());
-
-ipcMain.handle("removeStoreValue", async (_event: Electron.IpcMainInvokeEvent, key: string) => {
-  if (store) {
-    store.delete(key);
-    return true;
-  }
-  return false;
-});
 
 const themeConfiguration = JSON.parse(process.env.THEME_CONFIGURATION || '{}');
 
@@ -108,7 +101,6 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
-  await initStore();
   createWindow();
 
   app.on("activate", () => {
@@ -272,6 +264,16 @@ app.whenReady().then(async () => {
       return result;
     } catch (error: any) {
       console.error('Error handling chat:getSuggestions:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('verify-llm-config', async (_event: Electron.IpcMainInvokeEvent, data: any) => {
+    try {
+      const result = await verifyConfig(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling verify-llm-config:', error.message);
       throw error;
     }
   });

@@ -5,7 +5,7 @@ import { ElectronService } from './services/electron/electron.service';
 import { AuthService } from './services/auth/auth.service';
 import { Store } from '@ngxs/store';
 import { LLMConfigState } from './store/llm-config/llm-config.state';
-import { VerifyLLMConfig } from './store/llm-config/llm-config.actions';
+import { SetLLMConfig, SyncLLMConfig } from './store/llm-config/llm-config.actions';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -51,15 +51,77 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  private initializeLLMConfig() {
+  private async initializeLLMConfig() {
     this.logger.debug('Initializing LLM configuration');
-    if (this.authService.isAuthenticated()) {
-      this.store.dispatch(new VerifyLLMConfig()).subscribe({
-        next: () => this.logger.debug('LLM configuration verified successfully'),
-        error: (error) => this.logger.error('Error verifying LLM configuration', error)
-      });
-    } else {
+    if (!this.authService.isAuthenticated()) {
       this.logger.debug('User not authenticated, skipping LLM configuration verification');
+      return;
+    }
+
+    try {
+      // First try to get config from localStorage as it's the source of truth
+      const localConfig = localStorage.getItem('llmConfig') || await this.electronService.getStoreValue('llmConfig');
+      if (localConfig) {
+        console.log("Local Config", localConfig)
+        try {
+          const config = JSON.parse(localConfig);
+          // Save to electron store to ensure persistence
+          // await this.electronService.setStoreValue('llmConfig', config);
+          // Set in store and wait for completion before verification
+          await this.store.dispatch(new SetLLMConfig(config))
+          // await this.store.dispatch(new SyncLLMConfig())
+          const response = await this.electronService.verifyLLMConfig(
+            config.provider,
+            config.model,
+            config.config
+          );
+          if (response.status === 'success') {
+            this.logger.debug('LLM configuration verified successfully');
+          } else {
+            this.logger.error('LLM configuration verification failed:', response.message);
+          }
+          return;
+        } catch (e) {
+          this.logger.error('Error parsing saved LLM config:', e);
+        }
+      }
+
+      // If no localStorage config, try electron store
+      const savedConfig = await this.electronService.getStoreValue('llmConfig');
+      if (savedConfig) {
+        // Set in store and wait for completion before verification
+        await this.store.dispatch(new SetLLMConfig(savedConfig)).toPromise();
+        const response = await this.electronService.verifyLLMConfig(
+          savedConfig.provider,
+          savedConfig.model,
+          savedConfig.config
+        );
+        if (response.status === 'success') {
+          this.logger.debug('LLM configuration verified successfully');
+        } else {
+          this.logger.error('LLM configuration verification failed:', response.message);
+        }
+        return;
+      }
+
+      // Finally check store state if no other configs found
+      const currentState = this.store.selectSnapshot(LLMConfigState.getConfig);
+      if (currentState?.provider) {
+        const response = await this.electronService.verifyLLMConfig(
+          currentState.provider,
+          currentState.model,
+          currentState.config
+        );
+        if (response.status === 'success') {
+          this.logger.debug('LLM configuration verified successfully');
+        } else {
+          this.logger.error('LLM configuration verification failed:', response.message);
+        }
+      } else {
+        this.logger.debug('No LLM configuration found to verify');
+      }
+    } catch (error) {
+      this.logger.error('Error initializing LLM configuration:', error);
     }
   }
 }

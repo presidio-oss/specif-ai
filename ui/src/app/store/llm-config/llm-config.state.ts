@@ -18,10 +18,20 @@ export interface LLMConfigStateModel extends LLMConfigModel {
 @State<LLMConfigStateModel>({
   name: 'LLMConfig',
   defaults: {
-    apiKey: '',
     model: '',
     provider: '',
-    apiUrl: '',
+    config: {
+      apiKey: '',
+      endpoint: '',
+      deploymentId: '',
+      accessKeyId: '',
+      secretAccessKey: '',
+      sessionToken: '',
+      region: '',
+      crossRegion: false,
+      baseUrl: '',
+      maxRetries: 3
+    },
     isDefault: true
   }
 })
@@ -89,40 +99,41 @@ export class LLMConfigState {
 
     const state = getState();
     this.loadingService.setLoading(true);
+
     return timer(0).pipe( // Use timer to ensure we're not blocking the main thread
-      tap(() => this.http.post('model/config-verification', {
-        provider: state.provider,
-        model: state.model
-      }).pipe(
-      tap((response: any) => {
-        const providerDisplayName = AvailableProviders.find(p => p.key === state.provider)?.displayName || state.provider;
-        if (response.status === 'failed') {
-          this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
-            tap((defaultConfig) => {
+      tap(async () => {
+        try {
+          const response = await this.electronService.verifyLLMConfig(state.provider, state.model);
+          const providerDisplayName = AvailableProviders.find(p => p.key === state.provider)?.displayName || state.provider;
+
+          if (response.status === 'failed') {
+            // Get default config and reset
+            const defaultConfig = await this.electronService.getStoreValue('defaultLLMConfig');
+            if (defaultConfig) {
               const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
-              this.toasterService.showInfo(`LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}: ${defaultConfig.model}`);
+              this.toasterService.showInfo(
+                `LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}: ${defaultConfig.model}`, 
+                DEFAULT_TOAST_DURATION
+              );
               dispatch(new FetchDefaultLLMConfig());
-            }),
-            catchError((error) => {
-              console.error('Error fetching default LLM config:', error);
-              this.toasterService.showError('Failed to fetch default LLM configuration.', 5000);
-              return of(null);
-            })
-          ).subscribe();
+            } else {
+              throw new Error('No default configuration available');
+            }
+          }
+
+          // Always sync the config after verification, regardless of success or failure
+          dispatch(new SyncLLMConfig());
+        } catch (error) {
+          console.error('Error verifying LLM config:', error);
+          this.toasterService.showError(
+            'Failed to verify provider and model configuration', 
+            DEFAULT_TOAST_DURATION
+          );
+          dispatch(new FetchDefaultLLMConfig());
+        } finally {
+          this.loadingService.setLoading(false);
         }
-        // Always sync the config after verification, regardless of success or failure
-        dispatch(new SyncLLMConfig());
-      }),
-      catchError((error) => {
-        console.error('Error verifying LLM config:', error);
-        this.toasterService.showError('Failed to verify provider and model configuration', 5000);
-        dispatch(new FetchDefaultLLMConfig());
-        return of(null);
-      }),
-      finalize(() => {
-        this.loadingService.setLoading(false);
       })
-    ).subscribe())
     );
   }
 }

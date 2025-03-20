@@ -1,11 +1,18 @@
 import { z } from 'zod';
 
 export const getSuggestionsSchema = z.object({
-  name: z.string().nonempty(),
-  description: z.string().nonempty(),
-  type: z.string().nonempty(),
-  requirement: z.string().nonempty(),
-  suggestions: z.array(z.string()).optional(),
+  // llmConfig: z.object({
+  //   provider: z.string(),
+  //   model: z.string().optional(),
+  //   isDefault: z.boolean()
+  // }),
+  name: z.string(),
+  description: z.string().optional(),
+  type: z.string(),
+  requirement: z.string(),
+  suggestions: z.array(z.string()),
   selectedSuggestion: z.string().optional(),
-  knowledgeBase: z.string().optional(),
+  knowledgeBase: z.string().optional()
 });
+
+export type GetSuggestionsRequest = z.infer<typeof getSuggestionsSchema>;

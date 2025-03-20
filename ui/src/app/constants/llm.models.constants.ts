@@ -4,6 +4,7 @@ export const AvailableProviders = [
   { displayName: 'OpenAI Native', key: 'openai-native' },
   { displayName: 'AWS Bedrock', key: 'bedrock' },
   { displayName: 'Gemini', key: 'gemini' },
+  { displayName: 'Anthropic', key: 'anthropic' },
 ];
 
 export const ProviderModelMap: { [key: string]: string[] } = {
@@ -31,5 +32,12 @@ export const ProviderModelMap: { [key: string]: string[] } = {
       'gemini-1.5-pro-002',
       'gemini-1.5-pro-exp-0827',
       'gemini-exp-1206'
+    ],
+    'anthropic': [
+      'claude-3-opus-20240229',
+      'claude-3-sonnet-20240229',
+      'claude-3-haiku-20240307'
     ]
 };
+
+export const HIDE_MODEL_DROPDOWN = ['openai']; // Azure OpenAI - uses deployment ID as model
