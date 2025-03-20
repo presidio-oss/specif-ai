@@ -26,19 +26,19 @@ const electronListeners = {
     ipcRenderer.removeListener(channel, listener),
 };
 
-const requirementListeners = {
+const coreListeners = {
   getSuggestions: (data: any) =>
     ipcRenderer.invoke("core:getSuggestions", data),
   verifyLLMConfig: (
     provider: string,
     model: string,
     config?: Record<string, any>
-  ) => ipcRenderer.invoke("core:verify", { provider, model, config }),
+  ) => ipcRenderer.invoke("core:verifyLLMConfig", { provider, model, config }),
 };
 
 const electronAPI = {
   ...electronListeners,
-  requirement: requirementListeners,
+  ...coreListeners,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);
