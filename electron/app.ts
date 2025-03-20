@@ -255,22 +255,22 @@ app.whenReady().then(async () => {
     }
   );
 
-  ipcMain.handle('chat:getSuggestions', async (_event: Electron.IpcMainInvokeEvent, data: any) => {
+  ipcMain.handle('core:getSuggestions', async (_event: Electron.IpcMainInvokeEvent, data: any) => {
     try {
       const result = await getSuggestions(_event, data);
       return result;
     } catch (error: any) {
-      console.error('Error handling chat:getSuggestions:', error.message);
+      console.error('Error handling core:getSuggestions:', error.message);
       throw error;
     }
   });
 
-  ipcMain.handle('verify-llm-config', async (_event: Electron.IpcMainInvokeEvent, data: any) => {
+  ipcMain.handle('core:verifyLLMConfig', async (_event: Electron.IpcMainInvokeEvent, data: any) => {
     try {
       const result = await verifyConfig(_event, data);
       return result;
     } catch (error: any) {
-      console.error('Error handling verify-llm-config:', error.message);
+      console.error('Error handling core:verifyLLMConfig:', error.message);
       throw error;
     }
   });
