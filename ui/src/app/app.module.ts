@@ -49,6 +49,8 @@ import { ButtonComponent } from './components/core/button/button.component';
 import { AuthService } from './services/auth/auth.service';
 import { AuthInterceptor } from './interceptor/auth.interceptor';
 import { AuthStateService } from './services/auth/auth-state.service';
+import { PostHogAnalyticsManager } from './services/analytics/managers/posthog-analytics.manager';
+import { AnalyticsTracker } from './services/analytics/analytics.interface';
 
 @NgModule({
   declarations: [AppComponent],
@@ -115,9 +117,11 @@ import { AuthStateService } from './services/auth/auth-state.service';
     AuthStateService,
     AuthService,
     UtilityService,
+    PostHogAnalyticsManager,
     SpreadSheetService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
+    { provide: AnalyticsTracker, useClass: PostHogAnalyticsManager },
     {
       provide: ErrorHandler,
       useValue: Sentry.createErrorHandler(),

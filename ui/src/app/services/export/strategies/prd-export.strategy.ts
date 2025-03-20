@@ -92,14 +92,14 @@ export class PRDExportStrategy implements ExportStrategy {
               JSON.parse(res).features || [];
             const userStoriesFormatted: FormattedUserStory[] = userStories.map(
               (userStory) => {
-                const storyId = `${prdId}-${userStory.id}`;
+                const storyId = `${userStory.id}`;
                 return {
                   id: storyId,
                   name: userStory.name,
                   description: userStory.description,
                   tasks:
                     userStory.tasks?.map((task) => {
-                      const taskId = `${storyId}-${task.id}`;
+                      const taskId = `${task.id}`;
                       return {
                         id: taskId,
                         title: task.list,

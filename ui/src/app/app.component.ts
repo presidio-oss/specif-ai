@@ -4,10 +4,12 @@ import { Router } from '@angular/router';
 import { ElectronService } from './services/electron/electron.service';
 import { AuthService } from './services/auth/auth.service';
 import { Store } from '@ngxs/store';
-import { LLMConfigState } from './store/llm-config/llm-config.state';
 import { VerifyLLMConfig } from './store/llm-config/llm-config.actions';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
+import { AnalyticsModalComponent } from './components/analytics-modal/analytics-modal.component';
+import { AnalyticsTracker } from './services/analytics/analytics.interface';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +22,9 @@ export class AppComponent implements OnInit, OnDestroy {
   router = inject(Router);
   authService = inject(AuthService);
   store = inject(Store);
-
+  dialog = inject(MatDialog);
+  analyticsTracker = inject(AnalyticsTracker);
+  
   private subscriptions: Subscription[] = [];
 
   ngOnInit() {
@@ -39,11 +43,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.initializeLLMConfig();
 
     this.subscriptions.push(
-      this.authService.isLoggedIn$.pipe(
-        filter(isLoggedIn => isLoggedIn)
-      ).subscribe(() => {
-        this.initializeLLMConfig();
-      })
+      this.authService.isLoggedIn$
+        .pipe(filter((isLoggedIn) => isLoggedIn))
+        .subscribe(() => {
+          this.initializeLLMConfig();
+          this.checkAnalyticsPermission();
+        }),
     );
   }
 
@@ -55,11 +60,29 @@ export class AppComponent implements OnInit, OnDestroy {
     this.logger.debug('Initializing LLM configuration');
     if (this.authService.isAuthenticated()) {
       this.store.dispatch(new VerifyLLMConfig()).subscribe({
-        next: () => this.logger.debug('LLM configuration verified successfully'),
-        error: (error) => this.logger.error('Error verifying LLM configuration', error)
+        next: () =>
+          this.logger.debug('LLM configuration verified successfully'),
+        error: (error) =>
+          this.logger.error('Error verifying LLM configuration', error),
       });
     } else {
-      this.logger.debug('User not authenticated, skipping LLM configuration verification');
+      this.logger.debug(
+        'User not authenticated, skipping LLM configuration verification',
+      );
     }
+  }
+
+  private checkAnalyticsPermission() {
+    const ANALYTICS_PERMISSION_REQUESTED = 'analyticsPermissionRequested';
+    const analyticsPermission = localStorage.getItem(ANALYTICS_PERMISSION_REQUESTED);
+    if (analyticsPermission !== 'true') {
+      this.dialog.open(AnalyticsModalComponent, {
+        width: '600px',
+        disableClose: true,
+      });
+      localStorage.setItem(ANALYTICS_PERMISSION_REQUESTED, 'true');
+      return;
+    }
+    this.analyticsTracker.initAnalytics();
   }
 }

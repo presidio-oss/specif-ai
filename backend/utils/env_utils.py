@@ -24,6 +24,12 @@ class EnvVariables(Enum):
     AWS_BEDROCK_SESSION_TOKEN = 'AWS_BEDROCK_SESSION_TOKEN'
     AWS_BEDROCK_REGION = 'AWS_BEDROCK_REGION'
 
+    # Ollama
+    OLLAMA_BASE_URL = 'OLLAMA_BASE_URL'
+
+    # Gemini
+    GEMINI_API_KEY = 'GEMINI_API_KEY'
+
     # App related envs
     APP_PASSCODE_KEY = "APP_PASSCODE_KEY"
     HOST = "HOST"
@@ -34,6 +40,10 @@ class EnvVariables(Enum):
     SENTRY_ENVIRONMENT = "SENTRY_ENVIRONMENT"
     SENTRY_RELEASE = "SENTRY_RELEASE"
     AWS_REGION = 'AWS_REGION'
+
+    # PostHog creds
+    POSTHOG_KEY = 'POSTHOG_KEY'
+    POSTHOG_HOST = 'POSTHOG_HOST'
 
 # Define a dictionary for default values
 DEFAULT_VALUES = {
@@ -46,6 +56,9 @@ DEFAULT_VALUES = {
 
     # AWS Bedrock
     EnvVariables.AWS_BEDROCK_REGION: 'us-west-1',
+
+    # Ollama
+    EnvVariables.OLLAMA_BASE_URL: 'http://localhost:11434',
 
     # App related defaults
     EnvVariables.APP_PASSCODE_KEY: "",
