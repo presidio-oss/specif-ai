@@ -9,7 +9,9 @@ import { exec } from "child_process";
 import { createServer } from "http";
 import Store from 'electron-store';
 import { store as storeService } from './services/store';
-import { verifyConfig } from "./ipc/handlers/llm/verify-config";
+import {getSuggestions} from './handlers/get-suggestions';
+import { utilityFunctionMap } from "./file-system.utility";
+import { verifyConfig } from "./handlers/verify-config";
 
 dotenv.config({
   path: app.isPackaged
@@ -17,15 +19,10 @@ dotenv.config({
     : path.resolve(process.cwd(), ".env"),
 });
 
-// Import types
-import {getSuggestions} from './ipc/handlers/chat/get-suggestions';
-import { utilityFunctionMap } from "./file-system.utility";
-
 const indexPath = app.isPackaged
   ? path.join(process.resourcesPath, "ui")
   : path.resolve(process.cwd(), "ui");
 
-// Initialize store and setup IPC handlers
 try {
   const store = new Store();
   storeService.initialize(store);

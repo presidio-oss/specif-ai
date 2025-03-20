@@ -30,7 +30,7 @@ async getSuggestions(payload: suggestionPayload) {
   }
 }
 
-async verifyLLMConfig(provider: string, model: string, config: Record<string, any> = {}) {
+async verifyLLMConfig(provider: string, model: string, config: Record<string, any>) {
   if (this.electronAPI) {
     return this.electronAPI.invoke('verify-llm-config', {
       provider,

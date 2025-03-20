@@ -220,8 +220,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
           model: response.model, // Use the actual model ID from the handler
           config: formValue.config
         };
+        console.log("New Config", newConfig);
         this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
-          this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
+          this.store.dispatch(new SyncLLMConfig()).subscribe(async () => {
+            await this.electronService.setStoreValue('llmConfig', newConfig);
             const providerDisplayName =
               this.availableProviders.find((p) => p.key === provider)
                 ?.displayName || provider;

@@ -1,13 +1,13 @@
-import { getSuggestionsSchema } from './schema';
-import { HandlebarsService } from '../../../services/template/handlebars-service';
-import { LLMUtils } from '../../../services/llm/llm-utils';
-import { buildLLMHandler } from '../../../services/llm';
-import { store } from '../../../services/store';
+import { getSuggestionsSchema } from '../schema/schema';
+import { HandlebarsService } from '../services/template/handlebars-service';
+import { LLMUtils } from '../services/llm/llm-utils';
+import { buildLLMHandler } from '../services/llm';
+import { store } from '../services/store';
 import * as path from 'path';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { LLMConfigModel } from '../../../llm/llm-types';
+import type { LLMConfigModel } from '../llm/llm-types';
 
-const templateDir = path.join(__dirname, '../../../../templates');
+const templateDir = path.join(__dirname, '../../templates');
 const handlebarsService = new HandlebarsService(templateDir);
 
 export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): Promise<string[]> {

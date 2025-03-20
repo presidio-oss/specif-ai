@@ -103,7 +103,7 @@ export class LLMConfigState {
     return timer(0).pipe( // Use timer to ensure we're not blocking the main thread
       tap(async () => {
         try {
-          const response = await this.electronService.verifyLLMConfig(state.provider, state.model);
+          const response = await this.electronService.verifyLLMConfig(state.provider, state.model, state.config);
           const providerDisplayName = AvailableProviders.find(p => p.key === state.provider)?.displayName || state.provider;
 
           if (response.status === 'failed') {

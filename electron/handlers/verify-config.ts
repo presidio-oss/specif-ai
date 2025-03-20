@@ -1,7 +1,8 @@
-import { verifyConfigSchema } from './schema';
-import { buildLLMHandler, LLMProvider } from '../../../services/llm';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { VerifyConfigResponse } from './schema';
+import type { VerifyConfigResponse } from '../schema/schema';
+import { verifyConfigSchema } from '../schema/schema';
+import { LLMProvider } from '../services/llm';
+import { buildLLMHandler } from '../services/llm';
 
 console.log('[verify-config] Initializing LLM config verification handler');
 

@@ -65,11 +65,6 @@ export class AppComponent implements OnInit, OnDestroy {
         console.log("Local Config", localConfig)
         try {
           const config = JSON.parse(localConfig);
-          // Save to electron store to ensure persistence
-          // await this.electronService.setStoreValue('llmConfig', config);
-          // Set in store and wait for completion before verification
-          await this.store.dispatch(new SetLLMConfig(config))
-          // await this.store.dispatch(new SyncLLMConfig())
           const response = await this.electronService.verifyLLMConfig(
             config.provider,
             config.model,
