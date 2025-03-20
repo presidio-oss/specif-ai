@@ -43,7 +43,9 @@ Output Structure MUST be a valid JSON: Here is the sample Structure:
 }
 
 Special Instructions:
-1. You are allowed to use for the updated requirement description. You MUST ONLY use valid Markdown according to the following rules:
+(!) You are allowed to use for the updated requirement description. You MUST ONLY use valid Markdown according to the following rules:
     {% include 'markdown_rules.jinja2' %}
+(!) The output MUST be a valid JSON object strictly adhering to the structure defined above. Failure to produce valid JSON will cause a critical application error. 
+    The value of the updated key MUST represent one requirement (and absolutely NOT an array of requirements)
 
 Output only valid JSON. Do not include ```json ``` on start and end of the response.
