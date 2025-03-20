@@ -34,6 +34,7 @@ const coreListeners = {
     model: string,
     config?: Record<string, any>
   ) => ipcRenderer.invoke("core:verifyLLMConfig", { provider, model, config }),
+  getAppConfig: () => ipcRenderer.invoke("core:getAppConfig"),
 };
 
 const electronAPI = {
