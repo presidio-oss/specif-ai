@@ -1,7 +1,7 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { LLMConfigModel } from "../../model/interfaces/ILLMConfig";
-import { SetLLMConfig, FetchDefaultLLMConfig, VerifyLLMConfig, SyncLLMConfig } from './llm-config.actions';
+import { SetLLMConfig, FetchDefaultLLMConfig, VerifyLLMConfig, SyncLLMConfig, SwitchProvider } from './llm-config.actions';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { of, timer } from 'rxjs';
@@ -11,27 +11,11 @@ import { AvailableProviders, ProviderModelMap } from '../../constants/llm.models
 import { ElectronService } from '../../services/electron/electron.service';
 import { DEFAULT_TOAST_DURATION } from 'src/app/constants/toast.constant';
 
-export interface LLMConfigStateModel extends LLMConfigModel {
-  isDefault: boolean;
-}
-
-@State<LLMConfigStateModel>({
+@State<LLMConfigModel>({
   name: 'LLMConfig',
   defaults: {
-    provider: '',
-    config: {
-      apiKey: '',
-      endpoint: '',
-      deployment: '',
-      accessKeyId: '',
-      secretAccessKey: '',
-      sessionToken: '',
-      region: '',
-      crossRegion: false,
-      model: '',
-      baseUrl: '',
-      maxRetries: 3
-    },
+    activeProvider: '',
+    providerConfigs: {},
     isDefault: true
   }
 })
@@ -48,46 +32,58 @@ export class LLMConfigState {
   ) {}
 
   @Selector()
-  static getConfig(state: LLMConfigStateModel) {
+  static getConfig(state: LLMConfigModel) {
     return state;
   }
 
+  @Selector()
+  static getAllProviderConfigs(state: LLMConfigModel) {
+    return state.providerConfigs;
+  }
+
+  @Selector()
+  static getActiveProvider(state: LLMConfigModel) {
+    return state.activeProvider;
+  }
+
   @Action(SetLLMConfig)
-  setLLMConfig({ setState, dispatch }: StateContext<LLMConfigStateModel>, { payload }: SetLLMConfig) {
-    setState({ ...payload, isDefault: false });
+  setLLMConfig({ setState, getState, dispatch }: StateContext<LLMConfigModel>, { payload }: SetLLMConfig) {
+    setState(payload);
     dispatch(new SyncLLMConfig());
   }
 
   @Action(SyncLLMConfig)
-  syncLLMConfig({ getState }: StateContext<LLMConfigStateModel>) {
+  syncLLMConfig({ getState }: StateContext<LLMConfigModel>) {
     const state = getState();
     localStorage.setItem('llmConfig', JSON.stringify(state));
     this.electronService.setStoreValue('llmConfig', state);
   }
 
   @Action(FetchDefaultLLMConfig)
-  fetchDefaultLLMConfig({ setState, dispatch }: StateContext<LLMConfigStateModel>) {
+  fetchDefaultLLMConfig({ setState, dispatch }: StateContext<LLMConfigModel>) {
     this.loadingService.setLoading(true);
     return this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
-      tap((defaultConfig: LLMConfigModel) => {
-        if (!defaultConfig.provider) {
-          // Set default values if not provided
-          const defaultProvider = AvailableProviders[0].key;
-          defaultConfig = {
-            provider: defaultProvider,
-            config: {
-              ...defaultConfig.config,
-              model: ProviderModelMap[defaultProvider][0]
+      tap((response: any) => {
+        const defaultProvider = AvailableProviders[0].key;
+        const defaultConfig = {
+          activeProvider: defaultProvider,
+          providerConfigs: {
+            [defaultProvider]: {
+              config: {
+                model: ProviderModelMap[defaultProvider][0],
+                ...(response?.config || {})
+              }
             }
-          };
-        }
-        setState({ ...defaultConfig, isDefault: true });
+          },
+          isDefault: true
+        };
+        setState(defaultConfig);
         dispatch(new SyncLLMConfig());
       }),
       catchError((error) => {
         console.error('Error fetching default LLM config:', error);
         this.toasterService.showError('Failed to fetch default LLM configuration.');
-        return of({ provider: '', config: {} });
+        return of({ activeProvider: '', providerConfigs: {}, isDefault: true });
       }),
       finalize(() => {
         this.loadingService.setLoading(false);
@@ -95,8 +91,24 @@ export class LLMConfigState {
     );
   }
 
+  @Action(SwitchProvider)
+  switchProvider({ getState, setState }: StateContext<LLMConfigModel>, { provider }: SwitchProvider) {
+    const state = getState();
+    
+    // Only switch if we have a configuration for this provider
+    if (!state.providerConfigs[provider]) {
+      this.toasterService.showError(`No configuration found for provider: ${provider}`);
+      return;
+    }
+
+    setState({
+      ...state,
+      activeProvider: provider
+    });
+  }
+
   @Action(VerifyLLMConfig)
-  verifyLLMConfig({ getState, dispatch }: StateContext<LLMConfigStateModel>) {
+  verifyLLMConfig({ getState, setState, dispatch }: StateContext<LLMConfigModel>) {
     const currentTime = Date.now();
     if (currentTime - this.lastVerificationTime < this.DEBOUNCE_TIME) {
       return of(null); // Skip if called within debounce time
@@ -104,19 +116,25 @@ export class LLMConfigState {
     this.lastVerificationTime = currentTime;
 
     const state = getState();
+    if (!state.activeProvider) {
+      return of(null);
+    }
     this.loadingService.setLoading(true);
 
     return timer(0).pipe( // Use timer to ensure we're not blocking the main thread
       tap(async () => {
         try {
-          const response = await this.electronService.verifyLLMConfig(state.provider, state.config);
-          const providerDisplayName = AvailableProviders.find(p => p.key === state.provider)?.displayName || state.provider;
+          const response = await this.electronService.verifyLLMConfig(
+            state.activeProvider,
+            state.providerConfigs[state.activeProvider].config
+          );
+          const providerDisplayName = AvailableProviders.find(p => p.key === state.activeProvider)?.displayName || state.activeProvider;
 
           if (response.status === 'failed') {
             // Get default config and reset
             const defaultConfig = await this.electronService.getStoreValue('defaultLLMConfig');
             if (defaultConfig) {
-              const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
+              const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.activeProvider)?.displayName || defaultConfig.activeProvider;
               this.toasterService.showInfo(
                 `LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}`, 
                 DEFAULT_TOAST_DURATION

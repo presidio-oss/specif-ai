@@ -153,9 +153,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.llmConfig$.subscribe((config) => {
         this.currentLLMConfig = config;
-        this.selectedProvider.setValue(config.provider);
-        this.initialProvider = config.provider;
-        this.updateConfigFields(config.provider);
+        this.selectedProvider.setValue(config.activeProvider);
+        this.initialProvider = config.activeProvider;
+        this.updateConfigFields(config.activeProvider);
         this.hasChanges = false;
       }),
     );
@@ -181,14 +181,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.currentLLMConfig = config;
           
           // If config is empty or invalid, use defaults
-          const provider = config?.provider || defaultProvider;
+          const provider = config?.activeProvider || defaultProvider;
+          const providerConfig = config?.providerConfigs[provider]?.config || {};
           
           this.updateConfigFields(provider);
           
           // Then patch all values including config
           this.configForm?.patchValue({
             provider,
-            config: config?.config || {}
+            config: providerConfig
           }, { emitEvent: false });
           
           this.hasChanges = false;
@@ -227,10 +228,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     this.electronService.verifyLLMConfig(provider, formValue.config).then((response) => {
       if (response.status === 'success') {
+        // Get existing configs and update/add the new one
+        const existingConfigs = this.currentLLMConfig.providerConfigs || {};
         const newConfig = {
-          provider: formValue.provider,
-          config: formValue.config
+          activeProvider: formValue.provider,
+          providerConfigs: {
+            ...existingConfigs,
+            [formValue.provider]: {
+              config: formValue.config
+            }
+          },
+          isDefault: false
         };
+
         console.log("New Config", newConfig);
         this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
           this.store.dispatch(new SyncLLMConfig()).subscribe(async () => {
@@ -326,7 +336,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   checkForChanges() {
     const formValue = this.configForm.value;
-    const currentConfig = this.currentLLMConfig.config;
+    const currentConfig = this.currentLLMConfig.providerConfigs[this.currentLLMConfig.activeProvider]?.config;
     
     // Compare provider
     let hasProviderChanged = formValue.provider !== this.initialProvider;
@@ -364,10 +374,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
   closeModal() {
     this.analyticsEnabled.setValue(this.initialAnalyticsState);
     
+    // Get existing configs
+    const existingConfigs = this.currentLLMConfig.providerConfigs || {};
+    
     this.store.dispatch(
       new SetLLMConfig({
-        provider: this.initialProvider,
-        config: this.currentLLMConfig.config
+        activeProvider: this.initialProvider,
+        providerConfigs: existingConfigs,
+        isDefault: this.currentLLMConfig.isDefault
       }),
     );
     this.modalRef.close(false);

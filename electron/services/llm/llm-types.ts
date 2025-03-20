@@ -23,8 +23,7 @@ export interface LLMConfig {
   [key: string]: any;
 }
 
-export interface LLMConfigModel {
-  provider: string;
+export interface ProviderConfig {
   config: {
     // Common fields
     apiKey?: string;
@@ -47,6 +46,14 @@ export interface LLMConfigModel {
     // Model field (provider specific)
     model?: string;
   };
+}
+
+export interface LLMConfigModel {
+  activeProvider: string;
+  providerConfigs: {
+    [provider: string]: ProviderConfig;
+  };
+  isDefault: boolean;
 }
 
 export class LLMError extends Error {

@@ -39,7 +39,10 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
     console.log('[get-suggestions] Preparing messages for LLM...');
     const messages = await LLMUtils.prepareMessages(prompt);
 
-    const handler = buildLLMHandler(llmConfig.provider, llmConfig.config);
+    const handler = buildLLMHandler(
+      llmConfig.activeProvider,
+      llmConfig.providerConfigs[llmConfig.activeProvider].config
+    );
     const response = await handler.invoke(messages);
 
     let improvedSuggestions;

@@ -86,8 +86,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
             durationMs: duration,
             source,
             status,
-            config: this.currentLLMConfig.config,
-            provider: this.currentLLMConfig.provider,
+            provider: this.currentLLMConfig.activeProvider,
           });
         }),
       );

@@ -28,8 +28,9 @@ export class LoadingInterceptor implements HttpInterceptor {
     const skipLoader = request.headers.has('skipLoader');
 
     const config = this.store.selectSnapshot(LLMConfigState.getConfig);
-    const model = config.config?.model || config.config?.deployment || '';
-    const provider = config.provider || '';
+    const activeConfig = config.providerConfigs[config.activeProvider]?.config || {};
+    const model = activeConfig.model || activeConfig.deployment || '';
+    const provider = config.activeProvider || '';
 
     const modifiedRequest = request.clone({
       setHeaders: {

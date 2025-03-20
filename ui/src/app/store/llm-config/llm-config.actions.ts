@@ -5,6 +5,11 @@ export class SetLLMConfig {
     constructor(public payload: LLMConfigModel) { }
 }
 
+export class SwitchProvider {
+    static readonly type = '[LLMConfig] Switch Provider';
+    constructor(public provider: string) { }
+}
+
 export class FetchDefaultLLMConfig {
     static readonly type = '[LLMConfig] Fetch Default';
 }

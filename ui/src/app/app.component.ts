@@ -72,8 +72,8 @@ export class AppComponent implements OnInit, OnDestroy {
         try {
           const config = JSON.parse(localConfig);
           const response = await this.electronService.verifyLLMConfig(
-            config.provider,
-            config.config
+            config.activeProvider,
+            config.providerConfigs[config.activeProvider].config
           );
           if (response.status === 'success') {
             this.logger.debug('LLM configuration verified successfully');
@@ -91,10 +91,10 @@ export class AppComponent implements OnInit, OnDestroy {
       if (savedConfig) {
         // Set in store and wait for completion before verification
         await this.store.dispatch(new SetLLMConfig(savedConfig)).toPromise();
-        const response = await this.electronService.verifyLLMConfig(
-          savedConfig.provider,
-          savedConfig.config
-        );
+          const response = await this.electronService.verifyLLMConfig(
+            savedConfig.activeProvider,
+            savedConfig.providerConfigs[savedConfig.activeProvider].config
+          );
         if (response.status === 'success') {
           this.logger.debug('LLM configuration verified successfully');
         } else {
@@ -105,10 +105,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
       // Finally check store state if no other configs found
       const currentState = this.store.selectSnapshot(LLMConfigState.getConfig);
-      if (currentState?.provider) {
+      if (currentState?.activeProvider) {
         const response = await this.electronService.verifyLLMConfig(
-          currentState.provider,
-          currentState.config
+          currentState.activeProvider,
+          currentState.providerConfigs[currentState.activeProvider].config
         );
         if (response.status === 'success') {
           this.logger.debug('LLM configuration verified successfully');
