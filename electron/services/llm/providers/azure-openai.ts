@@ -22,7 +22,7 @@ export class AzureOpenAIHandler extends LLMHandler {
   constructor(config: Partial<AzureOpenAIConfig>) {
     super();
     this.configData = this.getConfig(config);
-    
+
     this.client = new AzureOpenAI({
       apiKey: this.configData.apiKey,
       endpoint: this.configData.endpoint,
@@ -32,7 +32,7 @@ export class AzureOpenAIHandler extends LLMHandler {
   }
 
   getConfig(config: Partial<AzureOpenAIConfig>): AzureOpenAIConfig {
-    if (!config.apiKey && !process.env.AZURE_OPENAI_API_KEY) {
+    if (!config.apiKey) {
       throw new LLMError("Azure OpenAI API key is required", "openai");
     }
     if (!config.endpoint) {
@@ -43,42 +43,50 @@ export class AzureOpenAIHandler extends LLMHandler {
     }
 
     return {
-      apiKey: config.apiKey || process.env.AZURE_OPENAI_API_KEY || '',
+      apiKey: config.apiKey,
       endpoint: config.endpoint,
       deploymentId: config.deploymentId,
-      apiVersion: config.apiVersion || process.env.AZURE_API_VERSION || "2024-02-15-preview"
+      apiVersion: config.apiVersion,
     };
   }
 
-  async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
+  async invoke(
+    messages: Message[],
+    systemPrompt: string | null = null
+  ): Promise<string> {
     try {
       const messageList = [...messages];
       if (systemPrompt) {
         messageList.unshift({ role: "system", content: systemPrompt });
       }
 
-      const openAIMessages = messageList.map(msg => ({
+      const openAIMessages = messageList.map((msg) => ({
         role: msg.role,
         content: msg.content,
-        ...(msg.name && { name: msg.name })
-      })) as any[];  
+        ...(msg.name && { name: msg.name }),
+      })) as any[];
 
       const response = await this.client.chat.completions.create({
         model: this.configData.deploymentId,
         messages: openAIMessages,
-        response_format: { type: "json_object"},
         max_tokens: 1000,
         temperature: 0.7,
       });
 
       if (!response.choices?.[0]?.message?.content) {
-        throw new LLMError("No response content received from Azure OpenAI API", "azure-openai");
+        throw new LLMError(
+          "No response content received from Azure OpenAI API",
+          "azure-openai"
+        );
       }
 
       return response.choices[0].message.content;
     } catch (error: any) {
       const errorMessage = error?.message || "Unknown error occurred";
-      throw new LLMError(`Azure OpenAI API error: ${errorMessage}`, "azure-openai");
+      throw new LLMError(
+        `Azure OpenAI API error: ${errorMessage}`,
+        "azure-openai"
+      );
     }
   }
 
@@ -95,9 +103,9 @@ export class AzureOpenAIHandler extends LLMHandler {
   isValid(): boolean {
     try {
       return Boolean(
-        this.configData.apiKey && 
-        this.configData.endpoint && 
-        this.configData.deploymentId
+        this.configData.apiKey &&
+          this.configData.endpoint &&
+          this.configData.deploymentId
       );
     } catch (error) {
       return false;

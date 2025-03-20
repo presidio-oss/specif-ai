@@ -24,14 +24,14 @@ export class OpenAIHandler extends LLMHandler {
       if (!this.configData.azureApiKey) {
         throw new LLMError("Azure OpenAI API key is required for Azure endpoints", "openai");
       }
-      if (!this.configData.apiVersion) {
-        throw new LLMError("API version is required for Azure endpoints", "openai");
-      }
+      // if (!this.configData.apiVersion) {
+      //   throw new LLMError("API version is required for Azure endpoints", "openai");
+      // }
       this.client = new AzureOpenAI({
         apiKey: this.configData.azureApiKey,
         endpoint: this.configData.baseUrl,
         deployment: this.configData.modelId,
-        apiVersion: this.configData.apiVersion,
+        apiVersion: "2024-09-01-preview",
         maxRetries: this.configData.maxRetries || 3
       });
     } else {
@@ -55,7 +55,7 @@ export class OpenAIHandler extends LLMHandler {
       baseUrl: config.baseUrl || process.env.OPENAI_BASE_URL,
       apiKey: config.apiKey || process.env.OPENAI_API_KEY,
       azureApiKey: config.azureApiKey || process.env.AZURE_OPENAI_API_KEY,
-      apiVersion: config.apiVersion || process.env.OPENAI_API_VERSION,
+      apiVersion: "2024-09-01-preview",
       modelId: config.modelId.toLowerCase(),
       maxRetries: config.maxRetries || 3
     };

@@ -39,5 +39,3 @@ export const ProviderModelMap: { [key: string]: string[] } = {
       'claude-3-haiku-20240307'
     ]
 };
-
-export const HIDE_MODEL_DROPDOWN = ['openai']; // Azure OpenAI - uses deployment ID as model

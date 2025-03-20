@@ -7,7 +7,7 @@ interface BedrockConfig extends LLMConfig {
   accessKeyId: string;
   secretAccessKey: string;
   sessionToken?: string;
-  modelId: string;
+  model: string;
 }
 
 export class BedrockHandler extends LLMHandler {
@@ -47,7 +47,7 @@ export class BedrockHandler extends LLMHandler {
     if (!config.secretAccessKey) {
       throw new LLMError("AWS secret access key is required", "bedrock");
     }
-    if (!config.modelId) {
+    if (!config.model) {
       throw new LLMError("Model ID is required", "bedrock");
     }
 
@@ -56,7 +56,7 @@ export class BedrockHandler extends LLMHandler {
       accessKeyId: config.accessKeyId,
       secretAccessKey: config.secretAccessKey,
       sessionToken: config.sessionToken,
-      modelId: config.modelId
+      model: config.model
     };
   }
 

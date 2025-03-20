@@ -73,7 +73,6 @@ export class AppComponent implements OnInit, OnDestroy {
           const config = JSON.parse(localConfig);
           const response = await this.electronService.verifyLLMConfig(
             config.provider,
-            config.model,
             config.config
           );
           if (response.status === 'success') {
@@ -94,7 +93,6 @@ export class AppComponent implements OnInit, OnDestroy {
         await this.store.dispatch(new SetLLMConfig(savedConfig)).toPromise();
         const response = await this.electronService.verifyLLMConfig(
           savedConfig.provider,
-          savedConfig.model,
           savedConfig.config
         );
         if (response.status === 'success') {
@@ -110,7 +108,6 @@ export class AppComponent implements OnInit, OnDestroy {
       if (currentState?.provider) {
         const response = await this.electronService.verifyLLMConfig(
           currentState.provider,
-          currentState.model,
           currentState.config
         );
         if (response.status === 'success') {

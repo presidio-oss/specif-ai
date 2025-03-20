@@ -1,5 +1,4 @@
 export interface LLMConfigModel {
-  model: string;
   provider: string;
   config: {
     // Common fields
@@ -19,5 +18,8 @@ export interface LLMConfigModel {
     // Anthropic fields
     baseUrl?: string;
     maxRetries?: number;
+
+    // Model field (provider specific)
+    model?: string;
   };
 }

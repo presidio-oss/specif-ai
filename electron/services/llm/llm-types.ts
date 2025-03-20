@@ -25,7 +25,6 @@ export interface LLMConfig {
 
 export interface LLMConfigModel {
   provider: string;
-  model: string;
   config: {
     // Common fields
     apiKey?: string;
@@ -44,6 +43,9 @@ export interface LLMConfigModel {
     // Anthropic fields
     baseUrl?: string;
     maxRetries?: number;
+
+    // Model field (provider specific)
+    model?: string;
   };
 }
 

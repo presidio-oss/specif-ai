@@ -54,7 +54,7 @@ export class AuthService {
   public initializeLLMConfig(): Observable<any> {
     return this.store.selectOnce(LLMConfigState.getConfig).pipe(
       switchMap(config => {
-        if (config && config.provider && config.model) {
+        if (config && config.provider) {
           return this.store.dispatch(new VerifyLLMConfig());
         } else {
           return this.store.dispatch(new FetchDefaultLLMConfig());

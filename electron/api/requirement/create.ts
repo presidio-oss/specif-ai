@@ -54,12 +54,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         // Prepare messages for LLM
         const messages = await LLMUtils.prepareMessages(prompt);
 
-        // Build handler with config
-        const handlerConfig = {
-          ...llmConfig.config,
-          ...(llmConfig.model ? { modelId: llmConfig.model } : {})
-        };
-        const handler = buildLLMHandler(llmConfig.provider, handlerConfig);
+        const handler = buildLLMHandler(llmConfig.provider, llmConfig.config);
         
         // Get LLM response
         const response = await handler.invoke(messages);

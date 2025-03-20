@@ -18,7 +18,6 @@ export interface LLMConfigStateModel extends LLMConfigModel {
 @State<LLMConfigStateModel>({
   name: 'LLMConfig',
   defaults: {
-    model: '',
     provider: '',
     config: {
       apiKey: '',
@@ -29,6 +28,7 @@ export interface LLMConfigStateModel extends LLMConfigModel {
       sessionToken: '',
       region: '',
       crossRegion: false,
+      model: '',
       baseUrl: '',
       maxRetries: 3
     },
@@ -70,10 +70,16 @@ export class LLMConfigState {
     this.loadingService.setLoading(true);
     return this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
       tap((defaultConfig: LLMConfigModel) => {
-        if (!defaultConfig.provider || !defaultConfig.model) {
+        if (!defaultConfig.provider) {
           // Set default values if not provided
-          defaultConfig.provider = AvailableProviders[0].key;
-          defaultConfig.model = ProviderModelMap[defaultConfig.provider][0];
+          const defaultProvider = AvailableProviders[0].key;
+          defaultConfig = {
+            provider: defaultProvider,
+            config: {
+              ...defaultConfig.config,
+              model: ProviderModelMap[defaultProvider][0]
+            }
+          };
         }
         setState({ ...defaultConfig, isDefault: true });
         dispatch(new SyncLLMConfig());
@@ -81,7 +87,7 @@ export class LLMConfigState {
       catchError((error) => {
         console.error('Error fetching default LLM config:', error);
         this.toasterService.showError('Failed to fetch default LLM configuration.');
-        return of({ provider: '', model: '' });
+        return of({ provider: '', config: {} });
       }),
       finalize(() => {
         this.loadingService.setLoading(false);
@@ -103,7 +109,7 @@ export class LLMConfigState {
     return timer(0).pipe( // Use timer to ensure we're not blocking the main thread
       tap(async () => {
         try {
-          const response = await this.electronService.verifyLLMConfig(state.provider, state.model, state.config);
+          const response = await this.electronService.verifyLLMConfig(state.provider, state.config);
           const providerDisplayName = AvailableProviders.find(p => p.key === state.provider)?.displayName || state.provider;
 
           if (response.status === 'failed') {
@@ -112,7 +118,7 @@ export class LLMConfigState {
             if (defaultConfig) {
               const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
               this.toasterService.showInfo(
-                `LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}: ${defaultConfig.model}`, 
+                `LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}: ${defaultConfig.config.model || defaultConfig.config.deploymentId}`, 
                 DEFAULT_TOAST_DURATION
               );
               dispatch(new FetchDefaultLLMConfig());

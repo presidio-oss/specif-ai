@@ -12,7 +12,6 @@ import { Store } from '@ngxs/store';
 import {
   AvailableProviders,
   ProviderModelMap,
-  HIDE_MODEL_DROPDOWN,
 } from '../../constants/llm.models.constants';
 import {
   SetLLMConfig,
@@ -53,12 +52,11 @@ import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
     NgIf,
     ButtonComponent,
   ],
-    providers: [
-      provideIcons({ 
-        heroExclamationTriangle
-      })
-    ]
-  
+  providers: [
+    provideIcons({ 
+      heroExclamationTriangle
+    })
+  ]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
@@ -66,11 +64,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   );
   currentLLMConfig!: LLMConfigModel;
   availableProviders = AvailableProviders;
-  filteredModels: string[] = [];
   currentProviderFields: ProviderField[] = [];
-  hideModelDropdown: boolean = false;
   configForm!: FormGroup;
-  selectedModel: FormControl = new FormControl();
   selectedProvider: FormControl = new FormControl();
   analyticsEnabled: FormControl = new FormControl();
   errorMessage: string = '';
@@ -78,7 +73,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   workingDir: string | null;
   appName = environment.ThemeConfiguration.appName;
   private subscriptions: Subscription = new Subscription();
-  private initialModel: string = '';
   private initialProvider: string = '';
   private initialAnalyticsState: boolean = false;
   protected themeConfiguration = environment.ThemeConfiguration;
@@ -108,7 +102,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private initForm() {
     this.configForm = this.fb.group({
       provider: ['', Validators.required],
-      model: [''],
       config: this.fb.group({})
     });
   }
@@ -156,14 +149,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       .catch((error: any) => {
         console.error('Failed to fetch PostHog configuration:', error);
       });
+
     this.subscriptions.add(
       this.llmConfig$.subscribe((config) => {
         this.currentLLMConfig = config;
-        this.updateFilteredModels(config?.provider);
-        this.selectedModel.setValue(config.model);
         this.selectedProvider.setValue(config.provider);
-        this.initialModel = config.model;
         this.initialProvider = config.provider;
+        this.updateConfigFields(config.provider);
         this.hasChanges = false;
       }),
     );
@@ -172,18 +164,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.analyticsEnabled.setValue(analyticsState);
     this.initialAnalyticsState = analyticsState;
 
-    this.onModelChange();
     this.onProviderChange();
     this.onAnalyticsToggleChange();
 
     if (this.configForm) {
       // Set initial default values
       const defaultProvider = AvailableProviders[0].key;
-      const defaultModel = ProviderModelMap[defaultProvider][0];
       
       this.configForm.patchValue({
         provider: defaultProvider,
-        model: defaultModel,
         config: {}
       });
 
@@ -193,15 +182,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
           
           // If config is empty or invalid, use defaults
           const provider = config?.provider || defaultProvider;
-          const model = config?.model || ProviderModelMap[provider][0];
           
-          this.updateFilteredModels(provider);
           this.updateConfigFields(provider);
           
           // Then patch all values including config
           this.configForm?.patchValue({
             provider,
-            model,
             config: config?.config || {}
           }, { emitEvent: false });
           
@@ -217,23 +203,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
       );
 
       const providerControl = this.configForm.get('provider');
-      const modelControl = this.configForm.get('model');
-      if (providerControl && modelControl) {
+      if (providerControl) {
         this.subscriptions.add(
           providerControl.valueChanges.subscribe(provider => {
-            this.hideModelDropdown = HIDE_MODEL_DROPDOWN.includes(provider);
-            this.updateFilteredModels(provider);
             this.updateConfigFields(provider);
-            
-            // Update model field validation and value based on provider
-            if (this.hideModelDropdown) {
-              modelControl.clearValidators();
-              modelControl.setValue('');
-            } else {
-              modelControl.setValidators(Validators.required);
-              modelControl.setValue(ProviderModelMap[provider][0]);
-            }
-            modelControl.updateValueAndValidity();
           })
         );
       }
@@ -251,22 +224,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const formValue = this.configForm.value;
     const provider = formValue.provider;
-    // Use form model value or let the handler determine it from config
-    const model = this.hideModelDropdown ? '' : formValue.model;
 
-    // Store current values before verification
-    const previousConfig = {
-      provider: this.currentLLMConfig.provider,
-      model: this.currentLLMConfig.model,
-      config: this.currentLLMConfig.config
-    };
-
-    this.electronService.verifyLLMConfig(provider, model, formValue.config).then((response) => {
+    this.electronService.verifyLLMConfig(provider, formValue.config).then((response) => {
       if (response.status === 'success') {
         const newConfig = {
-          ...this.currentLLMConfig,
           provider: formValue.provider,
-          model: response.model, // Use the actual model ID from the handler
           config: formValue.config
         };
         console.log("New Config", newConfig);
@@ -277,12 +239,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
               this.availableProviders.find((p) => p.key === provider)
                 ?.displayName || provider;
             this.toasterService.showSuccess(
-              `${providerDisplayName} : ${response.model} is configured successfully.`,
+              `${providerDisplayName} configuration verified successfully.`,
             );
             this.modalRef.close(true);
             this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
               provider: provider,
-              model: model,
+              model: formValue.config.model || formValue.config.deploymentId,
               analyticsEnabled: analyticsEnabled,
               source: AnalyticsEventSource.LLM_SETTINGS,
               status: AnalyticsEventStatus.SUCCESS
@@ -290,31 +252,27 @@ export class SettingsComponent implements OnInit, OnDestroy {
           });
         });
       } else {
-        // On verification failure, revert to previous working configuration
-        this.store.dispatch(new SetLLMConfig(previousConfig)).subscribe(() => {
-          this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
-            this.errorMessage = 'Connection Failed! Please verify your model credentials.';
-            this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
-              provider: provider,
-              model: model,
-              analyticsEnabled: analyticsEnabled,
-              source: AnalyticsEventSource.LLM_SETTINGS,
-              status: AnalyticsEventStatus.FAILURE
-            })
-            this.cdr.markForCheck();
-          });
+        // Show error but keep the form values for correction
+        this.errorMessage = 'Connection Failed! Please verify your model credentials.';
+        this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
+          provider: provider,
+          model: formValue.config.model || formValue.config.deploymentId,
+          analyticsEnabled: analyticsEnabled,
+          source: AnalyticsEventSource.LLM_SETTINGS,
+          status: AnalyticsEventStatus.FAILURE
         });
+        this.cdr.markForCheck();
       }
     }).catch((error) => {
       this.errorMessage = 'LLM configuration verification failed. Please verify your credentials.';
       this.cdr.markForCheck();
       this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
         provider: provider,
-        model: model,
+        model: formValue.config.model || formValue.config.deploymentId,
         analyticsEnabled: analyticsEnabled,
         source: AnalyticsEventSource.LLM_SETTINGS,
         status: AnalyticsEventStatus.FAILURE
-      })
+      });
     });
   }
 
@@ -342,26 +300,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.modalRef.close(true);
   }
 
-  onModelChange() {
-    this.subscriptions.add(
-      this.selectedModel.valueChanges
-        .pipe(distinctUntilChanged())
-        .subscribe((res) => {
-          this.updateFilteredModels(this.selectedProvider.value);
-          this.errorMessage = '';
-          this.checkForChanges();
-          this.cdr.markForCheck();
-        }),
-    );
-  }
-
   onProviderChange() {
     this.subscriptions.add(
       this.selectedProvider.valueChanges
         .pipe(distinctUntilChanged())
-        .subscribe((res) => {
-          this.updateFilteredModels(res);
-          this.selectedModel.setValue(ProviderModelMap[res][0]);
+        .subscribe((provider) => {
+          this.updateConfigFields(provider);
           this.errorMessage = '';
           this.checkForChanges();
           this.cdr.detectChanges();
@@ -381,14 +325,33 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   checkForChanges() {
-    this.hasChanges =
-      this.selectedModel.value !== this.initialModel ||
-      this.selectedProvider.value !== this.initialProvider ||
-      this.analyticsEnabled.value !== this.initialAnalyticsState;
-  }
+    const formValue = this.configForm.value;
+    const currentConfig = this.currentLLMConfig.config;
+    
+    // Compare provider
+    let hasProviderChanged = formValue.provider !== this.initialProvider;
+    
+    // Compare config fields
+    let hasConfigChanged = false;
+    if (formValue.config && currentConfig) {
+      const configKeys = new Set([
+        ...Object.keys(formValue.config),
+        ...Object.keys(currentConfig)
+      ]);
+      
+      for (const key of configKeys) {
+        if (formValue.config[key as keyof typeof formValue.config] !== 
+            currentConfig[key as keyof typeof currentConfig]) {
+          hasConfigChanged = true;
+          break;
+        }
+      }
+    }
 
-  updateFilteredModels(provider: string) {
-    this.filteredModels = ProviderModelMap[provider] || [];
+    this.hasChanges =
+      hasProviderChanged ||
+      hasConfigChanged ||
+      this.analyticsEnabled.value !== this.initialAnalyticsState;
   }
 
   updateAnalyticsState(enabled: boolean): void {
@@ -403,9 +366,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     
     this.store.dispatch(
       new SetLLMConfig({
-        ...this.currentLLMConfig,
-        model: this.initialModel,
         provider: this.initialProvider,
+        config: this.currentLLMConfig.config
       }),
     );
     this.modalRef.close(false);

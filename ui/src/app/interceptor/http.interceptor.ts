@@ -27,8 +27,9 @@ export class LoadingInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
     const skipLoader = request.headers.has('skipLoader');
 
-    const model = this.store.selectSnapshot(LLMConfigState.getConfig).model;
-    const provider = this.store.selectSnapshot(LLMConfigState.getConfig).provider;
+    const config = this.store.selectSnapshot(LLMConfigState.getConfig);
+    const model = config.config?.model || config.config?.deploymentId || '';
+    const provider = config.provider || '';
 
     const modifiedRequest = request.clone({
       setHeaders: {

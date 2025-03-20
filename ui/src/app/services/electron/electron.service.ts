@@ -45,14 +45,12 @@ export class ElectronService {
 
   async verifyLLMConfig(
     provider: string,
-    model: string,
     config: Record<string, any>,
   ) {
     if (this.electronAPI) {
       return this.electronAPI.invoke('core:verifyLLMConfig', {
         provider,
-        model,
-        config,
+        config
       });
     }
   }
@@ -234,7 +232,7 @@ interface ElectronAPI {
   reloadApp: () => void;
   getSuggestions(payload: suggestionPayload): Promise<void>;
   getAppConfig(): Promise<{ key: string; host: string }>;
-  verifyLLMConfig(provider: string, model: string, config?: Record<string, any>): Promise<{
+  verifyLLMConfig(provider: string, config: Record<string, any>): Promise<{
     status: 'success' | 'failed';
     message: string;
     provider: string;

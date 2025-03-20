@@ -4,31 +4,19 @@ import { LLMProvider } from '../../services/llm';
 import { buildLLMHandler } from '../../services/llm';
 console.log('[verify-config] Initializing LLM config verification handler');
 
-export async function verifyConfig(event: IpcMainInvokeEvent, data: unknown): Promise<VerifyConfigResponse> {
+export async function verifyConfig(event: IpcMainInvokeEvent, data: any): Promise<VerifyConfigResponse> {
   try {
     // Validate input data using schema
     console.log('[verify-config] Validating input data...');
     const validatedData = verifyConfigSchema.parse(data);
     console.log('[verify-config] Input data validated successfully:', validatedData);
 
-    const { provider, model, config } = validatedData;
+    const { provider, config = {} } = validatedData;
 
     // Create handler with the provided configuration
     console.log('[verify-config] Creating LLM handler...');
-    const handlerConfig = {
-      ...config
-    };
 
-    // If model is empty string, let the handler use the appropriate field from config
-    if (model) {
-      if (provider === LLMProvider.OPENAI) {
-        handlerConfig.deploymentId = model;
-      } else {
-        handlerConfig.modelId = model;
-      }
-    }
-
-    const handler = buildLLMHandler(provider as LLMProvider, handlerConfig);
+    const handler = buildLLMHandler(provider as LLMProvider, config);
 
     // Make a test call to verify the configuration
     console.log('[verify-config] Making test call to LLM...');
@@ -56,7 +44,7 @@ export async function verifyConfig(event: IpcMainInvokeEvent, data: unknown): Pr
       status: 'failed',
       message: 'Model connection failed. Please validate the credentials.',
       provider: typeof data === 'object' && data ? (data as any).provider || 'unknown' : 'unknown',
-      model: typeof data === 'object' && data ? (data as any).model || 'unknown' : 'unknown'
+      model: 'unknown'
     };
   }
 }
