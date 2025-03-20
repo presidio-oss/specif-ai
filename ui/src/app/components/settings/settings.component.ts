@@ -140,8 +140,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.core.getAppConfig().subscribe({
-      next: (config: any) => {
+    this.core.getAppConfig()
+      .then((config: any) => {
         if (!this.analyticsTracker.isConfigValid(config)) {
           this.analyticsEnabled.setValue(false);
           this.analyticsEnabled.disable({ onlySelf: true });
@@ -152,11 +152,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.analyticsEnabled.enable({ onlySelf: true });
           this.analyticsWarning = '';
         }
-      },
-      error: (error: any) => {
+      })
+      .catch((error: any) => {
         console.error('Failed to fetch PostHog configuration:', error);
-      },
-    });
+      });
     this.subscriptions.add(
       this.llmConfig$.subscribe((config) => {
         this.currentLLMConfig = config;

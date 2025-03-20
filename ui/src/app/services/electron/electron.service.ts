@@ -29,6 +29,12 @@ export class ElectronService {
     }
   }
 
+  async getAppConfig() {
+    if (this.electronAPI) {
+      return this.electronAPI.invoke('core:getAppConfig');
+    }
+  }
+
   async verifyLLMConfig(
     provider: string,
     model: string,
@@ -219,6 +225,7 @@ interface ElectronAPI {
   getStyleUrl: () => string;
   reloadApp: () => void;
   getSuggestions(payload: suggestionPayload): Promise<void>;
+  getAppConfig(): Promise<{ key: string; host: string }>;
   verifyLLMConfig(provider: string, model: string, config?: Record<string, any>): Promise<{
     status: 'success' | 'failed';
     message: string;

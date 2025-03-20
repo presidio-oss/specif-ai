@@ -1,5 +1,6 @@
 import { verifyConfig } from "../api/core/verify-config";
 import { getSuggestions } from "../api/core/get-suggestions";
+import { getAppConfig } from "../api/core/get-app-config";
 import { ipcMain } from "electron";
 
 export function setupCoreHandlers() {
@@ -19,6 +20,16 @@ export function setupCoreHandlers() {
       return result;
     } catch (error: any) {
       console.error('Error handling core:verifyLLMConfig:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('core:getAppConfig', async (_event) => {
+    try {
+      const result = await getAppConfig(_event);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling core:getAppConfig:', error.message);
       throw error;
     }
   });

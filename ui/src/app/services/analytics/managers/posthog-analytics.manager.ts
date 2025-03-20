@@ -105,26 +105,21 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
 
     if (this.isPostHogInitialized) {
       console.log('PostHog already initialized, skipping re-initialization.');
-      posthog.setPersonProperties({ username: username });
       return;
     }
 
-    this.core.getAppConfig().subscribe({
-      next: (config) => {
-        if (config.key && config.host) {
-          this.initPostHog(config.key, config.host, username, userId);
-          this.isPostHogInitialized = true;
-        } else {
-          console.error('Invalid PostHog configuration received from backend.');
-          this.isPostHogInitialized = false;
-        }
-      },
-      error: (error) => {
-        console.error(
-          'Failed to fetch PostHog configuration from backend:',
-          error,
-        );
-      },
+    this.core.getAppConfig()
+    .then((config) => {
+      if (config.key && config.host) {
+        this.initPostHog(config.key, config.host, username, userId);
+        this.isPostHogInitialized = true;
+      } else {
+        console.error('Invalid PostHog configuration received.');
+        this.isPostHogInitialized = false;
+      }
+    })
+    .catch((error) => {
+      console.error('Failed to fetch PostHog configuration:', error);
     });
   }
 
