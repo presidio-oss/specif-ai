@@ -9,6 +9,7 @@ import { createServer } from "http";
 import { setupFileSystemHandlers } from "./handlers/fs-handler";
 import { setupStore } from "./handlers/store-handler";
 import { setupCoreHandlers } from "./handlers/core-handler";
+import { setupRequirementHandlers } from "./handlers/requirement-handler";
 
 // ========================
 // CONFIGURATION
@@ -426,5 +427,6 @@ app.whenReady().then(async () => {
     setupUIHandlers(indexPath, themeConfiguration);
     setupJiraHandlers();
     setupCoreHandlers();
+    setupRequirementHandlers();
   }
 });

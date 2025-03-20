@@ -1,17 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { ISolutionResponse, ICreateSolutionRequest } from '../../model/interfaces/projects.interface';
-import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { ElectronService } from '../electron/electron.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SolutionService {
-  constructor(private httpService: HttpClient) {}
+  constructor(private electronService: ElectronService) {}
 
-  generateDocumentsFromLLM(data: ICreateSolutionRequest): Observable<ISolutionResponse> {
-    const url = `solutions/create`;
-    return this.httpService.post<ISolutionResponse>(url, data);
+  async generateDocumentsFromLLM(data: ICreateSolutionRequest): Promise<ISolutionResponse> {
+    return this.electronService.createSolution(data);
   }
 }

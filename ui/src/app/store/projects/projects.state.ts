@@ -21,7 +21,6 @@ import { NGXLogger } from 'ngx-logger';
 import { SolutionService } from '../../services/solution-service/solution-service.service';
 import { Router } from '@angular/router';
 import { IList } from '../../model/interfaces/IList';
-import { firstValueFrom } from 'rxjs';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import {
   BP_FILE_KEYS,
@@ -163,30 +162,28 @@ export class ProjectsState {
         return;
       }
 
-      const response = await firstValueFrom(
-        this.solutionService.generateDocumentsFromLLM({
-          createReqt: metadata.createReqt,
-          name: projectName,
-          description: metadata.description,
-          cleanSolution: metadata.cleanSolution,
-          brdPreferences: {
-            max_count: metadata.BRD.maxCount,
-            isEnabled: metadata.BRD.enabled,
-          },
-          prdPreferences: {
-            max_count: metadata.PRD.maxCount,
-            isEnabled: metadata.PRD.enabled,
-          },
-          uirPreferences: {
-            max_count: metadata.UIR.maxCount,
-            isEnabled: metadata.UIR.enabled,
-          },
-          nfrPreferences: {
-            max_count: metadata.NFR.maxCount,
-            isEnabled: metadata.NFR.enabled,
-          },
-        }),
-      );
+      const response = await this.solutionService.generateDocumentsFromLLM({
+        createReqt: metadata.createReqt,
+        name: projectName,
+        description: metadata.description,
+        cleanSolution: metadata.cleanSolution,
+        brdPreferences: {
+          max_count: metadata.BRD.maxCount,
+          isEnabled: metadata.BRD.enabled,
+        },
+        prdPreferences: {
+          max_count: metadata.PRD.maxCount,
+          isEnabled: metadata.PRD.enabled,
+        },
+        uirPreferences: {
+          max_count: metadata.UIR.maxCount,
+          isEnabled: metadata.UIR.enabled,
+        },
+        nfrPreferences: {
+          max_count: metadata.NFR.maxCount,
+          isEnabled: metadata.NFR.enabled,
+        },
+      });
 
       const responseMap = {
         [REQUIREMENT_TYPE.BRD]: response?.brd?.length || 0,

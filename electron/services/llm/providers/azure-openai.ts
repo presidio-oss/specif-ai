@@ -57,16 +57,16 @@ export class AzureOpenAIHandler extends LLMHandler {
         messageList.unshift({ role: "system", content: systemPrompt });
       }
 
-      // Convert messages to OpenAI's expected format
       const openAIMessages = messageList.map(msg => ({
         role: msg.role,
         content: msg.content,
         ...(msg.name && { name: msg.name })
-      })) as any[];  // Use type assertion to bypass strict typing
+      })) as any[];  
 
       const response = await this.client.chat.completions.create({
         model: this.configData.deploymentId,
         messages: openAIMessages,
+        response_format: { type: "json_object"},
         max_tokens: 1000,
         temperature: 0.7,
       });

@@ -37,9 +37,15 @@ const coreListeners = {
   getAppConfig: () => ipcRenderer.invoke("core:getAppConfig"),
 };
 
+const requirementListeners = {
+  createSolution: (data: any) =>
+    ipcRenderer.invoke("requirement:createSolution", data),
+};
+
 const electronAPI = {
   ...electronListeners,
   ...coreListeners,
+  ...requirementListeners,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

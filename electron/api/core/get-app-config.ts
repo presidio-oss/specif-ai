@@ -8,7 +8,6 @@ export async function getAppConfig(event: IpcMainInvokeEvent): Promise<{ key: st
       host: process.env.POSTHOG_HOST || ''
     };
 
-    // Validate the config using our schema
     const validatedConfig = appConfigSchema.parse(config);
     
     return validatedConfig;

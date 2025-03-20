@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
 import { suggestionPayload } from 'src/app/model/interfaces/chat.interface';
+import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfaces/projects.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +34,13 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.electronAPI.invoke('core:getAppConfig');
     }
+  }
+
+  async createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse> {
+    if (this.electronAPI) {
+      return this.electronAPI.invoke('requirement:createSolution', data);
+    }
+    throw new Error('Electron is not available');
   }
 
   async verifyLLMConfig(
@@ -233,6 +241,7 @@ interface ElectronAPI {
     model: string;
     testResponse?: string;
   }>;
+  createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse>;
 }
 
 // Extend the global Window interface to include electronAPI
