@@ -41,6 +41,10 @@ class EnvVariables(Enum):
     SENTRY_RELEASE = "SENTRY_RELEASE"
     AWS_REGION = 'AWS_REGION'
 
+    # PostHog creds
+    POSTHOG_KEY = 'POSTHOG_KEY'
+    POSTHOG_HOST = 'POSTHOG_HOST'
+
 # Define a dictionary for default values
 DEFAULT_VALUES = {
     # Default LLM provider and model

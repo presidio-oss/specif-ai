@@ -72,7 +72,7 @@ export class EditUserStoriesComponent implements OnDestroy {
   projectId: string = '';
   folderName: string = '';
   fileName: string = '';
-  entityType: string = 'STORIES';
+  entityType: string = 'US';
   name: string = '';
   description: string = '';
   mode: string | null = 'edit';
@@ -238,6 +238,7 @@ export class EditUserStoriesComponent implements OnDestroy {
         }),
       );
       this.allowFreeRedirection = true;
+
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
           this.entityType,
@@ -352,7 +353,11 @@ export class EditUserStoriesComponent implements OnDestroy {
         description: this.userStoryForm.getRawValue().description,
         name: this.userStoryForm.getRawValue().name,
         id: this.data.id,
-        chatHistory: data,
+        chatHistory: data.map((item: any) =>
+          item.assistant && item.isLiked !== undefined
+            ? { ...item, isLiked: item.isLiked }
+            : item,
+        ),
       }),
     );
   }

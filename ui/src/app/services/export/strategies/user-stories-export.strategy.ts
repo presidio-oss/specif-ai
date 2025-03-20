@@ -52,10 +52,10 @@ export class UserStoriesExportStrategy implements ExportStrategy {
       const userStories: Array<IUserStory> = data.userStories || [];
 
       const userStoriesFormatted = userStories.map((userStory) => {
-        const storyId = `${data.prdId}-${userStory.id}`;
+        const storyId = `${userStory.id}`;
         const tasks =
           userStory.tasks?.map((task) => {
-            const taskId = `${storyId}-${task.id}`;
+            const taskId = `${task.id}`;
             return {
               id: taskId,
               title: task.list,

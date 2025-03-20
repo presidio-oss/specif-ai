@@ -1,4 +1,5 @@
 import {
+  assertInInjectionContext,
   Component,
   EventEmitter,
   Input,
@@ -14,7 +15,7 @@ import { ChatService } from '../../services/chat/chat.service';
 import { UtilityService } from '../../services/utility.service';
 import { TOOLTIP_CONTENT, APP_MESSAGES, CHAT_TYPES, TOASTER_MESSAGES } from '../../constants/app.constants';
 import { Store } from '@ngxs/store';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { ChatSettings } from 'src/app/model/interfaces/ChatSettings';
 import { ChatSettingsState } from 'src/app/store/chat-settings/chat-settings.state';
 import { FormsModule } from '@angular/forms';
@@ -25,9 +26,11 @@ import {
   heroPaperClip,
   heroInformationCircle,
   heroXMark,
-  heroDocumentText
+  heroDocumentText,
+  heroHandThumbUp,
+  heroHandThumbDown
 } from '@ng-icons/heroicons/outline';
-import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { heroHandThumbDownSolid, heroHandThumbUpSolid, heroSparklesSolid } from '@ng-icons/heroicons/solid'
 import { environment } from '../../../environments/environment';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { ProjectsState } from 'src/app/store/projects/projects.state';
@@ -36,6 +39,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ERROR_MESSAGES } from '../../constants/app.constants';
 import { ElectronService } from '../../services/electron/electron.service';
+import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
+import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
+import { analyticsEnabledSubject } from 'src/app/services/analytics/utils/analytics.utils';
 @Component({
   selector: 'app-chat',
   templateUrl: './ai-chat.component.html',
@@ -58,11 +64,18 @@ import { ElectronService } from '../../services/electron/electron.service';
       heroInformationCircle,
       heroXMark,
       heroSparklesSolid,
-      heroDocumentText
+      heroHandThumbUp,
+      heroHandThumbDown,
+      heroDocumentText,
+      heroHandThumbUpSolid,
+      heroHandThumbDownSolid
     })
   ]
 })
 export class AiChatComponent implements OnInit {
+  isFeedbackModalOpen: boolean = false;
+  feedbackType: 'like' | 'dislike' | null = null;
+  feedbackText: string = '';
   protected readonly APP_MESSAGES = APP_MESSAGES;
   protected readonly TOOLTIP_CONTENT = TOOLTIP_CONTENT;
   protected readonly themeConfiguration = environment.ThemeConfiguration;
@@ -78,6 +91,9 @@ export class AiChatComponent implements OnInit {
 
   metadata: any = {};
   isKbAvailable: boolean = false;
+  showFeedbackBadge = false;
+  private subscription: Subscription = new Subscription();
+
 
   chatSettings$: Observable<ChatSettings> = this.store.select(
     ChatSettingsState.getConfig,
@@ -108,6 +124,7 @@ export class AiChatComponent implements OnInit {
 
   selectedFiles: File[] = [];
   selectedFilesContent: string = '';
+  feedbackMessage: any = {};
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -122,6 +139,7 @@ export class AiChatComponent implements OnInit {
     private utilityService: UtilityService,
     private store: Store,
     private toastService: ToasterService,
+    private analyticsTracker: AnalyticsTracker
   ) {}
 
   smoothScroll() {
@@ -137,6 +155,12 @@ export class AiChatComponent implements OnInit {
     this.store.select(ProjectsState.getMetadata).subscribe((res) => {
       this.metadata = res;
     });
+
+    this.subscription.add(
+      analyticsEnabledSubject.subscribe(enabled => {
+        this.showFeedbackBadge = enabled;
+      })
+    );
 
     this.isKbAvailable = !!this.metadata.integration?.bedrock?.kbId;
 
@@ -186,6 +210,7 @@ export class AiChatComponent implements OnInit {
       .then((response: Array<''>) => {
         this.chatSuggestions = response;
         this.localSuggestions.push(...response);
+        this.analyticsTracker.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS)
         this.loadingChat = false;
         this.responseStatus = false;
         this.smoothScroll();
@@ -215,6 +240,7 @@ export class AiChatComponent implements OnInit {
     else payload = { ...payload, prd: this.prd, us: this.userStory };
     this.chatService
       .chatWithLLM(this.chatType, payload)
+      .pipe(this.analyticsTracker.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
       .subscribe((response) => {
         this.generateLoader = false;
         this.chatHistory = [...this.chatHistory, { assistant: response }];
@@ -312,6 +338,38 @@ export class AiChatComponent implements OnInit {
       };
       reader.readAsText(file);
     });
+  }
+
+  openFeedbackModal(chat: any, type: 'like' | 'dislike') {
+    this.isFeedbackModalOpen = true;
+    this.feedbackMessage = chat;
+    this.feedbackType = type;
+    this.feedbackText = '';
+  }
+
+  closeFeedbackModal() {
+    this.isFeedbackModalOpen = false;
+    this.feedbackType = null;
+    this.feedbackMessage = null;
+    this.feedbackText = '';
+  }
+
+  submitFeedback() {
+    if (this.feedbackMessage.assistant) {
+      this.feedbackMessage.isLiked = this.feedbackType === 'like';
+      this.feedbackType === 'like' ? '1' : '0'
+    }
+    if (this.feedbackType) {
+      this.analyticsTracker.trackEvent(AnalyticsEvents.FEEDBACK_SUBMITTED, {
+        isLiked: this.feedbackType === 'like' ? '1' : '0',
+        text: this.feedbackText,
+        message: this.feedbackMessage.assistant,
+        source: `${AnalyticsEventSource.AI_CHAT} for ${this.chatType}`,
+        status: AnalyticsEventStatus.SUCCESS
+      });
+    }
+    this.returnChatHistory();
+    this.closeFeedbackModal();
   }
 
   converse(message: string) {

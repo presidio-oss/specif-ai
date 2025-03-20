@@ -49,9 +49,19 @@
         <div class="space-y-6 px-6 pt-4 pb-8">
           <div>
             <app-input-field
+              formControlName="username"
+              elementPlaceHolder="Your Username"
+              elementName="Username"
+              [required]="true"
+            />
+            <app-error-message [errorControl]="loginForm.get('username')" />
+          </div>
+          <div>
+            <app-input-field
               formControlName="appUrl"
               elementPlaceHolder="Your Server URL"
               elementName="App URL"
+              [required]="true"
             />
             <app-error-message [errorControl]="loginForm.get('appUrl')" />
           </div>
@@ -61,6 +71,7 @@
               elementPlaceHolder="Passcode"
               formControlName="passcode"
               elementName="App Passcode"
+              [required]="true"
             />
             <app-error-message [errorControl]="loginForm.get('passcode')" />
           </div>
@@ -68,8 +79,9 @@
             <label
               for="directory-path"
               class="block mb-1.5 text-sm font-medium text-secondary-500"
-              >Choose Destination Folder</label
-            >
+              >Choose Destination Folder
+              <span class="text-danger-500 text-xs ml-1">*</span>
+            </label>
             <div class="flex w-full">
               <input
                 type="text"

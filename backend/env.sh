@@ -29,5 +29,9 @@ export AWS_BEDROCK_SECRET_KEY=""
 export AWS_BEDROCK_SESSION_TOKEN=""
 export AWS_REGION=""
 
+# PostHog creds
+export POSTHOG_KEY=""
+export POSTHOG_HOST=""
+
 # Gemini
 export GEMINI_API_KEY=""

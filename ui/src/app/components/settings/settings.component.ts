@@ -19,8 +19,8 @@ import {
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgIconComponent } from '@ng-icons/core';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { AuthService } from '../../services/auth/auth.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -35,6 +35,11 @@ import { ElectronService } from 'src/app/services/electron/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
 import { LLM_PROVIDER_CONFIGS, ProviderField } from '../../constants/llm-provider-config';
+import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
+import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
+import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/utils/analytics.utils';
+import { CoreService } from 'src/app/services/core/core.service';
+import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-settings',
@@ -48,6 +53,12 @@ import { LLM_PROVIDER_CONFIGS, ProviderField } from '../../constants/llm-provide
     NgIf,
     ButtonComponent,
   ],
+    providers: [
+      provideIcons({ 
+        heroExclamationTriangle
+      })
+    ]
+  
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
@@ -59,11 +70,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
   currentProviderFields: ProviderField[] = [];
   hideModelDropdown: boolean = false;
   configForm!: FormGroup;
+  selectedModel: FormControl = new FormControl();
+  selectedProvider: FormControl = new FormControl();
+  analyticsEnabled: FormControl = new FormControl();
   errorMessage: string = '';
   hasChanges: boolean = false;
   workingDir: string | null;
   appName = environment.ThemeConfiguration.appName;
   private subscriptions: Subscription = new Subscription();
+  private initialModel: string = '';
+  private initialProvider: string = '';
+  private initialAnalyticsState: boolean = false;
   protected themeConfiguration = environment.ThemeConfiguration;
 
   electronService = inject(ElectronService);
@@ -72,6 +89,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   dialog = inject(MatDialog);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
+  analyticsWarning: string = '';
 
   constructor(
     private modalRef: MatDialogRef<SettingsComponent>,
@@ -79,7 +97,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private analyticsTracker: AnalyticsTracker,
+    private core: CoreService
   ) {
     this.workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
     this.initForm();
@@ -120,6 +140,43 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.core.getAppConfig().subscribe({
+      next: (config: any) => {
+        if (!this.analyticsTracker.isConfigValid(config)) {
+          this.analyticsEnabled.setValue(false);
+          this.analyticsEnabled.disable({ onlySelf: true });
+          this.updateAnalyticsState(false);
+          this.hasChanges = false;
+          this.analyticsWarning = 'Analytics configuration is missing. Please update the settings.';
+        } else {
+          this.analyticsEnabled.enable({ onlySelf: true });
+          this.analyticsWarning = '';
+        }
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch PostHog configuration:', error);
+      },
+    });
+    this.subscriptions.add(
+      this.llmConfig$.subscribe((config) => {
+        this.currentLLMConfig = config;
+        this.updateFilteredModels(config?.provider);
+        this.selectedModel.setValue(config.model);
+        this.selectedProvider.setValue(config.provider);
+        this.initialModel = config.model;
+        this.initialProvider = config.provider;
+        this.hasChanges = false;
+      }),
+    );
+
+    const analyticsState = getAnalyticsToggleState();
+    this.analyticsEnabled.setValue(analyticsState);
+    this.initialAnalyticsState = analyticsState;
+
+    this.onModelChange();
+    this.onProviderChange();
+    this.onAnalyticsToggleChange();
+
     if (this.configForm) {
       // Set initial default values
       const defaultProvider = AvailableProviders[0].key;
@@ -184,21 +241,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateFilteredModels(provider: string) {
-    this.filteredModels = ProviderModelMap[provider] || [];
-  }
-
-  closeModal() {
-    this.configForm?.patchValue({
-      provider: this.currentLLMConfig.provider,
-      model: this.currentLLMConfig.model,
-      config: this.currentLLMConfig.config || {}
-    });
-    this.modalRef.close(false);
-  }
-
   onSave() {
     if (!this.configForm?.valid) return;
+    const analyticsEnabled = this.analyticsEnabled.value;
+
+    if (analyticsEnabled !== this.initialAnalyticsState) {
+      this.updateAnalyticsState(analyticsEnabled);
+      this.initialAnalyticsState = analyticsEnabled;
+    }
 
     const formValue = this.configForm.value;
     const provider = formValue.provider;
@@ -231,6 +281,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
               `${providerDisplayName} : ${response.model} is configured successfully.`,
             );
             this.modalRef.close(true);
+            this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
+              provider: provider,
+              model: model,
+              analyticsEnabled: analyticsEnabled,
+              source: AnalyticsEventSource.LLM_SETTINGS,
+              status: AnalyticsEventStatus.SUCCESS
+            })
           });
         });
       } else {
@@ -238,6 +295,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.store.dispatch(new SetLLMConfig(previousConfig)).subscribe(() => {
           this.store.dispatch(new SyncLLMConfig()).subscribe(() => {
             this.errorMessage = 'Connection Failed! Please verify your model credentials.';
+            this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
+              provider: provider,
+              model: model,
+              analyticsEnabled: analyticsEnabled,
+              source: AnalyticsEventSource.LLM_SETTINGS,
+              status: AnalyticsEventStatus.FAILURE
+            })
             this.cdr.markForCheck();
           });
         });
@@ -245,6 +309,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }).catch((error) => {
       this.errorMessage = 'LLM configuration verification failed. Please verify your credentials.';
       this.cdr.markForCheck();
+      this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
+        provider: provider,
+        model: model,
+        analyticsEnabled: analyticsEnabled,
+        source: AnalyticsEventSource.LLM_SETTINGS,
+        status: AnalyticsEventStatus.FAILURE
+      })
     });
   }
 
@@ -270,6 +341,75 @@ export class SettingsComponent implements OnInit, OnDestroy {
   openFolderSelector() {
     this.selectRootDirectory().then();
     this.modalRef.close(true);
+  }
+
+  onModelChange() {
+    this.subscriptions.add(
+      this.selectedModel.valueChanges
+        .pipe(distinctUntilChanged())
+        .subscribe((res) => {
+          this.updateFilteredModels(this.selectedProvider.value);
+          this.errorMessage = '';
+          this.checkForChanges();
+          this.cdr.markForCheck();
+        }),
+    );
+  }
+
+  onProviderChange() {
+    this.subscriptions.add(
+      this.selectedProvider.valueChanges
+        .pipe(distinctUntilChanged())
+        .subscribe((res) => {
+          this.updateFilteredModels(res);
+          this.selectedModel.setValue(ProviderModelMap[res][0]);
+          this.errorMessage = '';
+          this.checkForChanges();
+          this.cdr.detectChanges();
+        }),
+    );
+  }
+
+  onAnalyticsToggleChange() {
+    this.subscriptions.add(
+      this.analyticsEnabled.valueChanges
+        .pipe(distinctUntilChanged())
+        .subscribe((enabled) => {
+          this.checkForChanges();
+          this.cdr.markForCheck();
+        }),
+    );
+  }
+
+  checkForChanges() {
+    this.hasChanges =
+      this.selectedModel.value !== this.initialModel ||
+      this.selectedProvider.value !== this.initialProvider ||
+      this.analyticsEnabled.value !== this.initialAnalyticsState;
+  }
+
+  updateFilteredModels(provider: string) {
+    this.filteredModels = ProviderModelMap[provider] || [];
+  }
+
+  updateAnalyticsState(enabled: boolean): void {
+    setAnalyticsToggleState(enabled);
+    if (enabled) {
+      this.analyticsTracker.initAnalytics();
+    }
+  }
+
+  closeModal() {
+    this.analyticsEnabled.setValue(this.initialAnalyticsState);
+    
+    this.store.dispatch(
+      new SetLLMConfig({
+        ...this.currentLLMConfig,
+        model: this.initialModel,
+        provider: this.initialProvider,
+      }),
+    );
+    this.modalRef.close(false);
   }
 
   logout() {

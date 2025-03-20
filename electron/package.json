@@ -1,6 +1,6 @@
 {
   "name": "specif_ai",
-  "version": "1.9.9",
+  "version": "1.9.10",
   "description": "AI-powered requirements management and specification platform",
   "productName": "Specif AI",
   "main": "build/app.js",
