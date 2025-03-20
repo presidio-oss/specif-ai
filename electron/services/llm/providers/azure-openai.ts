@@ -1,17 +1,18 @@
 import { AzureOpenAI } from "openai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
+import { LLMUtils } from "../llm-utils";
 
 interface AzureOpenAIConfig extends LLMConfig {
   apiKey: string;
   endpoint: string;
-  deploymentId: string;
+  deployment: string;
   apiVersion?: string;
 }
 
 interface AzureModelInfo extends ModelInfo {
   endpoint: string;
-  deploymentId: string;
+  deployment: string;
   apiVersion?: string;
 }
 
@@ -26,7 +27,7 @@ export class AzureOpenAIHandler extends LLMHandler {
     this.client = new AzureOpenAI({
       apiKey: this.configData.apiKey,
       endpoint: this.configData.endpoint,
-      deployment: this.configData.deploymentId,
+      deployment: this.configData.deployment,
       apiVersion: this.configData.apiVersion,
     });
   }
@@ -38,14 +39,14 @@ export class AzureOpenAIHandler extends LLMHandler {
     if (!config.endpoint) {
       throw new LLMError("Azure OpenAI endpoint is required", "openai");
     }
-    if (!config.deploymentId) {
+    if (!config.deployment) {
       throw new LLMError("Azure OpenAI deployment ID is required", "openai");
     }
 
     return {
       apiKey: config.apiKey,
       endpoint: config.endpoint,
-      deploymentId: config.deploymentId,
+      deployment: config.deployment,
       apiVersion: config.apiVersion,
     };
   }
@@ -67,7 +68,7 @@ export class AzureOpenAIHandler extends LLMHandler {
       })) as any[];
 
       const response = await this.client.chat.completions.create({
-        model: this.configData.deploymentId,
+        model: this.configData.deployment,
         messages: openAIMessages,
         max_tokens: 1000,
         temperature: 0.7,
@@ -92,9 +93,9 @@ export class AzureOpenAIHandler extends LLMHandler {
 
   getModel(): AzureModelInfo {
     return {
-      id: this.configData.deploymentId,
+      id: this.configData.deployment,
       provider: this.configData.provider,
-      deploymentId: this.configData.deploymentId,
+      deployment: this.configData.deployment,
       apiVersion: this.configData.apiVersion,
       endpoint: this.configData.endpoint,
     };
@@ -105,7 +106,7 @@ export class AzureOpenAIHandler extends LLMHandler {
       return Boolean(
         this.configData.apiKey &&
           this.configData.endpoint &&
-          this.configData.deploymentId
+          this.configData.deployment
       );
     } catch (error) {
       return false;

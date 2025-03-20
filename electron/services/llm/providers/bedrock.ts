@@ -69,7 +69,7 @@ export class BedrockHandler extends LLMHandler {
 
       // Format request body based on model provider
       let requestBody;
-      if (this.configData.modelId.includes('anthropic')) {
+      if (this.configData.model.includes('anthropic')) {
         requestBody = {
           anthropic_version: "bedrock-2023-05-31",
           max_tokens: 4096,
@@ -90,7 +90,7 @@ export class BedrockHandler extends LLMHandler {
       }
 
       const command = new InvokeModelCommand({
-        modelId: this.configData.modelId,
+        modelId: this.configData.model,
         body: JSON.stringify(requestBody)
       });
 
@@ -99,7 +99,7 @@ export class BedrockHandler extends LLMHandler {
       // Parse response based on model provider
       const responseBody = JSON.parse(new TextDecoder().decode(response.body));
       
-      if (this.configData.modelId.includes('anthropic')) {
+      if (this.configData.model.includes('anthropic')) {
         if (!responseBody.content?.[0]?.text) {
           throw new LLMError("No response content received from Bedrock Anthropic model", "bedrock");
         }
@@ -119,7 +119,7 @@ export class BedrockHandler extends LLMHandler {
 
   getModel(): ModelInfo {
     return {
-      id: this.configData.modelId,
+      id: this.configData.model,
       provider: 'bedrock'
     };
   }
@@ -130,7 +130,7 @@ export class BedrockHandler extends LLMHandler {
         this.configData.region &&
         this.configData.accessKeyId &&
         this.configData.secretAccessKey &&
-        this.configData.modelId
+        this.configData.model
       );
     } catch (error) {
       return false;

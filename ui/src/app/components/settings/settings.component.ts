@@ -244,7 +244,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
             this.modalRef.close(true);
             this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
               provider: provider,
-              model: formValue.config.model || formValue.config.deploymentId,
+              model: formValue.config.model || formValue.config.deployment,
               analyticsEnabled: analyticsEnabled,
               source: AnalyticsEventSource.LLM_SETTINGS,
               status: AnalyticsEventStatus.SUCCESS
@@ -256,7 +256,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.errorMessage = 'Connection Failed! Please verify your model credentials.';
         this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
           provider: provider,
-          model: formValue.config.model || formValue.config.deploymentId,
+          model: formValue.config.model || formValue.config.deployment,
           analyticsEnabled: analyticsEnabled,
           source: AnalyticsEventSource.LLM_SETTINGS,
           status: AnalyticsEventStatus.FAILURE
@@ -268,7 +268,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
       this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
         provider: provider,
-        model: formValue.config.model || formValue.config.deploymentId,
+        model: formValue.config.model || formValue.config.deployment,
         analyticsEnabled: analyticsEnabled,
         source: AnalyticsEventSource.LLM_SETTINGS,
         status: AnalyticsEventStatus.FAILURE

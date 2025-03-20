@@ -22,7 +22,7 @@ export interface LLMConfigStateModel extends LLMConfigModel {
     config: {
       apiKey: '',
       endpoint: '',
-      deploymentId: '',
+      deployment: '',
       accessKeyId: '',
       secretAccessKey: '',
       sessionToken: '',
@@ -118,7 +118,7 @@ export class LLMConfigState {
             if (defaultConfig) {
               const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
               this.toasterService.showInfo(
-                `LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}: ${defaultConfig.config.model || defaultConfig.config.deploymentId}`, 
+                `LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}`, 
                 DEFAULT_TOAST_DURATION
               );
               dispatch(new FetchDefaultLLMConfig());

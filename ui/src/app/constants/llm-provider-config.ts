@@ -15,7 +15,7 @@ export const LLM_PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     fields: [
       { name: 'endpoint', type: 'text', label: 'Base URL', required: true },
       { name: 'apiKey', type: 'password', label: 'API Key', required: true },
-      { name: 'deploymentId', type: 'text', label: 'Deployment ID', required: true },
+      { name: 'deployment', type: 'text', label: 'Deployment ID', required: true },
       { name: 'apiVersion', type: 'text', label: 'API Version', required: true }
     ]
   },

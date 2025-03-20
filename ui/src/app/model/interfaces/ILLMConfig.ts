@@ -6,7 +6,7 @@ export interface LLMConfigModel {
 
     // Azure OpenAI fields
     endpoint?: string;
-    deploymentId?: string;
+    deployment?: string;
 
     // Bedrock fields
     accessKeyId?: string;
