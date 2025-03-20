@@ -9,6 +9,12 @@ interface AzureOpenAIConfig extends LLMConfig {
   apiVersion?: string;
 }
 
+interface AzureModelInfo extends ModelInfo {
+  endpoint: string;
+  deploymentId: string;
+  apiVersion?: string;
+}
+
 export class AzureOpenAIHandler extends LLMHandler {
   private client: AzureOpenAI;
   protected configData: AzureOpenAIConfig;
@@ -76,10 +82,12 @@ export class AzureOpenAIHandler extends LLMHandler {
     }
   }
 
-  getModel(): ModelInfo {
+  getModel(): AzureModelInfo {
     return {
       id: this.configData.deploymentId,
-      provider: "azure-openai",
+      provider: this.configData.provider,
+      deploymentId: this.configData.deploymentId,
+      apiVersion: this.configData.apiVersion,
       endpoint: this.configData.endpoint,
     };
   }

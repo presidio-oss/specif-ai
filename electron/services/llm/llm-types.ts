@@ -11,27 +11,44 @@ export interface Message {
   role: string;
   content: string;
   name?: string;
-  [key: string]: any;
 }
 
 export interface ModelInfo {
   id: string;
-  provider?: string;
-  endpoint?: string;
-  [key: string]: any;
+  provider: string;
+  maxTokens?: number;
 }
 
 export interface LLMConfig {
-  apiKey?: string;
-  baseUrl?: string;
-  modelId?: string;
-  maxRetries?: number;
   [key: string]: any;
 }
 
-// Error class for LLM-related errors 
+export interface LLMConfigModel {
+  provider: string;
+  model: string;
+  config: {
+    // Common fields
+    apiKey?: string;
+
+    // Azure OpenAI fields
+    endpoint?: string;
+    deploymentId?: string;
+
+    // Bedrock fields
+    accessKeyId?: string;
+    secretAccessKey?: string;
+    sessionToken?: string;
+    region?: string;
+    crossRegion?: boolean;
+
+    // Anthropic fields
+    baseUrl?: string;
+    maxRetries?: number;
+  };
+}
+
 export class LLMError extends Error {
-  constructor(message: string, public readonly provider: string) {
+  constructor(message: string, public provider: string) {
     super(message);
     this.name = 'LLMError';
   }

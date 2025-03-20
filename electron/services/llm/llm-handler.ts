@@ -1,4 +1,4 @@
-import { Message, ModelInfo, LLMConfig } from './llm-types';
+import { Message, ModelInfo } from './llm-types';
 
 export abstract class LLMHandler {
   protected config: Record<string, any> = {};
