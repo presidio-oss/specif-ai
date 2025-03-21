@@ -25,7 +25,7 @@ const MODEL_CONFIGS: Record<AnthropicModel, AnthropicModelInfo> = {
 interface AnthropicConfig extends LLMConfig {
   baseUrl?: string;
   apiKey: string;
-  modelId: AnthropicModel;
+  model: AnthropicModel;
   maxRetries?: number;
 }
 
@@ -50,22 +50,22 @@ export class AnthropicHandler extends LLMHandler {
       throw new LLMError("Anthropic API key is required", "anthropic");
     }
 
-    const modelId = config.modelId || this.defaultModel;
-    if (!Object.values(AnthropicModel).includes(modelId)) {
-      throw new LLMError(`Invalid model ID: ${modelId}`, "anthropic");
+    const model = config.model || this.defaultModel;
+    if (!Object.values(AnthropicModel).includes(model)) {
+      throw new LLMError(`Invalid model ID: ${model}`, "anthropic");
     }
 
     return {
       baseUrl: config.baseUrl || process.env.ANTHROPIC_BASE_URL,
       apiKey: config.apiKey || process.env.ANTHROPIC_API_KEY || '',
-      modelId: modelId,
+      model: model,
       maxRetries: config.maxRetries || 3
     };
   }
 
   @withRetry({ retryAllErrors: true })
   async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    const modelInfo = MODEL_CONFIGS[this.configData.modelId];
+    const modelInfo = MODEL_CONFIGS[this.configData.model];
 
     // Convert messages to Anthropic's format
     const anthropicMessages = messages.map(msg => ({
@@ -92,7 +92,7 @@ export class AnthropicHandler extends LLMHandler {
   }
 
   getModel(): ModelInfo {
-    const modelInfo = MODEL_CONFIGS[this.configData.modelId];
+    const modelInfo = MODEL_CONFIGS[this.configData.model];
     return {
       id: modelInfo.id,
       provider: 'anthropic',
@@ -103,7 +103,7 @@ export class AnthropicHandler extends LLMHandler {
   isValid(): boolean {
     try {
       if (!this.configData.apiKey) return false;
-      const modelInfo = MODEL_CONFIGS[this.configData.modelId];
+      const modelInfo = MODEL_CONFIGS[this.configData.model];
       return Boolean(modelInfo);
     } catch (error) {
       return false;

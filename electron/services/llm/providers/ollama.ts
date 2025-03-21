@@ -4,7 +4,7 @@ import { withRetry } from "../../../utils/retry";
 
 interface OllamaConfig extends LLMConfig {
   baseUrl: string;
-  modelId: string;
+  model: string;
 }
 
 interface OllamaMessage {
@@ -29,13 +29,13 @@ export class OllamaHandler extends LLMHandler {
   }
 
   getConfig(config: Partial<OllamaConfig>): OllamaConfig {
-    if (!config.modelId) {
+    if (!config.model) {
       throw new LLMError("Model ID is required", "ollama");
     }
 
     return {
       baseUrl: config.baseUrl || process.env.OLLAMA_BASE_URL || this.defaultBaseUrl,
-      modelId: config.modelId.toLowerCase()
+      model: config.model.toLowerCase()
     };
   }
 
@@ -63,7 +63,7 @@ export class OllamaHandler extends LLMHandler {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: this.configData.modelId,
+        model: this.configData.model,
         messages: messageList,
         stream: false
       })
@@ -91,7 +91,7 @@ export class OllamaHandler extends LLMHandler {
 
   getModel(): ModelInfo {
     return {
-      id: this.configData.modelId,
+      id: this.configData.model,
       provider: 'ollama'
     };
   }
@@ -105,7 +105,7 @@ export class OllamaHandler extends LLMHandler {
       
       const data = await response.json();
       return Array.isArray(data.models) && 
-        data.models.some((model: any) => model.name === this.configData.modelId);
+        data.models.some((model: any) => model.name === this.configData.model);
     } catch (error) {
       return false;
     }

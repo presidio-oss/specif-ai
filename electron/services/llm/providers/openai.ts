@@ -8,7 +8,7 @@ interface OpenAIConfig extends LLMConfig {
   apiKey?: string;
   azureApiKey?: string;
   apiVersion?: string;
-  modelId: string;
+  model: string;
   maxRetries?: number;
 }
 
@@ -31,7 +31,7 @@ export class OpenAIHandler extends LLMHandler {
       this.client = new AzureOpenAI({
         apiKey: this.configData.azureApiKey,
         endpoint: this.configData.baseUrl,
-        deployment: this.configData.modelId,
+        deployment: this.configData.model,
         apiVersion: "2024-09-01-preview",
         maxRetries: this.configData.maxRetries || 3
       });
@@ -48,7 +48,7 @@ export class OpenAIHandler extends LLMHandler {
   }
 
   getConfig(config: Partial<OpenAIConfig>): OpenAIConfig {
-    if (!config.modelId) {
+    if (!config.model) {
       throw new LLMError("Model ID is required", "openai");
     }
 
@@ -57,7 +57,7 @@ export class OpenAIHandler extends LLMHandler {
       apiKey: config.apiKey || process.env.OPENAI_API_KEY,
       azureApiKey: config.azureApiKey || process.env.AZURE_OPENAI_API_KEY,
       apiVersion: "2024-09-01-preview",
-      modelId: config.modelId.toLowerCase(),
+      model: config.model.toLowerCase(),
       maxRetries: config.maxRetries || 3
     };
   }
@@ -93,7 +93,7 @@ export class OpenAIHandler extends LLMHandler {
 
   getModel(): ModelInfo {
     return {
-      id: this.configData.modelId,
+      id: this.configData.model,
       provider: 'openai'
     };
   }

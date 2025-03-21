@@ -128,32 +128,26 @@ export class LLMConfigState {
             state.activeProvider,
             state.providerConfigs[state.activeProvider].config
           );
-          const providerDisplayName = AvailableProviders.find(p => p.key === state.activeProvider)?.displayName || state.activeProvider;
 
           if (response.status === 'failed') {
-            // Get default config and reset
-            const defaultConfig = await this.electronService.getStoreValue('defaultLLMConfig');
-            if (defaultConfig) {
-              const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.activeProvider)?.displayName || defaultConfig.activeProvider;
-              this.toasterService.showInfo(
-                `LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}`, 
-                DEFAULT_TOAST_DURATION
-              );
-              dispatch(new FetchDefaultLLMConfig());
-            } else {
-              throw new Error('No default configuration available');
-            }
+            const providerDisplayName = AvailableProviders.find(p => p.key === state.activeProvider)?.displayName || state.activeProvider;
+            this.toasterService.showError(
+              `Failed to verify ${providerDisplayName} configuration. Please check your credentials and try again.`,
+              DEFAULT_TOAST_DURATION
+            );
           }
 
           // Always sync the config after verification, regardless of success or failure
           dispatch(new SyncLLMConfig());
         } catch (error) {
           console.error('Error verifying LLM config:', error);
+          const providerDisplayName = AvailableProviders.find(p => p.key === state.activeProvider)?.displayName || state.activeProvider;
           this.toasterService.showError(
-            'Failed to verify provider and model configuration', 
+            `Failed to verify ${providerDisplayName} configuration. Please check your credentials and try again.`, 
             DEFAULT_TOAST_DURATION
           );
-          dispatch(new FetchDefaultLLMConfig());
+          // Keep existing config, just sync it
+          dispatch(new SyncLLMConfig());
         } finally {
           this.loadingService.setLoading(false);
         }

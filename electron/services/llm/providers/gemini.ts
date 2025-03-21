@@ -5,13 +5,13 @@ import { withRetry } from "../../../utils/retry";
 
 interface GeminiConfig extends LLMConfig {
   apiKey: string;
-  modelId: string;
+  model: string;
 }
 
 export class GeminiHandler extends LLMHandler {
   private client: GenerativeModel;
   protected configData: GeminiConfig;
-  private defaultModel = "gemini-pro";
+  private defaultModel = "gemini-2.0-flash-001";
 
   constructor(config: Partial<GeminiConfig>) {
     super();
@@ -19,10 +19,13 @@ export class GeminiHandler extends LLMHandler {
 
     const genAI = new GoogleGenerativeAI(this.configData.apiKey);
     this.client = genAI.getGenerativeModel({ 
-      model: this.configData.modelId,
+      model: this.configData.model,
       generationConfig: {
         maxOutputTokens: 2048,
-      },
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+      }
     });
   }
 
@@ -30,14 +33,23 @@ export class GeminiHandler extends LLMHandler {
     if (!config.apiKey && !process.env.GOOGLE_API_KEY) {
       throw new LLMError("Google API key is required", "gemini");
     }
+    
+    if (!config.model) {
+      console.log('[GeminiHandler] No model provided, using default:', this.defaultModel);
+      throw new LLMError("Model ID is required", "gemini");
+    }
 
-    return {
+    const result = {
       apiKey: config.apiKey || process.env.GOOGLE_API_KEY || '',
-      modelId: (config.modelId || this.defaultModel).toLowerCase()
+      model: config.model
     };
+    
+    return result;
   }
 
-  @withRetry({ retryAllErrors: true })
+  @withRetry({ 
+    maxRetries: 5
+  })
   async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
     const messageList = [...messages];
     
@@ -71,19 +83,27 @@ export class GeminiHandler extends LLMHandler {
 
   getModel(): ModelInfo {
     return {
-      id: this.configData.modelId,
+      id: this.configData.model,
       provider: 'gemini'
     };
   }
 
   async isValid(): Promise<boolean> {
     try {
-      // Try to list models to validate API key
       const genAI = new GoogleGenerativeAI(this.configData.apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      await model.generateContent("test");
-      return true;
-    } catch (error) {
+      const model = genAI.getGenerativeModel({ 
+        model: this.configData.model,
+        generationConfig: {
+          maxOutputTokens: 10,
+          temperature: 0
+        }
+      });
+      
+      const result = await model.generateContent("Test connection");
+      return result.response.text().length > 0;
+      
+    } catch (error: any) {
+      console.error(`Gemini validation error: ${error.message}`);
       return false;
     }
   }

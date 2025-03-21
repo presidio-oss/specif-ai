@@ -31,9 +31,8 @@ const coreListeners = {
     ipcRenderer.invoke("core:getSuggestions", data),
   verifyLLMConfig: (
     provider: string,
-    model: string,
-    config?: Record<string, any>
-  ) => ipcRenderer.invoke("core:verifyLLMConfig", { provider, model, config }),
+    config: Record<string, any>
+  ) => ipcRenderer.invoke("core:verifyLLMConfig", { provider, config }),
   getAppConfig: () => ipcRenderer.invoke("core:getAppConfig"),
 };
 
