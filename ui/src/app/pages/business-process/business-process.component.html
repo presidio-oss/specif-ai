@@ -100,7 +100,7 @@
           />
         </div>
       </div>
-      <div *ngIf="selectedBRDs.length > 0" class="mt-4">
+      <div *ngIf="selectedBRDs.length > 0">
         <h2 class="text-sm font-medium text-secondary-900">Included BRDs</h2>
         <div class="mt-2 flex flex-wrap">
           <div *ngFor="let brd of selectedBRDs" class="m-1">
@@ -120,7 +120,7 @@
           </div>
         </div>
       </div>
-      <div class="mt-4" *ngIf="selectedPRDs.length > 0">
+      <div *ngIf="selectedPRDs.length > 0">
         <h2 class="text-sm font-medium text-secondary-900">Included PRDs</h2>
         <div class="mt-2 flex flex-wrap">
           <div *ngFor="let prd of selectedPRDs" class="m-1">
