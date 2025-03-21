@@ -1,6 +1,7 @@
 import OpenAI, { AzureOpenAI } from "openai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
+import { withRetry } from "../../../utils/retry";
 
 interface OpenAIConfig extends LLMConfig {
   baseUrl?: string;
@@ -61,37 +62,33 @@ export class OpenAIHandler extends LLMHandler {
     };
   }
 
+  @withRetry({ retryAllErrors: true })
   async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    try {
-      const messageList = [...messages];
-      if (systemPrompt) {
-        messageList.unshift({ role: "system", content: systemPrompt });
-      }
-
-      // Convert messages to OpenAI's expected format
-      const openAIMessages = messageList.map(msg => {
-        const baseMsg = {
-          role: msg.role as any,
-          content: msg.content
-        };
-        return msg.name ? { ...baseMsg, name: msg.name } : baseMsg;
-      });
-
-      const response = await this.client.chat.completions.create({
-        model: this.getModel().id,
-        messages: openAIMessages,
-        stream: false
-      });
-
-      if (!response.choices?.[0]?.message?.content) {
-        throw new LLMError("No response content received from OpenAI API", "openai");
-      }
-
-      return response.choices[0].message.content;
-    } catch (error: any) {
-      const errorMessage = error?.message || "Unknown error occurred";
-      throw new LLMError(`OpenAI API error: ${errorMessage}`, "openai");
+    const messageList = [...messages];
+    if (systemPrompt) {
+      messageList.unshift({ role: "system", content: systemPrompt });
     }
+
+    // Convert messages to OpenAI's expected format
+    const openAIMessages = messageList.map(msg => {
+      const baseMsg = {
+        role: msg.role as any,
+        content: msg.content
+      };
+      return msg.name ? { ...baseMsg, name: msg.name } : baseMsg;
+    });
+
+    const response = await this.client.chat.completions.create({
+      model: this.getModel().id,
+      messages: openAIMessages,
+      stream: false
+    });
+
+    if (!response.choices?.[0]?.message?.content) {
+      throw new LLMError("No response content received from OpenAI API", "openai");
+    }
+
+    return response.choices[0].message.content;
   }
 
   getModel(): ModelInfo {

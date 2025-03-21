@@ -1,5 +1,6 @@
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
+import { withRetry } from "../../../utils/retry";
 
 interface OllamaConfig extends LLMConfig {
   baseUrl: string;
@@ -38,56 +39,54 @@ export class OllamaHandler extends LLMHandler {
     };
   }
 
+  @withRetry({ retryAllErrors: true })
   async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    try {
-      const messageList: OllamaMessage[] = [];
-      
-      // Add system prompt if provided
-      if (systemPrompt) {
-        messageList.push({
-          role: 'system',
-          content: systemPrompt
-        });
-      }
-
-      // Convert messages to Ollama format
-      messageList.push(...messages.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'assistant',
-        content: msg.content
-      } as OllamaMessage)));
-
-      const response = await fetch(`${this.configData.baseUrl}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: this.configData.modelId,
-          messages: messageList,
-          stream: false
-        })
+    const messageList: OllamaMessage[] = [];
+    
+    // Add system prompt if provided
+    if (systemPrompt) {
+      messageList.push({
+        role: 'system',
+        content: systemPrompt
       });
-
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${error}`);
-      }
-
-      const data = await response.json() as OllamaResponse;
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      if (!data.message?.content) {
-        throw new LLMError("No response content received from Ollama API", "ollama");
-      }
-
-      return data.message.content;
-    } catch (error: any) {
-      const errorMessage = error?.message || "Unknown error occurred";
-      throw new LLMError(`Ollama API error: ${errorMessage}`, "ollama");
     }
+
+    // Convert messages to Ollama format
+    messageList.push(...messages.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
+    } as OllamaMessage)));
+
+    const response = await fetch(`${this.configData.baseUrl}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: this.configData.modelId,
+        messages: messageList,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      const e = new Error(`HTTP error! status: ${response.status}, message: ${error}`);
+      (e as any).status = response.status;
+      throw e;
+    }
+
+    const data = await response.json() as OllamaResponse;
+    
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    if (!data.message?.content) {
+      throw new LLMError("No response content received from Ollama API", "ollama");
+    }
+
+    return data.message.content;
   }
 
   getModel(): ModelInfo {

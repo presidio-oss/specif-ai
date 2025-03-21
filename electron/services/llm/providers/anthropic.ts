@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
+import { withRetry } from "../../../utils/retry";
 
 enum AnthropicModel {
   CLAUDE_3_5_SONNET_20241022 = 'claude-3-5-sonnet-20241022',
@@ -62,36 +63,32 @@ export class AnthropicHandler extends LLMHandler {
     };
   }
 
+  @withRetry({ retryAllErrors: true })
   async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    try {
-      const modelInfo = MODEL_CONFIGS[this.configData.modelId];
+    const modelInfo = MODEL_CONFIGS[this.configData.modelId];
 
-      // Convert messages to Anthropic's format
-      const anthropicMessages = messages.map(msg => ({
-        role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
-        content: [{
-          type: 'text' as const,
-          text: msg.content
-        }]
-      }));
+    // Convert messages to Anthropic's format
+    const anthropicMessages = messages.map(msg => ({
+      role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
+      content: [{
+        type: 'text' as const,
+        text: msg.content
+      }]
+    }));
 
-      const response = await this.client.messages.create({
-        model: modelInfo.id,
-        max_tokens: modelInfo.maxTokens,
-        messages: anthropicMessages,
-        ...(systemPrompt && { system: systemPrompt })
-      });
+    const response = await this.client.messages.create({
+      model: modelInfo.id,
+      max_tokens: modelInfo.maxTokens,
+      messages: anthropicMessages,
+      ...(systemPrompt && { system: systemPrompt })
+    });
 
-      const content = response.content?.[0];
-      if (!content || content.type !== 'text' || !('text' in content)) {
-        throw new LLMError("No valid text content received from Anthropic API", "anthropic");
-      }
-
-      return content.text;
-    } catch (error: any) {
-      const errorMessage = error?.message || "Unknown error occurred";
-      throw new LLMError(`Anthropic API error: ${errorMessage}`, "anthropic");
+    const content = response.content?.[0];
+    if (!content || content.type !== 'text' || !('text' in content)) {
+      throw new LLMError("No valid text content received from Anthropic API", "anthropic");
     }
+
+    return content.text;
   }
 
   getModel(): ModelInfo {

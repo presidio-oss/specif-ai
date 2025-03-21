@@ -1,7 +1,7 @@
 import { AzureOpenAI } from "openai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
-import { LLMUtils } from "../llm-utils";
+import { withRetry } from "../../../utils/retry";
 
 interface AzureOpenAIConfig extends LLMConfig {
   apiKey: string;
@@ -51,44 +51,37 @@ export class AzureOpenAIHandler extends LLMHandler {
     };
   }
 
+  @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
     systemPrompt: string | null = null
   ): Promise<string> {
-    try {
-      const messageList = [...messages];
-      if (systemPrompt) {
-        messageList.unshift({ role: "system", content: systemPrompt });
-      }
+    const messageList = [...messages];
+    if (systemPrompt) {
+      messageList.unshift({ role: "system", content: systemPrompt });
+    }
 
-      const openAIMessages = messageList.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-        ...(msg.name && { name: msg.name }),
-      })) as any[];
+    const openAIMessages = messageList.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+      ...(msg.name && { name: msg.name }),
+    })) as any[];
 
-      const response = await this.client.chat.completions.create({
-        model: this.configData.deployment,
-        messages: openAIMessages,
-        max_tokens: 1000,
-        temperature: 0.7,
-      });
+    const response = await this.client.chat.completions.create({
+      model: this.configData.deployment,
+      messages: openAIMessages,
+      max_tokens: 1000,
+      temperature: 0.7,
+    });
 
-      if (!response.choices?.[0]?.message?.content) {
-        throw new LLMError(
-          "No response content received from Azure OpenAI API",
-          "azure-openai"
-        );
-      }
-
-      return response.choices[0].message.content;
-    } catch (error: any) {
-      const errorMessage = error?.message || "Unknown error occurred";
+    if (!response.choices?.[0]?.message?.content) {
       throw new LLMError(
-        `Azure OpenAI API error: ${errorMessage}`,
+        "No response content received from Azure OpenAI API",
         "azure-openai"
       );
     }
+
+    return response.choices[0].message.content;
   }
 
   getModel(): AzureModelInfo {

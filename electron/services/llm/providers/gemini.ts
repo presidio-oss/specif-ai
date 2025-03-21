@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
+import { withRetry } from "../../../utils/retry";
 
 interface GeminiConfig extends LLMConfig {
   apiKey: string;
@@ -36,40 +37,36 @@ export class GeminiHandler extends LLMHandler {
     };
   }
 
+  @withRetry({ retryAllErrors: true })
   async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    try {
-      const messageList = [...messages];
-      
-      // Add system prompt if provided
-      if (systemPrompt) {
-        messageList.unshift({ role: "system", content: systemPrompt });
-      }
-
-      // Convert messages to Gemini's format
-      const history = messageList.map(msg => ({
-        role: msg.role === "user" ? "user" : "model",
-        parts: [{ text: msg.content }]
-      }));
-
-      // Start a chat
-      const chat = this.client.startChat({
-        history: history.slice(0, -1) // Exclude last message for input
-      });
-
-      // Send the last message
-      const lastMessage = messageList[messageList.length - 1];
-      const result = await chat.sendMessage(lastMessage.content);
-      const response = await result.response;
-
-      if (!response.text()) {
-        throw new LLMError("No response content received from Gemini API", "gemini");
-      }
-
-      return response.text();
-    } catch (error: any) {
-      const errorMessage = error?.message || "Unknown error occurred";
-      throw new LLMError(`Gemini API error: ${errorMessage}`, "gemini");
+    const messageList = [...messages];
+    
+    // Add system prompt if provided
+    if (systemPrompt) {
+      messageList.unshift({ role: "system", content: systemPrompt });
     }
+
+    // Convert messages to Gemini's format
+    const history = messageList.map(msg => ({
+      role: msg.role === "user" ? "user" : "model",
+      parts: [{ text: msg.content }]
+    }));
+
+    // Start a chat
+    const chat = this.client.startChat({
+      history: history.slice(0, -1) // Exclude last message for input
+    });
+
+    // Send the last message
+    const lastMessage = messageList[messageList.length - 1];
+    const result = await chat.sendMessage(lastMessage.content);
+    const response = await result.response;
+
+    if (!response.text()) {
+      throw new LLMError("No response content received from Gemini API", "gemini");
+    }
+
+    return response.text();
   }
 
   getModel(): ModelInfo {

@@ -1,6 +1,7 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
+import { withRetry } from "../../../utils/retry";
 
 interface BedrockConfig extends LLMConfig {
   region: string;
@@ -60,60 +61,56 @@ export class BedrockHandler extends LLMHandler {
     };
   }
 
+  @withRetry({ retryAllErrors: true })
   async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    try {
-      const messageList = [...messages];
-      if (systemPrompt) {
-        messageList.unshift({ role: "system", content: systemPrompt });
-      }
+    const messageList = [...messages];
+    if (systemPrompt) {
+      messageList.unshift({ role: "system", content: systemPrompt });
+    }
 
-      // Format request body based on model provider
-      let requestBody;
-      if (this.configData.model.includes('anthropic')) {
-        requestBody = {
-          anthropic_version: "bedrock-2023-05-31",
-          max_tokens: 4096,
-          messages: messageList.map(msg => ({
-            role: msg.role === 'user' ? 'user' : 'assistant',
-            content: [{ type: 'text', text: msg.content }]
-          })),
-          ...(systemPrompt && { system: systemPrompt })
-        };
-      } else {
-        // Default to OpenAI-compatible format
-        requestBody = {
-          messages: messageList.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
-        };
-      }
+    // Format request body based on model provider
+    let requestBody;
+    if (this.configData.model.includes('anthropic')) {
+      requestBody = {
+        anthropic_version: "bedrock-2023-05-31",
+        max_tokens: 4096,
+        messages: messageList.map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: [{ type: 'text', text: msg.content }]
+        })),
+        ...(systemPrompt && { system: systemPrompt })
+      };
+    } else {
+      // Default to OpenAI-compatible format
+      requestBody = {
+        messages: messageList.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }))
+      };
+    }
 
-      const command = new InvokeModelCommand({
-        modelId: this.configData.model,
-        body: JSON.stringify(requestBody)
-      });
+    const command = new InvokeModelCommand({
+      modelId: this.configData.model,
+      body: JSON.stringify(requestBody)
+    });
 
-      const response = await this.client.send(command);
-      
-      // Parse response based on model provider
-      const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-      
-      if (this.configData.model.includes('anthropic')) {
-        if (!responseBody.content?.[0]?.text) {
-          throw new LLMError("No response content received from Bedrock Anthropic model", "bedrock");
-        }
-        return responseBody.content[0].text;
-      } else {
-        // Default to OpenAI-compatible format
-        if (!responseBody.choices?.[0]?.message?.content) {
-          throw new LLMError("No response content received from Bedrock", "bedrock");
-        }
-        return responseBody.choices[0].message.content;
+    const response = await this.client.send(command);
+    
+    // Parse response based on model provider
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+    
+    if (this.configData.model.includes('anthropic')) {
+      if (!responseBody.content?.[0]?.text) {
+        throw new LLMError("No response content received from Bedrock Anthropic model", "bedrock");
       }
-    } catch (error: any) {
-      const errorMessage = error?.message || "Unknown error occurred";
-      throw new LLMError(`AWS Bedrock error: ${errorMessage}`, "bedrock");
+      return responseBody.content[0].text;
+    } else {
+      // Default to OpenAI-compatible format
+      if (!responseBody.choices?.[0]?.message?.content) {
+        throw new LLMError("No response content received from Bedrock", "bedrock");
+      }
+      return responseBody.choices[0].message.content;
     }
   }
 
