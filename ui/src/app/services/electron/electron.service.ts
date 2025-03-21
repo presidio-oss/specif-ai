@@ -4,9 +4,11 @@ import { IpcRendererEvent } from 'electron';
 import { ToasterService } from '../toaster/toaster.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { IpcInterceptor } from '../../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
 import { suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfaces/projects.interface';
+import { ElectronAPI } from './electron.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -18,27 +20,37 @@ export class ElectronService {
     private toast: ToasterService,
     private router: Router,
     private dialog: MatDialog,
+    private ipc: IpcInterceptor
   ) {
     if (this.isElectron()) {
-      this.electronAPI = window.electronAPI; // Access Electron APIs through preload
+      this.electronAPI = window.electronAPI; 
     }
   }
 
   async getSuggestions(payload: suggestionPayload) {
     if (this.electronAPI) {
-      return this.electronAPI.invoke('core:getSuggestions', payload);
+      return this.ipc.request({
+        channel: 'core:getSuggestions',
+        args: [payload]
+      });
     }
   }
 
   async getAppConfig() {
     if (this.electronAPI) {
-      return this.electronAPI.invoke('core:getAppConfig');
+      return this.ipc.request({
+        channel: 'core:getAppConfig',
+        skipLoading: true
+      });
     }
   }
 
   async createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse> {
     if (this.electronAPI) {
-      return this.electronAPI.invoke('requirement:createSolution', data);
+      return this.ipc.request({
+        channel: 'requirement:createSolution',
+        args: [data]
+      });
     }
     throw new Error('Electron is not available');
   }
@@ -48,9 +60,12 @@ export class ElectronService {
     config: Record<string, any>,
   ) {
     if (this.electronAPI) {
-      return this.electronAPI.invoke('core:verifyLLMConfig', {
-        provider,
-        config
+      return this.ipc.request({
+        channel: 'core:verifyLLMConfig',
+        args: [{
+          provider,
+          config
+        }]
       });
     }
   }
@@ -208,43 +223,3 @@ export class ElectronService {
   }
 }
 
-// Define the ElectronAPI interface within this file
-interface ElectronAPI {
-  openFile: () => Promise<string[]>;
-  saveFile: (fileContent: any, filePath: string) => Promise<void>;
-  openDirectory: () => Promise<string[]>;
-  getStoreValue: (key: string) => Promise<any>;
-  setStoreValue: (key: string, value: any) => Promise<void>;
-  getThemeConfiguration: () => Promise<any>;
-  loadURL: (serverConfig: any) => void;
-  invoke: (channel: string, ...args: any[]) => Promise<any>;
-  send: (channel: string, ...args: any[]) => void;
-  on: (
-    channel: string,
-    listener: (event: IpcRendererEvent, ...args: any[]) => void,
-  ) => void;
-  once: (
-    channel: string,
-    listener: (event: IpcRendererEvent, ...args: any[]) => void,
-  ) => void;
-  removeListener: (channel: string, listener: (...args: any[]) => void) => void;
-  getStyleUrl: () => string;
-  reloadApp: () => void;
-  getSuggestions(payload: suggestionPayload): Promise<void>;
-  getAppConfig(): Promise<{ key: string; host: string }>;
-  verifyLLMConfig(provider: string, config: Record<string, any>): Promise<{
-    status: 'success' | 'failed';
-    message: string;
-    provider: string;
-    model: string;
-    testResponse?: string;
-  }>;
-  createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse>;
-}
-
-// Extend the global Window interface to include electronAPI
-declare global {
-  interface Window {
-    electronAPI: ElectronAPI;
-  }
-}
