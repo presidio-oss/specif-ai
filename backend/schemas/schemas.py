@@ -20,6 +20,7 @@ from schemas.userstories_schema import (
 )
 
 from schemas.chat_schema import GenericChatSchema, ImproveSuggestionSchema, ConverseRequirementSchema, ConverseUserStoryTaskSchema
+from schemas.prd_schema import CreatePRDsSchema
 
 
 create_solution_schema = CreateSolutionSchema()
@@ -39,3 +40,4 @@ chat_generic_schema = GenericChatSchema()
 chat_improve_suggestion_schema = ImproveSuggestionSchema()
 chat_update_requirement_schema = ConverseRequirementSchema()
 chat_update_user_story_schema = ConverseUserStoryTaskSchema()
+create_prds_schema = CreatePRDsSchema()
