@@ -15,6 +15,7 @@ import {
 } from '../../constants/llm.models.constants';
 import {
   SetLLMConfig,
+  SwitchProvider,
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -130,6 +131,29 @@ export class SettingsComponent implements OnInit, OnDestroy {
         )
       );
     });
+
+    this.applyStoredConfigValues(provider);
+  }
+
+
+  private applyStoredConfigValues(provider: string) {
+    if (!this.currentLLMConfig || !this.currentLLMConfig.providerConfigs) return;
+    
+    const providerConfig = this.currentLLMConfig.providerConfigs[provider];
+    if (!providerConfig || !providerConfig.config) return;
+    
+    const configGroup = this.configForm.get('config') as FormGroup;
+    if (!configGroup) return;
+    
+    const storedConfig: Record<string, any> = providerConfig.config;
+    
+    Object.keys(storedConfig).forEach(key => {
+      if (configGroup.contains(key)) {
+        configGroup.get(key)?.setValue(storedConfig[key]);
+      }
+    });
+    
+    this.cdr.markForCheck();
   }
 
   ngOnInit(): void {
@@ -150,22 +174,23 @@ export class SettingsComponent implements OnInit, OnDestroy {
         console.error('Failed to fetch PostHog configuration:', error);
       });
 
-    this.subscriptions.add(
-      this.llmConfig$.subscribe((config) => {
-        this.currentLLMConfig = config;
-        this.selectedProvider.setValue(config.activeProvider);
-        this.initialProvider = config.activeProvider;
-        this.updateConfigFields(config.activeProvider);
-        this.hasChanges = false;
-      }),
-    );
-
     const analyticsState = getAnalyticsToggleState();
     this.analyticsEnabled.setValue(analyticsState);
     this.initialAnalyticsState = analyticsState;
 
     this.onProviderChange();
     this.onAnalyticsToggleChange();
+
+    const providerControl = this.configForm.get('provider');
+    if (providerControl) {
+      this.subscriptions.add(
+        providerControl.valueChanges.subscribe(provider => {
+          console.log("Provider Changed", provider);
+          this.updateConfigFields(provider);
+          this.errorMessage = '';
+        })
+      );
+    }
 
     if (this.configForm) {
       // Set initial default values
@@ -174,23 +199,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.configForm.patchValue({
         provider: defaultProvider,
         config: {}
-      });
-
+      }, { emitEvent: false });
+    
       this.subscriptions.add(
         this.llmConfig$.subscribe((config) => {
           this.currentLLMConfig = config;
-          
-          // If config is empty or invalid, use defaults
           const provider = config?.activeProvider || defaultProvider;
-          const providerConfig = config?.providerConfigs[provider]?.config || {};
+          this.initialProvider = provider;
+          this.selectedProvider.setValue(provider);
           
           this.updateConfigFields(provider);
           
-          // Then patch all values including config
-          this.configForm?.patchValue({
-            provider,
-            config: providerConfig
-          }, { emitEvent: false });
+          this.configForm?.get('provider')?.setValue(provider, { emitEvent: false });
           
           this.hasChanges = false;
         }),
@@ -202,18 +222,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.errorMessage = '';
         })
       );
-
-      const providerControl = this.configForm.get('provider');
-      if (providerControl) {
-        this.subscriptions.add(
-          providerControl.valueChanges.subscribe(provider => {
-            this.updateConfigFields(provider);
-          })
-        );
-      }
     }
   }
-
+  
   onSave() {
     if (!this.configForm?.valid) return;
     const analyticsEnabled = this.analyticsEnabled.value;
@@ -315,7 +326,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.selectedProvider.valueChanges
         .pipe(distinctUntilChanged())
         .subscribe((provider) => {
-          this.updateConfigFields(provider);
+          this.configForm.get('provider')?.setValue(provider, { emitEvent: true });
           this.errorMessage = '';
           this.checkForChanges();
           this.cdr.detectChanges();
@@ -373,17 +384,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   closeModal() {
     this.analyticsEnabled.setValue(this.initialAnalyticsState);
-    
-    // Get existing configs
-    const existingConfigs = this.currentLLMConfig.providerConfigs || {};
-    
-    this.store.dispatch(
-      new SetLLMConfig({
-        activeProvider: this.initialProvider,
-        providerConfigs: existingConfigs,
-        isDefault: this.currentLLMConfig.isDefault
-      }),
-    );
     this.modalRef.close(false);
   }
 
