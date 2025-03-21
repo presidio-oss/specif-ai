@@ -138,6 +138,11 @@ export class AddTaskComponent implements OnDestroy {
       this.prd = res;
     });
 
+    this.store
+      .select(UserStoriesState.getSelectedUserStory)
+      .subscribe((res) => {
+        this.userStory = res;
+      });
 
     this.createTaskForm(taskId);
     this.editLabel = this.mode == 'edit' ? 'Edit' : 'Add';
