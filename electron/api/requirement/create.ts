@@ -8,10 +8,11 @@ import { createBRDPrompt } from '../../prompts/requirement/create-brd';
 import { createPRDPrompt } from '../../prompts/requirement/create-prd';
 import { createUIRPrompt } from '../../prompts/requirement/create-uir';
 import { createNFRPrompt } from '../../prompts/requirement/create-nfr';
+import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
+
 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
   try {
-    // Get LLM Config
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
@@ -39,6 +40,11 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       { key: 'nfr', generatePrompt: createNFRPrompt, preferencesKey: 'nfrPreferences' }
     ];
 
+    const handler = buildLLMHandler(
+      llmConfig.activeProvider,
+      llmConfig.providerConfigs[llmConfig.activeProvider].config
+    );
+
     for (const { key, generatePrompt, preferencesKey } of requirementTypes) {
       const preferences = validatedData[preferencesKey];
       if (preferences.isEnabled) {
@@ -53,22 +59,30 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
         // Prepare messages for LLM
         const messages = await LLMUtils.prepareMessages(prompt);
-
-        const handler = buildLLMHandler(
-          llmConfig.activeProvider,
-          llmConfig.providerConfigs[llmConfig.activeProvider].config
-        );
         
-        // Get LLM response
-        const response = await handler.invoke(messages);
-
         try {
-          const parsedResponse = JSON.parse(response);
-          results[key] = parsedResponse[key];
-          console.log(`[create-solution] Successfully generated ${key.toUpperCase()} requirements`);
+          const response = await handler.invoke(messages);
+          
+          const extractedContent = extractRequirementsFromResponse(response, key);
+          
+          if (extractedContent && extractedContent.length > 0) {
+            results[key] = extractedContent;
+            console.log(`[create-solution] Successfully generated ${key.toUpperCase()} requirements`);
+          } else {
+            results[key] = [{ 
+              id: `${key.toUpperCase()}1`, 
+              title: `${key.toUpperCase()} Requirements`, 
+              requirement: response 
+            }];
+            console.log(`[create-solution] Stored raw response as ${key.toUpperCase()} requirement`);
+          }
         } catch (error) {
-          console.error(`[create-solution] Error parsing ${key.toUpperCase()} response:`, error);
-          throw new Error(`Failed to parse ${key.toUpperCase()} response as JSON`);
+          console.error(`[create-solution] Error generating ${key.toUpperCase()} requirements:`, error);
+          results[key] = [{ 
+            id: `${key.toUpperCase()}_ERROR`, 
+            title: `Error Generating ${key.toUpperCase()} Requirements`, 
+            requirement: `Failed to generate requirements: ${error}` 
+          }];
         }
       }
     }
