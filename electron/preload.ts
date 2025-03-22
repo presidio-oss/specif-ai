@@ -29,24 +29,26 @@ const electronListeners = {
 const coreListeners = {
   getSuggestions: (data: any) =>
     ipcRenderer.invoke("core:getSuggestions", data),
-  verifyLLMConfig: (
-    provider: string,
-    config: Record<string, any>
-  ) => ipcRenderer.invoke("core:verifyLLMConfig", { provider, config }),
+  verifyLLMConfig: (provider: string, config: Record<string, any>) =>
+    ipcRenderer.invoke("core:verifyLLMConfig", { provider, config }),
   getAppConfig: () => ipcRenderer.invoke("core:getAppConfig"),
 };
 
 const requirementListeners = {
-  createSolution: (data: any) =>
-    ipcRenderer.invoke("requirement:createSolution", data),
   updateRequirement: (data: any) =>
     ipcRenderer.invoke("requirement:updateRequirement", data),
+};
+
+const solutionListeners = {
+  createSolution: (data: any) =>
+    ipcRenderer.invoke("solution:createSolution", data),
 };
 
 const electronAPI = {
   ...electronListeners,
   ...coreListeners,
   ...requirementListeners,
+  ...solutionListeners,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

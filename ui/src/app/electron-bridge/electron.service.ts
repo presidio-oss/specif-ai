@@ -50,7 +50,7 @@ export class ElectronService {
   async createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
-        channel: 'requirement:createSolution',
+        channel: 'solution:createSolution',
         args: [data]
       });
     }
