@@ -69,24 +69,14 @@ export class FeatureService {
 
   addBusinessProcess(
     request: IAddBusinessProcessRequest,
-  ): Observable<IAddBusinessProcessResponse> {
-    return this.http.post<IAddBusinessProcessResponse>(
-      this.ADD_BUSINESS_PROCESS,
-      request,
-    );
+  ): Promise<IAddBusinessProcessResponse> {
+    return this.electronService.addBusinessProcess(request);
   }
 
   updateBusinessProcess(
     request: IUpdateProcessRequest,
-  ): Observable<IUpdateProcessResponse> {
-    const headers = new HttpHeaders({
-      skipLoader: 'true',
-    });
-    return this.http.put<IUpdateProcessResponse>(
-      this.UPDATE_BUSINESS_PROCESS,
-      request,
-      { headers },
-    );
+  ): Promise<IUpdateProcessResponse> {
+    return this.electronService.updateBusinessProcess(request);
   }
 
   addFlowChart(request: IFlowChartRequest): Promise<IFlowchartResponse> {

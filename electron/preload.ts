@@ -39,6 +39,17 @@ const requirementListeners = {
     ipcRenderer.invoke("requirement:update", data),
   chatUpdateRequirement: (data: any) =>
     ipcRenderer.invoke("requirement:chat", data),
+  addRequirement: (data: any) =>
+    ipcRenderer.invoke("requirement:add", data),
+  addBusinessProcess: (data: any) =>
+    ipcRenderer.invoke("requirement:bp-add", data),
+  updateBusinessProcess: (data: any) =>
+    ipcRenderer.invoke("requirement:bp-update", data),
+};
+
+const visualizationListeners = {
+  createFlowchart: (data: any) =>
+    ipcRenderer.invoke("visualization:flowchart", data),
 };
 
 const solutionListeners = {
@@ -51,6 +62,7 @@ const electronAPI = {
   ...coreListeners,
   ...requirementListeners,
   ...solutionListeners,
+  ...visualizationListeners,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

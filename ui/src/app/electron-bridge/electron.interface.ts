@@ -1,9 +1,29 @@
 import { IpcRendererEvent } from 'electron';
-import { suggestionPayload, conversePayload, ChatUpdateRequirementResponse } from 'src/app/model/interfaces/chat.interface';
-import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfaces/projects.interface';
-import { IUpdateRequirementRequest, IAddRequirementRequest } from 'src/app/model/interfaces/IRequirement';
-import { IEditTaskResponse, IAddTaskResponse } from 'src/app/model/interfaces/ITask';
-import { IFlowChartRequest, IFlowchartResponse } from 'src/app/model/interfaces/IBusinessProcess';
+import {
+  suggestionPayload,
+  conversePayload,
+  ChatUpdateRequirementResponse,
+} from 'src/app/model/interfaces/chat.interface';
+import {
+  ICreateSolutionRequest,
+  ISolutionResponse,
+} from 'src/app/model/interfaces/projects.interface';
+import {
+  IUpdateRequirementRequest,
+  IAddRequirementRequest,
+} from 'src/app/model/interfaces/IRequirement';
+import {
+  IEditTaskResponse,
+  IAddTaskResponse,
+} from 'src/app/model/interfaces/ITask';
+import {
+  IFlowChartRequest,
+  IFlowchartResponse,
+  IAddBusinessProcessRequest,
+  IAddBusinessProcessResponse,
+  IUpdateProcessRequest,
+  IUpdateProcessResponse,
+} from 'src/app/model/interfaces/IBusinessProcess';
 
 export interface ElectronAPI {
   openFile: () => Promise<string[]>;
@@ -28,7 +48,10 @@ export interface ElectronAPI {
   reloadApp: () => void;
   getSuggestions(payload: suggestionPayload): Promise<void>;
   getAppConfig(): Promise<{ key: string; host: string }>;
-  verifyLLMConfig(provider: string, config: Record<string, any>): Promise<{
+  verifyLLMConfig(
+    provider: string,
+    config: Record<string, any>,
+  ): Promise<{
     status: 'success' | 'failed';
     message: string;
     provider: string;
@@ -36,14 +59,24 @@ export interface ElectronAPI {
     testResponse?: string;
   }>;
   createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse>;
-  updateRequirement(request: IUpdateRequirementRequest): Promise<IEditTaskResponse>;
+  updateRequirement(
+    request: IUpdateRequirementRequest,
+  ): Promise<IEditTaskResponse>;
   addRequirement(request: IAddRequirementRequest): Promise<IAddTaskResponse>;
-  chatUpdateRequirement(request: conversePayload): Promise<ChatUpdateRequirementResponse>;
+  chatUpdateRequirement(
+    request: conversePayload,
+  ): Promise<ChatUpdateRequirementResponse>;
   createFlowchart(request: IFlowChartRequest): Promise<IFlowchartResponse>;
+  addBusinessProcess(
+    request: IAddBusinessProcessRequest,
+  ): Promise<IAddBusinessProcessResponse>;
+  updateBusinessProcess(
+    request: IUpdateProcessRequest,
+  ): Promise<IUpdateProcessResponse>;
 }
 
 declare global {
-    interface Window {
-      electronAPI: ElectronAPI;
-    }
+  interface Window {
+    electronAPI: ElectronAPI;
   }
+}

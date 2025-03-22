@@ -7,12 +7,33 @@ import { MatDialog } from '@angular/material/dialog';
 import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
 import { suggestionPayload } from 'src/app/model/interfaces/chat.interface';
-import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfaces/projects.interface';
+import {
+  ICreateSolutionRequest,
+  ISolutionResponse,
+} from 'src/app/model/interfaces/projects.interface';
 import { ElectronAPI } from './electron.interface';
-import { IUpdateRequirementRequest, IAddRequirementRequest } from 'src/app/model/interfaces/IRequirement';
-import { IEditTaskResponse, IAddTaskResponse } from 'src/app/model/interfaces/ITask';
-import { conversePayload, ChatUpdateRequirementResponse } from 'src/app/model/interfaces/chat.interface';
-import { IFlowChartRequest, IFlowchartResponse } from '../model/interfaces/IBusinessProcess';
+import {
+  IUpdateRequirementRequest,
+  IAddRequirementRequest,
+} from 'src/app/model/interfaces/IRequirement';
+import {
+  IEditTaskResponse,
+  IAddTaskResponse,
+} from 'src/app/model/interfaces/ITask';
+import {
+  IAddBusinessProcessRequest,
+  IUpdateProcessResponse,
+  IAddBusinessProcessResponse,
+  IUpdateProcessRequest,
+} from 'src/app/model/interfaces/IBusinessProcess';
+import {
+  conversePayload,
+  ChatUpdateRequirementResponse,
+} from 'src/app/model/interfaces/chat.interface';
+import {
+  IFlowChartRequest,
+  IFlowchartResponse,
+} from '../model/interfaces/IBusinessProcess';
 
 @Injectable({
   providedIn: 'root',
@@ -24,10 +45,10 @@ export class ElectronService {
     private toast: ToasterService,
     private router: Router,
     private dialog: MatDialog,
-    private ipc: IpcInterceptor
+    private ipc: IpcInterceptor,
   ) {
     if (this.isElectron()) {
-      this.electronAPI = window.electronAPI; 
+      this.electronAPI = window.electronAPI;
     }
   }
 
@@ -35,7 +56,7 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'core:getSuggestions',
-        args: [payload]
+        args: [payload],
       });
     }
   }
@@ -44,73 +65,105 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'core:getAppConfig',
-        skipLoading: true
+        skipLoading: true,
       });
     }
   }
 
-  async createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse> {
+  async createSolution(
+    data: ICreateSolutionRequest,
+  ): Promise<ISolutionResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'solution:createSolution',
-        args: [data]
+        args: [data],
       });
     }
     throw new Error('Electron is not available');
   }
 
-
-  async chatUpdateRequirement(request: conversePayload): Promise<ChatUpdateRequirementResponse> {
+  async chatUpdateRequirement(
+    request: conversePayload,
+  ): Promise<ChatUpdateRequirementResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'requirement:chat',
-        args: [request]
+        args: [request],
       });
     }
     throw new Error('Electron is not available');
   }
 
-  async addRequirement(request: IAddRequirementRequest): Promise<IAddTaskResponse> {
+  async addRequirement(
+    request: IAddRequirementRequest,
+  ): Promise<IAddTaskResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'requirement:add',
-        args: [request]
+        args: [request],
       });
     }
     throw new Error('Electron is not available');
   }
 
-  async updateRequirement(request: IUpdateRequirementRequest): Promise<IEditTaskResponse> {
+  async updateRequirement(
+    request: IUpdateRequirementRequest,
+  ): Promise<IEditTaskResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'requirement:update',
-        args: [request]
+        args: [request],
       });
     }
     throw new Error('Electron is not available');
   }
 
-  async createFlowchart(request: IFlowChartRequest): Promise<IFlowchartResponse> {
+  async addBusinessProcess(
+    request: IAddBusinessProcessRequest,
+  ): Promise<IAddBusinessProcessResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'requirement:bp-add',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async updateBusinessProcess(
+    request: IUpdateProcessRequest,
+  ): Promise<IUpdateProcessResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'requirement:bp-update',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async createFlowchart(
+    request: IFlowChartRequest,
+  ): Promise<IFlowchartResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'visualization:flowchart',
-        args: [request]
+        args: [request],
       });
     }
     throw new Error('Electron is not available');
   }
 
-  async verifyLLMConfig(
-    provider: string,
-    config: Record<string, any>,
-  ) {
+  async verifyLLMConfig(provider: string, config: Record<string, any>) {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'core:verifyLLMConfig',
-        args: [{
-          provider,
-          config
-        }]
+        args: [
+          {
+            provider,
+            config,
+          },
+        ],
       });
     }
   }
