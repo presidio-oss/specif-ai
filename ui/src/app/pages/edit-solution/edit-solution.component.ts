@@ -142,7 +142,7 @@ export class EditSolutionComponent {
     this.createRequirementForm();
   }
 
-  updateRequirementWithAI() {
+  async updateRequirementWithAI() {
     const body: IUpdateRequirementRequest = {
       updatedReqt: this.requirementForm.getRawValue().title,
       addReqtType: this.folderName,
@@ -155,40 +155,43 @@ export class EditSolutionComponent {
       description: this.initialData.description,
       useGenAI: true,
     };
-    this.featureService.updateRequirement(body).subscribe(
-      (data) => {
-        this.store.dispatch(
-          new UpdateFile(this.absoluteFilePath, {
-            requirement: data.updated.requirement,
-            title: data.updated.title,
-            chatHistory: this.chatHistory,
-            epicTicketId: this.initialData.epicTicketId,
-          }),
-        );
-        this.allowFreeRedirection = true;
-        this.store.dispatch(
-          new ReadFile(`${this.folderName}/${this.fileName}`),
-        );
-        this.selectedFileContent$.subscribe((res: any) => {
-          this.oldContent = res.requirement;
-          this.requirementForm.patchValue({
-            title: res.title,
-            content: res.requirement,
-            epicticketid: res.epicTicketId,
-          });
-          this.chatHistory = res.chatHistory || [];
+    
+    try {
+      const data = await this.featureService.updateRequirement(body);
+      
+      this.store.dispatch(
+        new UpdateFile(this.absoluteFilePath, {
+          requirement: data.updated.requirement,
+          title: data.updated.title,
+          chatHistory: this.chatHistory,
+          epicTicketId: this.initialData.epicTicketId,
+        }),
+      );
+      
+      this.allowFreeRedirection = true;
+      this.store.dispatch(
+        new ReadFile(`${this.folderName}/${this.fileName}`),
+      );
+      
+      this.selectedFileContent$.subscribe((res: any) => {
+        this.oldContent = res.requirement;
+        this.requirementForm.patchValue({
+          title: res.title,
+          content: res.requirement,
+          epicticketid: res.epicTicketId,
         });
-        this.toastService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
-        );
-      },
-      (error) => {
-        console.error('Error updating requirement:', error); // Handle any errors
-        this.toastService.showError(
-          TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(this.folderName, body.reqId),
-        );
-      },
-    );
+        this.chatHistory = res.chatHistory || [];
+      });
+      
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
+      );
+    } catch (error) {
+      console.error('Error updating requirement:', error);
+      this.toastService.showError(
+        TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(this.folderName, body.reqId),
+      );
+    }
   }
 
   updateRequirement() {

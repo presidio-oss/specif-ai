@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { ElectronService } from '../electron/electron.service';
 import {
   IUpdateUserStoryRequest,
   IUserStoriesRequest,
@@ -38,14 +39,17 @@ export class FeatureService {
   UPDATE_USER_STORY: string = `solutions/story/update`;
   ADD_TASK: string = `solutions/task/add`;
   UPDATE_TASK: string = `solutions/task/update`;
-  UPDATE_REQUIREMENT: string = `solutions/update`;
-  ADD_REQUIREMENT: string = `solutions/add`;
+  UPDATE_REQUIREMENT: string = `requirement:updateRequirement`;
+  ADD_REQUIREMENT: string = `requirement:addRequirement`;
   ADD_BUSINESS_PROCESS: string = `solutions/business_process/add`;
   UPDATE_BUSINESS_PROCESS: string = `solutions/business_process/update`;
   ADD_FLOW_CHART: string = `solutions/flowchart`;
   VALIDATE_BEDROCK_ID: string = `solutions/integration/knowledgebase/validation`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private electronService: ElectronService
+  ) {}
 
   generateUserStories(request: IUserStoriesRequest): Observable<IUserStory[]> {
     const headers = new HttpHeaders({
@@ -90,8 +94,8 @@ export class FeatureService {
 
   updateRequirement(
     request: IUpdateRequirementRequest,
-  ): Observable<IEditTaskResponse> {
-    return this.http.post<any>(this.UPDATE_REQUIREMENT, request);
+  ): Promise<IEditTaskResponse> {
+    return this.electronService.updateRequirement(request);
   }
 
   addRequirement(

@@ -39,6 +39,8 @@ const coreListeners = {
 const requirementListeners = {
   createSolution: (data: any) =>
     ipcRenderer.invoke("requirement:createSolution", data),
+  updateRequirement: (data: any) =>
+    ipcRenderer.invoke("requirement:updateRequirement", data),
 };
 
 const electronAPI = {
