@@ -1,14 +1,10 @@
 import { getSuggestionsSchema } from '../../schema/core/get-suggestions.schema';
-import { HandlebarsService } from '../../services/template/handlebars-service';
+import { generateImprovedSuggestionsPrompt } from '../../prompts/core/improved-suggestions';
 import { LLMUtils } from '../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
-import * as path from 'path';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
-
-const templateDir = path.join(__dirname, '../../../prompts');
-const handlebarsService = new HandlebarsService(templateDir);
 
 export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): Promise<string[]> {
   try {
@@ -21,7 +17,7 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
     const validatedData = getSuggestionsSchema.parse(data);
 
     const { name, description, type, requirement, suggestions, selectedSuggestion, knowledgeBase } = validatedData;
-    let prompt = handlebarsService.renderTemplate('improved-suggestions', {
+    let prompt = generateImprovedSuggestionsPrompt({
       name,
       description,
       type,
