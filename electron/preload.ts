@@ -47,6 +47,11 @@ const requirementListeners = {
     ipcRenderer.invoke("requirement:bp-update", data),
 };
 
+const featureListeners = {
+  createStories: (data: any) =>
+    ipcRenderer.invoke("story:create", data),
+};
+
 const visualizationListeners = {
   createFlowchart: (data: any) =>
     ipcRenderer.invoke("visualization:flowchart", data),
@@ -63,6 +68,7 @@ const electronAPI = {
   ...requirementListeners,
   ...solutionListeners,
   ...visualizationListeners,
+  ...featureListeners,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

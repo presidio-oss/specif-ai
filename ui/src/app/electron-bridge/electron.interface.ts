@@ -24,6 +24,10 @@ import {
   IUpdateProcessRequest,
   IUpdateProcessResponse,
 } from 'src/app/model/interfaces/IBusinessProcess';
+import {
+  IUserStoriesRequest,
+  IUserStoryResponse
+} from 'src/app/model/interfaces/IUserStory';
 
 export interface ElectronAPI {
   openFile: () => Promise<string[]>;
@@ -73,6 +77,7 @@ export interface ElectronAPI {
   updateBusinessProcess(
     request: IUpdateProcessRequest,
   ): Promise<IUpdateProcessResponse>;
+  createStories(request: IUserStoriesRequest): Promise<IUserStoryResponse>;
 }
 
 declare global {

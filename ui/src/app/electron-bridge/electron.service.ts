@@ -34,6 +34,10 @@ import {
   IFlowChartRequest,
   IFlowchartResponse,
 } from '../model/interfaces/IBusinessProcess';
+import {
+  IUserStoriesRequest,
+  IUserStoryResponse,
+} from '../model/interfaces/IUserStory';
 
 @Injectable({
   providedIn: 'root',
@@ -148,6 +152,18 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'visualization:flowchart',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async createStories(
+    request: IUserStoriesRequest,
+  ): Promise<IUserStoryResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'story:create',
         args: [request],
       });
     }

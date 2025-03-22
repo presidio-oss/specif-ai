@@ -52,19 +52,11 @@ export class FeatureService {
     private electronService: ElectronService
   ) {}
 
-  generateUserStories(request: IUserStoriesRequest): Observable<IUserStory[]> {
-    const headers = new HttpHeaders({
-      skipLoader: 'true',
-    });
-    return this.http
-      .post<IUserStoryResponse>(this.GENERATE_USER_STORIES_URL, request, {
-        headers,
-      })
-      .pipe(
-        map((response: IUserStoryResponse) =>
-          this.parseUserStoryResponse(response),
-        ),
-      );
+  generateUserStories(request: IUserStoriesRequest): Promise<IUserStory[]> {
+    return this.electronService.createStories(request)
+      .then((response: IUserStoryResponse) => {
+        return this.parseUserStoryResponse(response);
+      });
   }
 
   addBusinessProcess(

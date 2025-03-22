@@ -283,20 +283,18 @@ export class UserStoriesComponent implements OnInit {
     };
 
     this.loadingService.setLoading(true);
-    this.featureService.generateUserStories(request).subscribe({
-      next: (response) => {
-        this.userStories = response;
-        this.generateTasks(regenerate).then(() => {
-          this.updateWithUserStories(this.userStories, regenerate);
-        });
-      },
-      error: (error) => {
-        this.loadingService.setLoading(false);
-        this.toast.showError(
-          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
-        );
-      },
-    });
+    this.featureService.generateUserStories(request).then((response) => {
+      this.userStories = response;
+      this.generateTasks(regenerate).then(() => {
+        this.updateWithUserStories(this.userStories, regenerate);
+      });
+    })
+    .catch((error) => {
+      this.loadingService.setLoading(false);
+      this.toast.showError(
+        TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+      );
+    })
     this.dialog.closeAll();
   }
 
