@@ -3,7 +3,7 @@ import { suggestionPayload, conversePayload, ChatUpdateRequirementResponse } fro
 import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfaces/projects.interface';
 import { IUpdateRequirementRequest, IAddRequirementRequest } from 'src/app/model/interfaces/IRequirement';
 import { IEditTaskResponse, IAddTaskResponse } from 'src/app/model/interfaces/ITask';
-
+import { IFlowChartRequest, IFlowchartResponse } from 'src/app/model/interfaces/IBusinessProcess';
 
 export interface ElectronAPI {
   openFile: () => Promise<string[]>;
@@ -39,6 +39,7 @@ export interface ElectronAPI {
   updateRequirement(request: IUpdateRequirementRequest): Promise<IEditTaskResponse>;
   addRequirement(request: IAddRequirementRequest): Promise<IAddTaskResponse>;
   chatUpdateRequirement(request: conversePayload): Promise<ChatUpdateRequirementResponse>;
+  createFlowchart(request: IFlowChartRequest): Promise<IFlowchartResponse>;
 }
 
 declare global {

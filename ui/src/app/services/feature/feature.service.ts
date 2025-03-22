@@ -25,6 +25,7 @@ import {
   IAddBusinessProcessRequest,
   IAddBusinessProcessResponse,
   IFlowChartRequest,
+  IFlowchartResponse,
   IUpdateProcessRequest,
   IUpdateProcessResponse,
 } from '../../model/interfaces/IBusinessProcess';
@@ -88,8 +89,8 @@ export class FeatureService {
     );
   }
 
-  addFlowChart(request: IFlowChartRequest): Observable<string> {
-    return this.http.post<string>(this.ADD_FLOW_CHART, request);
+  addFlowChart(request: IFlowChartRequest): Promise<IFlowchartResponse> {
+    return this.electronService.createFlowchart(request);
   }
 
   updateRequirement(

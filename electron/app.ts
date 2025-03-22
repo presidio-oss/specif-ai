@@ -10,6 +10,7 @@ import { setupFileSystemHandlers } from "./handlers/fs-handler";
 import { setupStore } from "./handlers/store-handler";
 import { setupCoreHandlers } from "./handlers/core-handler";
 import { setupRequirementHandlers } from "./handlers/requirement-handler";
+import { setupVisualizationHandlers } from "./handlers/visualization-handler";
 
 // ========================
 // CONFIGURATION
@@ -428,5 +429,6 @@ app.whenReady().then(async () => {
     setupJiraHandlers();
     setupCoreHandlers();
     setupRequirementHandlers();
+    setupVisualizationHandlers();
   }
 });

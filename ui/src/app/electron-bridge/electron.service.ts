@@ -12,6 +12,7 @@ import { ElectronAPI } from './electron.interface';
 import { IUpdateRequirementRequest, IAddRequirementRequest } from 'src/app/model/interfaces/IRequirement';
 import { IEditTaskResponse, IAddTaskResponse } from 'src/app/model/interfaces/ITask';
 import { conversePayload, ChatUpdateRequirementResponse } from 'src/app/model/interfaces/chat.interface';
+import { IFlowChartRequest, IFlowchartResponse } from '../model/interfaces/IBusinessProcess';
 
 @Injectable({
   providedIn: 'root',
@@ -83,6 +84,16 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'requirement:update',
+        args: [request]
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async createFlowchart(request: IFlowChartRequest): Promise<IFlowchartResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'visualization:flowchart',
         args: [request]
       });
     }

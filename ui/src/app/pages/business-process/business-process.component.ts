@@ -563,7 +563,8 @@ export class BusinessProcessComponent implements OnInit {
       selectedPRDs,
     };
     try {
-      return await firstValueFrom(this.featureService.addFlowChart(request));
+      const response = await this.featureService.addFlowChart(request);
+      return response.flowChartData;
     } catch (error) {
       this.loggerService.error(
         'Error from BE while generating flow chart',
