@@ -1,13 +1,13 @@
-import { createSolutionSchema, type SolutionResponse, type CreateSolutionRequest } from '../../schema/requirement/create.schema';
+import { createSolutionSchema, type SolutionResponse, type CreateSolutionRequest } from '../../schema/solution/create.schema';
 import { LLMUtils } from '../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
-import { createBRDPrompt } from '../../prompts/requirement/create-brd';
-import { createPRDPrompt } from '../../prompts/requirement/create-prd';
-import { createUIRPrompt } from '../../prompts/requirement/create-uir';
-import { createNFRPrompt } from '../../prompts/requirement/create-nfr';
+import { createBRDPrompt } from '../../prompts/solution/create-brd';
+import { createPRDPrompt } from '../../prompts/solution/create-prd';
+import { createUIRPrompt } from '../../prompts/solution/create-uir';
+import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 
 

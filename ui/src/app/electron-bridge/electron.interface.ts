@@ -1,8 +1,8 @@
 import { IpcRendererEvent } from 'electron';
 import { suggestionPayload, conversePayload, ChatUpdateRequirementResponse } from 'src/app/model/interfaces/chat.interface';
 import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfaces/projects.interface';
-import { IUpdateRequirementRequest } from 'src/app/model/interfaces/IRequirement';
-import { IEditTaskResponse } from 'src/app/model/interfaces/ITask';
+import { IUpdateRequirementRequest, IAddRequirementRequest } from 'src/app/model/interfaces/IRequirement';
+import { IEditTaskResponse, IAddTaskResponse } from 'src/app/model/interfaces/ITask';
 
 
 export interface ElectronAPI {
@@ -37,6 +37,7 @@ export interface ElectronAPI {
   }>;
   createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse>;
   updateRequirement(request: IUpdateRequirementRequest): Promise<IEditTaskResponse>;
+  addRequirement(request: IAddRequirementRequest): Promise<IAddTaskResponse>;
   chatUpdateRequirement(request: conversePayload): Promise<ChatUpdateRequirementResponse>;
 }
 

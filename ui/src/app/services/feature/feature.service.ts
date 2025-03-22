@@ -40,7 +40,7 @@ export class FeatureService {
   ADD_TASK: string = `solutions/task/add`;
   UPDATE_TASK: string = `solutions/task/update`;
   UPDATE_REQUIREMENT: string = `requirement:update`;
-  ADD_REQUIREMENT: string = `requirement:addRequirement`;
+  ADD_REQUIREMENT: string = `requirement:add`;
   ADD_BUSINESS_PROCESS: string = `solutions/business_process/add`;
   UPDATE_BUSINESS_PROCESS: string = `solutions/business_process/update`;
   ADD_FLOW_CHART: string = `solutions/flowchart`;
@@ -100,8 +100,8 @@ export class FeatureService {
 
   addRequirement(
     request: IAddRequirementRequest,
-  ): Observable<IAddTaskResponse> {
-    return this.http.post<any>(this.ADD_REQUIREMENT, request);
+  ): Promise<IAddTaskResponse> {
+    return this.electronService.addRequirement(request);
   }
 
   generateTask(request: ITaskRequest): Observable<ITasksResponse> {

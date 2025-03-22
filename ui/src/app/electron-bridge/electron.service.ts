@@ -9,8 +9,8 @@ import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/p
 import { suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfaces/projects.interface';
 import { ElectronAPI } from './electron.interface';
-import { IUpdateRequirementRequest } from 'src/app/model/interfaces/IRequirement';
-import { IEditTaskResponse } from 'src/app/model/interfaces/ITask';
+import { IUpdateRequirementRequest, IAddRequirementRequest } from 'src/app/model/interfaces/IRequirement';
+import { IEditTaskResponse, IAddTaskResponse } from 'src/app/model/interfaces/ITask';
 import { conversePayload, ChatUpdateRequirementResponse } from 'src/app/model/interfaces/chat.interface';
 
 @Injectable({
@@ -63,6 +63,16 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'requirement:chat',
+        args: [request]
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async addRequirement(request: IAddRequirementRequest): Promise<IAddTaskResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'requirement:add',
         args: [request]
       });
     }

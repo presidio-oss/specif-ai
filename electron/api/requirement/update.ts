@@ -1,10 +1,10 @@
-import { updateRequirementSchema, type UpdateRequirementResponse } from '../../schema/requirement/update-requirement.schema';
+import { updateRequirementSchema, type UpdateRequirementResponse } from '../../schema/requirement/update.schema';
 import { LLMUtils } from '../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
-import { updateRequirementPrompt } from '../../prompts/requirement/update-requirement';
+import { updateRequirementPrompt } from '../../prompts/requirement/update';
 
 export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<UpdateRequirementResponse> {
   try {
@@ -30,8 +30,7 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
     // If useGenAI is false and no file content provided, return direct update
     if (!useGenAI && !fileContent) {
       return {
-        name,
-        description,
+        ...validatedData,
         updated: {
           title: validatedData.title || 'Updated Requirement',
           requirement: `${updatedReqt} ${reqDesc}`
@@ -74,8 +73,7 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
     }
 
     return {
-      name,
-      description,
+      ...validatedData,
       updated: result.updated
     };
   } catch (error) {

@@ -1,10 +1,10 @@
-import { chatUpdateRequirementSchema, type ChatUpdateRequirementResponse } from '../../schema/requirement/chat-update-requirement.schema';
+import { chatUpdateRequirementSchema, type ChatUpdateRequirementResponse } from '../../schema/requirement/chat.schema';
 import { LLMUtils } from '../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
-import { chatUpdateRequirementPrompt } from '../../prompts/requirement/chat-update-requirement';
+import { chatUpdateRequirementPrompt } from '../../prompts/requirement/chat';
 
 export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<ChatUpdateRequirementResponse> {
   try {

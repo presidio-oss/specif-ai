@@ -251,7 +251,7 @@ export class EditSolutionComponent {
         title: this.requirementForm.getRawValue().title,
         useGenAI: true,
       };
-      this.featureService.addRequirement(body).subscribe(
+      this.featureService.addRequirement(body).then(
         (data) => {
           this.store.dispatch(
             new CreateFile(`${this.folderName}`, {

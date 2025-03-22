@@ -21,8 +21,6 @@ export interface UpdatedRequirement {
   requirement: string;
 }
 
-export interface UpdateRequirementResponse {
-  name: string;
-  description: string;
+export interface UpdateRequirementResponse extends UpdateRequirementRequest {
   updated: UpdatedRequirement;
 }
