@@ -1,8 +1,5 @@
-import { BRD_CONTEXT } from '../context/brd';
-import { PRD_CONTEXT } from '../context/prd';
-import { NFR_CONTEXT } from '../context/nfr';
-import { UIR_CONTEXT } from '../context/uir';
 import { MARKDOWN_RULES } from '../context/markdown-rules';
+import { getContextAndType } from '../../utils/get-context';
 
 interface UpdateRequirementParams {
   name: string;
@@ -12,35 +9,6 @@ interface UpdateRequirementParams {
   fileContent?: string;
   reqId: string;
   addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR';
-}
-
-function getContextAndType(type: 'BRD' | 'PRD' | 'UIR' | 'NFR'): { context: string; requirementType: string; format: string } {
-  switch (type) {
-    case 'BRD':
-      return {
-        context: BRD_CONTEXT,
-        requirementType: 'Business Requirements',
-        format: '{"title": <title>, "requirement": <requirement>}'
-      };
-    case 'PRD':
-      return {
-        context: PRD_CONTEXT,
-        requirementType: 'Product Requirements',
-        format: '{"title": <title>, "requirement": "<requirement>  \\n#### Screens:  \\n<Screen Description>  \\n#### Personas:  \\n<Persona Description>"}'
-      };
-    case 'NFR':
-      return {
-        context: NFR_CONTEXT,
-        requirementType: 'Non-Functional Requirements',
-        format: '{"title": <title>, "requirement": <requirement>}'
-      };
-    case 'UIR':
-      return {
-        context: UIR_CONTEXT,
-        requirementType: 'User Interface Requirements',
-        format: '{"title": <title>, "requirement": <requirement>}'
-      };
-  }
 }
 
 export function updateRequirementPrompt({

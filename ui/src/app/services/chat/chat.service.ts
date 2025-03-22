@@ -1,45 +1,29 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import {
   suggestionPayload,
   conversePayload,
+  ChatUpdateRequirementResponse,
 } from '../../model/interfaces/chat.interface';
 import { CHAT_TYPES } from '../../constants/app.constants';
+import { ElectronService } from '../../electron-bridge/electron.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatService {
-  GET_SUGGESTIONS_URL: string = `chat/get_suggestions`;
-  CONVERSATION_URL: string = `chat/update_requirement`;
-  CONVERSATION_USER_STORY_URL: string = `chat/update_user_story_task`;
+  constructor(private electronService: ElectronService) {}
 
-  constructor(private http: HttpClient) {}
-
-  generateSuggestions(request: suggestionPayload): Observable<any> {
-    // Skip default loader for chat suggestions.
-    const headers = new HttpHeaders({
-      skipLoader: 'true',
-    });
-    return this.http.post(this.GET_SUGGESTIONS_URL, request, {
-      headers,
-    });
+  generateSuggestions(request: suggestionPayload): Promise<Array<''>> {
+    return this.electronService.getSuggestions(request);
   }
 
-  chatWithLLM(type: string, request: conversePayload): Observable<any> {
-    // Skip default loader for chat with LLM call.
-    const headers = new HttpHeaders({
-      skipLoader: 'true',
-    });
+  chatWithLLM(type: string, request: conversePayload): Promise<ChatUpdateRequirementResponse> {
     if (type === CHAT_TYPES.REQUIREMENT) {
-      return this.http.post(this.CONVERSATION_URL, request, {
-        headers,
-      });
+      return this.electronService.chatUpdateRequirement(request);
     } else {
-      return this.http.post(this.CONVERSATION_USER_STORY_URL, request, {
-        headers,
-      });
+      // TODO: Implement user story chat update
+      throw new Error('User story chat update not implemented yet');
     }
   }
 }

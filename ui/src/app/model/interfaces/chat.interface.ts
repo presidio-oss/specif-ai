@@ -20,3 +20,7 @@ export interface conversePayload {
   prd?: string;
   chatHistory?: Array<{}>;
 }
+
+export interface ChatUpdateRequirementResponse {
+  response: string;
+}

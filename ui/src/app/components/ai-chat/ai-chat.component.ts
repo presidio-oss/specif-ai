@@ -8,6 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {
+  ChatUpdateRequirementResponse,
   conversePayload,
   suggestionPayload,
 } from '../../model/interfaces/chat.interface';
@@ -205,8 +206,8 @@ export class AiChatComponent implements OnInit {
       suggestions: this.localSuggestions,
       selectedSuggestion: this.selectedSuggestion,
     };
-    this.electronService
-      .getSuggestions(suggestionPayload)
+    this.chatService
+      .generateSuggestions(suggestionPayload)
       .then((response: Array<''>) => {
         this.chatSuggestions = response;
         this.localSuggestions.push(...response);
@@ -240,12 +241,12 @@ export class AiChatComponent implements OnInit {
     else payload = { ...payload, prd: this.prd, us: this.userStory };
     this.chatService
       .chatWithLLM(this.chatType, payload)
-      .pipe(this.analyticsTracker.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
-      .subscribe((response) => {
+      .then((result: ChatUpdateRequirementResponse) => {
         this.generateLoader = false;
-        this.chatHistory = [...this.chatHistory, { assistant: response }];
+        this.chatHistory = [...this.chatHistory, { assistant: result.response }];
         this.returnChatHistory();
         this.getSuggestion();
+        this.analyticsTracker.trackResponseTime(AnalyticsEventSource.AI_CHAT)
       });
   }
 

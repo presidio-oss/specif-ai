@@ -11,6 +11,7 @@ import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfa
 import { ElectronAPI } from './electron.interface';
 import { IUpdateRequirementRequest } from 'src/app/model/interfaces/IRequirement';
 import { IEditTaskResponse } from 'src/app/model/interfaces/ITask';
+import { conversePayload, ChatUpdateRequirementResponse } from 'src/app/model/interfaces/chat.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -58,10 +59,20 @@ export class ElectronService {
   }
 
 
+  async chatUpdateRequirement(request: conversePayload): Promise<ChatUpdateRequirementResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'requirement:chat',
+        args: [request]
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async updateRequirement(request: IUpdateRequirementRequest): Promise<IEditTaskResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
-        channel: 'requirement:updateRequirement',
+        channel: 'requirement:update',
         args: [request]
       });
     }
@@ -235,4 +246,3 @@ export class ElectronService {
     }
   }
 }
-

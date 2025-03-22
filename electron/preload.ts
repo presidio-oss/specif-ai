@@ -36,7 +36,9 @@ const coreListeners = {
 
 const requirementListeners = {
   updateRequirement: (data: any) =>
-    ipcRenderer.invoke("requirement:updateRequirement", data),
+    ipcRenderer.invoke("requirement:update", data),
+  chatUpdateRequirement: (data: any) =>
+    ipcRenderer.invoke("requirement:chat", data),
 };
 
 const solutionListeners = {

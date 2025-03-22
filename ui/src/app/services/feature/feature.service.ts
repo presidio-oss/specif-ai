@@ -39,7 +39,7 @@ export class FeatureService {
   UPDATE_USER_STORY: string = `solutions/story/update`;
   ADD_TASK: string = `solutions/task/add`;
   UPDATE_TASK: string = `solutions/task/update`;
-  UPDATE_REQUIREMENT: string = `requirement:updateRequirement`;
+  UPDATE_REQUIREMENT: string = `requirement:update`;
   ADD_REQUIREMENT: string = `requirement:addRequirement`;
   ADD_BUSINESS_PROCESS: string = `solutions/business_process/add`;
   UPDATE_BUSINESS_PROCESS: string = `solutions/business_process/update`;
