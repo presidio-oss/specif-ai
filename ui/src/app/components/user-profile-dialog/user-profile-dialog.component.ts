@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { APP_CONSTANTS } from 'src/app/constants/app.constants';
 import { CommonModule } from '@angular/common';
-import { ElectronService } from 'src/app/services/electron/electron.service';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { AuthService } from 'src/app/services/auth/auth.service';
 
 @Component({

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ElectronService } from '../electron/electron.service';
+import { ElectronService } from '../../electron-bridge/electron.service';
 
 interface AppConfig {
   key: string;

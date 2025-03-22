@@ -46,7 +46,7 @@ import {
   storeJiraToken,
   resetJiraToken,
 } from '../../integrations/jira/jira.utils';
-import { ElectronService } from 'src/app/services/electron/electron.service';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { FeatureService } from '../../services/feature/feature.service';
 
 @Component({

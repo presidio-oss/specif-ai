@@ -35,7 +35,7 @@ import {
 import { JiraService } from '../../integrations/jira/jira.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { APP_INTEGRATIONS, JIRA_TOAST } from '../../constants/toast.constant';
-import { ElectronService } from '../../services/electron/electron.service';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import { getNavigationParams } from '../../utils/common.utils';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';

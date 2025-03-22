@@ -38,7 +38,7 @@ import { ToggleComponent } from '../toggle/toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ERROR_MESSAGES } from '../../constants/app.constants';
-import { ElectronService } from '../../services/electron/electron.service';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 import { analyticsEnabledSubject } from 'src/app/services/analytics/utils/analytics.utils';

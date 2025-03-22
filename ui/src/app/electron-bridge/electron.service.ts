@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { IpcRendererEvent } from 'electron';
-import { ToasterService } from '../toaster/toaster.service';
+import { ToasterService } from '../services/toaster/toaster.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { IpcInterceptor } from '../../interceptor/ipc.interceptor';
+import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
 import { suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import { ICreateSolutionRequest, ISolutionResponse } from 'src/app/model/interfaces/projects.interface';

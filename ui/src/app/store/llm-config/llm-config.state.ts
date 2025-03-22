@@ -8,7 +8,7 @@ import { of, timer } from 'rxjs';
 import { LoadingService } from '../../services/loading.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { AvailableProviders, ProviderModelMap } from '../../constants/llm.models.constants';
-import { ElectronService } from '../../services/electron/electron.service';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import { DEFAULT_TOAST_DURATION } from 'src/app/constants/toast.constant';
 
 @State<LLMConfigModel>({

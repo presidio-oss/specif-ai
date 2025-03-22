@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
-import { ElectronService } from './services/electron/electron.service';
+import { ElectronService } from './electron-bridge/electron.service';
 import { AuthService } from './services/auth/auth.service';
 import { Store } from '@ngxs/store';
 import { LLMConfigState } from './store/llm-config/llm-config.state';

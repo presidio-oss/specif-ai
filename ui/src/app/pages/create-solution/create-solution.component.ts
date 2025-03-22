@@ -13,7 +13,7 @@ import { AddBreadcrumbs } from '../../store/breadcrumb/breadcrumb.actions';
 import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
 import { AppSystemService } from '../../services/app-system/app-system.service';
-import { ElectronService } from '../../services/electron/electron.service';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { NgIf } from '@angular/common';
 import { NgxLoadingModule } from 'ngx-loading';

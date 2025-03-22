@@ -31,7 +31,7 @@ import {
   CONFIRMATION_DIALOG,
 } from '../../constants/app.constants';
 import { environment } from 'src/environments/environment';
-import { ElectronService } from 'src/app/services/electron/electron.service';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
 import { LLM_PROVIDER_CONFIGS, ProviderField } from '../../constants/llm-provider-config';

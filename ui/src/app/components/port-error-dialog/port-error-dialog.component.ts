@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { NgIconComponent } from '@ng-icons/core';
 import { DEFAULT_JIRA_PORT } from 'src/app/integrations/jira/jira.utils';
-import { ElectronService } from 'src/app/services/electron/electron.service';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 
 @Component({
   selector: 'app-port-error-dialog',

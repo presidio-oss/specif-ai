@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { APP_CONSTANTS } from '../../constants/app.constants';
-import { ElectronService } from '../electron/electron.service';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { IProject } from '../../model/interfaces/projects.interface';
 
