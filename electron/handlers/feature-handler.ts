@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 import { createStories } from "../api/feature/story/create";
 import { updateStory } from "../api/feature/story/update";
 import { chatUserStoryTask } from "../api/feature/story/chat";
+import { addUserStory } from "../api/feature/story/add";
 
 export function setupFeatureHandlers() {
   // Story handlers
@@ -31,6 +32,16 @@ export function setupFeatureHandlers() {
       return result;
     } catch (error: any) {
       console.error('Error handling story:chat:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('story:add', async (_event, data: any) => {
+    try {
+      const result = await addUserStory(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling story:add:', error.message);
       throw error;
     }
   });

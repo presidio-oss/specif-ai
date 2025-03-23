@@ -44,6 +44,7 @@ import {
   providedIn: 'root',
 })
 export class ElectronService {
+  
   electronAPI: ElectronAPI | undefined;
   constructor(
     private logger: NGXLogger,
@@ -177,6 +178,18 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'story:update',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async addUserStory(
+    request: IUpdateUserStoryRequest,
+  ): Promise<IUserStoryResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'story:add',
         args: [request],
       });
     }

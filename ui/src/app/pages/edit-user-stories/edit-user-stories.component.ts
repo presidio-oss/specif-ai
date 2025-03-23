@@ -265,7 +265,7 @@ export class EditUserStoriesComponent implements OnDestroy {
         fileContent: this.uploadedFileContent,
         useGenAI: true,
       };
-      this.featureService.addUserStory(body).subscribe(
+      this.featureService.addUserStory(body).then(
         (data) => {
           const featuresResponse: any = data;
           const matchingFeature = featuresResponse.features.find(

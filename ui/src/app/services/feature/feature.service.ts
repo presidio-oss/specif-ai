@@ -98,8 +98,8 @@ export class FeatureService {
 
   addUserStory(
     request: IUpdateUserStoryRequest,
-  ): Observable<IUserStoryResponse> {
-    return this.http.post<IUserStoryResponse>(this.ADD_USER_STORY, request);
+  ): Promise<IUserStoryResponse> {
+    return this.electronService.addUserStory(request);
   }
 
   updateUserStory(

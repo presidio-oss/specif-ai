@@ -80,6 +80,7 @@ export interface ElectronAPI {
   ): Promise<IUpdateProcessResponse>;
   createStories(request: IUserStoriesRequest): Promise<IUserStoryResponse>;
   updateStory(request: IUpdateUserStoryRequest): Promise<IUserStoryResponse>;
+  addUserStory(request: IUpdateUserStoryRequest): Promise<IUserStoryResponse>;
   chatUserStoryTask(request: conversePayload): Promise<ChatUpdateRequirementResponse>;
 }
 
