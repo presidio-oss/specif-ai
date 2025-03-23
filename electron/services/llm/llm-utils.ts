@@ -65,12 +65,23 @@ export class LLMUtils {
         try {
             // Initialize the knowledge base retriever with search configurations
             // Get AWS region from environment variable
-            const region = process.env.AWS_REGION || 'us-east-1';
+            const config = await this.getBedrockConfig();
+            if (!config) {
+                throw new Error('AWS Bedrock configuration not found');
+            }
 
             const retriever = new AmazonKnowledgeBaseRetriever({
                 knowledgeBaseId: knowledgeBaseId,
                 topK: 4,
-                region
+                region: config.region,
+                clientOptions:
+                {
+                    credentials: {
+                    accessKeyId: config.accessKeyId,
+                    secretAccessKey: config.secretKey,
+                    ...(config.sessionKey && { sessionToken: config.sessionKey })
+                    }
+                }
             });
 
             // Fetch relevant knowledge base content
@@ -83,7 +94,7 @@ export class LLMUtils {
             console.error(`Error in retrieveKnowledgeBaseContent: ${error instanceof Error ? error.message : String(error)}`);
             throw error;
         }
-  }
+    }
 
     /**
      * Generates a prompt with strict constraints based on the retrieved knowledge base content.
@@ -112,6 +123,36 @@ export class LLMUtils {
         } catch (error) {
             console.error(`Error in generateKnowledgeBasePromptConstraint: ${error instanceof Error ? error.message : String(error)}`);
             throw error;
+        }
+    }
+
+    private static async getBedrockConfig() {
+        try {
+            // Get the current project's metadata
+            const metadata = await this.getProjectMetadata();
+            if (!metadata?.integration?.bedrock) {
+                return null;
+            }
+            return metadata.integration.bedrock;
+        } catch (error) {
+            console.error('Error getting Bedrock config:', error);
+            return null;
+        }
+    }
+
+    private static async getProjectMetadata() {
+        try {
+            const { readMetadataFile } = require('../../file-system.utility');
+            // The path should be the current project's path
+            // This will be available in the app context
+            const projectPath = process.env.CURRENT_PROJECT_PATH;
+            if (!projectPath) {
+                throw new Error('Project path not found in environment');
+            }
+            return readMetadataFile({ path: projectPath });
+        } catch (error) {
+            console.error('Error reading project metadata:', error);
+            return null;
         }
     }
 }

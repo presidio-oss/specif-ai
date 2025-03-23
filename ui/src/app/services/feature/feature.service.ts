@@ -110,7 +110,7 @@ export class FeatureService {
   updateTask(request: IAddTaskRequest): Observable<ITasksResponse> {
     return this.http.put<ITasksResponse>(this.UPDATE_TASK, request);
   }
-
+  // TODO: Make IPC main validate call
   validateBedrockId(bedrockId: string): Observable<boolean> {
     return this.http
       .post<{ isValid: boolean }>(this.VALIDATE_BEDROCK_ID, { bedrockId })

@@ -191,6 +191,21 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.appInfo.integration?.bedrock?.kbId || '',
         Validators.required,
       ),
+      accessKeyId: new FormControl(
+        this.appInfo.integration?.bedrock?.accessKeyId || '',
+        Validators.required,
+      ),
+      secretKey: new FormControl(
+        this.appInfo.integration?.bedrock?.secretKey || '',
+        Validators.required,
+      ),
+      region: new FormControl(
+        this.appInfo.integration?.bedrock?.region || '',
+        Validators.required,
+      ),
+      sessionKey: new FormControl(
+        this.appInfo.integration?.bedrock?.sessionKey || ''
+      ),
     });
 
     this.jiraForm = new FormGroup({
@@ -309,14 +324,25 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   saveBedrockData() {
-    const { kbId } = this.bedrockForm.getRawValue();
+    const { kbId, accessKeyId, secretKey, region, sessionKey } = this.bedrockForm.getRawValue();
 
     this.featureService.validateBedrockId(kbId).subscribe({
       next: (isValid) => {
         if (isValid) {
+          const bedrockConfig = {
+            kbId,
+            accessKeyId,
+            secretKey,
+            region,
+            ...(sessionKey && { sessionKey })
+          };
+
           const updatedMetadata = {
             ...this.appInfo,
-            integration: { ...this.appInfo.integration, bedrock: { kbId } },
+            integration: { 
+              ...this.appInfo.integration, 
+              bedrock: bedrockConfig
+            },
           };
 
           this.store.dispatch(
@@ -336,6 +362,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
               this.toast.showSuccess(APP_INTEGRATIONS.BEDROCK.SUCCESS);
             });
         } else {
+          
           this.toast.showError(APP_INTEGRATIONS.BEDROCK.INVALID);
         }
       },
