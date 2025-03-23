@@ -50,6 +50,8 @@ const requirementListeners = {
 const featureListeners = {
   createStories: (data: any) =>
     ipcRenderer.invoke("story:create", data),
+  updateStory: (data: any) =>
+    ipcRenderer.invoke("story:update", data),
 };
 
 const visualizationListeners = {

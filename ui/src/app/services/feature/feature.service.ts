@@ -104,8 +104,8 @@ export class FeatureService {
 
   updateUserStory(
     request: IUpdateUserStoryRequest,
-  ): Observable<IUserStoryResponse> {
-    return this.http.put<IUserStoryResponse>(this.UPDATE_USER_STORY, request);
+  ): Promise<IUserStoryResponse> {
+    return this.electronService.updateStory(request)
   }
 
   addTask(request: IAddTaskRequest): Observable<ITasksResponse> {

@@ -35,6 +35,7 @@ import {
   IFlowchartResponse,
 } from '../model/interfaces/IBusinessProcess';
 import {
+  IUpdateUserStoryRequest,
   IUserStoriesRequest,
   IUserStoryResponse,
 } from '../model/interfaces/IUserStory';
@@ -164,6 +165,18 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'story:create',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async updateStory(
+    request: IUpdateUserStoryRequest,
+  ): Promise<IUserStoryResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'story:update',
         args: [request],
       });
     }
