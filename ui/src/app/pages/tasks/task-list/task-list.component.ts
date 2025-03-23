@@ -194,27 +194,26 @@ export class TaskListComponent implements OnInit, OnDestroy {
       extraContext: extraContext,
     };
     this.loadingService.setLoading(true);
-    this.featureService.generateTask(request).subscribe({
-      next: (response: ITasksResponse) => {
-        let tasksResponse = this.featureService.parseTaskResponse(response);
-        const updatedUserStories = [...this.userStories];
-        updatedUserStories[this.config.i] = {
-          ...updatedUserStories[this.config.i],
-          tasks: tasksResponse,
-        };
-        this.userStories = updatedUserStories;
-        this.updateWithUserStories(
-          updatedUserStories[this.config.i],
-          regenerate,
-        );
-      },
-      error: (error) => {
-        console.error('There was an error!', error);
-        this.loadingService.setLoading(false);
-        this.toastService.showError(
-          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
-        );
-      },
+    this.featureService.generateTask(request)
+    .then((response: ITasksResponse) => {
+      let tasksResponse = this.featureService.parseTaskResponse(response);
+      const updatedUserStories = [...this.userStories];
+      updatedUserStories[this.config.i] = {
+        ...updatedUserStories[this.config.i],
+        tasks: tasksResponse,
+      };
+      this.userStories = updatedUserStories;
+      this.updateWithUserStories(
+        updatedUserStories[this.config.i],
+        regenerate,
+      );
+    })
+    .catch((error) => {
+      console.error('There was an error!', error);
+      this.loadingService.setLoading(false);
+      this.toastService.showError(
+        TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+      );
     });
     this.dialog.closeAll();
   }

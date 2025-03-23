@@ -87,13 +87,8 @@ export class FeatureService {
     return this.electronService.addRequirement(request);
   }
 
-  generateTask(request: ITaskRequest): Observable<ITasksResponse> {
-    const headers = new HttpHeaders({
-      skipLoader: 'true',
-    });
-    return this.http.post<ITasksResponse>(this.GENERATE_TASK_URL, request, {
-      headers,
-    });
+  generateTask(request: ITaskRequest): Promise<ITasksResponse> {
+    return this.electronService.createTask(request);
   }
 
   addUserStory(

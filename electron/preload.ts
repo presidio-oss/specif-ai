@@ -54,6 +54,8 @@ const featureListeners = {
     ipcRenderer.invoke("story:update", data),
   chatUserStoryTask: (data: any) =>
     ipcRenderer.invoke("story:chat", data),
+  addUserStory: (data: any) =>
+    ipcRenderer.invoke("story:add", data),
 };
 
 const visualizationListeners = {

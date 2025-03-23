@@ -15,6 +15,8 @@ import {
 import {
   IEditTaskResponse,
   IAddTaskResponse,
+  ITaskRequest,
+  ITasksResponse,
 } from 'src/app/model/interfaces/ITask';
 import {
   IFlowChartRequest,
@@ -82,6 +84,7 @@ export interface ElectronAPI {
   updateStory(request: IUpdateUserStoryRequest): Promise<IUserStoryResponse>;
   addUserStory(request: IUpdateUserStoryRequest): Promise<IUserStoryResponse>;
   chatUserStoryTask(request: conversePayload): Promise<ChatUpdateRequirementResponse>;
+  createTask(request: ITaskRequest): Promise<ITasksResponse>;
 }
 
 declare global {

@@ -19,6 +19,8 @@ import {
 import {
   IEditTaskResponse,
   IAddTaskResponse,
+  ITaskRequest,
+  ITasksResponse,
 } from 'src/app/model/interfaces/ITask';
 import {
   IAddBusinessProcessRequest,
@@ -178,6 +180,18 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'story:update',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async createTask(
+    request: ITaskRequest,
+  ): Promise<ITasksResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'task:create',
         args: [request],
       });
     }

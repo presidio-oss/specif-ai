@@ -31,15 +31,10 @@ export function withRetry(options: RetryOptions = {}) {
           return await originalMethod.apply(this, args);
         } catch (error: any) {
           const isLastAttempt = attempt === maxRetries - 1;
-          const isSyntaxError = error instanceof SyntaxError;
-          const shouldRetry = retryAllErrors || error?.status === 429 || isSyntaxError;
+          const shouldRetry = retryAllErrors || error?.status === 429;
 
           if (!shouldRetry || isLastAttempt) {
             throw error;
-          }
-
-          if (isSyntaxError) {
-            console.log(`[Retry] JSON parsing failed, retrying attempt ${attempt + 1}/${maxRetries}`);
           }
 
           // Get retry delay from header or calculate exponential backoff

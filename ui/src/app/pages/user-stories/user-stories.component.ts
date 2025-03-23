@@ -312,7 +312,6 @@ export class UserStoriesComponent implements OnInit {
       };
       return this.featureService
         .generateTask(request)
-        .toPromise()
         .then((response: ITasksResponse | undefined) => {
           userStory.tasks = this.featureService.parseTaskResponse(response);
         })
