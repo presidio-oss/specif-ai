@@ -6,7 +6,7 @@ import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 
-export async function createTask(event: IpcMainInvokeEvent, data: unknown): Promise<CreateTaskResponse> {
+export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<CreateTaskResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
     if (!llmConfig) {
@@ -41,7 +41,23 @@ export async function createTask(event: IpcMainInvokeEvent, data: unknown): Prom
       if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
         throw new Error('Invalid response structure');
       }
-      result = parsed;
+
+      const transformedTasks = parsed.tasks.map((task: { id: any; name: string; acceptance: string; }) => {
+        if (!task.id || !task.name || !task.acceptance) {
+          throw new Error(`Invalid task structure: missing required fields in ${JSON.stringify(task)}`);
+        }
+        
+        const transformedTask: { id: string; [key: string]: string } = {
+          id: task.id
+        };
+        
+        transformedTask[task.name] = task.acceptance;        
+        return transformedTask;
+      });
+
+      result = {
+        tasks: transformedTasks
+      };
     } catch (error) {
       console.error('[create-task] Error parsing LLM response:', error);
       throw new Error('Failed to parse LLM response as JSON');
