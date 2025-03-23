@@ -22,8 +22,7 @@ export class ChatService {
     if (type === CHAT_TYPES.REQUIREMENT) {
       return this.electronService.chatUpdateRequirement(request);
     } else {
-      // TODO: Implement user story chat update
-      throw new Error('User story chat update not implemented yet');
+      return this.electronService.chatUserStoryTask(request)
     }
   }
 }

@@ -183,6 +183,18 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async chatUserStoryTask(
+    request: conversePayload,
+  ): Promise<ChatUpdateRequirementResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'story:chat',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async verifyLLMConfig(provider: string, config: Record<string, any>) {
     if (this.electronAPI) {
       return this.ipc.request({
