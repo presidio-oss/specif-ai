@@ -5,6 +5,10 @@ interface BedrockConfig {
   sessionKey?: string;
 }
 
+export interface BedrockValidationPayload extends BedrockConfig{
+  kbId: string;
+}
+
 export interface suggestionPayload {
   name: string;
   description: string;

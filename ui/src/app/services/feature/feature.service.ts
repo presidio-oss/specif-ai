@@ -28,6 +28,7 @@ import {
   IUpdateProcessRequest,
   IUpdateProcessResponse,
 } from '../../model/interfaces/IBusinessProcess';
+import { BedrockValidationPayload } from 'src/app/model/interfaces/chat.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -110,7 +111,7 @@ export class FeatureService {
     return this.electronService.updateTask(request);
   }
   
-  validateBedrockId(config: { kbId: string, accessKey: string, secretKey: string, region: string, sessionKey?: string }): Promise<boolean> {
+  validateBedrockId(config: BedrockValidationPayload): Promise<boolean> {
     return this.electronService.validateBedrock(config);
   }
 

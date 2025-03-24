@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
-import { suggestionPayload } from 'src/app/model/interfaces/chat.interface';
+import { BedrockValidationPayload, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import {
   ICreateSolutionRequest,
   ISolutionResponse,
@@ -91,13 +91,7 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  async validateBedrock(config: {
-    kbId: string;
-    accessKey: string;
-    secretKey: string;
-    region: string;
-    sessionKey?: string;
-  }): Promise<boolean> {
+  async validateBedrock(config: BedrockValidationPayload): Promise<boolean> {
     if (this.electronAPI) {
       const response = await this.ipc.request({
         channel: 'solution:validateBedrock',

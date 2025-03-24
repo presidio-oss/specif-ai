@@ -324,9 +324,12 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   saveBedrockData() {
-    const { kbId, accessKey, secretKey, region, sessionKey } = this.bedrockForm.getRawValue();
+    const { kbId, accessKey, secretKey, region, sessionKey } =
+      this.bedrockForm.getRawValue();
+    const config = { kbId, accessKey, secretKey, region, sessionKey };
 
-    this.featureService.validateBedrockId({kbId, accessKey, secretKey, region, sessionKey})
+    this.featureService
+      .validateBedrockId(config)
       .then((isValid) => {
         if (isValid) {
           const bedrockConfig = {
