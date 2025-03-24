@@ -4,6 +4,7 @@ import { updateStory } from "../api/feature/story/update";
 import { chatUserStoryTask } from "../api/feature/story/chat";
 import { createTask } from "../api/task/create";
 import { addTask } from "../api/task/add";
+import { updateTask } from "../api/task/update";
 import { addUserStory } from "../api/feature/story/add";
 
 export function setupFeatureHandlers() {
@@ -64,6 +65,16 @@ export function setupFeatureHandlers() {
       return result;
     } catch (error: any) {
       console.error('Error handling task:add:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('task:update', async (_event, data: any) => {
+    try {
+      const result = await updateTask(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling task:update:', error.message);
       throw error;
     }
   });

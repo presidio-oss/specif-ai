@@ -412,7 +412,7 @@ ${chat.assistant}`,
       taskName: data.list,
     };
 
-    this.featureService.updateTask(requestBody).subscribe((res) => {
+    this.featureService.updateTask(requestBody).then((res) => {
       const taskEntry = res.tasks.find((task) => task.id === data.id);
 
       if (taskEntry) {

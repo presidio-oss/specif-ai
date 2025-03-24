@@ -107,8 +107,8 @@ export class FeatureService {
     return this.electronService.addTask(request);
   }
 
-  updateTask(request: IAddTaskRequest): Observable<ITasksResponse> {
-    return this.http.put<ITasksResponse>(this.UPDATE_TASK, request);
+  updateTask(request: IAddTaskRequest): Promise<ITasksResponse> {
+    return this.electronService.updateTask(request);
   }
   validateBedrockId(config: {kbId: string, accessKeyId: string, secretKey: string, region: string, sessionKey?: string}): Promise<boolean> {
     return this.electronService.validateBedrock(config);

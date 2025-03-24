@@ -228,6 +228,18 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async updateTask(
+    request: IAddTaskRequest,
+  ): Promise<ITasksResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'task:update',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async addUserStory(
     request: IUpdateUserStoryRequest,
   ): Promise<IUserStoryResponse> {
