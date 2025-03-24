@@ -7,6 +7,7 @@ export interface IList{
 export interface IProjectDocument {
   requirement?: string;
   title?: string;
+  epicTicketId?: string;
   features?: IFeature[];
 }
 
