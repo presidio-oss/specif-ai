@@ -348,7 +348,7 @@ ${chat.assistant}`,
       taskName: list,
     };
 
-    this.featureService.addTask(requestData).subscribe((res) => {
+    this.featureService.addTask(requestData).then((res) => {
       const taskEntry = res.tasks.find((task) => task.id === id);
 
       if (taskEntry) {

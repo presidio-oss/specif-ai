@@ -103,8 +103,8 @@ export class FeatureService {
     return this.electronService.updateStory(request)
   }
 
-  addTask(request: IAddTaskRequest): Observable<ITasksResponse> {
-    return this.http.post<ITasksResponse>(this.ADD_TASK, request);
+  addTask(request: IAddTaskRequest): Promise<ITasksResponse> {
+    return this.electronService.addTask(request);
   }
 
   updateTask(request: IAddTaskRequest): Observable<ITasksResponse> {
