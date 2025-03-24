@@ -7,7 +7,7 @@ App Description: {{app_description}}
 Technical Details: {{app_technical_details}}
 
 The business analysts have provided you the following business requirement documents for which
-we would want to extract detailed product requirements to ensure the product is built as intended and ensuring product meets business goals.
+we would want to extract detailed product requirements to ensure the product is built as intended and meets business goals.
 
 ## Business Requirement Documents
 
@@ -41,12 +41,13 @@ Special Instructions:
 1. You are allowed to use Markdown for the requirement part of product requirement. You MUST ONLY use valid Markdown according to the following rules:
   {% include 'markdown_rules.jinja2' %}
   - Please do no make the intro/ product requirement paragraph bold.
-2. When a clear and direct relationship exists between the generated PRD and one or more of the provided Business Requirement Documents (BRDs), populate the `brdIds` array with the corresponding BRD IDs.
-   If no corresponding BRD is found, set the `brdIds` field to an empty array (`[]`). Ensure that all populated `brdIds` listed are from the provided list of BRD IDs in the "Business Requirement Documents" section.**
-3. Before including any BRD IDs, verify that they are explicitly present in the 'Business Requirement Documents' section.
-4. Ensure that every requirement outlined in the provided Business Requirement Documents (BRDs) is addressed by at least one Product Requirement Document (PRD). Create as many PRDs as necessary to comprehensively cover all business needs and functionalities.
-5. The brdIds array serves to establish a clear connection between the generated Product Requirement Documents (PRDs) and their source Business Requirement Documents (BRDs).
-   Populate this array with the IDs of all BRDs that contain information directly related to the PRD. This is crucial for understanding the origin and context of each product requirement, especially when a PRD addresses themes or functionalities discussed in multiple BRDs.
+2. The following instructions apply specifically when Business Requirement Documents are provided in the context:
+  2. When a PRD has a clear and direct relationship with one or more provided BRDs, populate the brdIds array with the corresponding BRD IDs. If a PRD addresses aspects from multiple BRDs, include all relevant BRD IDs.
+  3. It is not mandatory for every PRD to be linked to a BRD; use empty array if no direct BRD relationship exists. Ensure all listed brdIds are explicitly present in the 'Business Requirement Documents' section.
+  4. Ensure comprehensive coverage: When BRDs are provided, every requirement outlined in the provided BRDs must be addressed by at least one PRD. Create as many PRDs as necessary to achieve this;
+     a single BRD requirement can be covered by one or more PRDs, and a single PRD can cover requirements from one or more BRDs.
+  5. The brdIds array establishes a clear connection between PRDs and their originating BRDs, providing crucial context and traceability, especially when a PRD relates to multiple BRDs.
+     The relationship is not strictly hierarchical;
 
 Please ensure the requirements are descriptive and also clear, concise. Output only valid JSON. Do not include ```json ``` on start and end of the response.
 Generate Product Requirements with a maximum count of {{ max_count|default(30) }}. Sort all requirements based on business impact (High to Medium to Low).

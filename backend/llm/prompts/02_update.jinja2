@@ -31,6 +31,16 @@ Client Request:
 FileContent: {{fileContent}}
 {% endif %}
 
+{% if type == 'PRD' and brds and brds|length > 0 %}
+### Business Requirement Documents
+Please consider the following Business Requirements when updating the requirement:
+
+{% for brd in brds %}
+BRD Title: {{brd.title}}
+BRD Requirement: {{brd.requirement}}\n
+{% endfor %}
+{% endif %}
+
 Context:
 {% include context %}
 
