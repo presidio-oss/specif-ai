@@ -109,7 +109,8 @@ export class FeatureService {
   updateTask(request: IAddTaskRequest): Promise<ITasksResponse> {
     return this.electronService.updateTask(request);
   }
-  validateBedrockId(config: {kbId: string, accessKeyId: string, secretKey: string, region: string, sessionKey?: string}): Promise<boolean> {
+  
+  validateBedrockId(config: { kbId: string, accessKey: string, secretKey: string, region: string, sessionKey?: string }): Promise<boolean> {
     return this.electronService.validateBedrock(config);
   }
 

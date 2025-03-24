@@ -93,7 +93,7 @@ export class ElectronService {
 
   async validateBedrock(config: {
     kbId: string;
-    accessKeyId: string;
+    accessKey: string;
     secretKey: string;
     region: string;
     sessionKey?: string;

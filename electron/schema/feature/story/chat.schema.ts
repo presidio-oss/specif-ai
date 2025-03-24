@@ -1,3 +1,4 @@
+import { bedrockConfigSchema } from '../../helper/bedrock.options.schema';
 import { z } from 'zod';
 
 export const chatUserStoryTaskSchema = z.object({
@@ -7,8 +8,9 @@ export const chatUserStoryTaskSchema = z.object({
   requirement: z.string(),
   chatHistory: z.array(z.record(z.any())).optional(),
   knowledgeBase: z.string().optional(),
+  bedrockConfig: bedrockConfigSchema.optional(),
   userMessage: z.string(),
-  prd: z.string(),
+  prd: z.string().optional(),
   us: z.string().optional()
 });
 

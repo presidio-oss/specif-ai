@@ -1,9 +1,9 @@
+import { IpcMainInvokeEvent } from 'electron';
 import { getSuggestionsSchema } from '../../schema/core/get-suggestions.schema';
 import { generateImprovedSuggestionsPrompt } from '../../prompts/core/improved-suggestions';
-import { LLMUtils } from '../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
-import type { IpcMainInvokeEvent } from 'electron';
+import { LLMUtils } from '../../services/llm/llm-utils';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 
 export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): Promise<string[]> {
@@ -16,7 +16,7 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
     console.log('[get-suggestions] Using LLM config:', llmConfig);
     const validatedData = getSuggestionsSchema.parse(data);
 
-    const { name, description, type, requirement, suggestions, selectedSuggestion, knowledgeBase } = validatedData;
+    const { name, description, type, requirement, suggestions, selectedSuggestion, knowledgeBase, bedrockConfig } = validatedData;
     let prompt = generateImprovedSuggestionsPrompt({
       name,
       description,
@@ -29,7 +29,14 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
 
     if (knowledgeBase) {
       console.log('[get-suggestions] Applying knowledge base constraint...');
-      prompt = await LLMUtils.generateKnowledgeBasePromptConstraint(knowledgeBase, prompt);
+      if (!bedrockConfig) {
+        throw new Error('Bedrock configuration is required when using knowledge base');
+      }
+      prompt = await LLMUtils.generateKnowledgeBasePromptConstraint(
+        knowledgeBase,
+        prompt,
+        bedrockConfig
+      );
     }
 
     console.log('[get-suggestions] Preparing messages for LLM...');
@@ -40,6 +47,7 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
     const response = await handler.invoke(messages);
+    console.log('[get-suggestions] LLM Response:', response);
 
     let improvedSuggestions;
     try {

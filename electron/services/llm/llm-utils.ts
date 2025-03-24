@@ -5,6 +5,13 @@ interface ChatMessage {
     content: string;
 }
 
+interface BedrockConfig {
+    region: string;
+    accessKey: string;
+    secretKey: string;
+    sessionKey?: string;
+}
+
 import type { DocumentInterface } from '@langchain/core/documents';
 
 export class LLMUtils {
@@ -38,16 +45,17 @@ export class LLMUtils {
 
         console.info("Exited <LLMUtils.prepareMessages>");
         return messages;
-  }
+    }
 
     /**
      * Retrieves relevant knowledge base content based on the user prompt.
      * @param knowledgeBaseId - The unique identifier for the knowledge base.
      * @param prompt - The query used to fetch relevant content.
+     * @param config - The AWS configuration for knowledge base access.
      * @returns A list of knowledge base content relevant to the query.
      * @throws {Error} If the knowledgeBaseId or prompt is empty or invalid.
      */
-    static async retrieveKnowledgeBaseContent(knowledgeBaseId: string, prompt: string): Promise<string[]> {
+    static async retrieveKnowledgeBaseContent(knowledgeBaseId: string, prompt: string, config: BedrockConfig): Promise<string[]> {
         console.info("Entering <LLMUtils.retrieveKnowledgeBaseContent>");
 
         // Validate the knowledge base ID
@@ -63,23 +71,17 @@ export class LLMUtils {
         }
 
         try {
-            // Initialize the knowledge base retriever with search configurations
-            // Get AWS region from environment variable
-            const config = await this.getBedrockConfig();
-            if (!config) {
-                throw new Error('AWS Bedrock configuration not found');
-            }
-
+            // Initialize the knowledge base retriever with AWS credentials from config
+            console.log("Received <retrieveKnowledgeBaseContent>", config);
             const retriever = new AmazonKnowledgeBaseRetriever({
                 knowledgeBaseId: knowledgeBaseId,
                 topK: 4,
                 region: config.region,
-                clientOptions:
-                {
+                clientOptions: {
                     credentials: {
-                    accessKeyId: config.accessKeyId,
-                    secretAccessKey: config.secretKey,
-                    ...(config.sessionKey && { sessionToken: config.sessionKey })
+                        accessKeyId: config.accessKey,
+                        secretAccessKey: config.secretKey,
+                        ...(config.sessionKey && { sessionToken: config.sessionKey })
                     }
                 }
             });
@@ -100,14 +102,15 @@ export class LLMUtils {
      * Generates a prompt with strict constraints based on the retrieved knowledge base content.
      * @param knowledgeBaseId - The unique identifier for the knowledge base.
      * @param prompt - The original user query or instruction.
+     * @param config - The AWS configuration for knowledge base access.
      * @returns A modified prompt that includes knowledge base references.
      */
-    static async generateKnowledgeBasePromptConstraint(knowledgeBaseId: string, prompt: string): Promise<string> {
+    static async generateKnowledgeBasePromptConstraint(knowledgeBaseId: string, prompt: string, config: BedrockConfig): Promise<string> {
         console.info("Entering <LLMUtils.generateKnowledgeBasePromptConstraint>");
 
         try {
             // Retrieve knowledge base content to include in the prompt
-            const knowledgeBaseContent = await LLMUtils.retrieveKnowledgeBaseContent(knowledgeBaseId, prompt);
+            const knowledgeBaseContent = await LLMUtils.retrieveKnowledgeBaseContent(knowledgeBaseId, prompt, config);
 
             // Structure the prompt to prioritize the retrieved references
             const knowledgeBaseMessage = 
@@ -123,36 +126,6 @@ export class LLMUtils {
         } catch (error) {
             console.error(`Error in generateKnowledgeBasePromptConstraint: ${error instanceof Error ? error.message : String(error)}`);
             throw error;
-        }
-    }
-
-    private static async getBedrockConfig() {
-        try {
-            // Get the current project's metadata
-            const metadata = await this.getProjectMetadata();
-            if (!metadata?.integration?.bedrock) {
-                return null;
-            }
-            return metadata.integration.bedrock;
-        } catch (error) {
-            console.error('Error getting Bedrock config:', error);
-            return null;
-        }
-    }
-
-    private static async getProjectMetadata() {
-        try {
-            const { readMetadataFile } = require('../../file-system.utility');
-            // The path should be the current project's path
-            // This will be available in the app context
-            const projectPath = process.env.CURRENT_PROJECT_PATH;
-            if (!projectPath) {
-                throw new Error('Project path not found in environment');
-            }
-            return readMetadataFile({ path: projectPath });
-        } catch (error) {
-            console.error('Error reading project metadata:', error);
-            return null;
         }
     }
 }

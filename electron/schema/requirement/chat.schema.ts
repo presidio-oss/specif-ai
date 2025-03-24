@@ -1,3 +1,4 @@
+import { bedrockConfigSchema } from '../helper/bedrock.options.schema';
 import { z } from 'zod';
 
 export const chatUpdateRequirementSchema = z.object({
@@ -7,6 +8,7 @@ export const chatUpdateRequirementSchema = z.object({
   requirement: z.string(),
   chatHistory: z.array(z.record(z.any())).optional(),
   knowledgeBase: z.string().optional(),
+  bedrockConfig: bedrockConfigSchema.optional(), 
   userMessage: z.string(),
   requirementAbbr: z.enum(['BRD', 'PRD', 'UIR', 'NFR'])
 });

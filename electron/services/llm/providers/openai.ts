@@ -53,9 +53,9 @@ export class OpenAIHandler extends LLMHandler {
     }
 
     return {
-      baseUrl: config.baseUrl || process.env.OPENAI_BASE_URL,
-      apiKey: config.apiKey || process.env.OPENAI_API_KEY,
-      azureApiKey: config.azureApiKey || process.env.AZURE_OPENAI_API_KEY,
+      baseUrl: config.baseUrl,
+      apiKey: config.apiKey,
+      azureApiKey: config.azureApiKey,
       apiVersion: "2024-09-01-preview",
       model: config.model.toLowerCase(),
       maxRetries: config.maxRetries || 3

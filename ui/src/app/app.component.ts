@@ -61,7 +61,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.logger.debug('Initializing LLM configuration');
 
     try {
-      // First try to get config from localStorage as it's the source of truth
       const localConfig = localStorage.getItem('llmConfig') || await this.electronService.getStoreValue('llmConfig');
       if (localConfig) {
         console.log("Local Config", localConfig)
@@ -82,10 +81,8 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       }
 
-      // If no localStorage config, try electron store
       const savedConfig = await this.electronService.getStoreValue('llmConfig');
       if (savedConfig) {
-        // Set in store and wait for completion before verification
         await this.store.dispatch(new SetLLMConfig(savedConfig)).toPromise();
           const response = await this.electronService.verifyLLMConfig(
             savedConfig.activeProvider,
@@ -99,7 +96,6 @@ export class AppComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Finally check store state if no other configs found
       const currentState = this.store.selectSnapshot(LLMConfigState.getConfig);
       if (currentState?.activeProvider) {
         const response = await this.electronService.verifyLLMConfig(

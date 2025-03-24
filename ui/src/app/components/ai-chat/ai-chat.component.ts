@@ -215,6 +215,15 @@ export class AiChatComponent implements OnInit {
       suggestions: this.localSuggestions,
       selectedSuggestion: this.selectedSuggestion,
     };
+
+    if (this.isKbActive && this.kb) {
+      suggestionPayload.bedrockConfig = {
+        region: this.region,
+        accessKey: this.accessKey,
+        secretKey: this.secretKey,
+        sessionKey: this.sessionKey
+      };
+    }
     this.chatService
       .generateSuggestions(suggestionPayload)
       .then((response: Array<''>) => {
@@ -245,6 +254,20 @@ export class AiChatComponent implements OnInit {
       userMessage: message,
       knowledgeBase: this.kb,
     };
+
+    // Add Bedrock config if knowledge base is active
+    if (this.isKbActive && this.kb) {
+      payload = {
+        ...payload,
+        bedrockConfig: {
+          region: this.region,
+          accessKey: this.accessKey,
+          secretKey: this.secretKey,
+          sessionKey: this.sessionKey // Always include sessionKey, it's optional in the interface
+        }
+      };
+    }
+
     if (this.chatType === CHAT_TYPES.REQUIREMENT)
       payload = { ...payload, requirementAbbr: this.requirementAbbrivation };
     else payload = { ...payload, prd: this.prd, us: this.userStory };

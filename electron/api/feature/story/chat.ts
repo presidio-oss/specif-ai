@@ -16,7 +16,6 @@ export async function chatUserStoryTask(event: IpcMainInvokeEvent, data: unknown
     console.log('[chat-user-story-task] Using LLM config:', llmConfig);
     const validatedData = chatUserStoryTaskSchema.parse(data);
 
-    // Generate system prompt
     const systemPrompt = chatUserStoryTaskPrompt({
       name: validatedData.name,
       description: validatedData.description,
@@ -26,16 +25,18 @@ export async function chatUserStoryTask(event: IpcMainInvokeEvent, data: unknown
       us: validatedData.us
     });
 
-    // Generate knowledge base constraint prompt if needed
     let userPrompt = validatedData.userMessage;
     if (validatedData.knowledgeBase?.trim()) {
+      if (!validatedData.bedrockConfig) {
+        throw new Error('Bedrock configuration is required when using knowledge base');
+      }
       userPrompt = await LLMUtils.generateKnowledgeBasePromptConstraint(
         validatedData.knowledgeBase,
-        userPrompt
+        userPrompt,
+        validatedData.bedrockConfig
       );
     }
 
-    // Prepare messages for LLM
     const messages = await LLMUtils.prepareMessages(
       userPrompt,
       validatedData.chatHistory

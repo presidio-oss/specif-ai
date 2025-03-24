@@ -24,7 +24,8 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
       userMessage,
       requirementAbbr,
       chatHistory,
-      knowledgeBase
+      knowledgeBase,
+      bedrockConfig
     } = validatedData;
 
     // Generate prompt
@@ -40,9 +41,13 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
     // Generate knowledge base constraint prompt if provided
     let basePrompt = prompt;
     if (knowledgeBase) {
+      if (!bedrockConfig) {
+        throw new Error('Bedrock configuration is required when using knowledge base');
+      }
       basePrompt = await LLMUtils.generateKnowledgeBasePromptConstraint(
         knowledgeBase,
-        prompt
+        prompt,
+        bedrockConfig
       );
     }
 

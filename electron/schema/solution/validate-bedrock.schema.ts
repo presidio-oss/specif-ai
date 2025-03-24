@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const validateBedrockSchema = z.object({
   kbId: z.string(),
-  accessKeyId: z.string(),
+  accessKey: z.string(),
   secretKey: z.string(),
   region: z.string(),
   sessionKey: z.string().optional()

@@ -191,8 +191,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.appInfo.integration?.bedrock?.kbId || '',
         Validators.required,
       ),
-      accessKeyId: new FormControl(
-        this.appInfo.integration?.bedrock?.accessKeyId || '',
+      accessKey: new FormControl(
+        this.appInfo.integration?.bedrock?.accessKey || '',
         Validators.required,
       ),
       secretKey: new FormControl(
@@ -324,14 +324,14 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   saveBedrockData() {
-    const { kbId, accessKeyId, secretKey, region, sessionKey } = this.bedrockForm.getRawValue();
+    const { kbId, accessKey, secretKey, region, sessionKey } = this.bedrockForm.getRawValue();
 
-    this.featureService.validateBedrockId({kbId, accessKeyId, secretKey, region, sessionKey})
+    this.featureService.validateBedrockId({kbId, accessKey, secretKey, region, sessionKey})
       .then((isValid) => {
         if (isValid) {
           const bedrockConfig = {
             kbId,
-            accessKeyId,
+            accessKey,
             secretKey,
             region,
             ...(sessionKey && { sessionKey })
