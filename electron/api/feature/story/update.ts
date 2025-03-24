@@ -5,6 +5,7 @@ import { store } from '../../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { updateStoryPrompt } from '../../../prompts/feature/story/update';
+import { repairJSON } from '../../../utils/custom-json-parser';
 
 export async function updateStory(event: IpcMainInvokeEvent, data: unknown): Promise<UpdateStoryResponse> {
   try {
@@ -33,10 +34,12 @@ export async function updateStory(event: IpcMainInvokeEvent, data: unknown): Pro
     );
 
     const response = await handler.invoke(messages);
+    const cleanFeatures = repairJSON(response.trim());
+    
     console.log('[update-story] LLM Response:', response);
 
     try {
-      const parsedResponse = JSON.parse(response.trim());
+      const parsedResponse = JSON.parse(cleanFeatures.trim());
       if (!parsedResponse.features || !Array.isArray(parsedResponse.features)) {
         throw new Error('Invalid response structure: missing features array');
       }

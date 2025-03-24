@@ -5,6 +5,7 @@ import { LLMUtils } from '../../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../../services/llm';
 import { store } from '../../../services/store';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
+import { repairJSON } from '../../../utils/custom-json-parser';
 
 export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Promise<AddUserStoryResponse> {
   try {
@@ -58,7 +59,8 @@ export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Pr
 
     let result;
     try {
-      const parsed = JSON.parse(response);
+      const cleanedResponse = repairJSON(response); 
+      const parsed = JSON.parse(cleanedResponse);
       if (!parsed.features || !Array.isArray(parsed.features)) {
         throw new Error('Invalid response structure');
       }

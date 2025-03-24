@@ -62,6 +62,7 @@ export function extractRequirementsFromResponse(
   }
 }
 
-export function haiJSONParse(input: string) {
+
+export function repairJSON(input: string) {
   return jsonrepair(input);
 }

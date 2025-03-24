@@ -5,6 +5,7 @@ import { store } from '../../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { addBusinessProcessPrompt } from '../../../prompts/requirement/business-process/add';
+import { repairJSON } from '../../../utils/custom-json-parser';
 
 export async function addBusinessProcess(event: IpcMainInvokeEvent, data: any): Promise<AddBusinessProcessResponse> {
   try {
@@ -55,7 +56,8 @@ export async function addBusinessProcess(event: IpcMainInvokeEvent, data: any): 
     console.log('[add-business-process] LLM Response:', response);
 
     // Parse LLM response
-    const llmResponse = JSON.parse(response);
+    const cleanedResponse = repairJSON(response);
+    const llmResponse = JSON.parse(cleanedResponse);
 
     return {
       ...validatedData,

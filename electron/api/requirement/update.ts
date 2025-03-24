@@ -5,6 +5,7 @@ import { store } from '../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { updateRequirementPrompt } from '../../prompts/requirement/update';
+import { repairJSON } from '../../utils/custom-json-parser';
 
 export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<UpdateRequirementResponse> {
   try {
@@ -62,7 +63,8 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
 
     let result;
     try {
-      const parsed = JSON.parse(response);
+      let cleanedResponse = repairJSON(response);
+      const parsed = JSON.parse(cleanedResponse);
       if (!parsed.updated || !parsed.updated.title || !parsed.updated.requirement) {
         throw new Error('Invalid response structure');
       }
