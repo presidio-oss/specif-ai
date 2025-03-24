@@ -5,6 +5,7 @@ import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
 import { LLMUtils } from '../../services/llm/llm-utils';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
+import { haiJSONParse } from '../../utils/custom-json-parser';
 
 export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): Promise<string[]> {
   try {
@@ -49,9 +50,10 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
     const response = await handler.invoke(messages);
     console.log('[get-suggestions] LLM Response:', response);
 
+    const repairedResponse = haiJSONParse(response);
     let improvedSuggestions;
     try {
-      improvedSuggestions = JSON.parse(response);
+      improvedSuggestions = JSON.parse(repairedResponse);
       console.log('[get-suggestions] LLM response parsed successfully:', improvedSuggestions);
     } catch (error) {
       console.error('[get-suggestions] Error parsing LLM response:', error);
