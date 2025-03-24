@@ -48,6 +48,8 @@ import {
 } from '../../integrations/jira/jira.utils';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { FeatureService } from '../../services/feature/feature.service';
+import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
+import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 
 @Component({
   selector: 'app-info',
@@ -84,10 +86,15 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }));
   
   useGenAI: any = true;
+  llmConfig$: Observable<LLMConfigModel> = this.store.select(
+    LLMConfigState.getConfig,
+  );
+  currentLLMConfig!: LLMConfigModel;
   public loading: boolean = false;
   appName: string = '';
   jiraForm!: FormGroup;
   bedrockForm!: FormGroup;
+  useBedrockConfig: boolean = false;
   editButtonDisabled: boolean = false;
   bedrockEditButtonDisabled: boolean = false;
   directories$ = this.store.select(ProjectsState.getProjectsFolders);
@@ -134,6 +141,10 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.llmConfig$.subscribe((config) => {
+      this.currentLLMConfig = config;
+      console.log("Current llm config", this.currentLLMConfig)
+    })
     this.store
       .select(ProjectsState.getProjects)
       .pipe(first())
@@ -207,6 +218,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.appInfo.integration?.bedrock?.sessionKey || ''
       ),
     });
+
 
     this.jiraForm = new FormGroup({
       jiraProjectKey: new FormControl(
@@ -327,7 +339,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     const { kbId, accessKey, secretKey, region, sessionKey } =
       this.bedrockForm.getRawValue();
     const config = { kbId, accessKey, secretKey, region, sessionKey };
-
+      
     this.featureService
       .validateBedrockId(config)
       .then((isValid) => {
@@ -511,6 +523,26 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   getIconName(key: string): string {
     const icon = IconPairingEnum[key as keyof typeof IconPairingEnum];
     return icon || 'defaultIcon';
+  }
+
+  toggleBedrockConfig(event: Event): void {
+    this.useBedrockConfig = (event.target as HTMLInputElement).checked;
+    if (this.useBedrockConfig && this.currentLLMConfig?.providerConfigs['bedrock']) {
+      const bedrockConfig = this.currentLLMConfig.providerConfigs['bedrock'].config;
+      this.bedrockForm.patchValue({
+        accessKey: bedrockConfig.accessKeyId || '',
+        secretKey: bedrockConfig.secretAccessKey || '',
+        region: bedrockConfig.region || '',
+        sessionKey: bedrockConfig.sessionToken || ''
+      }, { emitEvent: false });
+    } else {
+      this.bedrockForm.patchValue({
+        accessKey: this.appInfo.integration?.bedrock?.accessKey || '',
+        secretKey: this.appInfo.integration?.bedrock?.secretKey || '',
+        region: this.appInfo.integration?.bedrock?.region || '',
+        sessionKey: this.appInfo.integration?.bedrock?.sessionKey || ''
+      }, { emitEvent: false });
+    }
   }
 
   ngOnDestroy() {

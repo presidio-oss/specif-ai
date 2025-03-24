@@ -365,6 +365,19 @@
                 {{ APP_MESSAGES.AWS_BEDROCK_ACCORDION_MESSAGE }}
               </p>
             </div>
+            <div class="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="useBedrockConfig"
+                [checked]="useBedrockConfig"
+                (change)="toggleBedrockConfig($event)"
+                [disabled]="isBedrockConnected"
+                class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <label for="useBedrockConfig" class="ml-2 text-sm font-medium text-secondary-700">
+                Use existing Bedrock configuration from chat settings
+              </label>
+            </div>
             <div
               [formGroup]="bedrockForm"
               class="grid grid-cols-2 gap-6 w-full"

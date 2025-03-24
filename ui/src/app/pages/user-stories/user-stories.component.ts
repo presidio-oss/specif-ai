@@ -365,10 +365,10 @@ export class UserStoriesComponent implements OnInit {
 
     setTimeout(() => {
       this.getLatestUserStories();
-      this.loadingService.setLoading(false);
       this.toast.showSuccess(
         TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
       );
+      this.loadingService.setLoading(false);
     }, 2000);
   }
 

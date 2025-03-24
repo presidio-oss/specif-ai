@@ -236,8 +236,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const formValue = this.configForm.value;
     const provider = formValue.provider;
+    this.configForm.updateValueAndValidity();    
+    const latestConfigValues = (this.configForm.get('config') as FormGroup).getRawValue();
 
-    this.electronService.verifyLLMConfig(provider, formValue.config).then((response) => {
+    this.electronService.verifyLLMConfig(provider, latestConfigValues).then((response) => {
       if (response.status === 'success') {
         // Get existing configs and update/add the new one
         const existingConfigs = this.currentLLMConfig.providerConfigs || {};
@@ -246,13 +248,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
           providerConfigs: {
             ...existingConfigs,
             [formValue.provider]: {
-              config: formValue.config
+              config: latestConfigValues
             }
           },
           isDefault: false
         };
 
-        console.log("New Config", newConfig);
+        console.log("New subscribe value", JSON.stringify(newConfig))
+
         this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
           this.store.dispatch(new SyncLLMConfig()).subscribe(async () => {
             await this.electronService.setStoreValue('llmConfig', newConfig);
@@ -265,7 +268,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
             this.modalRef.close(true);
             this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
               provider: provider,
-              model: formValue.config.model || formValue.config.deployment,
+              model: latestConfigValues.model || latestConfigValues.deployment,
               analyticsEnabled: analyticsEnabled,
               source: AnalyticsEventSource.LLM_SETTINGS,
               status: AnalyticsEventStatus.SUCCESS
@@ -277,7 +280,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.errorMessage = 'Connection Failed! Please verify your model credentials.';
         this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
           provider: provider,
-          model: formValue.config.model || formValue.config.deployment,
+          model: latestConfigValues.model || latestConfigValues.deployment,
           analyticsEnabled: analyticsEnabled,
           source: AnalyticsEventSource.LLM_SETTINGS,
           status: AnalyticsEventStatus.FAILURE
@@ -289,14 +292,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
       this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
         provider: provider,
-        model: formValue.config.model || formValue.config.deployment,
+        model: latestConfigValues.model || latestConfigValues.deployment,
         analyticsEnabled: analyticsEnabled,
         source: AnalyticsEventSource.LLM_SETTINGS,
         status: AnalyticsEventStatus.FAILURE
       });
     });
   }
-
   async selectRootDirectory(): Promise<void> {
     const response = await this.electronService.openDirectory();
     this.logger.debug(response);

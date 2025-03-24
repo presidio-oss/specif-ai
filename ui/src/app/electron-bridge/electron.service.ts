@@ -181,6 +181,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'story:create',
         args: [request],
+        skipLoading: true
       });
     }
     throw new Error('Electron is not available');
