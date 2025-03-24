@@ -110,11 +110,8 @@ export class FeatureService {
   updateTask(request: IAddTaskRequest): Observable<ITasksResponse> {
     return this.http.put<ITasksResponse>(this.UPDATE_TASK, request);
   }
-  // TODO: Make IPC main validate call
-  validateBedrockId(bedrockId: string): Observable<boolean> {
-    return this.http
-      .post<{ isValid: boolean }>(this.VALIDATE_BEDROCK_ID, { bedrockId })
-      .pipe(map((response) => response.isValid));
+  validateBedrockId(config: {kbId: string, accessKeyId: string, secretKey: string, region: string, sessionKey?: string}): Promise<boolean> {
+    return this.electronService.validateBedrock(config);
   }
 
   parseTaskResponse(response: ITasksResponse | undefined): ITask[] {

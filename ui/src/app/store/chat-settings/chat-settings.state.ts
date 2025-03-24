@@ -6,6 +6,10 @@ import { SetChatSettings } from './chat-settings.action';
   name: 'ChatSettings',
   defaults: {
     kb: '',
+    accessKey: '',
+    secretKey: '',
+    sessionKey: '',
+    region: ''
   },
 })
 export class ChatSettingsState {

@@ -121,6 +121,10 @@ export class AiChatComponent implements OnInit {
   loadingChat: boolean = false;
   responseStatus: boolean = false;
   kb: string = '';
+  accessKey: string = '';
+  secretKey: string = '';
+  sessionKey: string = '';
+  region: string = ''
   isKbActive: boolean = false;
 
   selectedFiles: File[] = [];
@@ -168,6 +172,11 @@ export class AiChatComponent implements OnInit {
     if (this.isKbAvailable) {
       this.chatSettings$.subscribe((settings) => {
         this.kb = settings?.kb;
+        this.accessKey = settings?.accessKey;
+        this.secretKey = settings?.secretKey;
+        this.sessionKey = settings?.sessionKey;
+        this.region = settings?.region;
+
         this.isKbActive = settings?.kb !== '';
       });
     }

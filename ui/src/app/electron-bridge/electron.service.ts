@@ -90,6 +90,23 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async validateBedrock(config: {
+    kbId: string;
+    accessKeyId: string;
+    secretKey: string;
+    region: string;
+    sessionKey?: string;
+  }): Promise<boolean> {
+    if (this.electronAPI) {
+      const response = await this.ipc.request({
+        channel: 'solution:validateBedrock',
+        args: [config],
+      });
+      return response.isValid;
+    }
+    throw new Error('Electron is not available');
+  }
+
   async chatUpdateRequirement(
     request: conversePayload,
   ): Promise<ChatUpdateRequirementResponse> {

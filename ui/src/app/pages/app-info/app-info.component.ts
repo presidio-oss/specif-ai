@@ -326,8 +326,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   saveBedrockData() {
     const { kbId, accessKeyId, secretKey, region, sessionKey } = this.bedrockForm.getRawValue();
 
-    this.featureService.validateBedrockId(kbId).subscribe({
-      next: (isValid) => {
+    this.featureService.validateBedrockId({kbId, accessKeyId, secretKey, region, sessionKey})
+      .then((isValid) => {
         if (isValid) {
           const bedrockConfig = {
             kbId,
@@ -348,7 +348,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           this.store.dispatch(
             new SetChatSettings({
               ...this.currentSettings,
-              kb: kbId,
+              ...bedrockConfig
             }),
           );
 
@@ -362,15 +362,13 @@ export class AppInfoComponent implements OnInit, OnDestroy {
               this.toast.showSuccess(APP_INTEGRATIONS.BEDROCK.SUCCESS);
             });
         } else {
-          
           this.toast.showError(APP_INTEGRATIONS.BEDROCK.INVALID);
         }
-      },
-      error: (err) => {
-        console.error('Error during Bedrock validation:', err);
+      })
+      .catch((error: Error) => {
+        console.error('Error during Bedrock validation:', error);
         this.toast.showError(APP_INTEGRATIONS.BEDROCK.ERROR);
-      },
-    });
+      });
   }
 
   disconnectBedrock(): void {
@@ -383,6 +381,10 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       new SetChatSettings({
         ...this.currentSettings,
         kb: '',
+        accessKey: '',
+        sessionKey: '',
+        secretKey: '',
+        region: ''
       }),
     );
 

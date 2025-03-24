@@ -12,6 +12,7 @@ import { setupCoreHandlers } from "./handlers/core-handler";
 import { setupRequirementHandlers } from "./handlers/requirement-handler";
 import { setupVisualizationHandlers } from "./handlers/visualization-handler";
 import { setupFeatureHandlers } from "./handlers/feature-handler";
+import { setupSolutionHandlers } from "./handlers/solution-handler";
 
 // ========================
 // CONFIGURATION
@@ -432,5 +433,6 @@ app.whenReady().then(async () => {
     setupRequirementHandlers();
     setupVisualizationHandlers();
     setupFeatureHandlers();
+    setupSolutionHandlers();
   }
 });

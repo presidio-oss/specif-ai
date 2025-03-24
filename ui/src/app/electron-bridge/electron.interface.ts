@@ -66,6 +66,13 @@ export interface ElectronAPI {
     testResponse?: string;
   }>;
   createSolution(data: ICreateSolutionRequest): Promise<ISolutionResponse>;
+  validateBedrock(config: {
+    kbId: string;
+    accessKeyId: string;
+    secretKey: string;
+    region: string;
+    sessionKey?: string;
+  }): Promise<boolean>;
   updateRequirement(
     request: IUpdateRequirementRequest,
   ): Promise<IEditTaskResponse>;
