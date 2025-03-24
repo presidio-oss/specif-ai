@@ -1,6 +1,6 @@
 import { IpcMainInvokeEvent } from 'electron';
-import { addTaskSchema, AddTaskRequest, AddTaskResponse } from '../../schema/task/add.schema';
-import { addTaskPrompt } from '../../prompts/task/add';
+import { addTaskSchema, AddTaskRequest, AddTaskResponse } from '../../schema/feature/task/add.schema';
+import { addTaskPrompt } from '../../prompts/feature/task/add';
 import { LLMUtils } from '../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';

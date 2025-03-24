@@ -1,28 +1,27 @@
 import { IpcMainInvokeEvent } from 'electron';
-import { updateTaskSchema, UpdateTaskRequest, UpdateTaskResponse } from '../../schema/feature/task/update.schema';
-import { updateTaskPrompt } from '../../prompts/feature/task/update';
-import { LLMUtils } from '../../services/llm/llm-utils';
-import { buildLLMHandler } from '../../services/llm';
-import { store } from '../../services/store';
-import type { LLMConfigModel } from '../../services/llm/llm-types';
+import { addTaskSchema, AddTaskRequest, AddTaskResponse } from '../../../schema/feature/task/add.schema';
+import { addTaskPrompt } from '../../../prompts/feature/task/add';
+import { LLMUtils } from '../../../services/llm/llm-utils';
+import { buildLLMHandler } from '../../../services/llm';
+import { store } from '../../../services/store';
+import type { LLMConfigModel } from '../../../services/llm/llm-types';
 
-export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<UpdateTaskResponse> {
+export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<AddTaskResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
 
-    console.log('[update-task] Using LLM config:', llmConfig);
-    const validatedData = updateTaskSchema.parse(data) as UpdateTaskRequest;
+    console.log('[add-task] Using LLM config:', llmConfig);
+    const validatedData = addTaskSchema.parse(data) as AddTaskRequest;
 
     // Generate prompt
-    const prompt = updateTaskPrompt({
+    const prompt = addTaskPrompt({
       name: validatedData.name,
       description: validatedData.description,
       taskId: validatedData.taskId,
       taskName: validatedData.taskName,
-      existingTaskDescription: validatedData.existingTaskDesc,
       taskDescription: validatedData.reqDesc,
       fileContent: validatedData.fileContent
     });
@@ -36,8 +35,9 @@ export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<
     );
 
     const response = await handler.invoke(messages);
-    console.log('[update-task] LLM Response:', response);
+    console.log('[add-task] LLM Response:', response);
 
+    let llmResponseDict;
     try {
       const parsed = JSON.parse(response);
       if (!parsed.tasks || !Array.isArray(parsed.tasks) || parsed.tasks.length !== 1) {
@@ -54,25 +54,32 @@ export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<
         throw new Error('Task name not found in response');
       }
 
-      return {
-        appId: validatedData.appId,
-        description: validatedData.description,
-        featureId: validatedData.featureId,
-        name: validatedData.name,
-        tasks: [{
-          id: validatedData.taskId,
-          [taskName]: task[taskName]
-        }],
-        regenerate: false,
-        reqDesc: validatedData.reqDesc,
-        reqId: validatedData.reqId
+      llmResponseDict = {
+        LLMreqt: {
+          title: taskName,
+          requirement: task[taskName]
+        }
       };
     } catch (error) {
-      console.error('[update-task] Error parsing LLM response:', error);
+      console.error('[add-task] Error parsing LLM response:', error);
       throw new Error('Failed to parse LLM response as JSON');
     }
+
+    return {
+      appId: validatedData.appId,
+      description: validatedData.description,
+      featureId: validatedData.featureId,
+      name: validatedData.name,
+      tasks: [{
+        id: validatedData.taskId,
+        [llmResponseDict.LLMreqt.title]: llmResponseDict.LLMreqt.requirement
+      }],
+      regenerate: false,
+      reqDesc: validatedData.reqDesc,
+      reqId: validatedData.reqId
+    };
   } catch (error) {
-    console.error('Error in updateTask:', error);
+    console.error('Error in addTask:', error);
     throw error;
   }
 }

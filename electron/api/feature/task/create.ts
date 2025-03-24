@@ -1,10 +1,10 @@
 import { IpcMainInvokeEvent } from 'electron';
-import { createTaskSchema, CreateTaskRequest, CreateTaskResponse } from '../../schema/feature/task/create.schema';
-import { createTaskPrompt } from '../../prompts/feature/task/create';
-import { LLMUtils } from '../../services/llm/llm-utils';
-import { buildLLMHandler } from '../../services/llm';
-import { store } from '../../services/store';
-import type { LLMConfigModel } from '../../services/llm/llm-types';
+import { createTaskSchema, CreateTaskRequest, CreateTaskResponse } from '../../../schema/feature/task/create.schema';
+import { createTaskPrompt } from '../../../prompts/feature/task/create';
+import { LLMUtils } from '../../../services/llm/llm-utils';
+import { buildLLMHandler } from '../../../services/llm';
+import { store } from '../../../services/store';
+import type { LLMConfigModel } from '../../../services/llm/llm-types';
 
 export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<CreateTaskResponse> {
   try {

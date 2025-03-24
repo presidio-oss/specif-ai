@@ -1,4 +1,4 @@
-import { MARKDOWN_RULES } from '../context/markdown-rules';
+import { MARKDOWN_RULES } from '../../context/markdown-rules';
 
 export interface UpdateTaskPromptParams {
   name: string;

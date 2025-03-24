@@ -2,9 +2,9 @@ import { ipcMain } from "electron";
 import { createStories } from "../api/feature/story/create";
 import { updateStory } from "../api/feature/story/update";
 import { chatUserStoryTask } from "../api/feature/story/chat";
-import { createTask } from "../api/task/create";
-import { addTask } from "../api/task/add";
-import { updateTask } from "../api/task/update";
+import { createTask } from "../api/feature/task/create";
+import { addTask } from "../api/feature/task/add";
+import { updateTask } from "../api/feature/task/update";
 import { addUserStory } from "../api/feature/story/add";
 
 export function setupFeatureHandlers() {
