@@ -65,12 +65,9 @@ function createWindow(indexPath: string, themeConfiguration: any) {
   });
 
   mainWindow
-    .loadFile(`${indexPath}/index.html`, { 
-      query: {},
-      hash: 'apps'  // Set default route
-    })
+    .loadFile(`${indexPath}/index.html`)
     .then(() => {
-      console.debug("Welcome Page loaded successfully");
+      console.debug("Welcome Page loaded successfully", indexPath);
     })
     .catch((error) => {
       console.error("Failed to load welcome page:", error);
@@ -90,17 +87,14 @@ function createWindow(indexPath: string, themeConfiguration: any) {
 
 function onAppReload(indexPath: string) {
   const currentHash = mainWindow?.webContents.getURL().split('#')[1] || '';
-  mainWindow?.loadFile(`${indexPath}/index.html`, { 
-    query: {},
-    hash: currentHash || 'apps'
-  }).then(() => {
-    console.debug("Welcome Page reloaded successfully");
+  mainWindow?.loadFile(`${indexPath}/index.html`).then(() => {
+    console.debug("Welcome Page reloaded successfully", indexPath);
   }).catch((error) => {
     console.error("Failed to reload welcome page:", error);
   });
 }
 
-function setupWindowHandlers(window: BrowserWindow) {
+function setupWindowHandlers(window: BrowserWindow, indexPath: string) {
   window.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
   });
@@ -112,7 +106,8 @@ function setupWindowHandlers(window: BrowserWindow) {
         console.error(
           `Failed to load URL: ${validatedURL}, error: ${errorDescription}`
         );
-        ipcMain.emit("reloadApp");
+        // ipcMain.emit("reloadApp");
+        onAppReload(indexPath);
       }
     }
   );
@@ -423,7 +418,7 @@ app.whenReady().then(async () => {
   
   if (mainWindow) {
     // Setup window event handlers
-    setupWindowHandlers(mainWindow);
+    setupWindowHandlers(mainWindow, indexPath);
     
     // Register all IPC handlers
     setupFileSystemHandlers();
