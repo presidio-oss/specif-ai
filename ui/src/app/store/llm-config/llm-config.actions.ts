@@ -10,10 +10,6 @@ export class SwitchProvider {
     constructor(public provider: string) { }
 }
 
-export class FetchDefaultLLMConfig {
-    static readonly type = '[LLMConfig] Fetch Default';
-}
-
 export class VerifyLLMConfig {
     static readonly type = '[LLMConfig] Verify';
 }

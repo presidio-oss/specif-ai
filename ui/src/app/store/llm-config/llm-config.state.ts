@@ -1,7 +1,7 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { LLMConfigModel } from "../../model/interfaces/ILLMConfig";
-import { SetLLMConfig, FetchDefaultLLMConfig, VerifyLLMConfig, SyncLLMConfig, SwitchProvider } from './llm-config.actions';
+import { SetLLMConfig, VerifyLLMConfig, SyncLLMConfig, SwitchProvider } from './llm-config.actions';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { of, timer } from 'rxjs';
@@ -57,38 +57,6 @@ export class LLMConfigState {
     const state = getState();
     localStorage.setItem('llmConfig', JSON.stringify(state));
     this.electronService.setStoreValue('llmConfig', state);
-  }
-
-  @Action(FetchDefaultLLMConfig)
-  fetchDefaultLLMConfig({ setState, dispatch }: StateContext<LLMConfigModel>) {
-    this.loadingService.setLoading(true);
-    return this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
-      tap((response: any) => {
-        const defaultProvider = AvailableProviders[0].key;
-        const defaultConfig = {
-          activeProvider: defaultProvider,
-          providerConfigs: {
-            [defaultProvider]: {
-              config: {
-                model: ProviderModelMap[defaultProvider][0],
-                ...(response?.config || {})
-              }
-            }
-          },
-          isDefault: true
-        };
-        setState(defaultConfig);
-        dispatch(new SyncLLMConfig());
-      }),
-      catchError((error) => {
-        console.error('Error fetching default LLM config:', error);
-        this.toasterService.showError('Failed to fetch default LLM configuration.');
-        return of({ activeProvider: '', providerConfigs: {}, isDefault: true });
-      }),
-      finalize(() => {
-        this.loadingService.setLoading(false);
-      })
-    );
   }
 
   @Action(SwitchProvider)

@@ -6,7 +6,7 @@ import { tap, switchMap, catchError } from 'rxjs/operators';
 import { AuthStateService } from './auth-state.service';
 import { APP_CONSTANTS } from '../../constants/app.constants';
 import { Store } from '@ngxs/store';
-import { SetLLMConfig, FetchDefaultLLMConfig, VerifyLLMConfig } from '../../store/llm-config/llm-config.actions';
+import { VerifyLLMConfig } from '../../store/llm-config/llm-config.actions';
 import { ToasterService } from '../toaster/toaster.service';
 import { LLMConfigState } from '../../store/llm-config/llm-config.state';
 
@@ -57,7 +57,8 @@ export class AuthService {
         if (config && config.activeProvider && config.providerConfigs[config.activeProvider]) {
           return this.store.dispatch(new VerifyLLMConfig());
         } else {
-          return this.store.dispatch(new FetchDefaultLLMConfig());
+          this.toasterService.showError("Settings required: Please add your AI configuration in settings to continue.");
+          return of(null);
         }
       })
     );
