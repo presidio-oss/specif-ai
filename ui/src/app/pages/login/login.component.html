@@ -57,25 +57,6 @@
             <app-error-message [errorControl]="loginForm.get('username')" />
           </div>
           <div>
-            <app-input-field
-              formControlName="appUrl"
-              elementPlaceHolder="Your Server URL"
-              elementName="App URL"
-              [required]="true"
-            />
-            <app-error-message [errorControl]="loginForm.get('appUrl')" />
-          </div>
-          <div>
-            <app-input-field
-              elementType="password"
-              elementPlaceHolder="Passcode"
-              formControlName="passcode"
-              elementName="App Passcode"
-              [required]="true"
-            />
-            <app-error-message [errorControl]="loginForm.get('passcode')" />
-          </div>
-          <div>
             <label
               for="directory-path"
               class="block mb-1.5 text-sm font-medium text-secondary-500"

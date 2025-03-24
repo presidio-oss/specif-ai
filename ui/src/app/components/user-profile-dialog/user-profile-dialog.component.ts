@@ -5,7 +5,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { APP_CONSTANTS } from 'src/app/constants/app.constants';
 import { CommonModule } from '@angular/common';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
-import { AuthService } from 'src/app/services/auth/auth.service';
+import { StartupService } from 'src/app/services/auth/startup.service';
 
 @Component({
   selector: 'user-profile-dialog',
@@ -24,7 +24,7 @@ export class UserProfileDialogComponent {
   constructor(
     private dialogRef: MatDialogRef<UserProfileDialogComponent>,
     private electronService: ElectronService,
-    private authService: AuthService,
+    private startupService: StartupService,
   ) {
     this.dialogRef.disableClose = true;
   }
@@ -42,7 +42,7 @@ export class UserProfileDialogComponent {
 
         this.electronService.setStoreValue('APP_CONFIG', newConfig);
         localStorage.setItem(APP_CONSTANTS.USER_NAME, userName);
-        this.authService.setIsLoggedIn(true);
+        this.startupService.setIsLoggedIn(true);
 
         this.dialogRef.close(userName);
       } catch (error) {

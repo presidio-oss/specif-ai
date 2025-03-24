@@ -9,7 +9,7 @@ import { AddTaskComponent } from './pages/tasks/add-task/add-task.component';
 import { EditUserStoriesComponent } from './pages/edit-user-stories/edit-user-stories.component';
 import { TaskListComponent } from './pages/tasks/task-list/task-list.component';
 import { BusinessProcessComponent } from './pages/business-process/business-process.component';
-import { AuthGuard } from './guards/auth.guard';
+import { UserGuard } from './guards/auth.guard';
 import { BusinessProcessFlowComponent } from './pages/business-process-flow/business-process-flow.component';
 import { CanDeactivateGuard } from './guards/can-deactivate.guard';
 import { LoginComponent } from './pages/login/login.component';
@@ -22,7 +22,7 @@ const routes: Routes = [
   {
     path: 'apps/create',
     component: CreateSolutionComponent,
-    canActivate: [AuthGuard],
+        canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
     data: {
       breadcrumb: {
@@ -35,7 +35,7 @@ const routes: Routes = [
   {
     path: 'apps/:id',
     component: AppInfoComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     data: {
       breadcrumb: {
         link: '/apps',
@@ -43,70 +43,70 @@ const routes: Routes = [
       },
     },
   },
-  { path: 'apps', component: AppsComponent, canActivate: [AuthGuard] },
+  { path: 'apps', component: AppsComponent, canActivate: [UserGuard] },
   {
     path: 'user-stories/:prdId',
     component: UserStoriesComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
   },
   {
     path: 'task-list/:userStoryId',
     component: TaskListComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
   },
   {
     path: 'task/:mode/:userStoryId',
     component: AddTaskComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
   },
   {
     path: 'task/:mode/:userStoryId/:taskId',
     component: AddTaskComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
   },
   {
     path: 'story/:mode',
     component: EditUserStoriesComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
   },
   {
     path: 'story/:mode/:userStoryId',
     component: EditUserStoriesComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
   },
   {
     path: 'edit',
     component: EditSolutionComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
   },
   {
     path: 'add',
     component: EditSolutionComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   {
     path: 'bp-add',
     component: BusinessProcessComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
   },
   {
     path: 'bp-edit',
     component: BusinessProcessComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
   },
   {
     path: 'bp-flow/:mode/:id',
     component: BusinessProcessFlowComponent,
-    canActivate: [AuthGuard],
+    canActivate: [UserGuard],
   },
 ];
 

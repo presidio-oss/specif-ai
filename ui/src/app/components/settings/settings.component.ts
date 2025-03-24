@@ -22,7 +22,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NgForOf, NgIf } from '@angular/common';
-import { AuthService } from '../../services/auth/auth.service';
+import { StartupService } from '../../services/auth/startup.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
@@ -89,7 +89,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   constructor(
     private modalRef: MatDialogRef<SettingsComponent>,
     private store: Store,
-    private authService: AuthService,
+    private startupService: StartupService,
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
@@ -402,7 +402,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe((res) => {
-      if (!res) this.authService.logout();
+      if (!res) this.startupService.logout();
     });
   }
 

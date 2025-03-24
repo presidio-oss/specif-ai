@@ -2,7 +2,7 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
 import { ElectronService } from './electron-bridge/electron.service';
-import { AuthService } from './services/auth/auth.service';
+import { StartupService } from './services/auth/startup.service';
 import { Store } from '@ngxs/store';
 import { LLMConfigState } from './store/llm-config/llm-config.state';
 import { SetLLMConfig } from './store/llm-config/llm-config.actions';
@@ -21,7 +21,7 @@ export class AppComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
-  authService = inject(AuthService);
+  startupService = inject(StartupService);
   store = inject(Store);
   dialog = inject(MatDialog);
   analyticsTracker = inject(AnalyticsTracker);
@@ -44,7 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.initializeLLMConfig();
 
     this.subscriptions.push(
-      this.authService.isLoggedIn$
+      this.startupService.isLoggedIn$
         .pipe(filter((isLoggedIn) => isLoggedIn))
         .subscribe(() => {
           this.initializeLLMConfig();
@@ -59,10 +59,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private async initializeLLMConfig() {
     this.logger.debug('Initializing LLM configuration');
-    if (!this.authService.isAuthenticated()) {
-      this.logger.debug('User not authenticated, skipping LLM configuration verification');
-      return;
-    }
 
     try {
       // First try to get config from localStorage as it's the source of truth
