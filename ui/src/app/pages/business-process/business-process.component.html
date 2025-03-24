@@ -2,43 +2,43 @@
   <div class="grid grid-cols-12 gap-4">
     <div
       [formGroup]="businessProcessForm"
-      class="bg-white shadow rounded-lg p-6 flex flex-col col-span-12 lg:col-span-7 overflow-y-auto"
+      class="bg-white shadow rounded-lg flex flex-col col-span-12 lg:col-span-7 overflow-y-auto"
     >
-      <div class="content-center flex justify-start items-start">
-        <div class="flex justify-between w-full items-center mb-4">
-          <h1 class="text-lg font-semibold" *ngIf="mode === 'add'">
-            {{ folderName | expandDescription }}
-          </h1>
-          <h1 class="text-lg font-semibold" *ngIf="mode === 'edit'">
-            {{ bpRequirementId }}
-          </h1>
-          <div class="flex items-center">
+      <header
+        class="flex justify-between items-center p-4 border-b border-secondary-200"
+      >
+        <h1 class="text-lg font-semibold" *ngIf="mode === 'add'">
+          {{ folderName | expandDescription }}
+        </h1>
+        <h1 class="text-lg font-semibold" *ngIf="mode === 'edit'">
+          {{ bpRequirementId }}
+        </h1>
+        <div class="flex items-center">
+          <app-button
+            *ngIf="mode === 'edit'"
+            buttonContent="View BP Flow"
+            theme="secondary"
+            size="sm"
+            rounded="md"
+            (click)="navigateToBPFlow()"
+          />
+          <div
+            *ngIf="mode === 'edit'"
+            class="flex items-center space-x-1 text-3xl ml-3"
+          >
             <app-button
-              *ngIf="mode === 'edit'"
-              buttonContent="View BP Flow"
-              theme="secondary"
+              [isIconButton]="true"
+              icon="heroTrash"
+              theme="danger"
               size="sm"
               rounded="md"
-              (click)="navigateToBPFlow()"
-            />
-            <div
-              *ngIf="mode === 'edit'"
-              class="flex items-center space-x-1 text-3xl ml-3"
-            >
-              <app-button
-                [isIconButton]="true"
-                icon="heroTrash"
-                theme="danger"
-                size="sm"
-                rounded="md"
-                (click)="deleteBP()"
-              ></app-button>
-            </div>
+              (click)="deleteBP()"
+            ></app-button>
           </div>
         </div>
-      </div>
+      </header>
       <div>
-        <div class="flex flex-col gap-1.5">
+        <div class="p-4 flex flex-col gap-1.5">
           <div class="flex flex-col">
             <app-input-field elementPlaceHolder="Title" elementId="title" elementName="Title" formControlName="title"
               [required]="true" />
@@ -66,82 +66,78 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between mt-4">
-          <div class="flex-col">
-            <div class="flex items-center">
-              <app-button
-                buttonContent="Enhance with AI"
-                icon="heroSparklesSolid"
-                theme="secondary"
-                size="sm"
-                rounded="lg"
-                (click)="
-                  mode === 'add'
-                    ? addBusinessProcess(true)
-                    : updateBusinessProcess(true)
-                "
-                [disabled]="checkFormValidity()"
-              ></app-button>
-            </div>
-          </div>
-          <div>
-            <app-button
-              buttonContent="Update"
-              theme="primary"
-              size="sm"
-              rounded="md"
-              *ngIf="mode === 'edit'"
-              (click)="updateBusinessProcess()"
-              [disabled]="checkFormValidity()"
-            />
-            <app-button
-              buttonContent="Add"
-              theme="primary"
-              size="sm"
-              rounded="md"
-              *ngIf="mode === 'add'"
-              [disabled]="checkFormValidity()"
-              (click)="addBusinessProcess()"
-            />
-          </div>
+        <div class="flex justify-end gap-2 p-4 border-t border-secondary-200">
+          <app-button
+            buttonContent="Enhance with AI"
+            icon="heroSparklesSolid"
+            theme="secondary_outline"
+            size="sm"
+            rounded="lg"
+            (click)="
+              mode === 'add'
+                ? addBusinessProcess(true)
+                : updateBusinessProcess(true)
+            "
+            [disabled]="checkFormValidity()"
+          ></app-button>
+          <app-button
+            buttonContent="Update"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'edit'"
+            (click)="updateBusinessProcess()"
+            [disabled]="checkFormValidity()"
+          />
+          <app-button
+            buttonContent="Add"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'add'"
+            [disabled]="checkFormValidity()"
+            (click)="addBusinessProcess()"
+          />
         </div>
       </div>
-      <div *ngIf="selectedBRDs.length > 0" class="mt-4">
-        <h2 class="text-sm font-medium text-secondary-900">Included BRDs</h2>
-        <div class="mt-2 flex flex-wrap">
-          <div *ngFor="let brd of selectedBRDs" class="m-1">
-            <div
-              class="flex items-center bg-secondary-200 px-2 py-1 rounded-md"
-            >
-              <span class="text-sm font-medium">{{
-                brd.fileName.split("-")[0]
-              }}</span>
-              <button
-                class="ml-2 text-secondary-600 hover:text-secondary-800"
-                (click)="removeBRD(brd)"
+      <div class="p-4">
+        <div *ngIf="selectedBRDs.length > 0">
+          <h2 class="text-sm font-medium text-secondary-900">Included BRDs</h2>
+          <div class="mt-2 flex flex-wrap">
+            <div *ngFor="let brd of selectedBRDs" class="m-1">
+              <div
+                class="flex items-center bg-secondary-200 px-2 py-1 rounded-md"
               >
-                &times;
-              </button>
+                <span class="text-sm font-medium">{{
+                  brd.fileName.split("-")[0]
+                }}</span>
+                <button
+                  class="ml-2 text-secondary-600 hover:text-secondary-800"
+                  (click)="removeBRD(brd)"
+                >
+                  &times;
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="mt-4" *ngIf="selectedPRDs.length > 0">
-        <h2 class="text-sm font-medium text-secondary-900">Included PRDs</h2>
-        <div class="mt-2 flex flex-wrap">
-          <div *ngFor="let prd of selectedPRDs" class="m-1">
-            <div
-              class="flex items-center bg-secondary-200 px-2 py-1 rounded-md"
-            >
-              <span class="text-sm font-medium">{{
-                prd.fileName.split("-")[0]
-              }}</span>
-              <button
-                class="ml-2 text-secondary-600 hover:text-secondary-800"
-                (click)="removePRD(prd)"
+        <div *ngIf="selectedPRDs.length > 0" class="mt-3">
+          <h2 class="text-sm font-medium text-secondary-900">Included PRDs</h2>
+          <div class="mt-2 flex flex-wrap">
+            <div *ngFor="let prd of selectedPRDs" class="m-1">
+              <div
+                class="flex items-center bg-secondary-200 px-2 py-1 rounded-md"
               >
-                &times;
-              </button>
+                <span class="text-sm font-medium">{{
+                  prd.fileName.split("-")[0]
+                }}</span>
+                <button
+                  class="ml-2 text-secondary-600 hover:text-secondary-800"
+                  (click)="removePRD(prd)"
+                >
+                  &times;
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -62,14 +62,14 @@ export class LoginComponent implements OnInit {
     const directoryPath =
       config.directoryPath || localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
 
-    if (appUrl && passcode && username) {
-      this.loginForm.patchValue({
-        appUrl: appUrl as string,
-        passcode: atob(passcode as string),
-        username: username as string,
-        directoryPath: directoryPath as string,
-      });
+    this.loginForm.patchValue({
+      appUrl: appUrl as string,
+      passcode: atob(passcode as string),
+      username: username as string,
+      directoryPath: directoryPath as string,
+    });
 
+    if (this.loginForm.valid) {
       // Auto-login if values are present in localStorage
       if (
         localStorage.getItem(APP_CONSTANTS.USER_NAME) &&

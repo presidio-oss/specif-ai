@@ -3,10 +3,7 @@ import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { BehaviorSubject, combineLatest, Observable, Subscription, first } from 'rxjs';
 import { BulkReadFiles, ExportRequirementData } from '../../store/projects/projects.actions';
-import {
-  getDescriptionFromInput,
-  truncateWithEllipsis,
-} from '../../utils/common.utils';
+import { getDescriptionFromInput } from '../../utils/common.utils';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { IList } from '../../model/interfaces/IList';
@@ -99,7 +96,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     this.filteredDocumentList$ = this.searchService.filterItems(
       this.documentList$,
       this.searchTerm$,
-      (doc) => [doc.fileName, doc.content?.title],
+      (doc) => [doc.fileName, doc.content?.title, doc.content?.epicTicketId],
     );
   }
 

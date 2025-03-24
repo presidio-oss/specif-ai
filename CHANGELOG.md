@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.9.10
+
+### Enhancements
+
+- Added a rich text markdown editor across PRD, BRD, NFR, UIR, BP, User Story, and Task.
+- Improved UI consistency and styling across upload code components.
+- Added Gemini and Ollama (Backend) support
+- Improved the numbering system at the solution level.
+- Integrated PostHog for analytics tracking.
+- Migrated the color palette from custom colors to Tailwind for a more harmonious design.
+
+### Fixed
+
+- Fixed the issue where the Jira port was already in use; users can now close the existing instance.
+- Standardized the names of exported BRD, NFR, UIR, and User Stories.
+- Fixed file reading issues during JIRA sync.
+
 ## [1.9.9]
 
 ### Enhancements

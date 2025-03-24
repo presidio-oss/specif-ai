@@ -34,9 +34,15 @@ function readDirectoryMetadata(param) {
   return projects
     .filter((project) => !project.startsWith("."))
     .map((project) => {
-      const metadata = readMetadataFile({ path: `${path}/${project}` });
-      return { metadata, project };
-    });
+      try {
+        const metadata = readMetadataFile({ path: `${path}/${project}` });
+        return { metadata, project };
+      } catch (error) {
+        console.error(`Error reading metadata for project ${project}:`, error);
+        return null;
+      }
+    })
+    .filter(Boolean); 
 }
 
 function readMetadataFile(param) {
@@ -197,7 +203,7 @@ function readFileChunk(param) {
   const CHUNK_SIZE = 400;
   const buffer = Buffer.alloc(CHUNK_SIZE);
   let accumulatedData = "";
-  let dataExtracted = { requirement: null, title: null };
+  let dataExtracted = { requirement: null, title: null, epicTicketId: null };
   const fileName = path.split("/").pop();
 
   // Build regex based on the filter string
@@ -221,6 +227,9 @@ function readFileChunk(param) {
           }
           if (parsed.title && !dataExtracted.title) {
             dataExtracted.title = parsed.title;
+          }
+          if (parsed.epicTicketId && !dataExtracted.epicTicketId) {
+            dataExtracted.epicTicketId = parsed.epicTicketId;
           }
           if (dataExtracted.requirement && dataExtracted.title) {
             fs.close(fd, () => {});

@@ -72,7 +72,7 @@ export class EditUserStoriesComponent implements OnDestroy {
   projectId: string = '';
   folderName: string = '';
   fileName: string = '';
-  entityType: string = 'STORIES';
+  entityType: string = 'US';
   name: string = '';
   description: string = '';
   mode: string | null = 'edit';
@@ -238,6 +238,7 @@ export class EditUserStoriesComponent implements OnDestroy {
         }),
       );
       this.allowFreeRedirection = true;
+
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
           this.entityType,
