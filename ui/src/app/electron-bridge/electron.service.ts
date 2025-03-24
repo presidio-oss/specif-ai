@@ -393,10 +393,13 @@ export class ElectronService {
   async invokeFunction(functionName: string, params: any): Promise<any> {
     if (this.electronAPI) {
       this.logger.debug(params);
-      return await this.electronAPI.invoke('invokeCustomFunction', {
-        functionName,
-        params: { ...params },
-      });
+      return await this.ipc.request({
+        channel: 'invokeCustomFunction',
+        args: [{
+          functionName,
+          params: { ...params },
+        }]}
+      );
     }
   }
 
