@@ -7,7 +7,7 @@ export const updateRequirementSchema = z.object({
   reqId: z.string(),
   title: z.string().optional(),
   updatedReqt: z.string(),
-  addReqtType: z.enum(['BRD', 'PRD', 'UIR', 'NFR']),
+  addReqtType: z.enum(['BRD', 'PRD', 'UIR', 'NFR', 'BP']),
   fileContent: z.string().optional(),
   contentType: z.string(),
   id: z.string(),

@@ -10,7 +10,7 @@ export const chatUpdateRequirementSchema = z.object({
   knowledgeBase: z.string().optional(),
   bedrockConfig: bedrockConfigSchema.optional(), 
   userMessage: z.string(),
-  requirementAbbr: z.enum(['BRD', 'PRD', 'UIR', 'NFR'])
+  requirementAbbr: z.enum(['BRD', 'PRD', 'UIR', 'NFR', 'BP'])
 });
 
 export type ChatUpdateRequirementRequest = z.infer<typeof chatUpdateRequirementSchema>;
