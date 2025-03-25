@@ -185,7 +185,7 @@ export class EditSolutionComponent {
     });
   }
 
-  updateRequirementWithAI() {
+  async updateRequirementWithAI() {
     const formValue = this.requirementForm.getRawValue();
 
     const body: IUpdateRequirementRequest = {
@@ -201,49 +201,54 @@ export class EditSolutionComponent {
       useGenAI: true,
     };
 
-    if (this.isPRD()) {
-      body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []);
-    }
+    try {
+      if (this.isPRD()) {
+        body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []);
+      }
 
-    this.featureService.updateRequirement(body).subscribe(
-      (data) => {
-        const fileData: IList['content'] = {
-          requirement: data.updated.requirement,
-          title: data.updated.title,
-          chatHistory: this.chatHistory,
-          epicTicketId: this.initialData.epicTicketId,
-        };
-        if (this.isPRD()) {
-          fileData.linkedBRDIds = formValue.linkedBRDIds;
-        }
-        this.store.dispatch(new UpdateFile(this.absoluteFilePath, fileData));
-        if (this.isBRD()) {
-          this.handlePRDBRDLinkUpdates(formValue);
-        }
-        this.allowFreeRedirection = true;
-        this.store.dispatch(
-          new ReadFile(`${this.folderName}/${this.fileName}`),
-        );
-        this.selectedFileContent$.subscribe((res: any) => {
-          this.oldContent = res.requirement;
-          this.requirementForm.patchValue({
-            title: res.title,
-            content: res.requirement,
-            epicticketid: res.epicTicketId,
-          });
-          this.chatHistory = res.chatHistory || [];
+      const data = await this.featureService.updateRequirement(body);
+
+      const fileData: IList['content'] = {
+            requirement: data.updated.requirement,
+            title: data.updated.title,
+            chatHistory: this.chatHistory,
+            epicTicketId: this.initialData.epicTicketId,
+          };
+
+      if (this.isPRD()) {
+        fileData.linkedBRDIds = formValue.linkedBRDIds;
+      }
+
+      this.store.dispatch(new UpdateFile(this.absoluteFilePath, fileData));
+
+      if (this.isBRD()) {
+        this.handlePRDBRDLinkUpdates(formValue);
+      }
+      
+      this.allowFreeRedirection = true;
+      this.store.dispatch(
+        new ReadFile(`${this.folderName}/${this.fileName}`),
+      );
+      
+      this.selectedFileContent$.subscribe((res: any) => {
+        this.oldContent = res.requirement;
+        this.requirementForm.patchValue({
+          title: res.title,
+          content: res.requirement,
+          epicticketid: res.epicTicketId,
         });
-        this.toastService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
-        );
-      },
-      (error) => {
-        console.error('Error updating requirement:', error); // Handle any errors
-        this.toastService.showError(
-          TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(this.folderName, body.reqId),
-        );
-      },
-    );
+        this.chatHistory = res.chatHistory || [];
+      });
+      
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
+      );
+    } catch (error) {
+      console.error('Error updating requirement:', error);
+      this.toastService.showError(
+        TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(this.folderName, body.reqId),
+      );
+    }
   }
 
   updateRequirement() {
@@ -357,7 +362,7 @@ export class EditSolutionComponent {
         body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []);
       }
 
-      this.featureService.addRequirement(body).subscribe(
+      this.featureService.addRequirement(body).then(
         (data) => {
           const fileData: any = {
             requirement: data.LLMreqt.requirement,

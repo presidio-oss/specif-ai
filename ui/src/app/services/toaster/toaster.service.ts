@@ -8,6 +8,7 @@ import { DEFAULT_TOAST_DURATION } from 'src/app/constants/toast.constant';
 export class ToasterService {
   private toastSubject = new Subject<any>();
   private id = 0;
+  private isLLMConfigToastActive = false;
 
   constructor() {}
 
@@ -15,25 +16,36 @@ export class ToasterService {
     return this.toastSubject.asObservable();
   }
 
-  showToast(type: string, message: string, duration: number = DEFAULT_TOAST_DURATION) {
-    this.id++;  // Increment the ID to ensure it's unique for every toast
+  showToast(type: string, message: string, duration: number = DEFAULT_TOAST_DURATION, isLLMConfigToast: boolean = false) {
+    if (this.isLLMConfigToastActive && !isLLMConfigToast) {
+      return;
+    }
+
     const toastId = this.id;
+
+    if (isLLMConfigToast) {
+      this.isLLMConfigToastActive = true;
+      setTimeout(() => {
+        this.isLLMConfigToastActive = false;
+      }, duration);
+    }
+
     this.toastSubject.next({ id: toastId, type, message, duration });
   }
 
-  showSuccess(message: string, duration: number = DEFAULT_TOAST_DURATION) {
-    this.showToast('success', message, duration);
+  showSuccess(message: string, duration: number = DEFAULT_TOAST_DURATION, isLLMConfigToast: boolean = false) {
+    this.showToast('success', message, duration, isLLMConfigToast);
   }
 
-  showError(message: string, duration: number = DEFAULT_TOAST_DURATION) {
-    this.showToast('error', message, duration);
+  showError(message: string, duration: number = DEFAULT_TOAST_DURATION, isLLMConfigToast: boolean = false) {
+    this.showToast('error', message, duration, isLLMConfigToast);
   }
 
-  showInfo(message: string, duration: number = DEFAULT_TOAST_DURATION) {
-    this.showToast('info', message, duration);
+  showInfo(message: string, duration: number = DEFAULT_TOAST_DURATION, isLLMConfigToast: boolean = false) {
+    this.showToast('info', message, duration, isLLMConfigToast);
   }
   
-  showWarning(message: string, duration: number = DEFAULT_TOAST_DURATION) {
-    this.showToast('warning', message, duration);
+  showWarning(message: string, duration: number = DEFAULT_TOAST_DURATION, isLLMConfigToast: boolean = false) {
+    this.showToast('warning', message, duration, isLLMConfigToast);
   }
 }

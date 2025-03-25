@@ -1,10 +1,11 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
-import { ElectronService } from './services/electron/electron.service';
-import { AuthService } from './services/auth/auth.service';
+import { ElectronService } from './electron-bridge/electron.service';
+import { StartupService } from './services/auth/startup.service';
 import { Store } from '@ngxs/store';
-import { VerifyLLMConfig } from './store/llm-config/llm-config.actions';
+import { LLMConfigState } from './store/llm-config/llm-config.state';
+import { SetLLMConfig } from './store/llm-config/llm-config.actions';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
@@ -20,7 +21,7 @@ export class AppComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
-  authService = inject(AuthService);
+  startupService = inject(StartupService);
   store = inject(Store);
   dialog = inject(MatDialog);
   analyticsTracker = inject(AnalyticsTracker);
@@ -43,7 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.initializeLLMConfig();
 
     this.subscriptions.push(
-      this.authService.isLoggedIn$
+      this.startupService.isLoggedIn$
         .pipe(filter((isLoggedIn) => isLoggedIn))
         .subscribe(() => {
           this.initializeLLMConfig();
@@ -56,19 +57,61 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  private initializeLLMConfig() {
+  private async initializeLLMConfig() {
     this.logger.debug('Initializing LLM configuration');
-    if (this.authService.isAuthenticated()) {
-      this.store.dispatch(new VerifyLLMConfig()).subscribe({
-        next: () =>
-          this.logger.debug('LLM configuration verified successfully'),
-        error: (error) =>
-          this.logger.error('Error verifying LLM configuration', error),
-      });
-    } else {
-      this.logger.debug(
-        'User not authenticated, skipping LLM configuration verification',
-      );
+
+    try {
+      const localConfig = localStorage.getItem('llmConfig') || await this.electronService.getStoreValue('llmConfig');
+      if (localConfig) {
+        console.log("Local Config", localConfig)
+        try {
+          const config = JSON.parse(localConfig);
+          const response = await this.electronService.verifyLLMConfig(
+            config.activeProvider,
+            config.providerConfigs[config.activeProvider].config
+          );
+          if (response.status === 'success') {
+            this.logger.debug('LLM configuration verified successfully');
+          } else {
+            this.logger.error('LLM configuration verification failed:', response.message);
+          }
+          return;
+        } catch (e) {
+          this.logger.error('Error parsing saved LLM config:', e);
+        }
+      }
+
+      const savedConfig = await this.electronService.getStoreValue('llmConfig');
+      if (savedConfig) {
+        await this.store.dispatch(new SetLLMConfig(savedConfig)).toPromise();
+          const response = await this.electronService.verifyLLMConfig(
+            savedConfig.activeProvider,
+            savedConfig.providerConfigs[savedConfig.activeProvider].config
+          );
+        if (response.status === 'success') {
+          this.logger.debug('LLM configuration verified successfully');
+        } else {
+          this.logger.error('LLM configuration verification failed:', response.message);
+        }
+        return;
+      }
+
+      const currentState = this.store.selectSnapshot(LLMConfigState.getConfig);
+      if (currentState?.activeProvider) {
+        const response = await this.electronService.verifyLLMConfig(
+          currentState.activeProvider,
+          currentState.providerConfigs[currentState.activeProvider].config
+        );
+        if (response.status === 'success') {
+          this.logger.debug('LLM configuration verified successfully');
+        } else {
+          this.logger.error('LLM configuration verification failed:', response.message);
+        }
+      } else {
+        this.logger.debug('No LLM configuration found to verify');
+      }
+    } catch (error) {
+      this.logger.error('Error initializing LLM configuration:', error);
     }
   }
 

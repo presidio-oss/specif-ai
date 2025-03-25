@@ -200,21 +200,21 @@ export class BusinessProcessFlowComponent
       selectedBRDs: this.selectedRequirement.selectedBRDs,
       selectedPRDs: this.selectedRequirement.selectedPRDs,
     };
-    this.featureService.addFlowChart(request).subscribe({
-      next: (response: any) => {
+    
+    this.featureService.addFlowChart(request)
+      .then((response: any) => {
         this.store.dispatch(
           new SetFlowChartAction(
             `${this.projectName}/${this.folderName}/${this.fileName}`,
-            response,
+            response.flowChartData,
           ),
         );
-        this.setFlowDiagram(response).then();
-      },
-      error: (error) => {
+        this.setFlowDiagram(response.flowChartData);
+      })
+      .catch((error) => {
         console.error('Error from BE while generating flow chart', error);
         this.errorBlockVisible = true;
-      },
-    });
+      });
   }
 
   private getSvgWithDimensions() {

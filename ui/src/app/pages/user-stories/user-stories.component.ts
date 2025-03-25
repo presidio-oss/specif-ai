@@ -35,7 +35,7 @@ import {
 import { JiraService } from '../../integrations/jira/jira.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { APP_INTEGRATIONS, JIRA_TOAST } from '../../constants/toast.constant';
-import { ElectronService } from '../../services/electron/electron.service';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import { getNavigationParams } from '../../utils/common.utils';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
@@ -283,20 +283,18 @@ export class UserStoriesComponent implements OnInit {
     };
 
     this.loadingService.setLoading(true);
-    this.featureService.generateUserStories(request).subscribe({
-      next: (response) => {
-        this.userStories = response;
-        this.generateTasks(regenerate).then(() => {
-          this.updateWithUserStories(this.userStories, regenerate);
-        });
-      },
-      error: (error) => {
-        this.loadingService.setLoading(false);
-        this.toast.showError(
-          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
-        );
-      },
-    });
+    this.featureService.generateUserStories(request).then((response) => {
+      this.userStories = response;
+      this.generateTasks(regenerate).then(() => {
+        this.updateWithUserStories(this.userStories, regenerate);
+      });
+    })
+    .catch((error) => {
+      this.loadingService.setLoading(false);
+      this.toast.showError(
+        TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+      );
+    })
     this.dialog.closeAll();
   }
 
@@ -314,7 +312,6 @@ export class UserStoriesComponent implements OnInit {
       };
       return this.featureService
         .generateTask(request)
-        .toPromise()
         .then((response: ITasksResponse | undefined) => {
           userStory.tasks = this.featureService.parseTaskResponse(response);
         })
@@ -368,10 +365,10 @@ export class UserStoriesComponent implements OnInit {
 
     setTimeout(() => {
       this.getLatestUserStories();
-      this.loadingService.setLoading(false);
       this.toast.showSuccess(
         TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
       );
+      this.loadingService.setLoading(false);
     }, 2000);
   }
 

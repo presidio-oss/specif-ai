@@ -3,9 +3,7 @@ import { environment } from '../../environments/environment';
 export const APP_CONSTANTS = {
   WORKING_DIR: 'WORKING_DIR',
   VERSION: 'APP_VERSION',
-  APP_URL: 'APP_URL',
   USER_NAME: 'USER_NAME',
-  APP_PASSCODE_KEY: 'APP_PASSCODE_KEY',
   USER_ID: 'USER_ID',
 };
 export const FILTER_STRINGS = { BASE: 'base', FEATURE: 'feature', ARCHIVED: 'archived' };
@@ -21,7 +19,6 @@ export const BP_FILE_KEYS = {
 };
 
 export const ERROR_MESSAGES = {
-  PASSWORD_ERROR: 'Passcode does not match. Please try again.',
   GENERATE_SUGGESTIONS_FAILED: 'Failed to generate suggestions',
   DELETE_ASSOCIATED_ERROR: (reqId: string, bpIds: string[]) =>
     `Unable to remove ${reqId} because it's linked to the following business processes: ${bpIds.join(', ')}.`,

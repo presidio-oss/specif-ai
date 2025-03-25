@@ -20,81 +20,128 @@
       {{ errorMessage }}
     </div>
 
-    <!-- Providers Dropdown -->
-    <div class="space-y-1">
-      <label for="providerSelect" class="block text-secondary-500"
-        >Providers</label
-      >
-      <div class="relative w-full">
-        <select
-          id="providerSelect"
-          [formControl]="selectedProvider"
-          class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none appearance-none cursor-pointer"
-        >
-          <option
-            *ngFor="let provider of availableProviders"
-            [value]="provider.key"
-            class="py-2"
+    <form [formGroup]="configForm">
+      <!-- Providers Dropdown -->
+      <div class="space-y-1">
+          <label for="providerSelect" class="block text-secondary-500"
+            >LLM Provider</label
           >
-            {{ provider.displayName }}
-          </option>
-        </select>
-        <div
-          class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
-        >
-          <svg
-            class="h-4 w-4 text-secondary-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-            ></path>
-          </svg>
+          <div class="relative w-full">
+            <select
+              id="providerSelect"
+              formControlName="provider"
+              class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none appearance-none cursor-pointer"
+            >
+              <option
+                *ngFor="let provider of availableProviders"
+                [value]="provider.key"
+                class="py-2"
+              >
+                {{ provider.displayName }}
+              </option>
+            </select>
+            <div
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
+            >
+              <svg
+                class="h-4 w-4 text-secondary-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              </svg>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Model Dropdown -->
-    <div class="space-y-1">
-      <label for="modelSelect" class="block text-secondary-500">Model</label>
-      <div class="relative w-full">
-        <select
-          id="modelSelect"
-          [formControl]="selectedModel"
-          class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none appearance-none cursor-pointer"
-        >
-          <option
-            *ngFor="let model of filteredModels"
-            [value]="model"
-            class="py-2"
-          >
-            {{ model }}
-          </option>
-        </select>
-        <div
-          class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
-        >
-          <svg
-            class="h-4 w-4 text-secondary-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-            ></path>
-          </svg>
+        <!-- Provider-specific Configuration -->
+        <div formGroupName="config" class="mt-4">
+          <div class="grid grid-cols-2 gap-4">
+            <ng-container *ngFor="let field of currentProviderFields">
+              <!-- Text/Password/Number Input -->
+              <div *ngIf="field.type !== 'checkbox' && field.type !== 'select'" class="space-y-1">
+                <label [for]="field.name" class="block text-secondary-500">
+                  {{ field.label }}
+                  <span *ngIf="field.required" class="text-danger-500">*</span>
+                </label>
+                <input
+                  [type]="field.type"
+                  [id]="field.name"
+                  [formControlName]="field.name"
+                  [placeholder]="field.placeholder || ''"
+                  class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
+                  [required]="field.required || false"
+                />
+              </div>
+
+              <!-- Select Input -->
+              <div *ngIf="field.type === 'select'" class="space-y-1">
+                <label [for]="field.name" class="block text-secondary-500">
+                  {{ field.label }}
+                  <span *ngIf="field.required" class="text-danger-500">*</span>
+                </label>
+                <div class="relative w-full">
+                  <select
+                    [id]="field.name"
+                    [formControlName]="field.name"
+                    class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none appearance-none cursor-pointer"
+                    [required]="field.required || false"
+                  >
+                    <option value="" disabled selected>Select {{ field.label }}</option>
+                    <option
+                      *ngFor="let option of field.options"
+                      [value]="option.value"
+                      class="py-2"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
+                  <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
+                  >
+                    <svg
+                      class="h-4 w-4 text-secondary-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Checkbox Input - Full Width -->
+              <div
+                *ngIf="field.type === 'checkbox'"
+                class="col-span-2 flex items-center space-x-2"
+              >
+                <input
+                  type="checkbox"
+                  [id]="field.name"
+                  [formControlName]="field.name"
+                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                />
+                <label [for]="field.name" class="text-secondary-500">
+                  {{ field.label }}
+                </label>
+              </div>
+            </ng-container>
+          </div>
         </div>
-      </div>
-    </div>
+
+    </form>
 
     <!-- Destination Folder -->
     <div class="space-y-1">
@@ -167,6 +214,7 @@
         theme="primary"
         size="sm"
         (click)="onSave()"
+        [disabled]="!configForm.valid"
       />
     </div>
 

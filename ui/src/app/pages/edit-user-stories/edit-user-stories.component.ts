@@ -172,8 +172,8 @@ export class EditUserStoriesComponent implements OnDestroy {
       existingFeatureTitle: this.existingUserForm.name,
       existingFeatureDesc: this.existingUserForm.description,
     };
-    this.featureService.updateUserStory(body).subscribe(
-      (data) => {
+    this.featureService.updateUserStory(body)
+      .then((data) => {
         const featuresResponse: any = data;
         const matchingFeature = featuresResponse.features.find(
           (feature: { id: string }) => feature.id === this.data.id,
@@ -209,8 +209,8 @@ export class EditUserStoriesComponent implements OnDestroy {
         } else {
           console.log('No matching feature found for the given ID.');
         }
-      },
-      (error) => {
+      })
+      .catch((error) => {
         console.error('Error updating requirement:', error);
         this.toasterService.showError(
           TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(
@@ -218,8 +218,7 @@ export class EditUserStoriesComponent implements OnDestroy {
             this.existingUserForm.id,
           ),
         );
-      },
-    );
+      });
   }
 
   updateUserStory() {
@@ -266,7 +265,7 @@ export class EditUserStoriesComponent implements OnDestroy {
         fileContent: this.uploadedFileContent,
         useGenAI: true,
       };
-      this.featureService.addUserStory(body).subscribe(
+      this.featureService.addUserStory(body).then(
         (data) => {
           const featuresResponse: any = data;
           const matchingFeature = featuresResponse.features.find(

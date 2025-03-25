@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { SettingsComponent } from '../../settings/settings.component';
-import { AuthService } from '../../../services/auth/auth.service';
+import { StartupService } from '../../../services/auth/startup.service';
 import { environment } from '../../../../environments/environment';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { BreadcrumbsComponent } from '../../core/breadcrumbs/breadcrumbs.component';
@@ -28,7 +28,7 @@ import { heroCog8Tooth } from '@ng-icons/heroicons/outline';
 export class HeaderComponent {
   protected themeConfiguration = environment.ThemeConfiguration;
 
-  authService = inject(AuthService);
+  startupService = inject(StartupService);
   dialog = inject(MatDialog);
 
   openSettingsModal() {

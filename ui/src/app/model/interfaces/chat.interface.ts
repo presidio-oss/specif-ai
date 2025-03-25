@@ -1,3 +1,14 @@
+interface BedrockConfig {
+  region: string;
+  accessKey: string;
+  secretKey: string;
+  sessionKey?: string;
+}
+
+export interface BedrockValidationPayload extends BedrockConfig{
+  kbId: string;
+}
+
 export interface suggestionPayload {
   name: string;
   description: string;
@@ -6,6 +17,7 @@ export interface suggestionPayload {
   suggestions?: Array<string>;
   selectedSuggestion?: string;
   knowledgeBase?: string;
+  bedrockConfig?: BedrockConfig;
 }
 
 export interface conversePayload {
@@ -16,7 +28,12 @@ export interface conversePayload {
   userMessage: string;
   requirementAbbr?: string;
   knowledgeBase?: string;
+  bedrockConfig?: BedrockConfig;
   us?: string;
   prd?: string;
   chatHistory?: Array<{}>;
+}
+
+export interface ChatUpdateRequirementResponse {
+  response: string;
 }

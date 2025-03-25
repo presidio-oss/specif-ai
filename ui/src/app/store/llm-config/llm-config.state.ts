@@ -1,27 +1,21 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { LLMConfigModel } from "../../model/interfaces/ILLMConfig";
-import { SetLLMConfig, FetchDefaultLLMConfig, VerifyLLMConfig, SyncLLMConfig } from './llm-config.actions';
+import { SetLLMConfig, VerifyLLMConfig, SyncLLMConfig, SwitchProvider } from './llm-config.actions';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { of, timer } from 'rxjs';
 import { LoadingService } from '../../services/loading.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { AvailableProviders, ProviderModelMap } from '../../constants/llm.models.constants';
-import { ElectronService } from '../../services/electron/electron.service';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import { DEFAULT_TOAST_DURATION } from 'src/app/constants/toast.constant';
 
-export interface LLMConfigStateModel extends LLMConfigModel {
-  isDefault: boolean;
-}
-
-@State<LLMConfigStateModel>({
+@State<LLMConfigModel>({
   name: 'LLMConfig',
   defaults: {
-    apiKey: '',
-    model: '',
-    provider: '',
-    apiUrl: '',
+    activeProvider: '',
+    providerConfigs: {},
     isDefault: true
   }
 })
@@ -38,49 +32,51 @@ export class LLMConfigState {
   ) {}
 
   @Selector()
-  static getConfig(state: LLMConfigStateModel) {
+  static getConfig(state: LLMConfigModel) {
     return state;
   }
 
+  @Selector()
+  static getAllProviderConfigs(state: LLMConfigModel) {
+    return state.providerConfigs;
+  }
+
+  @Selector()
+  static getActiveProvider(state: LLMConfigModel) {
+    return state.activeProvider;
+  }
+
   @Action(SetLLMConfig)
-  setLLMConfig({ setState, dispatch }: StateContext<LLMConfigStateModel>, { payload }: SetLLMConfig) {
-    setState({ ...payload, isDefault: false });
+  setLLMConfig({ setState, getState, dispatch }: StateContext<LLMConfigModel>, { payload }: SetLLMConfig) {
+    setState(payload);
     dispatch(new SyncLLMConfig());
   }
 
   @Action(SyncLLMConfig)
-  syncLLMConfig({ getState }: StateContext<LLMConfigStateModel>) {
+  syncLLMConfig({ getState }: StateContext<LLMConfigModel>) {
     const state = getState();
     localStorage.setItem('llmConfig', JSON.stringify(state));
     this.electronService.setStoreValue('llmConfig', state);
   }
 
-  @Action(FetchDefaultLLMConfig)
-  fetchDefaultLLMConfig({ setState, dispatch }: StateContext<LLMConfigStateModel>) {
-    this.loadingService.setLoading(true);
-    return this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
-      tap((defaultConfig: LLMConfigModel) => {
-        if (!defaultConfig.provider || !defaultConfig.model) {
-          // Set default values if not provided
-          defaultConfig.provider = AvailableProviders[0].key;
-          defaultConfig.model = ProviderModelMap[defaultConfig.provider][0];
-        }
-        setState({ ...defaultConfig, isDefault: true });
-        dispatch(new SyncLLMConfig());
-      }),
-      catchError((error) => {
-        console.error('Error fetching default LLM config:', error);
-        this.toasterService.showError('Failed to fetch default LLM configuration.');
-        return of({ provider: '', model: '' });
-      }),
-      finalize(() => {
-        this.loadingService.setLoading(false);
-      })
-    );
+  @Action(SwitchProvider)
+  switchProvider({ getState, setState }: StateContext<LLMConfigModel>, { provider }: SwitchProvider) {
+    const state = getState();
+    
+    // Only switch if we have a configuration for this provider
+    if (!state.providerConfigs[provider]) {
+      this.toasterService.showError(`No configuration found for provider: ${provider}`);
+      return;
+    }
+
+    setState({
+      ...state,
+      activeProvider: provider
+    });
   }
 
   @Action(VerifyLLMConfig)
-  verifyLLMConfig({ getState, dispatch }: StateContext<LLMConfigStateModel>) {
+  verifyLLMConfig({ getState, setState, dispatch }: StateContext<LLMConfigModel>) {
     const currentTime = Date.now();
     if (currentTime - this.lastVerificationTime < this.DEBOUNCE_TIME) {
       return of(null); // Skip if called within debounce time
@@ -88,41 +84,42 @@ export class LLMConfigState {
     this.lastVerificationTime = currentTime;
 
     const state = getState();
+    if (!state.activeProvider) {
+      return of(null);
+    }
     this.loadingService.setLoading(true);
+
     return timer(0).pipe( // Use timer to ensure we're not blocking the main thread
-      tap(() => this.http.post('model/config-verification', {
-        provider: state.provider,
-        model: state.model
-      }).pipe(
-      tap((response: any) => {
-        const providerDisplayName = AvailableProviders.find(p => p.key === state.provider)?.displayName || state.provider;
-        if (response.status === 'failed') {
-          this.http.get<LLMConfigModel>('llm-config/defaults').pipe(
-            tap((defaultConfig) => {
-              const defaultProviderDisplayName = AvailableProviders.find(p => p.key === defaultConfig.provider)?.displayName || defaultConfig.provider;
-              this.toasterService.showInfo(`LLM configuration error. Resetting to default LLM configuration - ${defaultProviderDisplayName}: ${defaultConfig.model}`);
-              dispatch(new FetchDefaultLLMConfig());
-            }),
-            catchError((error) => {
-              console.error('Error fetching default LLM config:', error);
-              this.toasterService.showError('Failed to fetch default LLM configuration.', 5000);
-              return of(null);
-            })
-          ).subscribe();
+      tap(async () => {
+        try {
+          const response = await this.electronService.verifyLLMConfig(
+            state.activeProvider,
+            state.providerConfigs[state.activeProvider].config
+          );
+
+          if (response.status === 'failed') {
+            const providerDisplayName = AvailableProviders.find(p => p.key === state.activeProvider)?.displayName || state.activeProvider;
+            this.toasterService.showError(
+              `Failed to verify ${providerDisplayName} configuration. Please check your credentials and try again.`,
+              DEFAULT_TOAST_DURATION
+            );
+          }
+
+          // Always sync the config after verification, regardless of success or failure
+          dispatch(new SyncLLMConfig());
+        } catch (error) {
+          console.error('Error verifying LLM config:', error);
+          const providerDisplayName = AvailableProviders.find(p => p.key === state.activeProvider)?.displayName || state.activeProvider;
+          this.toasterService.showError(
+            `Failed to verify ${providerDisplayName} configuration. Please check your credentials and try again.`, 
+            DEFAULT_TOAST_DURATION
+          );
+          // Keep existing config, just sync it
+          dispatch(new SyncLLMConfig());
+        } finally {
+          this.loadingService.setLoading(false);
         }
-        // Always sync the config after verification, regardless of success or failure
-        dispatch(new SyncLLMConfig());
-      }),
-      catchError((error) => {
-        console.error('Error verifying LLM config:', error);
-        this.toasterService.showError('Failed to verify provider and model configuration', 5000);
-        dispatch(new FetchDefaultLLMConfig());
-        return of(null);
-      }),
-      finalize(() => {
-        this.loadingService.setLoading(false);
       })
-    ).subscribe())
     );
   }
 }

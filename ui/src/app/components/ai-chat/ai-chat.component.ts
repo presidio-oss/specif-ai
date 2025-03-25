@@ -8,6 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {
+  ChatUpdateRequirementResponse,
   conversePayload,
   suggestionPayload,
 } from '../../model/interfaces/chat.interface';
@@ -20,7 +21,7 @@ import { ChatSettings } from 'src/app/model/interfaces/ChatSettings';
 import { ChatSettingsState } from 'src/app/store/chat-settings/chat-settings.state';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { 
+import {
   heroDocumentPlus,
   heroCheck,
   heroPaperClip,
@@ -38,6 +39,7 @@ import { ToggleComponent } from '../toggle/toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ERROR_MESSAGES } from '../../constants/app.constants';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 import { analyticsEnabledSubject } from 'src/app/services/analytics/utils/analytics.utils';
@@ -119,6 +121,10 @@ export class AiChatComponent implements OnInit {
   loadingChat: boolean = false;
   responseStatus: boolean = false;
   kb: string = '';
+  accessKey: string = '';
+  secretKey: string = '';
+  sessionKey: string = '';
+  region: string = ''
   isKbActive: boolean = false;
 
   selectedFiles: File[] = [];
@@ -134,6 +140,7 @@ export class AiChatComponent implements OnInit {
 
   constructor(
     private chatService: ChatService,
+    private electronService: ElectronService,
     private utilityService: UtilityService,
     private store: Store,
     private toastService: ToasterService,
@@ -165,6 +172,11 @@ export class AiChatComponent implements OnInit {
     if (this.isKbAvailable) {
       this.chatSettings$.subscribe((settings) => {
         this.kb = settings?.kb;
+        this.accessKey = settings?.accessKey;
+        this.secretKey = settings?.secretKey;
+        this.sessionKey = settings?.sessionKey;
+        this.region = settings?.region;
+
         this.isKbActive = settings?.kb !== '';
       });
     }
@@ -203,24 +215,31 @@ export class AiChatComponent implements OnInit {
       suggestions: this.localSuggestions,
       selectedSuggestion: this.selectedSuggestion,
     };
+
+    if (this.isKbActive && this.kb) {
+      suggestionPayload.bedrockConfig = {
+        region: this.region,
+        accessKey: this.accessKey,
+        secretKey: this.secretKey,
+        sessionKey: this.sessionKey
+      };
+    }
     this.chatService
-    .generateSuggestions(suggestionPayload)
-    .pipe(this.analyticsTracker.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
-    .subscribe({
-      next: (response: Array<''>) => {
+      .generateSuggestions(suggestionPayload)
+      .then((response: Array<''>) => {
         this.chatSuggestions = response;
         this.localSuggestions.push(...response);
+        this.analyticsTracker.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS)
         this.loadingChat = false;
-        this.responseStatus = false; 
+        this.responseStatus = false;
         this.smoothScroll();
-      },
-      error: (err) => {
+      })
+      .catch((err) => {
         this.toastService.showError(ERROR_MESSAGES.GENERATE_SUGGESTIONS_FAILED);
         this.loadingChat = false;
-        this.responseStatus = false; 
+        this.responseStatus = false;
         this.smoothScroll();
-      }
-    });
+      });
   }
 
   finalCall(message: string) {
@@ -235,17 +254,31 @@ export class AiChatComponent implements OnInit {
       userMessage: message,
       knowledgeBase: this.kb,
     };
+
+    // Add Bedrock config if knowledge base is active
+    if (this.isKbActive && this.kb) {
+      payload = {
+        ...payload,
+        bedrockConfig: {
+          region: this.region,
+          accessKey: this.accessKey,
+          secretKey: this.secretKey,
+          sessionKey: this.sessionKey // Always include sessionKey, it's optional in the interface
+        }
+      };
+    }
+
     if (this.chatType === CHAT_TYPES.REQUIREMENT)
       payload = { ...payload, requirementAbbr: this.requirementAbbrivation };
     else payload = { ...payload, prd: this.prd, us: this.userStory };
     this.chatService
       .chatWithLLM(this.chatType, payload)
-      .pipe(this.analyticsTracker.trackResponseTime(AnalyticsEventSource.GENERATE_SUGGESTIONS))
-      .subscribe((response) => {
+      .then((result: ChatUpdateRequirementResponse) => {
         this.generateLoader = false;
-        this.chatHistory = [...this.chatHistory, { assistant: response }];
+        this.chatHistory = [...this.chatHistory, { assistant: result.response }];
         this.returnChatHistory();
         this.getSuggestion();
+        this.analyticsTracker.trackResponseTime(AnalyticsEventSource.AI_CHAT)
       });
   }
 

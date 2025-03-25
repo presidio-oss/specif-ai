@@ -46,9 +46,8 @@ import { ChatSettingsState } from './store/chat-settings/chat-settings.state';
 import { Title } from '@angular/platform-browser';
 import { InputFieldComponent } from './components/core/input-field/input-field.component';
 import { ButtonComponent } from './components/core/button/button.component';
-import { AuthService } from './services/auth/auth.service';
-import { AuthInterceptor } from './interceptor/auth.interceptor';
-import { AuthStateService } from './services/auth/auth-state.service';
+import { StartupService } from './services/auth/startup.service';
+import { UserStateService } from './services/auth/user-state.service';
 import { PostHogAnalyticsManager } from './services/analytics/managers/posthog-analytics.manager';
 import { AnalyticsTracker } from './services/analytics/analytics.interface';
 
@@ -114,12 +113,11 @@ import { AnalyticsTracker } from './services/analytics/analytics.interface';
         hideDelay: 500,
       } as MatTooltipDefaultOptions,
     },
-    AuthStateService,
-    AuthService,
+    UserStateService,
+    StartupService,
     UtilityService,
     PostHogAnalyticsManager,
     SpreadSheetService,
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
     { provide: AnalyticsTracker, useClass: PostHogAnalyticsManager },
     {

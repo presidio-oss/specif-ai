@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { Store } from '@ngxs/store';
-import { firstValueFrom } from 'rxjs';
 import {
   BulkReadFiles,
   CreateFile,
@@ -262,31 +261,28 @@ export class BusinessProcessComponent implements OnInit {
       ),
     };
 
-    this.featureService.addBusinessProcess(body).subscribe({
-      next: (data) => {
-        const selectedBRDsWithId = this.streamSelectedStoring(
-          data.selectedBRDs,
-          formValue.selectedBRDs,
-        );
-        const selectedPRDsWithId = this.streamSelectedStoring(
-          data.selectedPRDs,
-          formValue.selectedPRDs,
-        );
-
-        this.handleBusinessProcessCreation({
-          requirement: data.LLMreqt.requirement,
-          title: data.LLMreqt.title,
-          selectedBRDs: selectedBRDsWithId,
-          selectedPRDs: selectedPRDsWithId,
-        });
-      },
-      error: (error) => {
-        this.loggerService.error('Error updating requirement:', error); // Handle any errors
-        this.toastService.showError(
-          TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.folderName),
-        );
-      },
-    });
+    this.featureService.addBusinessProcess(body).then((data) => {
+      const selectedBRDsWithId = this.streamSelectedStoring(
+        data.selectedBRDs,
+        formValue.selectedBRDs,
+      );
+      const selectedPRDsWithId = this.streamSelectedStoring(
+        data.selectedPRDs,
+        formValue.selectedPRDs,
+      );
+      this.handleBusinessProcessCreation({
+        requirement: data.LLMreqt.requirement,
+        title: data.LLMreqt.title,
+        selectedBRDs: selectedBRDsWithId,
+        selectedPRDs: selectedPRDsWithId,
+      });
+    })
+    .catch((error) => {
+      this.loggerService.error('Error updating requirement:', error); // Handle any errors
+      this.toastService.showError(
+        TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.folderName),
+      );
+    })
   }
 
   private async handleBusinessProcessUpdate(fileData: {
@@ -367,34 +363,32 @@ export class BusinessProcessComponent implements OnInit {
       ),
     };
 
-    this.featureService.updateBusinessProcess(body).subscribe({
-      next: async (data) => {
-        const selectedBRDsWithId = this.streamSelectedStoring(
-          data.selectedBRDs,
-          formValue.selectedBRDs,
-        );
-        const selectedPRDsWithId = this.streamSelectedStoring(
-          data.selectedPRDs,
-          formValue.selectedPRDs,
-        );
-
-        await this.handleBusinessProcessUpdate({
-          requirement: data.updated.requirement,
-          title: data.updated.title,
-          selectedBRDs: selectedBRDsWithId,
-          selectedPRDs: selectedPRDsWithId,
-        });
-      },
-      error: (error) => {
-        this.loggerService.error('Error updating requirement:', error);
-        this.loadingService.setLoading(false);
-        this.toastService.showError(
-          TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(
-            this.folderName,
-            this.bpRequirementId,
-          ),
-        );
-      },
+    this.featureService.updateBusinessProcess(body).then(async (data) => {
+      const selectedBRDsWithId = this.streamSelectedStoring(
+        data.selectedBRDs,
+        formValue.selectedBRDs,
+      );
+      const selectedPRDsWithId = this.streamSelectedStoring(
+        data.selectedPRDs,
+        formValue.selectedPRDs,
+      );
+  
+      await this.handleBusinessProcessUpdate({
+        requirement: data.updated.requirement,
+        title: data.updated.title,
+        selectedBRDs: selectedBRDsWithId,
+        selectedPRDs: selectedPRDsWithId,
+      });
+    })
+    .catch((error) => {
+      this.loggerService.error('Error updating requirement:', error);
+      this.loadingService.setLoading(false);
+      this.toastService.showError(
+        TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(
+          this.folderName,
+          this.bpRequirementId,
+        ),
+      );
     });
   }
 
@@ -563,7 +557,8 @@ export class BusinessProcessComponent implements OnInit {
       selectedPRDs,
     };
     try {
-      return await firstValueFrom(this.featureService.addFlowChart(request));
+      const response = await this.featureService.addFlowChart(request);
+      return response.flowChartData;
     } catch (error) {
       this.loggerService.error(
         'Error from BE while generating flow chart',

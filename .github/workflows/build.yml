@@ -156,6 +156,7 @@ jobs:
         run: |
           cd electron
           npm install
+          npm run build
           npm run package:win
 
       - name: Package Windows Build
@@ -234,6 +235,7 @@ jobs:
         run: |
           cd electron
           npm install
+          npm run build
           npm run package:mac
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}

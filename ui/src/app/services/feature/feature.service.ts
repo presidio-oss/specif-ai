@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { ElectronService } from '../../electron-bridge/electron.service';
 import {
   IUpdateUserStoryRequest,
   IUserStoriesRequest,
@@ -24,115 +24,82 @@ import {
   IAddBusinessProcessRequest,
   IAddBusinessProcessResponse,
   IFlowChartRequest,
+  IFlowchartResponse,
   IUpdateProcessRequest,
   IUpdateProcessResponse,
 } from '../../model/interfaces/IBusinessProcess';
+import { BedrockValidationPayload } from 'src/app/model/interfaces/chat.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FeatureService {
-  GENERATE_TASK_URL: string = `solutions/task`;
-  GENERATE_USER_STORIES_URL: string = `solutions/stories`;
-  ADD_USER_STORY: string = `solutions/story/add`;
-  UPDATE_USER_STORY: string = `solutions/story/update`;
-  ADD_TASK: string = `solutions/task/add`;
-  UPDATE_TASK: string = `solutions/task/update`;
-  UPDATE_REQUIREMENT: string = `solutions/update`;
-  ADD_REQUIREMENT: string = `solutions/add`;
-  ADD_BUSINESS_PROCESS: string = `solutions/business_process/add`;
-  UPDATE_BUSINESS_PROCESS: string = `solutions/business_process/update`;
-  ADD_FLOW_CHART: string = `solutions/flowchart`;
-  VALIDATE_BEDROCK_ID: string = `solutions/integration/knowledgebase/validation`;
+  constructor(
+    private http: HttpClient,
+    private electronService: ElectronService
+  ) {}
 
-  constructor(private http: HttpClient) {}
-
-  generateUserStories(request: IUserStoriesRequest): Observable<IUserStory[]> {
-    const headers = new HttpHeaders({
-      skipLoader: 'true',
-    });
-    return this.http
-      .post<IUserStoryResponse>(this.GENERATE_USER_STORIES_URL, request, {
-        headers,
-      })
-      .pipe(
-        map((response: IUserStoryResponse) =>
-          this.parseUserStoryResponse(response),
-        ),
-      );
+  generateUserStories(request: IUserStoriesRequest): Promise<IUserStory[]> {
+    return this.electronService.createStories(request)
+      .then((response: IUserStoryResponse) => {
+        return this.parseUserStoryResponse(response);
+      });
   }
 
   addBusinessProcess(
     request: IAddBusinessProcessRequest,
-  ): Observable<IAddBusinessProcessResponse> {
-    return this.http.post<IAddBusinessProcessResponse>(
-      this.ADD_BUSINESS_PROCESS,
-      request,
-    );
+  ): Promise<IAddBusinessProcessResponse> {
+    return this.electronService.addBusinessProcess(request);
   }
 
   updateBusinessProcess(
     request: IUpdateProcessRequest,
-  ): Observable<IUpdateProcessResponse> {
-    const headers = new HttpHeaders({
-      skipLoader: 'true',
-    });
-    return this.http.put<IUpdateProcessResponse>(
-      this.UPDATE_BUSINESS_PROCESS,
-      request,
-      { headers },
-    );
+  ): Promise<IUpdateProcessResponse> {
+    return this.electronService.updateBusinessProcess(request);
   }
 
-  addFlowChart(request: IFlowChartRequest): Observable<string> {
-    return this.http.post<string>(this.ADD_FLOW_CHART, request);
+  addFlowChart(request: IFlowChartRequest): Promise<IFlowchartResponse> {
+    return this.electronService.createFlowchart(request);
   }
 
   updateRequirement(
     request: IUpdateRequirementRequest,
-  ): Observable<IEditTaskResponse> {
-    return this.http.post<any>(this.UPDATE_REQUIREMENT, request);
+  ): Promise<IEditTaskResponse> {
+    return this.electronService.updateRequirement(request);
   }
 
   addRequirement(
     request: IAddRequirementRequest,
-  ): Observable<IAddTaskResponse> {
-    return this.http.post<any>(this.ADD_REQUIREMENT, request);
+  ): Promise<IAddTaskResponse> {
+    return this.electronService.addRequirement(request);
   }
 
-  generateTask(request: ITaskRequest): Observable<ITasksResponse> {
-    const headers = new HttpHeaders({
-      skipLoader: 'true',
-    });
-    return this.http.post<ITasksResponse>(this.GENERATE_TASK_URL, request, {
-      headers,
-    });
+  generateTask(request: ITaskRequest): Promise<ITasksResponse> {
+    return this.electronService.createTask(request);
   }
 
   addUserStory(
     request: IUpdateUserStoryRequest,
-  ): Observable<IUserStoryResponse> {
-    return this.http.post<IUserStoryResponse>(this.ADD_USER_STORY, request);
+  ): Promise<IUserStoryResponse> {
+    return this.electronService.addUserStory(request);
   }
 
   updateUserStory(
     request: IUpdateUserStoryRequest,
-  ): Observable<IUserStoryResponse> {
-    return this.http.put<IUserStoryResponse>(this.UPDATE_USER_STORY, request);
+  ): Promise<IUserStoryResponse> {
+    return this.electronService.updateStory(request)
   }
 
-  addTask(request: IAddTaskRequest): Observable<ITasksResponse> {
-    return this.http.post<ITasksResponse>(this.ADD_TASK, request);
+  addTask(request: IAddTaskRequest): Promise<ITasksResponse> {
+    return this.electronService.addTask(request);
   }
 
-  updateTask(request: IAddTaskRequest): Observable<ITasksResponse> {
-    return this.http.put<ITasksResponse>(this.UPDATE_TASK, request);
+  updateTask(request: IAddTaskRequest): Promise<ITasksResponse> {
+    return this.electronService.updateTask(request);
   }
-
-  validateBedrockId(bedrockId: string): Observable<boolean> {
-    return this.http
-      .post<{ isValid: boolean }>(this.VALIDATE_BEDROCK_ID, { bedrockId })
-      .pipe(map((response) => response.isValid));
+  
+  validateBedrockId(config: BedrockValidationPayload): Promise<boolean> {
+    return this.electronService.validateBedrock(config);
   }
 
   parseTaskResponse(response: ITasksResponse | undefined): ITask[] {

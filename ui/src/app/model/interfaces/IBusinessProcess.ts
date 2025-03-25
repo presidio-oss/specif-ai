@@ -16,6 +16,10 @@ export interface IFlowChartRequest {
   selectedPRDs: string[];
 }
 
+export interface IFlowchartResponse {
+  flowChartData: string;
+}
+
 export interface IUpdateProcessRequest {
   updatedReqt: string;
   contentType: string;

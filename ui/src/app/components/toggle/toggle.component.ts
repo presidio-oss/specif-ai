@@ -52,6 +52,10 @@ export class ToggleComponent implements OnInit {
         new SetChatSettings({
           ...this.currentSettings,
           kb: this.isActive ? this.metadata.integration.bedrock.kbId : '',
+          accessKey: this.isActive ? this.metadata.integration.bedrock.accessKey : '',
+          secretKey: this.isActive ? this.metadata.integration.bedrock.secretKey : '',
+          region: this.isActive ? this.metadata.integration.bedrock.region : '',
+          sessionKey: this.isActive ? this.metadata.integration.bedrock.sessionKey: ''
         }),
       );
     }
