@@ -5,6 +5,7 @@ import { LLMUtils } from '../../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../../services/llm';
 import { store } from '../../../services/store';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
+import { repairJSON } from '../../../utils/custom-json-parser';
 
 export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<CreateTaskResponse> {
   try {
@@ -37,7 +38,8 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
 
     let result;
     try {
-      const parsed = JSON.parse(response);
+      let cleanedResponse = repairJSON(response.trim());
+      const parsed = JSON.parse(cleanedResponse);
       if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
         throw new Error('Invalid response structure');
       }

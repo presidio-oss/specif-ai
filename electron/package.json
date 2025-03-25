@@ -44,6 +44,7 @@
     "@azure/openai": "^2.0.0",
     "@google/generative-ai": "^0.24.0",
     "@langchain/aws": "^0.1.7",
+    "@langchain/core": "^0.3.43",
     "@sentry/electron": "^5.3.0",
     "axios": "^1.7.7",
     "dotenv": "^16.4.7",
@@ -57,7 +58,9 @@
     "zod": "^3.24.2"
   },
   "build": {
-    "files": "!build-assets${/*}",
+    "files": [
+      "build/**/*"
+    ],
     "appId": "",
     "extraResources": [
       ".env",
