@@ -398,8 +398,9 @@ export class ElectronService {
         args: [{
           functionName,
           params: { ...params },
-        }]}
-      );
+        }],
+        skipWarning: true,
+      });
     }
   }
 

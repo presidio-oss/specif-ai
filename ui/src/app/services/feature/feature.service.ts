@@ -34,19 +34,6 @@ import { BedrockValidationPayload } from 'src/app/model/interfaces/chat.interfac
   providedIn: 'root',
 })
 export class FeatureService {
-  GENERATE_TASK_URL: string = `solutions/task`;
-  GENERATE_USER_STORIES_URL: string = `solutions/stories`;
-  ADD_USER_STORY: string = `solutions/story/add`;
-  UPDATE_USER_STORY: string = `solutions/story/update`;
-  ADD_TASK: string = `solutions/task/add`;
-  UPDATE_TASK: string = `solutions/task/update`;
-  UPDATE_REQUIREMENT: string = `requirement:update`;
-  ADD_REQUIREMENT: string = `requirement:add`;
-  ADD_BUSINESS_PROCESS: string = `solutions/business_process/add`;
-  UPDATE_BUSINESS_PROCESS: string = `solutions/business_process/update`;
-  ADD_FLOW_CHART: string = `solutions/flowchart`;
-  VALIDATE_BEDROCK_ID: string = `solutions/integration/knowledgebase/validation`;
-
   constructor(
     private http: HttpClient,
     private electronService: ElectronService

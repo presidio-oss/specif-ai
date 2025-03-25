@@ -6,6 +6,7 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { refinePrompt } from '../../../prompts/feature/evaluation/refine';
 import { evaluatePrompt } from '../../../prompts/feature/evaluation/evaluate';
+import { repairJSON } from '../../../utils/custom-json-parser';
 
 export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
@@ -43,7 +44,8 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
 
     let parsedFeatures;
     try {
-      parsedFeatures = JSON.parse(response.trim());
+      let cleanedResponse = repairJSON(response.trim());
+      parsedFeatures = JSON.parse(cleanedResponse.trim());
     } catch (error) {
       console.error('Error parsing initial LLM response:', error);
       throw new Error('Invalid response format from LLM');

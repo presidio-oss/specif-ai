@@ -74,6 +74,7 @@
                   [type]="field.type"
                   [id]="field.name"
                   [formControlName]="field.name"
+                  [placeholder]="field.placeholder || ''"
                   class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
                   [required]="field.required || false"
                 />

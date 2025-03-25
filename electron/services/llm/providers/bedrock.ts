@@ -1,4 +1,7 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+} from "@aws-sdk/client-bedrock-runtime";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
@@ -14,18 +17,18 @@ interface BedrockConfig extends LLMConfig {
 export class BedrockHandler extends LLMHandler {
   private client: BedrockRuntimeClient;
   protected configData: BedrockConfig;
-  
+
   constructor(config: Partial<BedrockConfig>) {
     super();
     this.configData = this.getConfig(config);
-    
+
     const credentials: {
       accessKeyId: string;
       secretAccessKey: string;
       sessionToken?: string;
     } = {
       accessKeyId: this.configData.accessKeyId,
-      secretAccessKey: this.configData.secretAccessKey
+      secretAccessKey: this.configData.secretAccessKey,
     };
 
     if (this.configData.sessionToken) {
@@ -34,7 +37,7 @@ export class BedrockHandler extends LLMHandler {
 
     this.client = new BedrockRuntimeClient({
       region: this.configData.region,
-      credentials
+      credentials,
     });
   }
 
@@ -57,58 +60,66 @@ export class BedrockHandler extends LLMHandler {
       accessKeyId: config.accessKeyId,
       secretAccessKey: config.secretAccessKey,
       sessionToken: config.sessionToken,
-      model: config.model
+      model: config.model,
     };
   }
 
   @withRetry({ retryAllErrors: true })
-  async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    const messageList = [...messages];
-    if (systemPrompt) {
-      messageList.unshift({ role: "system", content: systemPrompt });
-    }
+  async invoke(
+    messages: Message[],
+    systemPrompt: string | null = null
+  ): Promise<string> {
+    const messageList = systemPrompt
+      ? [{ role: "system", content: systemPrompt }, ...messages]
+      : [...messages];
 
     // Format request body based on model provider
     let requestBody;
-    if (this.configData.model.includes('anthropic')) {
+    if (this.configData.model.includes("anthropic")) {
       requestBody = {
         anthropic_version: "bedrock-2023-05-31",
         max_tokens: 4096,
-        messages: messageList.map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'assistant',
-          content: [{ type: 'text', text: msg.content }]
+        messages: messageList.map((msg) => ({
+          role: msg.role === "user" ? "user" : "assistant",
+          content: [{ type: "text", text: msg.content }],
         })),
-        ...(systemPrompt && { system: systemPrompt })
+        ...(systemPrompt && { system: systemPrompt }),
       };
     } else {
       // Default to OpenAI-compatible format
       requestBody = {
-        messages: messageList.map(msg => ({
+        messages: messageList.map((msg) => ({
           role: msg.role,
-          content: msg.content
-        }))
+          content: msg.content,
+        })),
       };
     }
 
     const command = new InvokeModelCommand({
       modelId: this.configData.model,
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
     });
 
     const response = await this.client.send(command);
-    
+
     // Parse response based on model provider
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    
-    if (this.configData.model.includes('anthropic')) {
+
+    if (this.configData.model.includes("anthropic")) {
       if (!responseBody.content?.[0]?.text) {
-        throw new LLMError("No response content received from Bedrock Anthropic model", "bedrock");
+        throw new LLMError(
+          "No response content received from Bedrock Anthropic model",
+          "bedrock"
+        );
       }
       return responseBody.content[0].text;
     } else {
       // Default to OpenAI-compatible format
       if (!responseBody.choices?.[0]?.message?.content) {
-        throw new LLMError("No response content received from Bedrock", "bedrock");
+        throw new LLMError(
+          "No response content received from Bedrock",
+          "bedrock"
+        );
       }
       return responseBody.choices[0].message.content;
     }
@@ -117,7 +128,7 @@ export class BedrockHandler extends LLMHandler {
   getModel(): ModelInfo {
     return {
       id: this.configData.model,
-      provider: 'bedrock'
+      provider: "bedrock",
     };
   }
 
@@ -125,9 +136,9 @@ export class BedrockHandler extends LLMHandler {
     try {
       return Boolean(
         this.configData.region &&
-        this.configData.accessKeyId &&
-        this.configData.secretAccessKey &&
-        this.configData.model
+          this.configData.accessKeyId &&
+          this.configData.secretAccessKey &&
+          this.configData.model
       );
     } catch (error) {
       return false;

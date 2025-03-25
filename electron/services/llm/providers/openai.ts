@@ -21,9 +21,12 @@ export class OpenAIHandler extends LLMHandler {
     this.configData = this.getConfig(config);
 
     // Create appropriate client based on base URL
-    if (this.configData.baseUrl?.toLowerCase().includes('azure.com')) {
+    if (this.configData.baseUrl?.toLowerCase().includes("azure.com")) {
       if (!this.configData.azureApiKey) {
-        throw new LLMError("Azure OpenAI API key is required for Azure endpoints", "openai");
+        throw new LLMError(
+          "Azure OpenAI API key is required for Azure endpoints",
+          "openai"
+        );
       }
       // if (!this.configData.apiVersion) {
       //   throw new LLMError("API version is required for Azure endpoints", "openai");
@@ -33,7 +36,7 @@ export class OpenAIHandler extends LLMHandler {
         endpoint: this.configData.baseUrl,
         deployment: this.configData.model,
         apiVersion: "2024-09-01-preview",
-        maxRetries: this.configData.maxRetries || 3
+        maxRetries: this.configData.maxRetries || 3,
       });
     } else {
       if (!this.configData.apiKey) {
@@ -42,7 +45,7 @@ export class OpenAIHandler extends LLMHandler {
       this.client = new OpenAI({
         apiKey: this.configData.apiKey,
         baseURL: this.configData.baseUrl,
-        maxRetries: this.configData.maxRetries || 3
+        maxRetries: this.configData.maxRetries || 3,
       });
     }
   }
@@ -58,22 +61,23 @@ export class OpenAIHandler extends LLMHandler {
       azureApiKey: config.azureApiKey,
       apiVersion: "2024-09-01-preview",
       model: config.model.toLowerCase(),
-      maxRetries: config.maxRetries || 3
+      maxRetries: config.maxRetries || 3,
     };
   }
 
   @withRetry({ retryAllErrors: true })
-  async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    const messageList = [...messages];
-    if (systemPrompt) {
-      messageList.unshift({ role: "system", content: systemPrompt });
-    }
-
+  async invoke(
+    messages: Message[],
+    systemPrompt: string | null = null
+  ): Promise<string> {
+    const messageList = systemPrompt
+      ? [{ role: "system", content: systemPrompt }, ...messages]
+      : [...messages];
     // Convert messages to OpenAI's expected format
-    const openAIMessages = messageList.map(msg => {
+    const openAIMessages = messageList.map((msg) => {
       const baseMsg = {
         role: msg.role as any,
-        content: msg.content
+        content: msg.content,
       };
       return msg.name ? { ...baseMsg, name: msg.name } : baseMsg;
     });
@@ -81,11 +85,14 @@ export class OpenAIHandler extends LLMHandler {
     const response = await this.client.chat.completions.create({
       model: this.getModel().id,
       messages: openAIMessages,
-      stream: false
+      stream: false,
     });
 
     if (!response.choices?.[0]?.message?.content) {
-      throw new LLMError("No response content received from OpenAI API", "openai");
+      throw new LLMError(
+        "No response content received from OpenAI API",
+        "openai"
+      );
     }
 
     return response.choices[0].message.content;
@@ -94,7 +101,7 @@ export class OpenAIHandler extends LLMHandler {
   getModel(): ModelInfo {
     return {
       id: this.configData.model,
-      provider: 'openai'
+      provider: "openai",
     };
   }
 
@@ -103,8 +110,10 @@ export class OpenAIHandler extends LLMHandler {
       const modelInfo = this.getModel();
       if (!modelInfo.id) return false;
 
-      if (this.configData.baseUrl?.toLowerCase().includes('azure.com')) {
-        return Boolean(this.configData.azureApiKey && this.configData.apiVersion);
+      if (this.configData.baseUrl?.toLowerCase().includes("azure.com")) {
+        return Boolean(
+          this.configData.azureApiKey && this.configData.apiVersion
+        );
       }
       return Boolean(this.configData.apiKey);
     } catch (error) {

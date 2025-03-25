@@ -62,7 +62,6 @@ export function extractRequirementsFromResponse(
   }
 }
 
-
 export function repairJSON(input: string) {
   return jsonrepair(input);
 }

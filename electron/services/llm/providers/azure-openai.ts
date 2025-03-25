@@ -56,10 +56,9 @@ export class AzureOpenAIHandler extends LLMHandler {
     messages: Message[],
     systemPrompt: string | null = null
   ): Promise<string> {
-    const messageList = [...messages];
-    if (systemPrompt) {
-      messageList.unshift({ role: "system", content: systemPrompt });
-    }
+    const messageList = systemPrompt
+      ? [{ role: "system", content: systemPrompt }, ...messages]
+      : [...messages];
 
     const openAIMessages = messageList.map((msg) => ({
       role: msg.role,
