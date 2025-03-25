@@ -58,16 +58,18 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 <img src="assets/img/specif-ai-welcome-page.png" alt="Welcome Page" width="900" />
 
+1. **Download the Specifai desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
+2. **Start** the Desktop Application
+3. **Enter the Username and Working directory and get started!**
+
+### 🧩 For Developers
 1. **Clone the repository**
    ```bash
    git clone https://github.com/presidio-oss/specif-ai.git
    cd specif-ai
    ```
-
-2. **Download the Specifai desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
-3. **Run** the Desktop Application
-
-- [Electron Desktop Application Setup](./electron/README.md)
+2. **Set up the development environment**
+   - [Electron Desktop Application Setup](./electron/README.md)
    - [Angular UI Setup](./ui/README.md)
 
 ## ✨ Key Features
