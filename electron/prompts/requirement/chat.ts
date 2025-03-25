@@ -6,7 +6,7 @@ interface ChatUpdateRequirementParams {
   type: string;
   requirement: string;
   userMessage: string;
-  requirementAbbr: 'BRD' | 'PRD' | 'UIR' | 'NFR';
+  requirementAbbr: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP';
 }
 
 export function chatUpdateRequirementPrompt({

@@ -8,7 +8,7 @@ interface UpdateRequirementParams {
   updatedReqt: string;
   fileContent?: string;
   reqId: string;
-  addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR';
+  addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP';
 }
 
 export function updateRequirementPrompt({

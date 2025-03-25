@@ -6,7 +6,7 @@ interface AddRequirementParams {
   description: string;
   newReqt: string;
   fileContent?: string;
-  addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR';
+  addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP';
 }
 
 export function addRequirementPrompt({
