@@ -2,13 +2,13 @@
   <input
     type="file"
     (change)="onFileSelected($event)"
-    accept=".js,.ts,.tsx,.jsx.html,.css,.json,.xml,.py,.java,.c,.cpp,.cs,.php,.rb,.go,.swift"
+    [accept]="accept"
     multiple
     #fileInput
     class="hidden"
   />
   <app-button
-    buttonContent="Upload Code Files"
+    [buttonContent]="buttonContent"
     theme="secondary_outline"
     size="sm"
     rounded="md"

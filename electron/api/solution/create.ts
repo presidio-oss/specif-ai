@@ -9,6 +9,8 @@ import { createPRDPrompt } from '../../prompts/solution/create-prd';
 import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
+import { DocumentRetriever } from '../../services/document-retriever.ts';
+import { requirementAnalysisPrompt } from '../../prompts/context/requirement-analysis';
 
 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
@@ -20,6 +22,8 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
     console.log('[create-solution] Using LLM config:', llmConfig);
     const validatedData = createSolutionSchema.parse(data);
+    const refDocContent = validatedData.refDocContent;
+    const isReferenceDocProvided = refDocContent && refDocContent.trim().length > 0;
 
     const results: SolutionResponse = {
       createReqt: validatedData.createReqt ?? false,
@@ -45,6 +49,10 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
+    if (isReferenceDocProvided && refDocContent) {
+      await DocumentRetriever.initializeVectorStore(refDocContent);
+    }
+
     for (const { key, generatePrompt, preferencesKey } of requirementTypes) {
       const preferences = validatedData[preferencesKey];
       if (preferences.isEnabled) {
@@ -59,9 +67,28 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
         // Prepare messages for LLM
         const messages = await LLMUtils.prepareMessages(prompt);
+        let systemPrompt: string | null = null;
+
+        if (isReferenceDocProvided) {
+          try {
+            const relevantDocs = await DocumentRetriever.searchSimilarDocuments(
+              prompt,
+              3
+            );
+            const context = relevantDocs
+              .map((doc) => doc.pageContent)
+              .join("\n\n");
+            systemPrompt = requirementAnalysisPrompt(context, key);
+          } catch (error) {
+            console.error(
+              "[create-solution] Error processing document:",
+              error
+            );
+          }
+        }
         
         try {
-          const response = await handler.invoke(messages);
+          const response = await handler.invoke(messages, systemPrompt);
           
           const extractedContent = extractRequirementsFromResponse(response, key);
           

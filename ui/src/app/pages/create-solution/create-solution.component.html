@@ -107,6 +107,25 @@
               </div>
 
               <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5"
+                  >Upload Files</label
+                >
+                <div class="mt-2 sm:col-span-2 sm:mt-0">
+                  <app-multi-upload
+                    accept=".docx"
+                    buttonContent="Upload Reference Document(s)"
+                    (fileContent)="handleFileContent($event)"
+                  ></app-multi-upload>
+                  <p class="text-xs leading-6 text-secondary-600">
+                    Upload any relevant files for your solution
+                  </p>
+                </div>
+              </div>
+
+              <div
                 class="sm:grid sm:grid-cols-3 sm:items-center sm:gap-4 sm:py-6"
               >
                 <label

@@ -29,6 +29,7 @@ import { InputFieldComponent } from '../../components/core/input-field/input-fie
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ToggleComponent } from '../../components/toggle/toggle.component';
 import { SettingsComponent } from 'src/app/components/settings/settings.component';
+import { MultiUploadComponent } from 'src/app/components/multi-upload/multi-upload.component';
 
 @Component({
   selector: 'app-create-solution',
@@ -45,10 +46,12 @@ import { SettingsComponent } from 'src/app/components/settings/settings.componen
     TextareaFieldComponent,
     ToggleComponent,
     AppSliderComponent,
+    MultiUploadComponent,
   ],
 })
 export class CreateSolutionComponent implements OnInit {
   solutionForm!: FormGroup;
+  uploadedFileContent: string = '';
   loading: boolean = false;
   addOrUpdate: boolean = false;
 
@@ -137,7 +140,11 @@ export class CreateSolutionComponent implements OnInit {
       isPathValid
     ) {
       this.addOrUpdate = true;
-      const data = this.solutionForm.getRawValue();
+      let data = this.solutionForm.getRawValue();
+      data = {
+        ...data,
+        refDocContent: this.uploadedFileContent,
+      };
       this.store.dispatch(new CreateProject(data.name, data));
     }
   }
@@ -164,6 +171,10 @@ export class CreateSolutionComponent implements OnInit {
 
   get isTechnicalDetailsRequiredError(): boolean {
     return 'required' in this.solutionForm?.get('technicalDetails')?.errors!;
+  }
+
+  handleFileContent(content: string) {
+    this.uploadedFileContent = content;
   }
 
   canDeactivate(): boolean {

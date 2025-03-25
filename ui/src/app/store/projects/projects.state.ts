@@ -167,6 +167,7 @@ export class ProjectsState {
         name: projectName,
         description: metadata.description,
         cleanSolution: metadata.cleanSolution,
+        refDocContent: metadata.refDocContent,
         brdPreferences: {
           max_count: metadata.BRD.maxCount,
           isEnabled: metadata.BRD.enabled,

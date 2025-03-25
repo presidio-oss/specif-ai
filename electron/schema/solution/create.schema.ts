@@ -14,6 +14,7 @@ export const createSolutionSchema = z.object({
   deployment: z.boolean().optional(),
   createReqt: z.boolean().optional(),
   cleanSolution: z.boolean(),
+  refDocContent: z.string().optional(),
   brdPreferences: generationRangeSchema,
   prdPreferences: generationRangeSchema,
   uirPreferences: generationRangeSchema,
