@@ -155,9 +155,11 @@ The enterprise knowledge base is integrated with AI-powered chat to enhance sugg
 
 Specifai follows a modern, scalable architecture designed for optimal performance and maintainability.
 
-<div>
+<div align="center">
+
 ![Specifai Architecture](assets/gifs/specif-ai-architecture.gif)  
 *Specifai Architecture*
+
 </div>
 
 ## 📝 Version Controlled Requirements Management Made Easy
