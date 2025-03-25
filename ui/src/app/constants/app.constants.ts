@@ -25,6 +25,8 @@ export const ERROR_MESSAGES = {
   GENERATE_SUGGESTIONS_FAILED: 'Failed to generate suggestions',
   DELETE_ASSOCIATED_ERROR: (reqId: string, bpIds: string[]) =>
     `Unable to remove ${reqId} because it's linked to the following business processes: ${bpIds.join(', ')}.`,
+  DELETE_ASSOCIATED_PRDs_ERROR: (reqId: string, prdIds: string[]) =>
+    `Unable to remove ${reqId} because it's linked to the following product requirement/s: ${prdIds.join(', ')}.`,
 };
 
 export const SOLUTION_CREATION_TOGGLE_MESSAGES = {

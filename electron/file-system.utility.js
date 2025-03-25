@@ -231,6 +231,10 @@ function readFileChunk(param) {
           if (parsed.epicTicketId && !dataExtracted.epicTicketId) {
             dataExtracted.epicTicketId = parsed.epicTicketId;
           }
+          // populated linked brd ids in prd base files
+          if (parsed.linkedBRDIds && !dataExtracted.linkedBRDIds) {
+            dataExtracted.linkedBRDIds = parsed.linkedBRDIds;
+          }
           if (dataExtracted.requirement && dataExtracted.title) {
             fs.close(fd, () => {});
             resolve(dataExtracted);

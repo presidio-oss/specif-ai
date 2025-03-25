@@ -8,11 +8,11 @@
 >
   <!-- Fixed Header -->
   <div
-    *ngIf="isKbAvailable || requirementAbbrivation != 'BP'"
+    *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)"
     class="flex-none px-6 py-3 border-b border-secondary-200"
   >
     <p
-      *ngIf="!isKbAvailable && requirementAbbrivation != 'BP'"
+      *ngIf="!isKbAvailable && !['BP', 'PRD'].includes(requirementAbbrivation)"
       class="text-md font-medium"
     >
       AI Chat
