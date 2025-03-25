@@ -5,6 +5,7 @@ import { store } from '../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { chatUpdateRequirementPrompt } from '../../prompts/requirement/chat';
+import { repairJSON } from '../../utils/custom-json-parser';
 
 export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<ChatUpdateRequirementResponse> {
   try {
@@ -64,7 +65,8 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
 
     let result;
     try {
-      const parsed = JSON.parse(response);
+      const cleanedResponse = repairJSON(response);
+      const parsed = JSON.parse(cleanedResponse);
       if (!parsed.response) {
         throw new Error('Invalid response structure');
       }
