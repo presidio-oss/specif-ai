@@ -56,7 +56,7 @@ export class AnthropicHandler extends LLMHandler {
     }
 
     return {
-      baseUrl: config.baseUrl || process.env.ANTHROPIC_BASE_URL,
+      baseUrl: config.baseUrl || 'https://api.anthropic.com' || process.env.ANTHROPIC_BASE_URL,
       apiKey: config.apiKey || process.env.ANTHROPIC_API_KEY || '',
       model: model,
       maxRetries: config.maxRetries || 3

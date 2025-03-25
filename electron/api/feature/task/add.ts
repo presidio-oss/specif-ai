@@ -46,7 +46,7 @@ export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<Add
         throw new Error('Invalid response structure');
       }
 
-      const task = parsed.tasks;
+      const task = parsed.tasks[0];
       if (!task.id || Object.keys(task).length !== 2) {
         throw new Error(`Invalid task structure: ${JSON.stringify(task)}`);
       }
