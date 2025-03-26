@@ -72,6 +72,13 @@ const solutionListeners = {
     ipcRenderer.invoke("solution:createSolution", data),
 };
 
+const appAutoUpdaterListeners = {
+  checkForUpdates: () =>
+    ipcRenderer.invoke("app-updater:check-for-updates"),
+  downloadUpdates: (data: any) =>
+    ipcRenderer.invoke("app-updater:download-updates", data)
+}
+
 const electronAPI = {
   ...electronListeners,
   ...coreListeners,
@@ -79,6 +86,7 @@ const electronAPI = {
   ...solutionListeners,
   ...visualizationListeners,
   ...featureListeners,
+  ...appAutoUpdaterListeners
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

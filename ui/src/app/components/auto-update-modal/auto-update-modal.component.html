@@ -1,0 +1,38 @@
+<div class="flex flex-col gap-5 bg-white rounded-lg p-6 w-full">
+    <h4 class="flex items-center font-medium text-xl">
+      <ng-icon name="heroArrowDownTray" class="mr-2 text-primary-800"></ng-icon>
+      Update Available
+    </h4>
+
+    <div class="flex flex-1 items-center justify-between p-4 truncate rounded-lg border border-secondary-200 bg-white transition-colors">
+      <div class="version-details">
+        <div class="font-medium text-base">Version {{ data.version }}</div>
+        <div class="text-secondary-500">
+          Released: {{ data.releaseDate | timezone }}
+        </div>
+      </div>
+      <app-button
+        [buttonContent]="'Current: ' + data.currentVersion"
+        theme="primary"
+        size="sm"
+        rounded="md"
+      />
+    </div>
+
+    <div class="flex flex-1 items-center justify-between p-4 truncate rounded-lg border border-secondary-200 bg-white transition-colors">
+      <app-rich-text-editor mode="view" [content]="data.releaseNotes" editorClass="prose-secondary-view prose-xs">
+      </app-rich-text-editor>
+    </div>
+    
+    <div class="flex justify-between space-x-4">
+      <app-button
+        (click)="onCancel()"
+        buttonContent="Not Now"
+        theme="secondary_outline"
+      />
+      <app-button
+        (click)="onUpdate()"
+        buttonContent="Update Now"
+      />
+    </div>
+</div>
