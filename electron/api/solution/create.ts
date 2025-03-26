@@ -11,6 +11,7 @@ import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 import { DocumentRetriever } from '../../services/document-retriever.ts';
 import { requirementAnalysisPrompt } from '../../prompts/context/requirement-analysis';
+import { getVectorSearchQuery } from '../../utils/get-vector-search-query';
 
 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
@@ -72,7 +73,11 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         if (isReferenceDocProvided) {
           try {
             const relevantDocs = await DocumentRetriever.searchSimilarDocuments(
-              prompt,
+              getVectorSearchQuery(
+                key,
+                validatedData.name,
+                validatedData.description
+              ),
               3
             );
             const context = relevantDocs
