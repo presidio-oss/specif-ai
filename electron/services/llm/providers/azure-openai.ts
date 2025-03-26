@@ -2,6 +2,7 @@ import { AzureOpenAI } from "openai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
 
 interface AzureOpenAIConfig extends LLMConfig {
   apiKey: string;
@@ -19,6 +20,11 @@ interface AzureModelInfo extends ModelInfo {
 export class AzureOpenAIHandler extends LLMHandler {
   private client: AzureOpenAI;
   protected configData: AzureOpenAIConfig;
+  private modelParameters = {
+    temperature: 0.7,
+    max_tokens: 1000,
+  };
+  private trace = ObservabilityManager.getInstance().getTrace();
 
   constructor(config: Partial<AzureOpenAIConfig>) {
     super();
@@ -66,12 +72,24 @@ export class AzureOpenAIHandler extends LLMHandler {
       ...(msg.name && { name: msg.name }),
     })) as any[];
 
+    const generation = this.trace.generation({
+      name: "chat-completion",
+      model: this.configData.deployment,
+      modelParameters: this.modelParameters,
+      input: openAIMessages,
+    });
+
     const response = await this.client.chat.completions.create({
       model: this.configData.deployment,
       messages: openAIMessages,
-      max_tokens: 1000,
-      temperature: 0.7,
+      ...this.modelParameters,
     });
+
+    generation.end({
+      output: response,
+    });
+
+    console.log("Azure openai response", response);
 
     if (!response.choices?.[0]?.message?.content) {
       throw new LLMError(
@@ -79,7 +97,6 @@ export class AzureOpenAIHandler extends LLMHandler {
         "azure-openai"
       );
     }
-
     return response.choices[0].message.content;
   }
 
