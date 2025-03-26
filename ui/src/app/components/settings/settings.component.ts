@@ -69,6 +69,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   configForm!: FormGroup;
   selectedProvider: FormControl = new FormControl();
   analyticsEnabled: FormControl = new FormControl();
+  autoUpdateEnabled: FormControl = new FormControl();
   errorMessage: string = '';
   hasChanges: boolean = false;
   workingDir: string | null;
@@ -76,6 +77,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
   private initialProvider: string = '';
   private initialAnalyticsState: boolean = false;
+  private initialAutoUpdateState: boolean = true;
   protected themeConfiguration = environment.ThemeConfiguration;
 
   electronService = inject(ElectronService);
@@ -157,6 +159,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.electronService.getStoreValue('APP_CONFIG').then((value) => {
+      const { isAutoUpdate = true } = value || {};
+      this.autoUpdateEnabled.setValue(isAutoUpdate);
+      this.initialAutoUpdateState = isAutoUpdate;
+    });
+
     this.core.getAppConfig()
       .then((config: any) => {
         if (!this.analyticsTracker.isConfigValid(config)) {
@@ -180,6 +188,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     this.onProviderChange();
     this.onAnalyticsToggleChange();
+    this.onAutoUpdateToggleChange();
 
     const providerControl = this.configForm.get('provider');
     if (providerControl) {
@@ -232,6 +241,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (analyticsEnabled !== this.initialAnalyticsState) {
       this.updateAnalyticsState(analyticsEnabled);
       this.initialAnalyticsState = analyticsEnabled;
+    }
+
+    if (this.autoUpdateEnabled.value !== this.initialAutoUpdateState) {
+      this.electronService.getStoreValue('APP_CONFIG').then((value) => {
+        value = value || {};
+        this.initialAutoUpdateState = this.autoUpdateEnabled.value;
+        this.electronService.setStoreValue('APP_CONFIG', { ...value, isAutoUpdate: this.autoUpdateEnabled.value });
+      })
     }
 
     const formValue = this.configForm.value;
@@ -347,6 +364,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
     );
   }
 
+  onAutoUpdateToggleChange() {
+    this.subscriptions.add(
+      this.autoUpdateEnabled.valueChanges
+        .pipe(distinctUntilChanged())
+        .subscribe((enabled) => {
+          this.checkForChanges();
+          this.cdr.markForCheck();
+        }),
+    );
+  }
+
+  checkForUpdates() {
+    this.electronService.checkForUpdates(true);
+  }
+
   checkForChanges() {
     const formValue = this.configForm.value;
     const currentConfig = this.currentLLMConfig.providerConfigs[this.currentLLMConfig.activeProvider]?.config;
@@ -374,7 +406,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.hasChanges =
       hasProviderChanged ||
       hasConfigChanged ||
-      this.analyticsEnabled.value !== this.initialAnalyticsState;
+      this.analyticsEnabled.value !== this.initialAnalyticsState || 
+      this.autoUpdateEnabled.value !== this.initialAutoUpdateState;
   }
 
   updateAnalyticsState(enabled: boolean): void {
