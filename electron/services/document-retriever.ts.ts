@@ -12,6 +12,7 @@ export class DocumentRetriever {
   private static vectorDatabase: FaissStore | null = null;
 
   static async initializeVectorStore(text: string): Promise<FaissStore> {
+    this.vectorDatabase = null;
     const document = new Document({ pageContent: text });
     const textSplitter = new RecursiveCharacterTextSplitter({
       chunkSize: 1000,
