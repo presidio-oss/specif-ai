@@ -1,9 +1,10 @@
+import { BP_CONTEXT } from "../prompts/context/bp";
 import { BRD_CONTEXT } from "../prompts/context/brd";
 import { NFR_CONTEXT } from "../prompts/context/nfr";
 import { PRD_CONTEXT } from "../prompts/context/prd";
 import { UIR_CONTEXT } from "../prompts/context/uir";
 
-export function getContextAndType(type: 'BRD' | 'PRD' | 'UIR' | 'NFR'): { context: string; requirementType: string; format: string } {
+export function getContextAndType(type: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP'): { context: string; requirementType: string; format: string } {
   switch (type) {
     case 'BRD':
       return {
@@ -27,6 +28,12 @@ export function getContextAndType(type: 'BRD' | 'PRD' | 'UIR' | 'NFR'): { contex
       return {
         context: UIR_CONTEXT,
         requirementType: 'User Interface Requirements',
+        format: '{"title": <title>, "requirement": <requirement>}'
+      };
+    case 'BP':
+      return {
+        context: BP_CONTEXT,
+        requirementType: 'Business Process Flow',
         format: '{"title": <title>, "requirement": <requirement>}'
       };
   }
