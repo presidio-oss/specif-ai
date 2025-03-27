@@ -56,74 +56,21 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 ## 📥 Getting Started
 
-### Setup Instructions
+<img src="assets/img/specif-ai-welcome-page.png" alt="Welcome Page" width="900" />
 
+1. **Download the Specifai desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
+2. **Start** the Desktop Application
+3. **Enter the Username and Working directory and get started!**
+
+### 🧩 For Developers
 1. **Clone the repository**
    ```bash
    git clone https://github.com/presidio-oss/specif-ai.git
    cd specif-ai
    ```
-
-2. **Set up the Backend**
-
-   Prerequisites: Python >= 3.11
-   
-   ```bash 
-   # Navigate to backend directory
-   cd backend
-
-   # In env.sh file, Add your OpenAI API key to the OPENAI_API_KEY variable. 
-   # Configure additional settings as needed in env.sh
-   # Then, Activate the environment variables by running:
-   source env.sh
-
-   # Build the image
-   docker build . --tag hai-build-requirement-backend
-
-   # Run the container
-   docker run -p 5001:5001 \
-   -e APP_PASSCODE_KEY=$APP_PASSCODE_KEY \
-   -e DEFAULT_API_PROVIDER=$DEFAULT_API_PROVIDER \
-   -e DEFAULT_MODEL=$DEFAULT_MODEL \
-   -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY \
-   -e OPENAI_API_VERSION=$OPENAI_API_VERSION \
-   -e OPENAI_API_KEY=$OPENAI_API_KEY \
-   -e OPENAI_BASE_URL=$OPENAI_BASE_URL \
-   -e ANTHROPIC_BASE_URL=$ANTHROPIC_BASE_URL \
-   -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
-   -e ANTHROPIC_BEDROCK_BASE_URL=$ANTHROPIC_BEDROCK_BASE_URL \
-   -e AWS_BEDROCK_ACCESS_KEY=$AWS_BEDROCK_ACCESS_KEY \
-   -e AWS_BEDROCK_SECRET_KEY=$AWS_BEDROCK_SECRET_KEY \
-   -e AWS_BEDROCK_SESSION_TOKEN=$AWS_BEDROCK_SESSION_TOKEN \
-   -e AWS_BEDROCK_REGION=$AWS_BEDROCK_REGION \
-   -e HOST=$HOST \
-   -e PORT=$PORT \
-   -e DEBUG=$DEBUG \
-   -e ENABLE_SENTRY=$ENABLE_SENTRY \
-   -e SENTRY_DSN=$SENTRY_DSN \
-   -e SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT \
-   -e SENTRY_RELEASE=$SENTRY_RELEASE \
-   -e AWS_REGION=$AWS_REGION \
-   -it hai-build-requirement-backend
-   ```
-
-3. **Download the Specifai desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
-4. **Run** the Desktop Application
-
-For detailed setup instructions, refer to:
-- [Backend Server Configuration Setup](./backend/README.md)
-- [Electron Desktop Application Setup](./electron/README.md)
+2. **Set up the development environment**
+   - [Electron Desktop Application Setup](./electron/README.md)
    - [Angular UI Setup](./ui/README.md)
-
-### 💻 App Setup
-
-<img src="assets/img/specif-ai-welcome-page.png" alt="Welcome Page" width="900" />
-
-1. **APP URL:** The app's backend base URL (For local development: `http://127.0.0.1:5001/`).
-
-2. **APP PASSCODE:** Use the same passcode provided during the [Backend](./backend/README.md) setup (For local development: `7654321`).
-
-For more details, refer to the [Backend Server Setup Configuration Settings](./backend/README.md).
 
 ## ✨ Key Features
 
@@ -149,7 +96,7 @@ For more details, refer to the [Backend Server Setup Configuration Settings](./b
 - **🔄 Real-time Collaboration**: Collaborate and refine requirements with team members.
 - **📱 Desktop Integration**: Seamlessly integrate with your existing workflow tools.
 
-- **🔄 Multi-Modal Support**: Choose the model that best suits your needs. Supported models include:
+- **🔄 Multi-Model Support**: Choose the model that best suits your needs. Supported models include:
    - Azure OpenAI
       - gpt-4o
       - gpt-4o-mini
@@ -164,15 +111,26 @@ For more details, refer to the [Backend Server Setup Configuration Settings](./b
       - anthropic.claude-3-opus-20240229-v1:0
       - anthropic.claude-3-sonnet-20240229-v1:0
       - anthropic.claude-3-haiku-20240307-v1:0
+   - Gemini
+      - gemini-2.0-flash-001
+      - gemini-2.0-flash-lite-preview-02-05
+      - gemini-2.0-pro-exp-02-05
+      - gemini-2.0-flash-thinking-exp-01-21
+      - gemini-2.0-flash-thinking-exp-1219
+      - gemini-2.0-flash-exp
+      - gemini-1.5-flash-002
+      - gemini-1.5-flash-exp-0827
+      - gemini-1.5-flash-8b-exp-0827
+      - gemini-1.5-pro-002
+      - gemini-1.5-pro-exp-0827
+      - gemini-exp-1206
 
 <div align="center">
 
 ![Model Switch](assets/gifs/specif-ai-settings.gif)  
-*Switch between models seamlessly*
+*Easily configurable multi provider support*
 
 </div>
-
-
 
 
 ### 🔌 Integrations
@@ -187,8 +145,6 @@ The stories and tasks generated as part of the solutions can be used to create a
 For Jira setup instructions, please refer to our [Jira Setup Guide](/ui/JIRA-README.md).
 
 #### AWS Bedrock Knowledge Base
-> **Note**: The AWS Bedrock Knowledge Base features are configurable when the backend server is deployed in AWS. Local deployments will not have access to these enhanced capabilities.
-
 The enterprise knowledge base is integrated with AI-powered chat to enhance suggestions and enable iterative conversations for Business Requirement Documents (BRDs), Product Requirement Documents (PRDs), Non-functional Requirements, User Stories, and Tasks. Features include: 
 
 - Enhanced chat suggestions through enterprise knowledge.
@@ -200,7 +156,10 @@ The enterprise knowledge base is integrated with AI-powered chat to enhance sugg
 Specifai follows a modern, scalable architecture designed for optimal performance and maintainability.
 
 <div align="center">
-    <img src="assets/img/specif-ai-architecture.png" alt="Application Architecture Diagram"/>
+
+![Specifai Architecture](assets/gifs/specif-ai-architecture.gif)  
+*Specifai Architecture*
+
 </div>
 
 ## 📝 Version Controlled Requirements Management Made Easy
@@ -228,6 +187,10 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 ## 🙏 Acknowledgments
 
 Thanks to all contributors and users for their support and feedback.
+
+<a href="https://github.com/presidio-oss/specif-ai/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=presidio-oss/specif-ai" />
+</a>
 
 ## 📧 Contact
 

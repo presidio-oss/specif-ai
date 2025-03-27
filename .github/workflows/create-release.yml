@@ -45,29 +45,34 @@ jobs:
           # Rename Windows artifact
           WIN_ZIP=$(find release-assets/windows -name "*.zip" -type f | head -1)
           if [[ -n "$WIN_ZIP" ]]; then
-            cp "$WIN_ZIP" "renamed-assets/Specif.AI-${VERSION}-windows.zip"
-            echo "✅ Created Windows artifact: Specif.AI-${VERSION}-windows.zip"
+            cp "$WIN_ZIP" "renamed-assets/Specif-AI-${VERSION}-windows.zip"
+            echo "✅ Created Windows artifact: Specif-AI-${VERSION}-windows.zip"
           else
             echo "❌ No Windows zip file found"
           fi
 
-          # Rename macOS Intel artifact
-          MAC_INTEL_DMG=$(find release-assets/macos-intel -name "*.dmg" -type f | head -1)
-          if [[ -n "$MAC_INTEL_DMG" ]]; then
-            cp "$MAC_INTEL_DMG" "renamed-assets/Specif.AI-${VERSION}-mac-intel.dmg"
-            echo "✅ Created macOS Intel artifact: Specif.AI-${VERSION}-mac-intel.dmg"
-          else
-            echo "❌ No macOS Intel DMG file found"
+          # Move windows yml files
+          cp release-assets/windows/latest.yml renamed-assets/latest.yml
+
+          # Rename macOS artifact
+          shopt -s nullglob
+          count=0
+
+          for dir in release-assets/macos-intel release-assets/macos-arm64; do
+              for file in "$dir"/Specif\ AI-*; do
+                  new_name="renamed-assets/$(basename "$file" | sed 's/Specif AI/Specif-AI/g')"
+                  mv "$file" "$new_name"
+                  echo "Moved and Renamed: $file → $new_name"
+                  ((count++))
+              done
+          done
+
+          if [[ $count -eq 0 ]]; then
+              echo "❌ No macOS build files found"
           fi
 
-          # Rename macOS ARM artifact
-          MAC_ARM_DMG=$(find release-assets/macos-arm64 -name "*.dmg" -type f | head -1)
-          if [[ -n "$MAC_ARM_DMG" ]]; then
-            cp "$MAC_ARM_DMG" "renamed-assets/Specif.AI-${VERSION}-mac-arm64.dmg"
-            echo "✅ Created macOS ARM64 artifact: Specif.AI-${VERSION}-mac-arm64.dmg"
-          else
-            echo "❌ No macOS ARM64 DMG file found"
-          fi
+          # Move macos yml files
+          cp release-assets/macos-arm64/latest-mac.yml renamed-assets/latest-mac.yml
 
           echo "📦 Final release assets:"
           ls -la renamed-assets/
@@ -86,8 +91,6 @@ jobs:
           name: Release v${{ inputs.version }}
           draft: true
           files: |
-            renamed-assets/Specif.AI-${{ inputs.version }}-windows.zip
-            renamed-assets/Specif.AI-${{ inputs.version }}-mac-intel.dmg
-            renamed-assets/Specif.AI-${{ inputs.version }}-mac-arm64.dmg
+            renamed-assets/*
           body_path: CHANGELOG-MOD.md
           fail_on_unmatched_files: false

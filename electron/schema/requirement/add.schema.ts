@@ -6,7 +6,7 @@ export const addRequirementSchema = z.object({
     contentType: z.string(),
     id: z.string(),
     title: z.string(),
-    addReqtType: z.enum(['BRD', 'PRD', 'UIR', 'NFR']),
+    addReqtType: z.enum(['BRD', 'PRD', 'UIR', 'NFR', 'BP']),
     name: z.string(),
     description: z.string(),
     useGenAI: z.boolean(),
