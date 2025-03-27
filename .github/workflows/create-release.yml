@@ -56,20 +56,14 @@ jobs:
 
           # Rename macOS artifact
           shopt -s nullglob
-          count=0
 
           for dir in release-assets/macos-intel release-assets/macos-arm64; do
               for file in "$dir"/Specif\ AI-*; do
                   new_name="renamed-assets/$(basename "$file" | sed 's/Specif AI/Specif-AI/g')"
                   mv "$file" "$new_name"
                   echo "Moved and Renamed: $file → $new_name"
-                  ((count++))
               done
           done
-
-          if [[ $count -eq 0 ]]; then
-              echo "❌ No macOS build files found"
-          fi
 
           # Move macos yml files
           cp release-assets/macos-arm64/latest-mac.yml renamed-assets/latest-mac.yml
