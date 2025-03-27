@@ -7,11 +7,19 @@ export const updateRequirementSchema = z.object({
   reqId: z.string(),
   title: z.string().optional(),
   updatedReqt: z.string(),
-  addReqtType: z.enum(['BRD', 'PRD', 'UIR', 'NFR']),
+  addReqtType: z.enum(["BRD", "PRD", "UIR", "NFR"]),
   fileContent: z.string().optional(),
   contentType: z.string(),
   id: z.string(),
-  useGenAI: z.boolean()
+  useGenAI: z.boolean(),
+  brds: z
+    .array(
+      z.object({
+        title: z.string(),
+        requirement: z.string(),
+      })
+    )
+    .default([]),
 });
 
 export type UpdateRequirementRequest = z.infer<typeof updateRequirementSchema>;

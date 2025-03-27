@@ -25,7 +25,8 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
       updatedReqt,
       addReqtType,
       fileContent,
-      useGenAI
+      useGenAI,
+      brds
     } = validatedData;
 
     // If useGenAI is false and no file content provided, return direct update
@@ -47,7 +48,8 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
       updatedReqt,
       fileContent,
       reqId,
-      addReqtType
+      addReqtType,
+      brds
     });
 
     // Prepare messages for LLM

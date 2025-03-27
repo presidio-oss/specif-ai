@@ -235,18 +235,22 @@ function createDirectory(path: string): void {
   }
 }
 
-function readFileChunk(
-  param: FileChunkParams
-): Promise<{
+type FileChunk = {
   requirement: string | null;
   title: string | null;
   message?: string;
-}> {
+  linkedBRDIds?: Array<string>;
+  epicTicketId?: string | null;
+};
+
+function readFileChunk(
+  param: FileChunkParams
+): Promise<FileChunk> {
   const { path, filterString } = param;
   const CHUNK_SIZE = 400;
   const buffer = Buffer.alloc(CHUNK_SIZE);
   let accumulatedData = "";
-  let dataExtracted = { requirement: null, title: null, epicTicketId: null };
+  let dataExtracted:FileChunk = { requirement: null, title: null, epicTicketId: null };
   const fileName = path.split("/").pop() || "";
 
   // Build regex based on the filter string

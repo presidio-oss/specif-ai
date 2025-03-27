@@ -9,7 +9,15 @@ export const addRequirementSchema = z.object({
     addReqtType: z.enum(['BRD', 'PRD', 'UIR', 'NFR']),
     name: z.string(),
     description: z.string(),
-    useGenAI: z.boolean()
+    useGenAI: z.boolean(),
+    brds: z
+    .array(
+      z.object({
+        title: z.string(),
+        requirement: z.string(),
+      })
+    )
+    .default([]),
 });
 
 export type AddRequirementRequest = z.infer<typeof addRequirementSchema>;

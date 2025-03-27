@@ -69,7 +69,7 @@ export class AzureOpenAIHandler extends LLMHandler {
     const response = await this.client.chat.completions.create({
       model: this.configData.deployment,
       messages: openAIMessages,
-      max_tokens: 1000,
+      max_tokens: 4096,
       temperature: 0.7,
     });
 
