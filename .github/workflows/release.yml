@@ -64,24 +64,13 @@ jobs:
     secrets:
       AWS_OIDC_ROLE_ARN: ${{ secrets.AWS_OIDC_ROLE_ARN }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      DEV_IMAGE_NAME: ${{ secrets.DEV_IMAGE_NAME }}
-      PROD_IMAGE_NAME: ${{ secrets.PROD_IMAGE_NAME }}
       ELECTRON_S3_BUCKET: ${{ secrets.ELECTRON_S3_BUCKET }}
       APPLE_CSC_SECRET_NAME: ${{ secrets.APPLE_CSC_SECRET_NAME }}
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
 
-  deploy:
-    needs: [determine_workflow, build]
-    uses: ./.github/workflows/deploy.yml
-    with:
-      version: ${{ needs.determine_workflow.outputs.version }}
-      workflow_type: ${{ needs.determine_workflow.outputs.workflow_type }}
-      environment: ${{ needs.determine_workflow.outputs.environment }}
-    secrets: inherit
-
   create_release:
-    needs: [determine_workflow, deploy]
+  needs: [determine_workflow, build]
     if: ${{ needs.determine_workflow.outputs.workflow_type == 'release' }}
     uses: ./.github/workflows/create-release.yml
     with:
@@ -90,7 +79,7 @@ jobs:
   notify:
     needs:
       - determine_workflow
-      - deploy
+      - build
     uses: ./.github/workflows/notify.yml
     with:
       version: ${{ needs.determine_workflow.outputs.version }}
