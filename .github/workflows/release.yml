@@ -68,6 +68,8 @@ jobs:
       APPLE_CSC_SECRET_NAME: ${{ secrets.APPLE_CSC_SECRET_NAME }}
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+      POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
 
   create_release:
     needs: [determine_workflow, build]

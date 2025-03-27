@@ -23,6 +23,10 @@ on:
         required: true
       APPLE_APP_SPECIFIC_PASSWORD:
         required: true
+      POSTHOG_HOST:
+        required: true
+      POSTHOG_KEY:
+        required: true
 
 jobs:
   build_frontend:
