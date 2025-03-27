@@ -1,6 +1,18 @@
 # Changelog
 
-## 1.9.10
+## [2.0.0]
+
+### Added
+
+- Added instruction in requirement update prompt to output only single requirement
+- Added auto updater for the electron app
+- Moved backend to the electron IPC layer
+
+### Fix
+- Fixed unable to update/ add task with AI
+- Fixed user information getting cleared in login screen
+
+## [1.9.10]
 
 ### Enhancements
 
