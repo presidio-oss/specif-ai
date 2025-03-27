@@ -112,18 +112,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (!providerConfig) return;
 
     this.currentProviderFields = providerConfig.fields;
-    if (!this.configForm) return;
-    const configGroup = this.configForm.get('config') as FormGroup;
-    if (!configGroup) return;
-
-    // Remove all existing controls
-    Object.keys(configGroup.controls).forEach(key => {
-      configGroup.removeControl(key);
-    });
-
-    // Add new controls based on provider fields
+    if (!this.configForm) return;    
+    const newConfigGroup = this.fb.group({});
     providerConfig.fields.forEach(field => {
-      configGroup.addControl(
+      newConfigGroup.addControl(
         field.name,
         this.fb.control(
           field.defaultValue !== undefined ? field.defaultValue : '',
@@ -131,10 +123,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
         )
       );
     });
-
+    this.configForm.setControl('config', newConfigGroup);
     this.applyStoredConfigValues(provider);
+    this.cdr.detectChanges();
   }
-
 
   private applyStoredConfigValues(provider: string) {
     if (!this.currentLLMConfig || !this.currentLLMConfig.providerConfigs) return;
@@ -147,11 +139,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     
     const storedConfig: Record<string, any> = providerConfig.config;
     
-    Object.keys(storedConfig).forEach(key => {
-      if (configGroup.contains(key)) {
-        configGroup.get(key)?.setValue(storedConfig[key]);
-      }
-    });
+    configGroup.patchValue(storedConfig, { emitEvent: true });
+    this.configForm.markAsPristine();
     
     this.cdr.markForCheck();
   }
