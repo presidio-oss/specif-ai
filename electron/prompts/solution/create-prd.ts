@@ -50,7 +50,6 @@ Special Instructions:
      a single BRD requirement can be covered by one or more PRDs, and a single PRD can cover requirements from one or more BRDs.
   4. The linkedBRDIds array establishes a clear connection between PRDs and their originating BRDs, providing crucial context and traceability, especially when a PRD relates to multiple BRDs.
      The relationship is not strictly hierarchical.
-3. You MUST generate valid json as output.
 
 Please ensure the requirements are descriptive and also clear, concise. Output must be valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.
 Generate Product Requirements with a maximum count of ${max_count}. Sort all requirements based on business impact (High to Medium to Low).`;
