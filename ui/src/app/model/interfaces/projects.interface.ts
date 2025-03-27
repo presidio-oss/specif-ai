@@ -40,6 +40,7 @@ export interface ICreateSolutionRequest {
   description: string;
   createReqt: boolean;
   cleanSolution: boolean;
+  refDocContent: string;
   brdPreferences: IGenerationRange;
   prdPreferences: IGenerationRange;
   uirPreferences: IGenerationRange;
