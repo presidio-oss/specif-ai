@@ -206,6 +206,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'task:create',
         args: [request],
+        skipLoading: true
       });
     }
     throw new Error('Electron is not available');
@@ -400,6 +401,7 @@ export class ElectronService {
           params: { ...params },
         }],
         skipWarning: true,
+        skipLoading: true
       });
     }
   }
