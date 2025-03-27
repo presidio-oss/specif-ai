@@ -70,7 +70,7 @@ jobs:
       APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
 
   create_release:
-  needs: [determine_workflow, build]
+    needs: [determine_workflow, build]
     if: ${{ needs.determine_workflow.outputs.workflow_type == 'release' }}
     uses: ./.github/workflows/create-release.yml
     with:
