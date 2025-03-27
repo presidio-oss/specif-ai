@@ -185,7 +185,35 @@ export class EditSolutionComponent {
     });
   }
 
+  private async preUpdateChecks(): Promise<boolean> {
+    if (this.isBRD()) {
+      const linkedPRDs = this.requirementForm.get('linkedToPRDIds')?.value || [];
+      if (linkedPRDs.length > 0) {
+        // Show confirmation dialog only if there are linked PRDs in the form
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+          width: '500px',
+          data: {
+            title: 'Confirm Update BRD',
+            description: 'Please note that linked PRDs will not be automatically updated. You will need to manually update the linked PRDs if necessary. Do you want to proceed?',
+            cancelButtonText: 'Cancel',
+            proceedButtonText: 'Confirm'
+          }
+        });
+
+        return new Promise((resolve) => {
+          dialogRef.afterClosed().subscribe((result) => {
+            resolve(result === false); // false means proceed with update
+          });
+        });
+      }
+    }
+    return Promise.resolve(true); // proceed with update for non-BRD updates
+  }
+
   async updateRequirementWithAI() {
+    const shouldProceed = await this.preUpdateChecks();
+    if (!shouldProceed) return;
+
     const formValue = this.requirementForm.getRawValue();
 
     const body: IUpdateRequirementRequest = {
@@ -251,7 +279,10 @@ export class EditSolutionComponent {
     }
   }
 
-  updateRequirement() {
+  async updateRequirement() {
+    const shouldProceed = await this.preUpdateChecks();
+    if (!shouldProceed) return;
+
     const formValue = this.requirementForm.getRawValue();
     const fileData: IList['content'] = {
       requirement: formValue.content,
