@@ -104,9 +104,17 @@ jobs:
       - name: Install Dependencies and Build Electron
         run: |
           cd electron
+
+          # Create .env file with PostHog configuration
+          echo "POSTHOG_HOST=$POSTHOG_HOST" > .env
+          echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+
           npm install
           npm run build
           npm run package:win
+        env:
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
 
       - name: Package Windows Build
         run: |
@@ -186,12 +194,19 @@ jobs:
       - name: Install Dependencies and Build Electron
         run: |
           cd electron
+
+          # Create .env file with PostHog configuration
+          echo "POSTHOG_HOST=$POSTHOG_HOST" > .env
+          echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+
           npm install
           npm run build
           npm run package:mac
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
 
       - name: Package and Upload to S3
         id: package_and_upload
