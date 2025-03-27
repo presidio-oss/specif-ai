@@ -250,7 +250,7 @@ function readFileChunk(
   const CHUNK_SIZE = 400;
   const buffer = Buffer.alloc(CHUNK_SIZE);
   let accumulatedData = "";
-  let dataExtracted:FileChunk = { requirement: null, title: null, epicTicketId: null };
+  let dataExtracted: FileChunk = { requirement: null, title: null, epicTicketId: null };
   const fileName = path.split("/").pop() || "";
 
   // Build regex based on the filter string

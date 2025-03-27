@@ -10,6 +10,8 @@ import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 
+// types
+
 type RequirementTypeMeta = {
   key: keyof Pick<SolutionResponse, 'brd' | 'prd' | 'uir' | 'nfr'>;
   generatePrompt: (params: { name: string; description: string; max_count: number; brds?: any[] }) => string;
@@ -21,6 +23,20 @@ type GenerateRequirementParams = RequirementTypeMeta & {
   llmHandler: LLMHandler,
   brds?: any[];
 };
+
+// types
+
+// constants
+
+const requirementTypes: Array<RequirementTypeMeta> = [
+  { key: 'brd', generatePrompt: createBRDPrompt, preferencesKey: 'brdPreferences' },
+  { key: 'uir', generatePrompt: createUIRPrompt, preferencesKey: 'uirPreferences' },
+  { key: 'nfr', generatePrompt: createNFRPrompt, preferencesKey: 'nfrPreferences' }
+];
+
+const prdRequirementType = { key: 'prd', generatePrompt: createPRDPrompt, preferencesKey: 'prdPreferences' } as const;
+
+// constants
 
 const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, llmHandler, brds }: GenerateRequirementParams) => {
   console.log(`[create-solution] Generating ${key.toUpperCase()} requirements...`);
@@ -67,13 +83,13 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
 
 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
-  const p1 = performance.now();
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
 
+    console.log('[create-solution] Using LLM config:', llmConfig);
     const validatedData = createSolutionSchema.parse(data);
 
     const results: SolutionResponse = {
@@ -81,14 +97,6 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       description: validatedData.description,
       name: validatedData.name
     };
-
-    const requirementTypes: RequirementTypeMeta[] = [
-      { key: 'brd', generatePrompt: createBRDPrompt, preferencesKey: 'brdPreferences' },
-      { key: 'uir', generatePrompt: createUIRPrompt, preferencesKey: 'uirPreferences' },
-      { key: 'nfr', generatePrompt: createNFRPrompt, preferencesKey: 'nfrPreferences' }
-    ];
-
-    const prdRequirementType = { key: 'prd', generatePrompt: createPRDPrompt, preferencesKey: 'prdPreferences' } as const;
 
     const llmHandler = buildLLMHandler(
       llmConfig.activeProvider,
@@ -111,6 +119,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         let brds = results[key] ?? [];
 
         const prdPreferences = validatedData[prdRequirementType.preferencesKey];
+
         if(prdPreferences.isEnabled){
           results[prdRequirementType.key] = await generateRequirement({
             data: validatedData,
