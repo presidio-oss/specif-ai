@@ -46,11 +46,17 @@ export interface ICreateSolutionRequest {
   nfrPreferences: IGenerationRange;
 }
 
+export interface ISolutionResponseRequirementItem {
+  id: string;
+  title: string;
+  requirement: string;
+}
+
 export interface ISolutionResponse {
-  brd?: { [key in string]: string }[];
-  nfr?: { [key in string]: string }[];
-  prd?: { [key in string]: string }[];
-  uir?: { [key in string]: string }[];
+  brd?: ISolutionResponseRequirementItem[];
+  nfr?: ISolutionResponseRequirementItem[];
+  prd?: (ISolutionResponseRequirementItem & { linkedBRDIds: Array<string> })[];
+  uir?: ISolutionResponseRequirementItem[];
   createReqt: boolean;
   description: string;
   name: string;

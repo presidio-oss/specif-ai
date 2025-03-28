@@ -23,7 +23,8 @@ export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): 
       reqt,
       fileContent,
       addReqtType,
-      useGenAI
+      useGenAI,
+      brds
     } = validatedData;
 
     if (!useGenAI && !fileContent) {
@@ -42,7 +43,8 @@ export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): 
       description,
       newReqt: reqt || '',
       fileContent,
-      addReqtType
+      addReqtType,
+      brds
     });
 
     // Prepare messages for LLM
