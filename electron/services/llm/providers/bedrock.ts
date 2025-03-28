@@ -5,6 +5,8 @@ import {
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface BedrockConfig extends LLMConfig {
   region: string;
@@ -17,6 +19,7 @@ interface BedrockConfig extends LLMConfig {
 export class BedrockHandler extends LLMHandler {
   private client: BedrockRuntimeClient;
   protected configData: BedrockConfig;
+  private trace = new ObservabilityManager().getTrace();
 
   constructor(config: Partial<BedrockConfig>) {
     super();
@@ -95,12 +98,22 @@ export class BedrockHandler extends LLMHandler {
       };
     }
 
+    const generation = this.trace.generation({
+      name: TRACES.CHAT_BEDROCK_CONVERSE,
+      model: this.configData.model,
+      input: requestBody
+    });
+
     const command = new InvokeModelCommand({
       modelId: this.configData.model,
       body: JSON.stringify(requestBody),
     });
 
     const response = await this.client.send(command);
+
+    generation.end({
+      output: response
+    });
 
     // Parse response based on model provider
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));

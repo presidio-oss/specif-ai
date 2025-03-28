@@ -2,6 +2,8 @@ import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface GeminiConfig extends LLMConfig {
   apiKey: string;
@@ -12,6 +14,7 @@ export class GeminiHandler extends LLMHandler {
   private client: GenerativeModel;
   protected configData: GeminiConfig;
   private defaultModel = "gemini-2.0-flash-001";
+  private trace = new ObservabilityManager().getTrace();
 
   constructor(config: Partial<GeminiConfig>) {
     super();
@@ -69,13 +72,23 @@ export class GeminiHandler extends LLMHandler {
 
     // Start a chat
     const chat = this.client.startChat({
-      history: history.slice(0, -1), // Exclude last message for input
+      history: history.slice(0, -1),
+    });
+
+    const generation = this.trace.generation({
+      name: TRACES.CHAT_GEMINI,
+      model: this.configData.model,
+      input: { messages: history, lastMessage: messageList[messageList.length - 1] }
     });
 
     // Send the last message
     const lastMessage = messageList[messageList.length - 1];
     const result = await chat.sendMessage(lastMessage.content);
-    const response = await result.response;
+    const response = result.response;
+
+    generation.end({
+      output: response
+    });
 
     if (!response.text()) {
       throw new LLMError(
