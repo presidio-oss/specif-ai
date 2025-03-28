@@ -6,6 +6,7 @@ import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
 import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface BedrockConfig extends LLMConfig {
   region: string;
@@ -98,7 +99,7 @@ export class BedrockHandler extends LLMHandler {
     }
 
     const generation = this.trace.generation({
-      name: "chat-completion",
+      name: TRACES.CHAT_BEDROCK_CONVERSE,
       model: this.configData.model,
       input: requestBody
     });

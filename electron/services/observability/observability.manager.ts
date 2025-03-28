@@ -6,31 +6,31 @@ export class ObservabilityManager {
 
   constructor() {
     const tracingEnabled = store.get<boolean>('analyticsEnabled');
-    console.log("<observability-manager> init", tracingEnabled);
+    console.debug("<observability-manager> init", tracingEnabled);
 
     if (!tracingEnabled) {
       this.trace = {
         generation: () => {
-          console.log("[observability-manager] generation method called");
+          console.debug("[observability-manager] generation method called");
           return {
             end: () => {
-              console.log("[observability-manager] generation.end method called");
+              console.debug("[observability-manager] generation.end method called");
             }
           };
         },
         span: () => {
-          console.log("[observability-manager] span method called");
+          console.debug("[observability-manager] span method called");
           return {
             end: () => {
-              console.log("[observability-manager] span.end method called");
+              console.debug("[observability-manager] span.end method called");
             }
           };
         },
         update: () => {
-          console.log("[observability-manager] update method called");
+          console.debug("[observability-manager] update method called");
         },
         end: () => {
-          console.log("[observability-manager] end method called");
+          console.debug("[observability-manager] end method called");
         }
       };
       return;
@@ -49,11 +49,11 @@ export class ObservabilityManager {
       name: process.env.LANGFUSE_APP_ENDPOINT,
       userId: userName || "anonymous",
     });
-    console.log("<observability-manager> init", tracingEnabled);
+    console.debug("<observability-manager> init", tracingEnabled);
   }
 
   public getTrace() {
-    console.log("<observability-manager> getTrace", this.trace);
+    console.debug("<observability-manager> getTrace", this.trace);
     return this.trace;
   }
 }

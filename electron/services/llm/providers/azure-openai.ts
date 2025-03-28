@@ -3,6 +3,7 @@ import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
 import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface AzureOpenAIConfig extends LLMConfig {
   apiKey: string;
@@ -73,7 +74,7 @@ export class AzureOpenAIHandler extends LLMHandler {
     })) as any[];
 
     const generation = this.trace.generation({
-      name: "chat-completion",
+      name: TRACES.CHAT_COMPLETION,
       model: this.configData.deployment,
       modelParameters: this.modelParameters,
       input: openAIMessages,

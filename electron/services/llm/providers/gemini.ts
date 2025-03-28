@@ -3,6 +3,7 @@ import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
 import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface GeminiConfig extends LLMConfig {
   apiKey: string;
@@ -71,11 +72,11 @@ export class GeminiHandler extends LLMHandler {
 
     // Start a chat
     const chat = this.client.startChat({
-      history: history.slice(0, -1), // Exclude last message for input
+      history: history.slice(0, -1),
     });
 
     const generation = this.trace.generation({
-      name: "chat-completion",
+      name: TRACES.CHAT_GEMINI,
       model: this.configData.model,
       input: { messages: history, lastMessage: messageList[messageList.length - 1] }
     });
