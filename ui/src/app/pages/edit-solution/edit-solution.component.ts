@@ -102,7 +102,8 @@ export class EditSolutionComponent {
   allowFreeRedirection: boolean = false;
   activeTab: 'includeFiles' | 'chat' = 'includeFiles';
   documentList: IList[] = [];
-  currentLinkedPRDs: Array<string> = [];
+  currentLinkedPRDIds: Array<string> = [];
+  currentLinkedBRDIds: Array<string> = [];
   originalDocumentList$: Observable<IList[]> = this.store.select(
     ProjectsState.getSelectedFileContents,
   );
@@ -185,28 +186,67 @@ export class EditSolutionComponent {
     });
   }
 
+  private getUserConfirmation(dialogConfig: {
+    title: string;
+    description: string;
+    cancelButtonText: string;
+    proceedButtonText: string;
+  }): Promise<boolean> {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '500px',
+      data: {
+        ...dialogConfig,
+        renderNewLine: true,
+      },
+    });
+
+    return new Promise((resolve) => {
+      dialogRef.afterClosed().subscribe((result) => {
+        resolve(result === false); // false means proceed with update
+      });
+    });
+  }
+
   private async preUpdateChecks(): Promise<boolean> {
     if (this.isBRD()) {
       const linkedPRDs = this.requirementForm.get('linkedToPRDIds')?.value || [];
-      if (linkedPRDs.length > 0) {
-        // Show confirmation dialog only if there are linked PRDs in the form
-        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-          width: '500px',
-          data: {
-            title: 'Confirm Update BRD',
-            description: 'Please note that linked PRDs will not be automatically updated. You will need to manually update the linked PRDs if necessary. Do you want to proceed?',
-            cancelButtonText: 'Cancel',
-            proceedButtonText: 'Confirm'
-          }
-        });
-
-        return new Promise((resolve) => {
-          dialogRef.afterClosed().subscribe((result) => {
-            resolve(result === false); // false means proceed with update
-          });
+      
+      // Check for removed links by comparing array contents
+      const hasRemovedLinks = this.currentLinkedPRDIds.some(prdId => 
+        !linkedPRDs.includes(prdId)
+      );
+      
+      if (linkedPRDs.length > 0 || hasRemovedLinks) {
+        return this.getUserConfirmation({
+          title: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.TITLE,
+          description: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.DESCRIPTION({
+            hasLinkedPRDs: linkedPRDs.length > 0,
+            hasRemovedLinks: hasRemovedLinks,
+          }),
+          cancelButtonText: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.CANCEL_BUTTON_TEXT,
+          proceedButtonText: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.PROCEED_BUTTON_TEXT,
         });
       }
     }
+
+    if (this.isPRD()) {
+      const updatedLinkedBRDs = this.requirementForm.get('linkedBRDIds')?.value || [];
+
+      // Check for removed links by comparing array contents
+      const hasRemovedBRDs = this.currentLinkedBRDIds.some(brdId => 
+        !updatedLinkedBRDs.includes(brdId)
+      );
+
+      if(hasRemovedBRDs) {
+        return this.getUserConfirmation({
+          title: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.TITLE,
+          description: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.DESCRIPTION,
+          cancelButtonText: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.CANCEL_BUTTON_TEXT,
+          proceedButtonText: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.PROCEED_BUTTON_TEXT,
+        });
+      }
+    }
+
     return Promise.resolve(true); // proceed with update for non-BRD updates
   }
 
@@ -323,7 +363,7 @@ export class EditSolutionComponent {
     currBRDId: string,
     updatedLinkedToPRDIds: Array<string>,
   ) {
-    const toRemovedLinkedPRDIds = this.currentLinkedPRDs.filter(
+    const toRemovedLinkedPRDIds = this.currentLinkedPRDIds.filter(
       (cPRDId) =>
         !updatedLinkedToPRDIds.find((uPRDId: string) => uPRDId === cPRDId),
     );
@@ -348,7 +388,7 @@ export class EditSolutionComponent {
         }
       });
 
-      this.currentLinkedPRDs = updatedLinkedToPRDIds;
+      this.currentLinkedPRDIds = updatedLinkedToPRDIds;
       this.requirementForm.patchValue({
         linkedToPRDIds: updatedLinkedToPRDIds,
       });
@@ -541,6 +581,7 @@ ${chat.assistant}`,
 
         // For PRDs pre populate the linked brd ids
         if (this.isPRD()) {
+          this.currentLinkedBRDIds = res.linkedBRDIds;
           this.requirementForm.patchValue({
             linkedBRDIds: res.linkedBRDIds ?? [],
           });
@@ -564,7 +605,7 @@ ${chat.assistant}`,
               }
             });
 
-            this.currentLinkedPRDs = linkedToPRDIds;
+            this.currentLinkedPRDIds = linkedToPRDIds;
             this.requirementForm.patchValue({
               linkedToPRDIds: linkedToPRDIds,
             });
@@ -577,9 +618,9 @@ ${chat.assistant}`,
     const reqId = this.fileName.replace(/\-base.json$/, '');
 
     if(this.isBRD()){
-      if(this.currentLinkedPRDs.length > 0){
+      if(this.currentLinkedPRDIds.length > 0){
         this.toastService.showWarning(
-          ERROR_MESSAGES.DELETE_ASSOCIATED_PRDs_ERROR(reqId, this.currentLinkedPRDs),
+          ERROR_MESSAGES.DELETE_ASSOCIATED_PRDs_ERROR(reqId, this.currentLinkedPRDIds),
         );
         return;
       }
