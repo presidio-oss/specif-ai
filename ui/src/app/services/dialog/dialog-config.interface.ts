@@ -15,10 +15,3 @@ export interface ConfirmationDialogData {
   proceedButtonText?: string;
   cancelButtonText?: string;
 }
-
-export interface ModalDialogData {
-  title: string;
-  description?: string;
-  extraContext?: string;
-  placeholder?: string;
-}
