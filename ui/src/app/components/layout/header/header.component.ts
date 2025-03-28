@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
+import { DialogService } from '../../../services/dialog/dialog.service';
 import { SettingsComponent } from '../../settings/settings.component';
 import { StartupService } from '../../../services/auth/startup.service';
 import { environment } from '../../../../environments/environment';
@@ -29,11 +29,13 @@ export class HeaderComponent {
   protected themeConfiguration = environment.ThemeConfiguration;
 
   startupService = inject(StartupService);
-  dialog = inject(MatDialog);
+  dialogService = inject(DialogService);
 
   openSettingsModal() {
-    this.dialog.open(SettingsComponent, {
-      disableClose: true,
-    });
+    this.dialogService
+      .createBuilder()
+      .forComponent(SettingsComponent)
+      .disableClose()
+      .open();
   }
 }

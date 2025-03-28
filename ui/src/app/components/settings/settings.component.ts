@@ -18,8 +18,9 @@ import {
   SwitchProvider,
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DialogService } from '../../services/dialog/dialog.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { StartupService } from '../../services/auth/startup.service';
@@ -83,7 +84,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
-  dialog = inject(MatDialog);
+  dialogService = inject(DialogService);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
   analyticsWarning: string = '';
@@ -415,19 +416,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // Close the settings modal and open the logout confirmation dialog
     this.modalRef.close(true);
 
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    this.dialogService
+      .confirm({
         title: CONFIRMATION_DIALOG.LOGOUT.TITLE,
         description: CONFIRMATION_DIALOG.LOGOUT.DESCRIPTION,
         cancelButtonText: CONFIRMATION_DIALOG.LOGOUT.CANCEL_BUTTON_TEXT,
         proceedButtonText: CONFIRMATION_DIALOG.LOGOUT.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) this.startupService.logout();
-    });
+      })
+      .subscribe((confirmed: boolean) => {
+        if (!confirmed) this.startupService.logout();
+      });
   }
 
   ngOnDestroy(): void {
