@@ -24,7 +24,7 @@ export class AzureOpenAIHandler extends LLMHandler {
     temperature: 0.7,
     max_tokens: 1000,
   };
-  private trace = ObservabilityManager.getInstance().getTrace();
+  private trace = new ObservabilityManager().getTrace();
 
   constructor(config: Partial<AzureOpenAIConfig>) {
     super();

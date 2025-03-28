@@ -11,6 +11,8 @@ import { filter } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsModalComponent } from './components/analytics-modal/analytics-modal.component';
 import { AnalyticsTracker } from './services/analytics/analytics.interface';
+import { geoAzimuthalEquidistantRaw } from 'd3';
+import { ANALYTICS_TOGGLE_KEY } from './services/analytics/utils/analytics.utils';
 
 @Component({
   selector: 'app-root',
@@ -29,6 +31,11 @@ export class AppComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   ngOnInit() {
+    let analyticsEnabled;
+    this.electronService.getStoreValue('analyticsEnabled').then((enabled) => {
+      analyticsEnabled = enabled;
+    });
+
     if (sessionStorage.getItem('serverActive') !== 'true') {
       this.electronService
         .listenPort()
@@ -118,6 +125,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private checkAnalyticsPermission() {
     const ANALYTICS_PERMISSION_REQUESTED = 'analyticsPermissionRequested';
     const analyticsPermission = localStorage.getItem(ANALYTICS_PERMISSION_REQUESTED);
+    this.validateAnalyticsPermission();
     if (analyticsPermission !== 'true') {
       this.dialog.open(AnalyticsModalComponent, {
         width: '600px',
@@ -127,5 +135,13 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
     this.analyticsTracker.initAnalytics();
+  }
+
+  private async validateAnalyticsPermission() {
+    let enabled = await this.electronService.getStoreValue('analyticsEnabled');
+    if (enabled === undefined) {
+      let value = Boolean(localStorage.getItem(ANALYTICS_TOGGLE_KEY)) || false;
+      this.electronService.setStoreValue('analyticsEnabled', value);
+    }
   }
 }

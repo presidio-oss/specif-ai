@@ -1,23 +1,63 @@
-import { IObservabilityManager } from "./observability.interface";
-import { ProviderFactory } from "./provider.factory";
+import { Langfuse } from "langfuse";
+import { store } from '../store';
 
-export class ObservabilityManager implements IObservabilityManager {
-  private static instance: ObservabilityManager;
+export class ObservabilityManager {
   private trace: any;
 
-  private constructor() {
-    const provider = ProviderFactory.getProvider();
-    this.trace = provider.createTrace();
-  }
+  constructor() {
+    const tracingEnabled = store.get<boolean>('analyticsEnabled');
+    console.log("<observability-manager> init", tracingEnabled);
 
-  public static getInstance(): ObservabilityManager {
-    if (!ObservabilityManager.instance) {
-      ObservabilityManager.instance = new ObservabilityManager();
+    if (!tracingEnabled) {
+      this.trace = {
+        generation: () => {
+          console.log("[observability-manager] generation method called");
+          return {
+            end: () => {
+              console.log("[observability-manager] generation.end method called");
+            }
+          };
+        },
+        span: () => {
+          console.log("[observability-manager] span method called");
+          return {
+            end: () => {
+              console.log("[observability-manager] span.end method called");
+            }
+          };
+        },
+        update: () => {
+          console.log("[observability-manager] update method called");
+        },
+        end: () => {
+          console.log("[observability-manager] end method called");
+        }
+      };
+      return;
     }
-    return ObservabilityManager.instance;
+
+    const langfuse = new Langfuse({
+      secretKey: process.env.LANGFUSE_SECRET_KEY,
+      publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+      baseUrl: process.env.LANGFUSE_BASE_URL,
+    });
+
+    const APP_CONFIG = store.get<AppConfig>('APP_CONFIG');
+    const userName = APP_CONFIG?.username;
+
+    this.trace = langfuse.trace({
+      name: process.env.LANGFUSE_APP_ENDPOINT,
+      userId: userName || "anonymous",
+    });
+    console.log("<observability-manager> init", tracingEnabled);
   }
 
-  public getTrace(): any {
+  public getTrace() {
+    console.log("<observability-manager> getTrace", this.trace);
     return this.trace;
   }
+}
+
+interface AppConfig {
+  username?: string;
 }

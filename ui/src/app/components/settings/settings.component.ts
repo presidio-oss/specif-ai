@@ -379,6 +379,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   updateAnalyticsState(enabled: boolean): void {
     setAnalyticsToggleState(enabled);
+    this.electronService.setStoreValue('analyticsEnabled', enabled);
     if (enabled) {
       this.analyticsTracker.initAnalytics();
     }

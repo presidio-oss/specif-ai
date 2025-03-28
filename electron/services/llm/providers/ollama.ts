@@ -1,6 +1,7 @@
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
 
 interface OllamaConfig extends LLMConfig {
   baseUrl: string;
@@ -22,6 +23,7 @@ interface OllamaResponse {
 export class OllamaHandler extends LLMHandler {
   protected configData: OllamaConfig;
   private defaultBaseUrl = 'http://localhost:11434';
+  private trace = new ObservabilityManager().getTrace();
 
   constructor(config: Partial<OllamaConfig>) {
     super();
@@ -57,6 +59,12 @@ export class OllamaHandler extends LLMHandler {
       content: msg.content
     } as OllamaMessage)));
 
+    const generation = this.trace.generation({
+      name: "chat-completion",
+      model: this.configData.model,
+      input: { messages: messageList }
+    });
+
     const response = await fetch(`${this.configData.baseUrl}/api/chat`, {
       method: 'POST',
       headers: {
@@ -69,6 +77,12 @@ export class OllamaHandler extends LLMHandler {
       })
     });
 
+    const data = await response.json() as OllamaResponse;
+    
+    generation.end({
+      output: data
+    });
+
     if (!response.ok) {
       const error = await response.text();
       const e = new Error(`HTTP error! status: ${response.status}, message: ${error}`);
@@ -76,8 +90,6 @@ export class OllamaHandler extends LLMHandler {
       throw e;
     }
 
-    const data = await response.json() as OllamaResponse;
-    
     if (data.error) {
       throw new Error(data.error);
     }

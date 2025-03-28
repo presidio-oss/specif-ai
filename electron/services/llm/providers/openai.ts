@@ -2,6 +2,7 @@ import OpenAI, { AzureOpenAI } from "openai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
 
 interface OpenAIConfig extends LLMConfig {
   baseUrl?: string;
@@ -15,6 +16,7 @@ interface OpenAIConfig extends LLMConfig {
 export class OpenAIHandler extends LLMHandler {
   private client: OpenAI | AzureOpenAI;
   protected configData: OpenAIConfig;
+  private trace = new ObservabilityManager().getTrace();
 
   constructor(config: Partial<OpenAIConfig>) {
     super();
@@ -82,10 +84,20 @@ export class OpenAIHandler extends LLMHandler {
       return msg.name ? { ...baseMsg, name: msg.name } : baseMsg;
     });
 
+    const generation = this.trace.generation({
+      name: "chat-completion",
+      model: this.getModel().id,
+      input: { messages: openAIMessages }
+    });
+
     const response = await this.client.chat.completions.create({
       model: this.getModel().id,
       messages: openAIMessages,
       stream: false,
+    });
+
+    generation.end({
+      output: response
     });
 
     if (!response.choices?.[0]?.message?.content) {
