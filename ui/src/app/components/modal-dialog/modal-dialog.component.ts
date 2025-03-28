@@ -25,7 +25,8 @@ export class ModalDialogCustomComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<ModalDialogCustomComponent>);
 
   onGenerate() {
-    this.generate.emit(this.emittedForm.getRawValue().extraContext);
+    const value = this.emittedForm.getRawValue().extraContext;
+    this.dialogRef.close(value);
   }
 
   onClose(): void {

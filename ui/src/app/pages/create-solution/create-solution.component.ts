@@ -10,8 +10,8 @@ import { Store } from '@ngxs/store';
 import { CreateProject } from '../../store/projects/projects.actions';
 import { v4 as uuid } from 'uuid';
 import { AddBreadcrumbs } from '../../store/breadcrumb/breadcrumb.actions';
-import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
+import { DialogService } from '../../services/dialog/dialog.service';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -56,7 +56,7 @@ export class CreateSolutionComponent implements OnInit {
   appSystemService = inject(AppSystemService);
   electronService = inject(ElectronService);
   toast = inject(ToasterService);
-  readonly dialog = inject(MatDialog);
+  readonly dialogService = inject(DialogService);
   router = inject(Router);
   store = inject(Store);
 
@@ -143,9 +143,11 @@ export class CreateSolutionComponent implements OnInit {
   }
 
   openSelectRootDirectoryModal() {
-    this.dialog.open(SettingsComponent, {
-      disableClose: true,
-    });
+    this.dialogService
+      .createBuilder()
+      .forComponent(SettingsComponent)
+      .disableClose()
+      .open();
   }
 
   async selectRootDirectory(): Promise<void> {

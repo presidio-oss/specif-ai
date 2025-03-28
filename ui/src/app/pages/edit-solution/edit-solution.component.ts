@@ -26,8 +26,8 @@ import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { NgClass, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog } from '@angular/material/dialog';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
+import { DialogService } from '../../services/dialog/dialog.service';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
@@ -104,7 +104,7 @@ export class EditSolutionComponent {
     private store: Store,
     private router: Router,
     private featureService: FeatureService,
-    private dialog: MatDialog,
+    private dialogService: DialogService,
     private toastService: ToasterService,
   ) {
     const url = this.router.url;
@@ -397,26 +397,23 @@ ${chat.assistant}`,
   }
 
   private promptFileDeletion(reqId: string) {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    this.dialogService
+      .confirm({
         title: CONFIRMATION_DIALOG.DELETION.TITLE,
         description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(reqId),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
         proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (res === false) {
-        this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
-        this.allowFreeRedirection = true;
-        this.navigateBackToDocumentList(this.initialData);
-        this.toastService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(this.folderName, reqId),
-        );
-      }
-    });
+      })
+      .subscribe((res) => {
+        if (res === false) {
+          this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
+          this.allowFreeRedirection = true;
+          this.navigateBackToDocumentList(this.initialData);
+          this.toastService.showSuccess(
+            TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(this.folderName, reqId),
+          );
+        }
+      });
   }
 
   handleFileContent(content: string) {
