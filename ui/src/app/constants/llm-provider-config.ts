@@ -29,6 +29,31 @@ const getModelOptions = (provider: string) => {
 };
 
 export const LLM_PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
+  openrouter: {
+    fields: [
+      {
+        name: 'apiKey',
+        type: 'password',
+        label: 'API Key',
+        required: true,
+        placeholder: 'Enter your OpenRouter API key',
+      },
+      {
+        name: 'model',
+        type: 'select',
+        label: 'Model',
+        required: true,
+        options: getModelOptions('openrouter'),
+      },
+      {
+        name: 'baseUrl',
+        type: 'text',
+        label: 'Base URL (Optional)',
+        placeholder: 'Base URL',
+        defaultValue: 'https://openrouter.ai/api/v1',
+      },
+    ],
+  },
   openai: {
     fields: [
       {

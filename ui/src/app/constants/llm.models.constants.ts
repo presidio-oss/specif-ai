@@ -5,11 +5,17 @@ export const AvailableProviders = [
   { displayName: 'AWS Bedrock', key: 'bedrock' },
   { displayName: 'Gemini', key: 'gemini' },
   { displayName: 'Anthropic', key: 'anthropic' },
+  { displayName: 'OpenRouter', key: 'openrouter' },
 ];
 
 export const ProviderModelMap: { [key: string]: string[] } = {
     'openai': ['gpt-4o', 'gpt-4o-mini'],
     'openai-native': ['gpt-4o', 'gpt-4o-mini'],
+    'openrouter': [
+      'google/gemini-2.5-pro-exp-03-25:free',
+      'deepseek/deepseek-chat-v3-0324:free',
+      'deepseek/deepseek-r1:free'
+    ],
     'bedrock': [
       'anthropic.claude-3-5-sonnet-20241022-v2:0',
       'anthropic.claude-3-5-haiku-20241022-v1:0',
