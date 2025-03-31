@@ -365,7 +365,7 @@
                 {{ APP_MESSAGES.AWS_BEDROCK_ACCORDION_MESSAGE }}
               </p>
             </div>
-            <div class="flex items-center mb-4">
+            <div class="flex items-center mb-4" *ngIf="isBedrockConfigPresent">
               <input
                 type="checkbox"
                 id="useBedrockConfig"
@@ -375,7 +375,7 @@
                 class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <label for="useBedrockConfig" class="ml-2 text-sm font-medium text-secondary-700">
-                Use existing Bedrock configuration from chat settings
+                Use existing Bedrock configuration from LLM settings
               </label>
             </div>
             <div
