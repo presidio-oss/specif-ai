@@ -23,6 +23,10 @@ on:
         required: true
       APPLE_APP_SPECIFIC_PASSWORD:
         required: true
+      POSTHOG_HOST:
+        required: true
+      POSTHOG_KEY:
+        required: true
 
 jobs:
   build_frontend:
@@ -104,9 +108,17 @@ jobs:
       - name: Install Dependencies and Build Electron
         run: |
           cd electron
+
+          # Create .env file with PostHog configuration
+          echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
+          echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+
           npm install
           npm run build
           npm run package:win
+        env:
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
 
       - name: Package Windows Build
         run: |
@@ -186,12 +198,19 @@ jobs:
       - name: Install Dependencies and Build Electron
         run: |
           cd electron
+
+          # Create .env file with PostHog configuration
+          echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
+          echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+
           npm install
           npm run build
           npm run package:mac
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
 
       - name: Package and Upload to S3
         id: package_and_upload
@@ -201,7 +220,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
           # Upload to S3 for long-term storage
-          aws s3 sync dist/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/darwin/$VERSION/intel/${{steps.get-sha.outputs.COMMIT_SHA}}/" --exclude "dist/mac/*" --exclude "dist/mac-arm64/*"
+          aws s3 sync dist/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/darwin/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/" --exclude "dist/mac/*" --exclude "dist/mac-arm64/*"
 
       - name: Upload macOS Intel Build as GitHub Artifact
         uses: actions/upload-artifact@v4

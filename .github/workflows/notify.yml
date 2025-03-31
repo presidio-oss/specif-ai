@@ -15,12 +15,6 @@ on:
         required: true
       MS_TEAMS_PROD_CHANNEL_WEBHOOK_URL:
         required: true
-      MS_TEAMS_MARKETPLACE_CHANNEL_WEBHOOK_URL:
-        required: true
-      AWS_MARKETPLACE_PRODUCT_NAME:
-        required: false
-      AWS_MARKETPLACE_REPO_NAME:
-        required: false
 
 jobs:
   send_notification:

@@ -119,6 +119,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   
   // Predefined order of folders
   folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
+  isBedrockConfigPresent: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -143,7 +144,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
-      console.log("Current llm config", this.currentLLMConfig)
+      this.isBedrockConfigPresent = this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
     })
     this.store
       .select(ProjectsState.getProjects)
