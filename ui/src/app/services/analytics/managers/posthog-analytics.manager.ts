@@ -33,6 +33,9 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
 
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
+      posthog.setPersonProperties({
+        current_llm_provider: this.currentLLMConfig.activeProvider
+      });
     });
   }
 
@@ -139,8 +142,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
       disable_session_recording: true,
     });
     posthog.identify(userId, {
-      username: username,
-      current_llm_provider: this.currentLLMConfig.activeProvider,
+      username: username   
     });
     console.log('PostHog has been initialized.');
   }
