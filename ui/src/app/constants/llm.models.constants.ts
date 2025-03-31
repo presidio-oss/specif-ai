@@ -30,6 +30,7 @@ export async function getProviderModels(provider: string): Promise<string[]> {
   const modelMap: { [key: string]: string[] } = {
     'openai-native': ['gpt-4o', 'gpt-4o-mini'],
     'bedrock': [
+      'anthropic.claude-3-7-sonnet-20250219-v1:0',
       'anthropic.claude-3-5-sonnet-20241022-v2:0',
       'anthropic.claude-3-5-haiku-20241022-v1:0',
       'anthropic.claude-3-5-sonnet-20240620-v1:0',
@@ -52,6 +53,10 @@ export async function getProviderModels(provider: string): Promise<string[]> {
       'gemini-exp-1206',
     ],
     'anthropic': [
+      'claude-3-7-sonnet-20250219',
+      'claude-3-5-sonnet-20241022',
+      'claude-3-5-haiku-20241022',
+      'claude-3-5-sonnet-20240620',
       'claude-3-opus-20240229',
       'claude-3-sonnet-20240229',
       'claude-3-haiku-20240307',
