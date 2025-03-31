@@ -134,7 +134,6 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
       person_profiles: 'always',
       autocapture: false,
       ip: true,
-      capture_pageview: false,
       capture_pageleave: false,
       capture_performance: false,
       disable_session_recording: true,
