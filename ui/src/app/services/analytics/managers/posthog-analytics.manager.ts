@@ -140,7 +140,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
     });
     posthog.identify(userId, {
       username: username,
-      provider: this.currentLLMConfig.activeProvider,
+      current_llm_provider: this.currentLLMConfig.activeProvider,
     });
     console.log('PostHog has been initialized.');
   }
