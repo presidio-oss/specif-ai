@@ -15,10 +15,6 @@ on:
         required: true
       AWS_DEFAULT_REGION:
         required: true
-      DEV_IMAGE_NAME:
-        required: true
-      PROD_IMAGE_NAME:
-        required: true
       ELECTRON_S3_BUCKET:
         required: true
       APPLE_CSC_SECRET_NAME:
@@ -26,6 +22,10 @@ on:
       APPLE_ID:
         required: true
       APPLE_APP_SPECIFIC_PASSWORD:
+        required: true
+      POSTHOG_HOST:
+        required: true
+      POSTHOG_KEY:
         required: true
 
 jobs:
@@ -60,53 +60,6 @@ jobs:
         with:
           name: frontend-build
           path: ui/dist/
-
-  build_backend:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Configure AWS credentials
-        id: aws-credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
-
-      - name: Get AWS account ID
-        id: get-aws-account
-        run: |
-          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-          echo "AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}" >> $GITHUB_OUTPUT
-
-      - name: Login to Amazon ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          mask-password: true
-
-      - name: Get Short Commit SHA
-        id: get-sha
-        run: |
-          COMMIT_SHA=$(git rev-parse --short HEAD || echo "${GITHUB_SHA:0:7}")
-          echo "COMMIT_SHA=${COMMIT_SHA}" >> $GITHUB_OUTPUT
-          echo "Using short commit SHA: ${COMMIT_SHA}"
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: |
-            ${{ steps.get-aws-account.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ inputs.environment == 'production' && secrets.PROD_IMAGE_NAME || secrets.DEV_IMAGE_NAME }}:${{ inputs.environment == 'production' && inputs.version || format('{0}-{1}', inputs.version, steps.get-sha.outputs.COMMIT_SHA) }}
-            ${{ steps.get-aws-account.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ inputs.environment == 'production' && secrets.PROD_IMAGE_NAME || secrets.DEV_IMAGE_NAME }}:latest
 
   build_electron_windows:
     needs: [build_frontend]
@@ -155,9 +108,17 @@ jobs:
       - name: Install Dependencies and Build Electron
         run: |
           cd electron
+
+          # Create .env file with PostHog configuration
+          echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
+          echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+
           npm install
           npm run build
           npm run package:win
+        env:
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
 
       - name: Package Windows Build
         run: |
@@ -167,12 +128,15 @@ jobs:
 
           # Upload to S3 for long-term storage
           aws s3 cp win-unpacked.zip s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/win-unpacked.zip
+          aws s3 cp dist/latest.yml s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/latest.yml
 
       - name: Upload Windows Build as GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-electron-build
-          path: electron/win-unpacked.zip
+          path: |
+            electron/win-unpacked.zip
+            electron/dist/latest.yml
           retention-days: 90
 
   build_electron_mac:
@@ -234,41 +198,50 @@ jobs:
       - name: Install Dependencies and Build Electron
         run: |
           cd electron
+
+          # Create .env file with PostHog configuration
+          echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
+          echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+
           npm install
           npm run build
           npm run package:mac
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
 
       - name: Package and Upload to S3
         id: package_and_upload
         run: |
           cd electron
           VERSION=$(node -e "console.log(require('./package.json').version);")
-
-          # Get DMG file paths
-          INTEL_DMG=$(find dist -name "*.dmg" -not -name "*arm*.dmg" -type f)
-          ARM_DMG=$(find dist -name "*arm*.dmg" -type f)
-          echo "::add-mask::$INTEL_DMG"
-          echo "::add-mask::$ARM_DMG"
-          echo "INTEL_DMG=$INTEL_DMG" >> $GITHUB_ENV
-          echo "ARM_DMG=$ARM_DMG" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
           # Upload to S3 for long-term storage
-          aws s3 cp "$INTEL_DMG" "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/darwin/$VERSION/intel/${{steps.get-sha.outputs.COMMIT_SHA}}/$(basename "$INTEL_DMG")"
-          aws s3 cp "$ARM_DMG" "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/darwin/$VERSION/arm64/${{steps.get-sha.outputs.COMMIT_SHA}}/$(basename "$ARM_DMG")"
+          aws s3 sync dist/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/darwin/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/" --exclude "dist/mac/*" --exclude "dist/mac-arm64/*"
 
       - name: Upload macOS Intel Build as GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-intel-build
-          path: electron/${{ env.INTEL_DMG }}
+          path: |
+            electron/dist/*-${{ env.VERSION }}.dmg
+            electron/dist/*-${{ env.VERSION }}.dmg.blockmap
+            electron/dist/*-${{ env.VERSION }}-mac.zip
+            electron/dist/*-${{ env.VERSION }}-mac.zip.blockmap
+            electron/dist/latest-mac.yml
           retention-days: 90
 
       - name: Upload macOS ARM64 Build as GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-arm64-build
-          path: electron/${{ env.ARM_DMG }}
+          path: |
+            electron/dist/*-${{ env.VERSION }}-arm64.dmg
+            electron/dist/*-${{ env.VERSION }}-arm64.dmg.blockmap
+            electron/dist/*-${{ env.VERSION }}-arm64-mac.zip
+            electron/dist/*-${{ env.VERSION }}-arm64-mac.zip.blockmap
+            electron/dist/latest-mac.yml
           retention-days: 90

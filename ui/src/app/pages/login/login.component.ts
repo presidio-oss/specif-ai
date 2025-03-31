@@ -89,6 +89,7 @@ export class LoginComponent implements OnInit {
       }
 
       const newConfig = {
+        ...electronStoreValue,
         userId: userId,
         username: username,
         directoryPath: this.loginForm.get('directoryPath')!.value,

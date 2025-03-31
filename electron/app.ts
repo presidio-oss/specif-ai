@@ -1,11 +1,6 @@
-import { app, ipcMain, BrowserWindow, shell } from "electron";
+import { app, ipcMain, BrowserWindow } from "electron";
 import path from "path";
-import axios from "axios";
 import dotenv from "dotenv";
-import { IncomingMessage, ServerResponse } from "http";
-import net from "net";
-import { exec } from "child_process";
-import { createServer } from "http";
 import { setupFileSystemHandlers } from "./handlers/fs-handler";
 import { setupStore } from "./handlers/store-handler";
 import { setupCoreHandlers } from "./handlers/core-handler";
@@ -14,6 +9,7 @@ import { setupVisualizationHandlers } from "./handlers/visualization-handler";
 import { setupFeatureHandlers } from "./handlers/feature-handler";
 import { setupSolutionHandlers } from "./handlers/solution-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
+import { setupAppUpdateHandler } from "./handlers/app-update-handler";
 
 // ========================
 // CONFIGURATION
@@ -186,6 +182,7 @@ app.whenReady().then(async () => {
     setupWindowHandlers(mainWindow, indexPath);
     
     // Register all IPC handlers
+    setupAppUpdateHandler();
     setupFileSystemHandlers();
     setupUIHandlers(indexPath, themeConfiguration);
     setupJiraHandlers(mainWindow);

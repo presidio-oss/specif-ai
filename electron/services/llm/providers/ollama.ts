@@ -2,23 +2,10 @@ import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
 import { ObservabilityManager } from "../../observability/observability.manager";
-import { TRACES } from "../../../helper/constants";
 
 interface OllamaConfig extends LLMConfig {
   baseUrl: string;
   model: string;
-}
-
-interface OllamaMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}
-
-interface OllamaResponse {
-  message: {
-    content: string;
-  };
-  error?: string;
 }
 
 export class OllamaHandler extends LLMHandler {
@@ -33,7 +20,7 @@ export class OllamaHandler extends LLMHandler {
 
   getConfig(config: Partial<OllamaConfig>): OllamaConfig {
     if (!config.model) {
-      throw new LLMError("Model ID is required", "ollama");
+      throw new LLMError('Model ID is required', 'ollama');
     }
 
     return {
@@ -44,7 +31,7 @@ export class OllamaHandler extends LLMHandler {
 
   @withRetry({ retryAllErrors: true })
   async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    const messageList: OllamaMessage[] = [];
+    const messageList = [];
     
     // Add system prompt if provided
     if (systemPrompt) {
@@ -58,7 +45,7 @@ export class OllamaHandler extends LLMHandler {
     messageList.push(...messages.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'assistant',
       content: msg.content
-    } as OllamaMessage)));
+    })));
 
     const generation = this.trace.generation({
       name: "chat-completion",
@@ -78,7 +65,7 @@ export class OllamaHandler extends LLMHandler {
       })
     });
 
-    const data = await response.json() as OllamaResponse;
+    const data = await response.json();
     
     generation.end({
       output: data

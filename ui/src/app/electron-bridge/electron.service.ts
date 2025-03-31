@@ -42,6 +42,8 @@ import {
   IUserStoriesRequest,
   IUserStoryResponse,
 } from '../model/interfaces/IUserStory';
+import { AutoUpdateModalComponent } from '../components/auto-update-modal/auto-update-modal.component';
+import { htmlToMarkdown } from '../utils/html.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -432,5 +434,49 @@ export class ElectronService {
     if (this.electronAPI) {
       await this.electronAPI.invoke('removeStoreValue', key);
     }
+  }
+
+  // App auto updater functions
+  async checkForUpdates(force: boolean = false) {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+    
+    // Check whether auto update is turned on
+    const { isAutoUpdate = true } = await this.electronAPI.getStoreValue('APP_CONFIG') || {};
+    if (!force && !isAutoUpdate) {
+      return;
+    }
+
+    // Check whether there are any newer update
+    const response = await this.ipc.request({
+      channel: 'app-updater:check-for-updates'
+    });
+    if (!response) {
+      return;
+    }
+
+    // Trigger auto updater modal
+    this.dialog.open(AutoUpdateModalComponent, {
+      width: '600px',
+      disableClose: true,
+      data: {
+        version: response.version,
+        currentVersion: response.currentVersion,
+        releaseDate: response.releaseDate,
+        releaseNotes: await htmlToMarkdown(response.releaseNotes ?? '')
+      }
+    });
+  }
+
+  async downloadUpdates(version: string) {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+
+    return this.ipc.request({
+      channel: 'app-updater:download-updates',
+      args: [{ version }]
+    });
   }
 }

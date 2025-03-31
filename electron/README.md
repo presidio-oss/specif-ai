@@ -33,18 +33,7 @@ npm install
 
 ### Development Mode
 
-1. **Enable Development Features**: In `app.js`, uncomment the following lines to enable hot-reloading and open developer tools for debugging:
-   ```javascript
-   mainWindow.webContents.openDevTools();
-
-   require('electron-reload')(__dirname, {
-      electron: path.join(__dirname, "node_modules", ".bin", "electron"),
-      forceHardReset: true,
-      hardResetMethod: 'exit'
-   });
-   ```
-
-2. **Build Angular UI Application**: 
+1. **Build Angular UI Application**: 
    - Navigate to the `ui/` directory and install all necessary npm packages using the command below:
      ```bash
      npm install
@@ -58,27 +47,16 @@ npm install
      npm run watch:ui
      ```
 
-3. **Start the Application**: Once the Angular UI is compiled and the build files are copied to the Electron directory, launch the Electron application:
+3. **Start the Application**: Once the Angular UI is compiled and the build files are copied to the Electron directory, build and launch the Electron application:
    ```bash
-   npm run serve:electron
+   npm run start
    ```
 
 > **Note**: Ensure the Angular UI build (step 2) is completed before starting step 3.
 
 ## 🏗️ Building
 
-1. **Disable Development Features**: Ensure that developer tools are disabled in production to prevent exposure of sensitive information. Comment out the development-specific lines in `app.js`:
-   ```javascript
-   // mainWindow.webContents.openDevTools();
-
-   // require('electron-reload')(__dirname, {
-   //   electron: path.join(__dirname, "node_modules", ".bin", "electron"),
-   //   forceHardReset: true,
-   //   hardResetMethod: 'exit'
-   // });
-   ```
-
-2. **Configure Code Signing**:
+1. **Configure Code Signing**:
    - **Default**: Enabled for macOS.
    - **Disable**: Remove the following from `package.json` to disable:
      ```json

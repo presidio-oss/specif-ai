@@ -49,6 +49,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.initializeLLMConfig();
+    this.electronService.checkForUpdates();
 
     this.subscriptions.push(
       this.startupService.isLoggedIn$

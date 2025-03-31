@@ -1,6 +1,23 @@
 # Changelog
 
-## 1.9.10
+## [2.0.0]
+
+### Added
+
+- Migrated core backend from Python to electron IPC layer
+- Added auto updater for the electron app
+- Added support to access any AWS Bedrock Knowledge base
+- Added feasibility for users to add own LLM Configuration
+
+### Fixed
+
+- Fixed unable to update/add task with AI
+- Fixed instruction in requirement update prompt to output only single requirement
+- Fixed user information getting cleared in login screen
+- Fixed handling corrupted/invalid solution files during directory loading
+- Fixed UI inconsistencies in BP and file upload button
+
+## [1.9.10]
 
 ### Enhancements
 
