@@ -30,6 +30,25 @@ const getModelOptions = async(provider: string) => {
 export async function getLLMProviderConfig(provider: string) {
   const options = await getModelOptions(provider);
   const LLM_PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
+    ollama: {
+      fields: [
+        {
+          name: 'baseUrl',
+          type: 'text',
+          label: 'Base URL',
+          required: true,
+          placeholder: 'http://localhost:11434',
+          defaultValue: 'http://localhost:11434'
+        },
+        {
+          name: 'model',
+          type: 'text',
+          label: 'Model',
+          required: true,
+          placeholder: 'Enter model name (e.g., llama2, codellama)'
+        }
+      ]
+    },
     openrouter: {
       fields: [
         {

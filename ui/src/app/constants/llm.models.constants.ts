@@ -5,6 +5,7 @@ export const AvailableProviders = [
   { displayName: 'Gemini', key: 'gemini' },
   { displayName: 'Anthropic', key: 'anthropic' },
   { displayName: 'OpenRouter', key: 'openrouter' },
+  { displayName: 'Ollama', key: 'ollama' },
 ];
 
 const OPENROUTER_FALLBACK_MODELS = [
@@ -27,7 +28,6 @@ export async function getProviderModels(provider: string): Promise<string[]> {
   }
 
   const modelMap: { [key: string]: string[] } = {
-    'openai': ['gpt-4o', 'gpt-4o-mini'],
     'openai-native': ['gpt-4o', 'gpt-4o-mini'],
     'bedrock': [
       'anthropic.claude-3-5-sonnet-20241022-v2:0',
