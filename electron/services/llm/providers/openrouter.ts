@@ -12,6 +12,7 @@ interface OpenRouterConfig extends LLMConfig {
 export class OpenRouterHandler extends LLMHandler {
   private client: OpenAI;
   protected configData: OpenRouterConfig;
+  private defaultBaseUrl: string = 'https://openrouter.ai/api/v1'
 
   constructor(config: Partial<OpenRouterConfig>) {
     super();
@@ -19,7 +20,7 @@ export class OpenRouterHandler extends LLMHandler {
 
     this.client = new OpenAI({
       apiKey: this.configData.apiKey,
-      baseURL: this.configData.baseUrl || 'https://openrouter.ai/api/v1',
+      baseURL: this.configData.baseUrl || this.defaultBaseUrl,
     });
   }
 
@@ -34,7 +35,7 @@ export class OpenRouterHandler extends LLMHandler {
     return {
       apiKey: config.apiKey,
       model: config.model,
-      baseUrl: config.baseUrl || 'https://openrouter.ai/api/v1',
+      baseUrl: config.baseUrl || this.defaultBaseUrl
     };
   }
 
