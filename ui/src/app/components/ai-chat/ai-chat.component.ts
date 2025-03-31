@@ -89,6 +89,7 @@ export class AiChatComponent implements OnInit {
   @Input() supportsAddFromCode: boolean = true;
   @Input() prd: string | undefined;
   @Input() userStory: string | undefined;
+  @Input() containerClass: string = '';
 
   metadata: any = {};
   isKbAvailable: boolean = false;

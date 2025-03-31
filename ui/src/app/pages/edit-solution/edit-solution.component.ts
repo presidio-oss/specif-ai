@@ -25,7 +25,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { CommonModule, NgClass, NgFor, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
@@ -50,6 +50,8 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { CheckboxCardComponent } from 'src/app/components/checkbox-card/checkbox-card.component';
+import { PillComponent } from "../../components/pill/pill.component";
 
 @Component({
   selector: 'app-edit-solution',
@@ -68,7 +70,10 @@ import { truncateMarkdown } from 'src/app/utils/markdown.utils';
     MultiUploadComponent,
     MatTooltipModule,
     RichTextEditorComponent,
-  ],
+    CommonModule,
+    CheckboxCardComponent,
+    PillComponent
+],
   providers: [
     provideIcons({
       heroSparklesSolid,
@@ -250,9 +255,11 @@ export class EditSolutionComponent {
     return Promise.resolve(true); // proceed with update for non-BRD updates
   }
 
-  async updateRequirementWithAI() {
-    const shouldProceed = await this.preUpdateChecks();
-    if (!shouldProceed) return;
+  async updateRequirementWithAI(skipPreUpdateChecks = false) {
+    if (!skipPreUpdateChecks) {
+      const shouldProceed = await this.preUpdateChecks();
+      if (!shouldProceed) return;
+    }
 
     const formValue = this.requirementForm.getRawValue();
 
@@ -502,7 +509,10 @@ export class EditSolutionComponent {
       .filter(<T>(x: T): x is NonNullable<T> => x != null);
   }
 
-  appendRequirement(data: any) {
+  async appendRequirement(data: any) {
+    const shouldProceed = await this.preUpdateChecks();
+    if (!shouldProceed) return;
+
     let { chat, chatHistory } = data;
     if (chat.assistant) {
       this.requirementForm.patchValue({
@@ -514,7 +524,7 @@ ${chat.assistant}`,
         else return item;
       });
       this.chatHistory = newArray;
-      this.updateRequirementWithAI();
+      this.updateRequirementWithAI(true);
     }
   }
 
@@ -581,7 +591,7 @@ ${chat.assistant}`,
 
         // For PRDs pre populate the linked brd ids
         if (this.isPRD()) {
-          this.currentLinkedBRDIds = res.linkedBRDIds;
+          this.currentLinkedBRDIds = res.linkedBRDIds ?? [];
           this.requirementForm.patchValue({
             linkedBRDIds: res.linkedBRDIds ?? [],
           });
@@ -705,9 +715,9 @@ ${chat.assistant}`,
   }
 
   removeLinkedBRDForPRD(brdId: string) {
-    const currentBrdIds = this.requirementForm.get('linkedBRDIds')?.value || [];
-    const updatedBrdIds = currentBrdIds.filter((id: string) => id !== brdId);
-    this.requirementForm.patchValue({ linkedBRDIds: updatedBrdIds });
+    const currentBRDIds = this.requirementForm.get('linkedBRDIds')?.value || [];
+    const updatedBRDIds = currentBRDIds.filter((id: string) => id !== brdId);
+    this.requirementForm.patchValue({ linkedBRDIds: updatedBRDIds });
   }
 
   removeLinkedPRDFromBRD(toRemovePRDId: string) {
@@ -718,9 +728,7 @@ ${chat.assistant}`,
     this.requirementForm.patchValue({ linkedToPRDIds: updatedPRDs });
   }
 
-  handleLinkedBRDSelectionForPRD(event: any) {
-    const brdId = event.target.value;
-    const isChecked = event.target.checked;
+  handleLinkedBRDSelectionForPRD(brdId:string, isChecked: boolean) {
     const currentBrdIds = this.requirementForm.get('linkedBRDIds')?.value || [];
 
     if (isChecked && !currentBrdIds.includes(brdId)) {
