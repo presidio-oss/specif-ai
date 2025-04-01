@@ -23,6 +23,7 @@ import { Router } from '@angular/router';
 import { IList } from '../../model/interfaces/IList';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import {
+  APP_CONSTANTS,
   BP_FILE_KEYS,
   REQUIREMENT_DISPLAY_NAME_MAP,
   REQUIREMENT_TYPE,
@@ -168,6 +169,7 @@ export class ProjectsState {
         description: metadata.description,
         cleanSolution: metadata.cleanSolution,
         refDocContent: metadata.refDocContent,
+        projectDir: `${localStorage.getItem(APP_CONSTANTS.WORKING_DIR)}/${projectName}`,
         brdPreferences: {
           max_count: metadata.BRD.maxCount,
           isEnabled: metadata.BRD.enabled,

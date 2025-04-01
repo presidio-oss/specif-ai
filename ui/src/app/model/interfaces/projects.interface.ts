@@ -41,6 +41,7 @@ export interface ICreateSolutionRequest {
   createReqt: boolean;
   cleanSolution: boolean;
   refDocContent: string;
+  projectDir: string | null;
   brdPreferences: IGenerationRange;
   prdPreferences: IGenerationRange;
   uirPreferences: IGenerationRange;

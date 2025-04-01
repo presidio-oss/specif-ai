@@ -15,6 +15,7 @@ export const createSolutionSchema = z.object({
   createReqt: z.boolean().optional(),
   cleanSolution: z.boolean(),
   refDocContent: z.string().optional(),
+  projectDir: z.string(),
   brdPreferences: generationRangeSchema,
   prdPreferences: generationRangeSchema,
   uirPreferences: generationRangeSchema,
@@ -28,6 +29,7 @@ export type SolutionResponse = {
   nfr?: Array<{ id: string; title: string; requirement: string }>;
   prd?: Array<{ id: string; title: string; requirement: string }>;
   uir?: Array<{ id: string; title: string; requirement: string }>;
+  projectDir: string,
   createReqt: boolean;
   description: string;
   name: string;

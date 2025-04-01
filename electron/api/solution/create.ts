@@ -9,7 +9,7 @@ import { createPRDPrompt } from '../../prompts/solution/create-prd';
 import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
-import { DocumentRetriever } from '../../services/document-retriever.ts';
+import { DocumentRetriever } from '../../services/document-retriever';
 import { requirementAnalysisPrompt } from '../../prompts/context/requirement-analysis';
 import { getVectorSearchQuery } from '../../utils/get-vector-search-query';
 
@@ -29,7 +29,8 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     const results: SolutionResponse = {
       createReqt: validatedData.createReqt ?? false,
       description: validatedData.description,
-      name: validatedData.name
+      name: validatedData.name,
+      projectDir: validatedData.projectDir
     };
 
     type RequirementType = {
@@ -51,7 +52,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     );
 
     if (isReferenceDocProvided && refDocContent) {
-      await DocumentRetriever.initializeVectorStore(refDocContent);
+      await DocumentRetriever.initializeVectorStore(refDocContent, validatedData.projectDir);
     }
 
     for (const { key, generatePrompt, preferencesKey } of requirementTypes) {
@@ -80,10 +81,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
               ),
               3
             );
-            const context = relevantDocs
-              .map((doc) => doc.pageContent)
-              .join("\n\n");
-            systemPrompt = requirementAnalysisPrompt(context, key);
+            systemPrompt = requirementAnalysisPrompt(relevantDocs, key);
           } catch (error) {
             console.error(
               "[create-solution] Error processing document:",
