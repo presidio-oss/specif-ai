@@ -98,12 +98,6 @@ export class BedrockHandler extends LLMHandler {
       };
     }
 
-    const generation = this.trace.generation({
-      name: TRACES.CHAT_BEDROCK_CONVERSE,
-      model: this.configData.model,
-      input: requestBody
-    });
-
     const command = new InvokeModelCommand({
       modelId: this.configData.model,
       body: JSON.stringify(requestBody),
@@ -111,12 +105,18 @@ export class BedrockHandler extends LLMHandler {
 
     const response = await this.client.send(command);
 
-    generation.end({
-      output: response
-    });
-
     // Parse response based on model provider
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+    const totalTokens = responseBody?.usage?.output_tokens + responseBody?.usage?.input_tokens;
+    this.trace.generation({
+      name: TRACES.CHAT_BEDROCK_CONVERSE,
+      model: this.configData.model,
+      usage: {
+        input: responseBody?.usage?.input_tokens,
+        output: responseBody?.usage?.output_tokens,
+        total: totalTokens
+      },
+    });
 
     if (this.configData.model.includes("anthropic")) {
       if (!responseBody.content?.[0]?.text) {

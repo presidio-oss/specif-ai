@@ -73,21 +73,21 @@ export class AzureOpenAIHandler extends LLMHandler {
       ...(msg.name && { name: msg.name }),
     })) as any[];
 
-    const generation = this.trace.generation({
-      name: TRACES.CHAT_COMPLETION,
-      model: this.configData.deployment,
-      modelParameters: this.modelParameters,
-      input: openAIMessages,
-    });
-
     const response = await this.client.chat.completions.create({
       model: this.configData.deployment,
       messages: openAIMessages,
       ...this.modelParameters,
     });
 
-    generation.end({
-      output: response,
+    this.trace.generation({
+      name: TRACES.CHAT_COMPLETION,
+      model: this.configData.deployment,
+      modelParameters: this.modelParameters,
+      usage: {
+        input: response?.usage?.prompt_tokens,
+        output: response?.usage?.completion_tokens,
+        total: response?.usage?.total_tokens,
+      },
     });
 
     if (!response.choices?.[0]?.message?.content) {

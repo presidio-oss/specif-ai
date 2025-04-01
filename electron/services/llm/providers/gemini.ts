@@ -75,19 +75,20 @@ export class GeminiHandler extends LLMHandler {
       history: history.slice(0, -1),
     });
 
-    const generation = this.trace.generation({
-      name: TRACES.CHAT_GEMINI,
-      model: this.configData.model,
-      input: { messages: history, lastMessage: messageList[messageList.length - 1] }
-    });
 
     // Send the last message
     const lastMessage = messageList[messageList.length - 1];
     const result = await chat.sendMessage(lastMessage.content);
     const response = result.response;
 
-    generation.end({
-      output: response
+    this.trace.generation({
+      name: TRACES.CHAT_GEMINI,
+      model: this.configData.model,
+      usage: {
+        input: response.usageMetadata?.promptTokenCount,
+        output: response.usageMetadata?.candidatesTokenCount,
+        total: response.usageMetadata?.totalTokenCount
+      },
     });
 
     if (!response.text()) {

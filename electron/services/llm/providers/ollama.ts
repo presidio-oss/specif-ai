@@ -2,6 +2,7 @@ import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
 import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface OllamaConfig extends LLMConfig {
   baseUrl: string;
@@ -47,12 +48,6 @@ export class OllamaHandler extends LLMHandler {
       content: msg.content
     })));
 
-    const generation = this.trace.generation({
-      name: "chat-completion",
-      model: this.configData.model,
-      input: { messages: messageList }
-    });
-
     const response = await fetch(`${this.configData.baseUrl}/api/chat`, {
       method: 'POST',
       headers: {
@@ -66,9 +61,10 @@ export class OllamaHandler extends LLMHandler {
     });
 
     const data = await response.json();
-    
-    generation.end({
-      output: data
+
+    this.trace.generation({
+      name: TRACES.CHAT_OLLAMA,
+      model: this.configData.model,
     });
 
     if (!response.ok) {
