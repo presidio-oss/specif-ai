@@ -90,8 +90,6 @@ export class AzureOpenAIHandler extends LLMHandler {
       output: response,
     });
 
-    console.log("Azure openai response", response);
-
     if (!response.choices?.[0]?.message?.content) {
       throw new LLMError(
         "No response content received from Azure OpenAI API",
