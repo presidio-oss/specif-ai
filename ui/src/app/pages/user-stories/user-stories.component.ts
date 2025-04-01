@@ -417,9 +417,7 @@ export class UserStoriesComponent implements OnInit {
       .open()
       .afterClosed()
       .subscribe((emittedValue) => {
-        if (emittedValue) {
-          this.generateUserStories(regenerate, emittedValue);
-        }
+        this.generateUserStories(regenerate, emittedValue);
       });
   }
 
