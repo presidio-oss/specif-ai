@@ -40,7 +40,6 @@ import {
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ArchiveUserStory } from '../../store/user-stories/user-stories.actions';
-import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
@@ -389,10 +388,10 @@ export class EditUserStoriesComponent implements OnDestroy {
           this.existingUserForm.id,
         ),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
       })
       .subscribe((res) => {
-        if (!res) {
+        if (res) {
           this.store.dispatch(
             new ArchiveUserStory(
               this.absoluteFilePath,

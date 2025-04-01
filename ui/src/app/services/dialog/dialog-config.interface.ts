@@ -12,6 +12,6 @@ export interface DialogConfig<T = any> {
 export interface ConfirmationDialogData {
   title: string;
   description: string;
-  proceedButtonText?: string;
+  confirmButtonText?: string;
   cancelButtonText?: string;
 }

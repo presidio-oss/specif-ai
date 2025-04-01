@@ -471,10 +471,10 @@ ${chat.assistant}`,
           this.existingTask.id,
         ),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
       })
       .subscribe((res) => {
-        if (!res) {
+        if (res) {
           this.store.dispatch(
             new ArchiveTask(
               this.absoluteFilePath,

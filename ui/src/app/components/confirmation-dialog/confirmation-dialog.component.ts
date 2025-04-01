@@ -14,11 +14,11 @@ export class ConfirmationDialogComponent {
 
   readonly dialogRef = inject(MatDialogRef<ConfirmationDialogComponent>);
 
-  onStay() {
-    this.dialogRef.close(false);
+  onConfirm() {
+    this.dialogRef.close(true);
   }
 
-  onLeave() {
-    this.dialogRef.close(true);
+  onCancel() {
+    this.dialogRef.close(false);
   }
 }

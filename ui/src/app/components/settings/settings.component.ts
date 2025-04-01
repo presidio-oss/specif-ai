@@ -26,7 +26,6 @@ import { NgForOf, NgIf } from '@angular/common';
 import { StartupService } from '../../services/auth/startup.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import {
   APP_CONSTANTS,
   CONFIRMATION_DIALOG,
@@ -421,10 +420,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
         title: CONFIRMATION_DIALOG.LOGOUT.TITLE,
         description: CONFIRMATION_DIALOG.LOGOUT.DESCRIPTION,
         cancelButtonText: CONFIRMATION_DIALOG.LOGOUT.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.LOGOUT.PROCEED_BUTTON_TEXT,
+        confirmButtonText: CONFIRMATION_DIALOG.LOGOUT.PROCEED_BUTTON_TEXT,
       })
       .subscribe((confirmed: boolean) => {
-        if (!confirmed) this.startupService.logout();
+        if (confirmed) this.startupService.logout();
       });
   }
 

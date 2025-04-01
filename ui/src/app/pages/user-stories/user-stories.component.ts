@@ -43,7 +43,6 @@ import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
-import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import {
   CONFIRMATION_DIALOG,
   REQUIREMENT_TYPE,
@@ -504,10 +503,10 @@ export class UserStoriesComponent implements OnInit {
         title: dialogConfig.TITLE,
         description: dialogConfig.DESCRIPTION,
         cancelButtonText: dialogConfig.CANCEL_BUTTON_TEXT,
-        proceedButtonText: dialogConfig.PROCEED_BUTTON_TEXT,
+        confirmButtonText: dialogConfig.PROCEED_BUTTON_TEXT,
       })
       .subscribe((res) => {
-        if (!res) onConfirm();
+        if (res) onConfirm();
       });
   }
 

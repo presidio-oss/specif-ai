@@ -34,7 +34,6 @@ import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { MultiUploadComponent } from '../../components/multi-upload/multi-upload.component';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { ErrorMessageComponent } from '../../components/core/error-message/error-message.component';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import {
   CONFIRMATION_DIALOG,
   ERROR_MESSAGES,
@@ -402,10 +401,10 @@ ${chat.assistant}`,
         title: CONFIRMATION_DIALOG.DELETION.TITLE,
         description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(reqId),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
       })
       .subscribe((res) => {
-        if (res === false) {
+        if (res) {
           this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
           this.allowFreeRedirection = true;
           this.navigateBackToDocumentList(this.initialData);

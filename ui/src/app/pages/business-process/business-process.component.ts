@@ -32,7 +32,6 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { ExpandDescriptionPipe } from '../../pipes/expand-description.pipe';
@@ -606,10 +605,10 @@ export class BusinessProcessComponent implements OnInit {
           this.bpRequirementId,
         ),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
       })
       .subscribe((res) => {
-        if (!res) {
+        if (res) {
           this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
           this.allowFreeEdit = true;
           this.navigateBackToDocumentList(this.data);
