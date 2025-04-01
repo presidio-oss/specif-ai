@@ -109,7 +109,9 @@ export class BedrockHandler extends LLMHandler {
     // Parse response based on model provider
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
     const totalTokens = responseBody?.usage?.output_tokens + responseBody?.usage?.input_tokens;
-    const trace = this.observabilityManager.createTrace(TRACES.CHAT_BEDROCK_CONVERSE);
+
+    const traceName = `${TRACES.CHAT_BEDROCK_CONVERSE}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
     
     trace.generation({
       name: operation,

@@ -92,8 +92,9 @@ export class OpenAIHandler extends LLMHandler {
       stream: false,
     });
 
-    const trace = this.observabilityManager.createTrace(TRACES.CHAT_COMPLETION);
-    
+    const traceName = `${TRACES.CHAT_COMPLETION}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+
     trace.generation({
       name: operation,
       model: this.getModel().id,

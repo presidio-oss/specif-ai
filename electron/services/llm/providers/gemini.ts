@@ -82,8 +82,9 @@ export class GeminiHandler extends LLMHandler {
     const result = await chat.sendMessage(lastMessage.content);
     const response = result.response;
 
-    const trace = this.observabilityManager.createTrace(TRACES.CHAT_GEMINI);
-    
+    const traceName = `${TRACES.CHAT_GEMINI}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+
     trace.generation({
       name: operation,
       model: this.configData.model,

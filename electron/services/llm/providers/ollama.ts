@@ -66,8 +66,9 @@ export class OllamaHandler extends LLMHandler {
 
     const data = await response.json();
 
-    const trace = this.observabilityManager.createTrace(TRACES.CHAT_OLLAMA);
-    
+    const traceName = `${TRACES.CHAT_OLLAMA}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+
     trace.generation({
       name: operation,
       model: this.configData.model,

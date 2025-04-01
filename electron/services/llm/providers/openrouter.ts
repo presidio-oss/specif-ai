@@ -65,8 +65,9 @@ export class OpenRouterHandler extends LLMHandler {
       temperature: 0.7,
     });
 
-    const trace = this.observabilityManager.createTrace(TRACES.CHAT_OPENROUTER);
-    
+    const traceName = `${TRACES.CHAT_OPENROUTER}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);    
+
     trace.generation({
       name: operation,
       model: this.configData.model,
