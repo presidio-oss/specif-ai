@@ -25,7 +25,7 @@ export class AzureOpenAIHandler extends LLMHandler {
     temperature: 0.7,
     max_tokens: 1000,
   };
-  private trace = new ObservabilityManager().getTrace();
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<AzureOpenAIConfig>) {
     super();
@@ -79,8 +79,10 @@ export class AzureOpenAIHandler extends LLMHandler {
       ...this.modelParameters,
     });
 
-    this.trace.generation({
-      name: TRACES.CHAT_COMPLETION,
+    const trace = this.observabilityManager.createTrace(`azure_${this.configData.deployment}`);
+    
+    trace.generation({
+      name: "invoke",
       model: this.configData.deployment,
       modelParameters: this.modelParameters,
       usage: {

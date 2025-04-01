@@ -19,7 +19,7 @@ interface BedrockConfig extends LLMConfig {
 export class BedrockHandler extends LLMHandler {
   private client: BedrockRuntimeClient;
   protected configData: BedrockConfig;
-  private trace = new ObservabilityManager().getTrace();
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<BedrockConfig>) {
     super();
@@ -108,8 +108,10 @@ export class BedrockHandler extends LLMHandler {
     // Parse response based on model provider
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
     const totalTokens = responseBody?.usage?.output_tokens + responseBody?.usage?.input_tokens;
-    this.trace.generation({
-      name: TRACES.CHAT_BEDROCK_CONVERSE,
+    const trace = this.observabilityManager.createTrace(`bedrock_${this.configData.model}`);
+    
+    trace.generation({
+      name: "invoke",
       model: this.configData.model,
       usage: {
         input: responseBody?.usage?.input_tokens,

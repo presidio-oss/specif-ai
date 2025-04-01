@@ -14,7 +14,7 @@ export class GeminiHandler extends LLMHandler {
   private client: GenerativeModel;
   protected configData: GeminiConfig;
   private defaultModel = "gemini-2.0-flash-001";
-  private trace = new ObservabilityManager().getTrace();
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<GeminiConfig>) {
     super();
@@ -81,8 +81,10 @@ export class GeminiHandler extends LLMHandler {
     const result = await chat.sendMessage(lastMessage.content);
     const response = result.response;
 
-    this.trace.generation({
-      name: TRACES.CHAT_GEMINI,
+    const trace = this.observabilityManager.createTrace(`gemini_${this.configData.model}`);
+    
+    trace.generation({
+      name: "invoke",
       model: this.configData.model,
       usage: {
         input: response.usageMetadata?.promptTokenCount,

@@ -12,7 +12,7 @@ interface OllamaConfig extends LLMConfig {
 export class OllamaHandler extends LLMHandler {
   protected configData: OllamaConfig;
   private defaultBaseUrl = 'http://localhost:11434';
-  private trace = new ObservabilityManager().getTrace();
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<OllamaConfig>) {
     super();
@@ -62,8 +62,10 @@ export class OllamaHandler extends LLMHandler {
 
     const data = await response.json();
 
-    this.trace.generation({
-      name: TRACES.CHAT_OLLAMA,
+    const trace = this.observabilityManager.createTrace(`ollama_${this.configData.model}`);
+    
+    trace.generation({
+      name: "invoke",
       model: this.configData.model,
     });
 

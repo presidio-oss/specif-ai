@@ -15,7 +15,7 @@ export class OpenRouterHandler extends LLMHandler {
   private client: OpenAI;
   protected configData: OpenRouterConfig;
   private defaultBaseUrl: string = 'https://openrouter.ai/api/v1'
-  private trace = new ObservabilityManager().getTrace();
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<OpenRouterConfig>) {
     super();
@@ -64,15 +64,17 @@ export class OpenRouterHandler extends LLMHandler {
       temperature: 0.7,
     });
 
-    this.trace.generation({
-      name: TRACES.CHAT_COMPLETION,
+    const trace = this.observabilityManager.createTrace(`openrouter_${this.configData.model}`);
+    
+    trace.generation({
+      name: "invoke",
       model: this.configData.model,
       usage: {
         input: response.usage?.prompt_tokens,
         output: response.usage?.completion_tokens,
         total: response.usage?.total_tokens
-      },
-    })
+      }
+    });
     
     if (!response.choices?.[0]?.message?.content) {
       throw new LLMError(

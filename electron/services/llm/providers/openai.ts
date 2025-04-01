@@ -17,7 +17,7 @@ interface OpenAIConfig extends LLMConfig {
 export class OpenAIHandler extends LLMHandler {
   private client: OpenAI | AzureOpenAI;
   protected configData: OpenAIConfig;
-  private trace = new ObservabilityManager().getTrace();
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<OpenAIConfig>) {
     super();
@@ -85,20 +85,22 @@ export class OpenAIHandler extends LLMHandler {
       return msg.name ? { ...baseMsg, name: msg.name } : baseMsg;
     });
 
-    const generation = this.trace.generation({
-      name: "chat-completion",
-      model: this.getModel().id,
-      input: { messages: openAIMessages }
-    });
-
     const response = await this.client.chat.completions.create({
       model: this.getModel().id,
       messages: openAIMessages,
       stream: false,
     });
 
-    generation.end({
-      output: response
+    const trace = this.observabilityManager.createTrace(`openai_${this.configData.model}`);
+    
+    trace.generation({
+      name: "invoke",
+      model: this.getModel().id,
+      usage: {
+        input: response.usage?.prompt_tokens,
+        output: response.usage?.completion_tokens,
+        total: response.usage?.total_tokens
+      }
     });
 
     if (!response.choices?.[0]?.message?.content) {
