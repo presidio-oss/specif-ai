@@ -71,7 +71,8 @@ export class OpenAIHandler extends LLMHandler {
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -91,10 +92,10 @@ export class OpenAIHandler extends LLMHandler {
       stream: false,
     });
 
-    const trace = this.observabilityManager.createTrace(`openai_${this.configData.model}`);
+    const trace = this.observabilityManager.createTrace(TRACES.CHAT_COMPLETION);
     
     trace.generation({
-      name: "invoke",
+      name: operation,
       model: this.getModel().id,
       usage: {
         input: response.usage?.prompt_tokens,

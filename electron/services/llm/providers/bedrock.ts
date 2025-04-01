@@ -70,7 +70,8 @@ export class BedrockHandler extends LLMHandler {
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -108,10 +109,10 @@ export class BedrockHandler extends LLMHandler {
     // Parse response based on model provider
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
     const totalTokens = responseBody?.usage?.output_tokens + responseBody?.usage?.input_tokens;
-    const trace = this.observabilityManager.createTrace(`bedrock_${this.configData.model}`);
+    const trace = this.observabilityManager.createTrace(TRACES.CHAT_BEDROCK_CONVERSE);
     
     trace.generation({
-      name: "invoke",
+      name: operation,
       model: this.configData.model,
       usage: {
         input: responseBody?.usage?.input_tokens,

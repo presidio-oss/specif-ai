@@ -39,7 +39,7 @@ export async function createFlowchart(event: IpcMainInvokeEvent, data: unknown):
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "visualization:flowchart");
     console.log('[create-flowchart] LLM Response:', response);
 
     return {

@@ -2,5 +2,6 @@ export const TRACES = {
     CHAT_COMPLETION: "chat-completion",
     CHAT_BEDROCK_CONVERSE: "ChatBedrockConverse",
     CHAT_GEMINI: "ChatGoogleGenerativeAI",
-    CHAT_OLLAMA: "ollama-completion"
+    CHAT_OLLAMA: "ollama-completion",
+    CHAT_OPENROUTER: "ChatOpenRouter"
 }

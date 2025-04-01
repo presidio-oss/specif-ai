@@ -61,7 +61,8 @@ export class AzureOpenAIHandler extends LLMHandler {
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -79,10 +80,10 @@ export class AzureOpenAIHandler extends LLMHandler {
       ...this.modelParameters,
     });
 
-    const trace = this.observabilityManager.createTrace(`azure_${this.configData.deployment}`);
+    const trace = this.observabilityManager.createTrace(TRACES.CHAT_COMPLETION);
     
     trace.generation({
-      name: "invoke",
+      name: operation,
       model: this.configData.deployment,
       modelParameters: this.modelParameters,
       usage: {

@@ -58,7 +58,8 @@ export class GeminiHandler extends LLMHandler {
   })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -81,10 +82,10 @@ export class GeminiHandler extends LLMHandler {
     const result = await chat.sendMessage(lastMessage.content);
     const response = result.response;
 
-    const trace = this.observabilityManager.createTrace(`gemini_${this.configData.model}`);
+    const trace = this.observabilityManager.createTrace(TRACES.CHAT_GEMINI);
     
     trace.generation({
-      name: "invoke",
+      name: operation,
       model: this.configData.model,
       usage: {
         input: response.usageMetadata?.promptTokenCount,

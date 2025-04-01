@@ -31,7 +31,11 @@ export class OllamaHandler extends LLMHandler {
   }
 
   @withRetry({ retryAllErrors: true })
-  async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
+  async invoke(
+    messages: Message[],
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
+  ): Promise<string> {
     const messageList = [];
     
     // Add system prompt if provided
@@ -62,10 +66,10 @@ export class OllamaHandler extends LLMHandler {
 
     const data = await response.json();
 
-    const trace = this.observabilityManager.createTrace(`ollama_${this.configData.model}`);
+    const trace = this.observabilityManager.createTrace(TRACES.CHAT_OLLAMA);
     
     trace.generation({
-      name: "invoke",
+      name: operation,
       model: this.configData.model,
     });
 

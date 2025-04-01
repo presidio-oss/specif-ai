@@ -45,7 +45,8 @@ export class OpenRouterHandler extends LLMHandler {
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: 'system', content: systemPrompt }, ...messages]
@@ -64,10 +65,10 @@ export class OpenRouterHandler extends LLMHandler {
       temperature: 0.7,
     });
 
-    const trace = this.observabilityManager.createTrace(`openrouter_${this.configData.model}`);
+    const trace = this.observabilityManager.createTrace(TRACES.CHAT_OPENROUTER);
     
     trace.generation({
-      name: "invoke",
+      name: operation,
       model: this.configData.model,
       usage: {
         input: response.usage?.prompt_tokens,

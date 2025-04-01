@@ -33,7 +33,7 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "task:create");
     console.log('[create-task] LLM Response:', response);
 
     let result;
