@@ -1,5 +1,6 @@
 import { Langfuse } from "langfuse";
 import { store } from '../store';
+import { AppConfig } from ".././../schema/core/store.schema";
 
 export class ObservabilityManager {
   private static instance: ObservabilityManager;
@@ -66,8 +67,4 @@ export class ObservabilityManager {
       }
     };
   }
-}
-
-interface AppConfig {
-  username?: string;
 }
