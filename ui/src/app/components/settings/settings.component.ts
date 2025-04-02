@@ -4,6 +4,7 @@ import {
   OnDestroy,
   ChangeDetectorRef,
   inject,
+  HostListener,
 } from '@angular/core';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
@@ -74,12 +75,24 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private initialAutoUpdateState: boolean = true;
   protected themeConfiguration = environment.ThemeConfiguration;
 
+  showDropdown: boolean = false;
+  filteredOptions: { value: string; label: string }[] = [];
+  private allOptions: { value: string; label: string }[] = [];
+
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
   analyticsWarning: string = '';
+
+  @HostListener('document:click', ['$event'])
+  onClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.autocomplete-container')) {
+      this.showDropdown = false;
+    }
+  }
 
   constructor(
     private store: Store,
@@ -101,6 +114,22 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
+  filterOptions(event: Event) {
+    const input = (event.target as HTMLInputElement).value.toLowerCase();
+    this.filteredOptions = this.allOptions.filter(option =>
+      option.label.toLowerCase().includes(input)
+    );
+    this.showDropdown = true;
+  }
+
+  selectOption(fieldName: string, value: string) {
+    const configGroup = this.configForm.get('config') as FormGroup;
+    if (configGroup) {
+      configGroup.get(fieldName)?.setValue(value);
+    }
+    this.showDropdown = false;
+  }
+
   private async updateConfigFields(provider: string) {
     const providerConfig = await getLLMProviderConfig(provider);
     if (!providerConfig) return;
@@ -116,6 +145,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
           field.required ? [Validators.required] : []
         )
       );
+
+      if (field.useAutocomplete && field.options) {
+        this.allOptions = field.options;
+        this.filteredOptions = field.options;
+      }
     });
     this.configForm.setControl('config', newConfigGroup);
     this.applyStoredConfigValues(provider);
