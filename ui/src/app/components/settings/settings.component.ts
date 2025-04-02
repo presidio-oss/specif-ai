@@ -9,25 +9,20 @@ import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
 import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
 import { Store } from '@ngxs/store';
-import {
-  AvailableProviders,
-} from '../../constants/llm.models.constants';
+import { AvailableProviders } from '../../constants/llm.models.constants';
+import { SetBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import {
   SetLLMConfig,
-  SwitchProvider,
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { StartupService } from '../../services/auth/startup.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import {
   APP_CONSTANTS,
-  CONFIRMATION_DIALOG,
 } from '../../constants/app.constants';
 import { environment } from 'src/environments/environment';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
@@ -82,13 +77,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
-  dialog = inject(MatDialog);
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
   analyticsWarning: string = '';
 
   constructor(
-    private modalRef: MatDialogRef<SettingsComponent>,
     private store: Store,
     private startupService: StartupService,
     private toasterService: ToasterService,
@@ -147,6 +140,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.store.dispatch(
+      new SetBreadcrumb(
+        {
+          label: 'Settings',
+          url: '/settings'
+        }
+      )
+    );
+
     this.electronService.getStoreValue('APP_CONFIG').then((value) => {
       const { isAutoUpdate = true } = value || {};
       this.autoUpdateEnabled.setValue(isAutoUpdate);
@@ -270,7 +272,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
             this.toasterService.showSuccess(
               `${providerDisplayName} configuration verified successfully.`,
             );
-            this.modalRef.close(true);
+            this.router.navigate(['/apps']);
             this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
               provider: provider,
               model: latestConfigValues.model || latestConfigValues.deployment,
@@ -325,7 +327,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   openFolderSelector() {
     this.selectRootDirectory().then();
-    this.modalRef.close(true);
   }
 
   onProviderChange() {
@@ -405,28 +406,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  closeModal() {
+  navigateToHome() {
     this.analyticsEnabled.setValue(this.initialAnalyticsState);
-    this.modalRef.close(false);
+    this.router.navigate(['/apps']);
   }
 
   logout() {
-    // Close the settings modal and open the logout confirmation dialog
-    this.modalRef.close(true);
-
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
-        title: CONFIRMATION_DIALOG.LOGOUT.TITLE,
-        description: CONFIRMATION_DIALOG.LOGOUT.DESCRIPTION,
-        cancelButtonText: CONFIRMATION_DIALOG.LOGOUT.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.LOGOUT.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) this.startupService.logout();
-    });
+    this.startupService.logout();
   }
 
   ngOnDestroy(): void {
