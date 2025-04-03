@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.0]
+
+### Added
+
+- Added Openrouter & Ollama Providers
+- Added Langfuse Observability
+
+### Enhancements
+
+- Enhanced existing getModelOptions to function for better flexibility
+- Added active provider to PostHog tracking
+
+### Fixed
+
+- Fixed Bedrock KB override to toggle only when bedrock credentials are present
+- Fixed Loader Lag issues in user story task generaton
+
 ## [2.0.0]
 
 ### Added
