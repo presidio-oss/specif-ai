@@ -1,6 +1,5 @@
 import { Component, inject, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ModalDialogCustomComponent } from '../modal-dialog/modal-dialog.component';
 import { ButtonComponent } from '../core/button/button.component';
 
 @Component({
@@ -13,13 +12,13 @@ import { ButtonComponent } from '../core/button/button.component';
 export class ConfirmationDialogComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
 
-  readonly dialogRef = inject(MatDialogRef<ModalDialogCustomComponent>);
+  readonly dialogRef = inject(MatDialogRef<ConfirmationDialogComponent>);
 
-  onStay() {
-    this.dialogRef.close(false);
+  onConfirm() {
+    this.dialogRef.close(true);
   }
 
-  onLeave() {
-    this.dialogRef.close(true);
+  onCancel() {
+    this.dialogRef.close(false);
   }
 }

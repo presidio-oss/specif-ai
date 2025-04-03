@@ -7,14 +7,14 @@
       theme="secondary"
       size="sm"
       rounded="lg"
-      (click)="onLeave()"
+      (click)="onCancel()"
     />
     <app-button
-      [buttonContent]="data.proceedButtonText || 'Proceed'"
+      [buttonContent]="data.confirmButtonText || 'Confirm'"
       theme="primary"
       size="sm"
       rounded="lg"
-      (click)="onStay()"
+      (click)="onConfirm()"
     />
   </div>
 </div>

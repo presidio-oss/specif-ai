@@ -18,8 +18,8 @@ import {
   DeleteBreadcrumb,
 } from '../../../store/breadcrumb/breadcrumb.actions';
 import { ModalDialogCustomComponent } from '../../../components/modal-dialog/modal-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import { ProjectsState } from '../../../store/projects/projects.state';
+import { DialogService } from '../../../services/dialog/dialog.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent } from '../../../components/core/button/button.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -68,7 +68,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   userStoryId: string | null = '';
   userStories: IUserStory[] = [];
   selectedUserStory!: IUserStory;
-  readonly dialog = inject(MatDialog);
+  readonly dialogService = inject(DialogService);
   metadata: any = {};
   currentLabel: string = '';
   entityType: string = 'TASK';
@@ -165,21 +165,21 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   addExtraContext(regenerate: boolean = false) {
-    const dialogText = {
-      title: 'Generate User Story Tasks',
-      description:
-        'Include additional context to generate relevant user story tasks',
-      placeholder: 'Add additional context for the user story tasks',
-    };
-
-    const dialogRef = this.dialog.open(ModalDialogCustomComponent, {
-      width: '600px',
-      data: dialogText,
-    });
-
-    dialogRef.componentInstance.generate.subscribe((emittedValue) => {
-      this.refineUserStoryIntoTasks(regenerate, emittedValue);
-    });
+    this.dialogService
+      .createBuilder()
+      .forComponent(ModalDialogCustomComponent)
+      .withData({
+        title: 'Generate User Story Tasks',
+        description:
+          'Include additional context to generate relevant user story tasks',
+        placeholder: 'Add additional context for the user story tasks',
+      })
+      .withWidth('600px')
+      .open()
+      .afterClosed()
+      .subscribe((emittedValue) => {
+        this.refineUserStoryIntoTasks(regenerate, emittedValue);
+      });
   }
 
   refineUserStoryIntoTasks(regenerate: boolean = false, extraContext: string) {
@@ -215,7 +215,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
         TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
       );
     });
-    this.dialog.closeAll();
+    this.dialogService.closeAll();
   }
 
   updateWithUserStories(userStories: IUserStory, regenerate: boolean = false) {

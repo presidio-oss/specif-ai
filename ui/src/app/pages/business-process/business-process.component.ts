@@ -32,7 +32,6 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { ExpandDescriptionPipe } from '../../pipes/expand-description.pipe';
@@ -50,6 +49,7 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { processPRDContentForView } from 'src/app/utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
   selector: 'app-business-process',
@@ -104,7 +104,7 @@ export class BusinessProcessComponent implements OnInit {
   editLabel: string = '';
   bpRequirementId: string = '';
   requirementTypes: any = RequirementTypeEnum;
-  readonly dialog = inject(MatDialog);
+  readonly dialogService = inject(DialogService);
   allowFreeEdit: boolean = false;
   activeTab: string = 'includeFiles';
   protected readonly JSON = JSON;
@@ -598,31 +598,28 @@ export class BusinessProcessComponent implements OnInit {
   }
 
   deleteBP() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    this.dialogService
+      .confirm({
         title: CONFIRMATION_DIALOG.DELETION.TITLE,
         description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(
           this.bpRequirementId,
         ),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) {
-        this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
-        this.allowFreeEdit = true;
-        this.navigateBackToDocumentList(this.data);
-        this.toastService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
-            this.folderName,
-            this.bpRequirementId,
-          ),
-        );
-      }
-    });
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+      })
+      .subscribe((res) => {
+        if (res) {
+          this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
+          this.allowFreeEdit = true;
+          this.navigateBackToDocumentList(this.data);
+          this.toastService.showSuccess(
+            TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
+              this.folderName,
+              this.bpRequirementId,
+            ),
+          );
+        }
+      });
   }
 
   checkFormValidity(): boolean {
