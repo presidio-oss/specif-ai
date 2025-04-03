@@ -80,7 +80,7 @@ export class AzureOpenAIHandler extends LLMHandler {
       ...this.modelParameters,
     });
 
-    const traceName = `${TRACES.CHAT_COMPLETION}:${this.configData.model}`;
+    const traceName = `${TRACES.CHAT_COMPLETION}:${this.configData.deployment}`;
     const trace = this.observabilityManager.createTrace(traceName);
     
     trace.generation({
