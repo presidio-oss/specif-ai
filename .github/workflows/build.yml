@@ -106,13 +106,13 @@ jobs:
           cp -r ui/dist/ui electron/
 
       - name: Install Dependencies and Build Electron
-        shell: cmd
+        shell: pwsh
         run: |
           cd electron
           
-          # Create .env file with PostHog configuration
-          echo POSTHOG_HOST=%POSTHOG_HOST% >> .env
-          echo POSTHOG_KEY=%POSTHOG_KEY% >> .env
+          # Create .env file with PostHog configuration (PowerShell syntax)
+          "POSTHOG_HOST=$env:POSTHOG_HOST" | Out-File -Append -Encoding utf8 .env
+          "POSTHOG_KEY=$env:POSTHOG_KEY" | Out-File -Append -Encoding utf8 .env
           
           npm install
           npm run build
