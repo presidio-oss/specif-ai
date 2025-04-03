@@ -112,16 +112,16 @@ jobs:
           cp -r ui/dist/ui electron/
 
       - name: Install Dependencies and Build Electron
-        shell: cmd
+        shell: pwsh
         run: |
-          cd electron
+          Set-Location electron
 
-          # Create .env file with PostHog configuration
-          echo POSTHOG_HOST=%POSTHOG_HOST% >> .env
-          echo POSTHOG_KEY=%POSTHOG_KEY% >> .env
-          echo LANGFUSE_SECRET_KEY=%LANGFUSE_SECRET_KEY% >> .env
-          echo LANGFUSE_PUBLIC_KEY=%LANGFUSE_PUBLIC_KEY% >> .env
-          echo LANGFUSE_BASE_URL=%LANGFUSE_BASE_URL% >> .env
+          # Append to .env file with PostHog configuration
+          Add-Content -Path .env -Value "POSTHOG_HOST=$env:POSTHOG_HOST"
+          Add-Content -Path .env -Value "POSTHOG_KEY=$env:POSTHOG_KEY"
+          Add-Content -Path .env -Value "LANGFUSE_SECRET_KEY=$env:LANGFUSE_SECRET_KEY"
+          Add-Content -Path .env -Value "LANGFUSE_PUBLIC_KEY=$env:LANGFUSE_PUBLIC_KEY"
+          Add-Content -Path .env -Value "LANGFUSE_BASE_URL=$env:LANGFUSE_BASE_URL"
 
           npm install
           npm run build
