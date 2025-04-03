@@ -17,18 +17,6 @@ import { SettingsComponent } from './components/settings/settings.component';
 
 const routes: Routes = [
   {
-    path: 'settings',
-    component: SettingsComponent,
-    canActivate: [UserGuard],
-    data: {
-      breadcrumb: {
-        name: 'Settings',
-        link: '/apps',
-        icon: 'settings',
-      },
-    },
-  },
-  {
     path: 'login',
     component: LoginComponent,
   },
@@ -121,6 +109,18 @@ const routes: Routes = [
     component: BusinessProcessFlowComponent,
     canActivate: [UserGuard],
   },
+  {
+    path: 'settings',
+    component: SettingsComponent,
+    canActivate: [UserGuard],
+    data: {
+      breadcrumb: {
+        name: 'Settings',
+        link: '/apps',
+        icon: 'settings',
+      },
+    },
+  }
 ];
 
 @NgModule({
