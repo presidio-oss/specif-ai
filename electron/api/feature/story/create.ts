@@ -39,7 +39,7 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "story:create");
     console.log('[create-stories] Initial LLM Response:', response);
 
     let parsedFeatures;
@@ -58,7 +58,7 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
 
     // Prepare messages for evaluation
     const evaluationMessages = await LLMUtils.prepareMessages(evaluationPrompt);
-    const evaluation = await handler.invoke(evaluationMessages);
+    const evaluation = await handler.invoke(evaluationMessages, null, "story:create");
     console.log('[create-stories] Evaluation:', evaluation);
 
     const finalPrompt = refinePrompt({
@@ -70,7 +70,7 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
     });
 
     const finalMessages = await LLMUtils.prepareMessages(finalPrompt);
-    const finalResponse = await handler.invoke(finalMessages);
+    const finalResponse = await handler.invoke(finalMessages, null, "story:create");
     console.log('[create-stories] Final LLM Response:', finalResponse);
 
     try {

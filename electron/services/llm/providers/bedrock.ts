@@ -5,6 +5,8 @@ import {
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface BedrockConfig extends LLMConfig {
   region: string;
@@ -17,6 +19,7 @@ interface BedrockConfig extends LLMConfig {
 export class BedrockHandler extends LLMHandler {
   private client: BedrockRuntimeClient;
   protected configData: BedrockConfig;
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<BedrockConfig>) {
     super();
@@ -67,7 +70,8 @@ export class BedrockHandler extends LLMHandler {
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -104,6 +108,20 @@ export class BedrockHandler extends LLMHandler {
 
     // Parse response based on model provider
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+    const totalTokens = responseBody?.usage?.output_tokens + responseBody?.usage?.input_tokens;
+
+    const traceName = `${TRACES.CHAT_BEDROCK_CONVERSE}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+    
+    trace.generation({
+      name: operation,
+      model: this.configData.model,
+      usage: {
+        input: responseBody?.usage?.input_tokens,
+        output: responseBody?.usage?.output_tokens,
+        total: totalTokens
+      },
+    });
 
     if (this.configData.model.includes("anthropic")) {
       if (!responseBody.content?.[0]?.text) {

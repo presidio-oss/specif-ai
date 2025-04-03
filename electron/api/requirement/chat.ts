@@ -60,7 +60,7 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "requirement:chat");
     console.log('[chat-update-requirement] LLM Response:', response);
 
     let result;

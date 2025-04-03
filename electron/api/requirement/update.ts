@@ -60,7 +60,7 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "requirement:update");
     console.log('[update-requirement] LLM Response:', response);
 
     let result;

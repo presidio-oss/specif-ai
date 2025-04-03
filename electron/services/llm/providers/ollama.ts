@@ -1,6 +1,8 @@
-import LLMHandler from '../llm-handler';
-import { Message, ModelInfo, LLMConfig, LLMError } from '../llm-types';
-import { withRetry } from '../../../utils/retry';
+import LLMHandler from "../llm-handler";
+import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
+import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface OllamaConfig extends LLMConfig {
   baseUrl: string;
@@ -10,6 +12,7 @@ interface OllamaConfig extends LLMConfig {
 export class OllamaHandler extends LLMHandler {
   protected configData: OllamaConfig;
   private defaultBaseUrl = 'http://localhost:11434';
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<OllamaConfig>) {
     super();
@@ -28,7 +31,11 @@ export class OllamaHandler extends LLMHandler {
   }
 
   @withRetry({ retryAllErrors: true })
-  async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
+  async invoke(
+    messages: Message[],
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
+  ): Promise<string> {
     const messageList = [];
     
     // Add system prompt if provided
@@ -57,6 +64,16 @@ export class OllamaHandler extends LLMHandler {
       })
     });
 
+    const data = await response.json();
+
+    const traceName = `${TRACES.CHAT_OLLAMA}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+
+    trace.generation({
+      name: operation,
+      model: this.configData.model,
+    });
+
     if (!response.ok) {
       const error = await response.text();
       const e = new Error(`HTTP error! status: ${response.status}, message: ${error}`);
@@ -64,8 +81,6 @@ export class OllamaHandler extends LLMHandler {
       throw e;
     }
 
-    const data = await response.json();
-    
     if (data.error) {
       throw new Error(data.error);
     }

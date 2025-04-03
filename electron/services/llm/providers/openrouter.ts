@@ -2,6 +2,8 @@ import { OpenAI } from 'openai';
 import LLMHandler from '../llm-handler';
 import { Message, ModelInfo, LLMConfig, LLMError } from '../llm-types';
 import { withRetry } from '../../../utils/retry';
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface OpenRouterConfig extends LLMConfig {
   apiKey: string;
@@ -13,6 +15,7 @@ export class OpenRouterHandler extends LLMHandler {
   private client: OpenAI;
   protected configData: OpenRouterConfig;
   private defaultBaseUrl: string = 'https://openrouter.ai/api/v1'
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<OpenRouterConfig>) {
     super();
@@ -42,7 +45,8 @@ export class OpenRouterHandler extends LLMHandler {
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: 'system', content: systemPrompt }, ...messages]
@@ -61,6 +65,19 @@ export class OpenRouterHandler extends LLMHandler {
       temperature: 0.7,
     });
 
+    const traceName = `${TRACES.CHAT_OPENROUTER}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);    
+
+    trace.generation({
+      name: operation,
+      model: this.configData.model,
+      usage: {
+        input: response.usage?.prompt_tokens,
+        output: response.usage?.completion_tokens,
+        total: response.usage?.total_tokens
+      }
+    });
+    
     if (!response.choices?.[0]?.message?.content) {
       throw new LLMError(
         'No response content received from OpenRouter API',

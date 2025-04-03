@@ -55,7 +55,7 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   const messages = await LLMUtils.prepareMessages(prompt);
 
   try {
-    const response = await llmHandler.invoke(messages);
+    const response = await llmHandler.invoke(messages, null, 'solution:create');
     const extractedContent = extractRequirementsFromResponse(response, key);
 
     if (extractedContent && extractedContent.length > 0) {

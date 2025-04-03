@@ -55,7 +55,7 @@ export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): 
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "requirement:add");
     console.log('[add-requirement] LLM Response:', response);
 
     let result;

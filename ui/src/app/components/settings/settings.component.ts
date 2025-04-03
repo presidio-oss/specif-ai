@@ -243,10 +243,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const provider = formValue.provider;
     this.configForm.updateValueAndValidity();    
     const latestConfigValues = (this.configForm.get('config') as FormGroup).getRawValue();
+    console.log("latestConfigValues", JSON.stringify(latestConfigValues))
 
     this.electronService.verifyLLMConfig(provider, latestConfigValues).then((response) => {
       if (response.status === 'success') {
-        // Get existing configs and update/add the new one
         const existingConfigs = this.currentLLMConfig.providerConfigs || {};
         const newConfig = {
           activeProvider: formValue.provider,
@@ -400,6 +400,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   updateAnalyticsState(enabled: boolean): void {
     setAnalyticsToggleState(enabled);
+    this.electronService.setStoreValue('analyticsEnabled', enabled);
     if (enabled) {
       this.analyticsTracker.initAnalytics();
     }

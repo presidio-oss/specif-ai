@@ -33,7 +33,7 @@ export async function updateStory(event: IpcMainInvokeEvent, data: unknown): Pro
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "story:update");
     const cleanFeatures = repairJSON(response.trim());
     
     console.log('[update-story] LLM Response:', response);
