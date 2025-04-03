@@ -27,6 +27,12 @@ on:
         required: true
       POSTHOG_KEY:
         required: true
+      LANGFUSE_SECRET_KEY:
+        required: true
+      LANGFUSE_PUBLIC_KEY:
+        required: true
+      LANGFUSE_BASE_URL: 
+        required: true
 
 jobs:
   build_frontend:
@@ -113,6 +119,9 @@ jobs:
           # Create .env file with PostHog configuration
           echo POSTHOG_HOST=%POSTHOG_HOST% >> .env
           echo POSTHOG_KEY=%POSTHOG_KEY% >> .env
+          echo LANGFUSE_SECRET_KEY=%LANGFUSE_SECRET_KEY% >> .env
+          echo LANGFUSE_PUBLIC_KEY=%LANGFUSE_PUBLIC_KEY% >> .env
+          echo LANGFUSE_BASE_URL=%LANGFUSE_BASE_URL% >> .env
 
           npm install
           npm run build
@@ -120,6 +129,9 @@ jobs:
         env:
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
 
       - name: Package Windows Build
         run: |
@@ -203,6 +215,9 @@ jobs:
           # Create .env file with PostHog configuration
           echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
           echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+          echo "LANGFUSE_SECRET_KEY=$LANGFUSE_SECRET_KEY" >> .env
+          echo "LANGFUSE_PUBLIC_KEY=$LANGFUSE_PUBLIC_KEY" >> .env
+          echo "LANGFUSE_BASE_URL=$LANGFUSE_BASE_URL" >> .env
 
           npm install
           npm run build
@@ -212,6 +227,9 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
 
       - name: Package and Upload to S3
         id: package_and_upload

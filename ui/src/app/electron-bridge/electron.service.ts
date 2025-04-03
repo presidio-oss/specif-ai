@@ -68,6 +68,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'core:getSuggestions',
         args: [payload],
+        skipLoading: true
       });
     }
   }
@@ -111,6 +112,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'requirement:chat',
         args: [request],
+        skipLoading: true
       });
     }
     throw new Error('Electron is not available');
@@ -208,6 +210,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'task:create',
         args: [request],
+        skipLoading: true
       });
     }
     throw new Error('Electron is not available');
@@ -256,6 +259,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'story:chat',
         args: [request],
+        skipLoading: true
       });
     }
     throw new Error('Electron is not available');
@@ -402,6 +406,7 @@ export class ElectronService {
           params: { ...params },
         }],
         skipWarning: true,
+        skipLoading: true
       });
     }
   }

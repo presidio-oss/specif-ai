@@ -47,7 +47,7 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
       llmConfig.activeProvider,
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "core:getSuggestions");
     console.log('[get-suggestions] LLM Response:', response);
 
     const repairedResponse = repairJSON(response);
