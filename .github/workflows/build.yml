@@ -109,11 +109,11 @@ jobs:
         shell: pwsh
         run: |
           cd electron
-          
+
           # Create .env file with PostHog configuration (PowerShell syntax)
           "POSTHOG_HOST=$env:POSTHOG_HOST" | Out-File -Append -Encoding utf8 .env
           "POSTHOG_KEY=$env:POSTHOG_KEY" | Out-File -Append -Encoding utf8 .env
-          
+
           npm install
           npm run build
           npm run package:win
