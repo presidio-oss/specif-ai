@@ -11,7 +11,6 @@ import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
 import { Store } from '@ngxs/store';
 import {
   AvailableProviders,
-  ProviderModelMap,
 } from '../../constants/llm.models.constants';
 import {
   SetLLMConfig,
@@ -34,7 +33,7 @@ import { environment } from 'src/environments/environment';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
-import { LLM_PROVIDER_CONFIGS, ProviderField } from '../../constants/llm-provider-config';
+import { getLLMProviderConfig, ProviderField } from '../../constants/llm-provider-config';
 import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/utils/analytics.utils';
@@ -109,8 +108,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private updateConfigFields(provider: string) {
-    const providerConfig = LLM_PROVIDER_CONFIGS[provider];
+  private async updateConfigFields(provider: string) {
+    const providerConfig = await getLLMProviderConfig(provider);
     if (!providerConfig) return;
 
     this.currentProviderFields = providerConfig.fields;
@@ -182,9 +181,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const providerControl = this.configForm.get('provider');
     if (providerControl) {
       this.subscriptions.add(
-        providerControl.valueChanges.subscribe(provider => {
+        providerControl.valueChanges.subscribe(async(provider) => {
           console.log("Provider Changed", provider);
-          this.updateConfigFields(provider);
+          await this.updateConfigFields(provider);
           this.errorMessage = '';
         })
       );
@@ -200,13 +199,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }, { emitEvent: false });
     
       this.subscriptions.add(
-        this.llmConfig$.subscribe((config) => {
+        this.llmConfig$.subscribe(async (config) => {
           this.currentLLMConfig = config;
           const provider = config?.activeProvider || defaultProvider;
           this.initialProvider = provider;
           this.selectedProvider.setValue(provider);
           
-          this.updateConfigFields(provider);
+         await this.updateConfigFields(provider);
           
           this.configForm?.get('provider')?.setValue(provider, { emitEvent: false });
           
@@ -244,10 +243,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const provider = formValue.provider;
     this.configForm.updateValueAndValidity();    
     const latestConfigValues = (this.configForm.get('config') as FormGroup).getRawValue();
+    console.log("latestConfigValues", JSON.stringify(latestConfigValues))
 
     this.electronService.verifyLLMConfig(provider, latestConfigValues).then((response) => {
       if (response.status === 'success') {
-        // Get existing configs and update/add the new one
         const existingConfigs = this.currentLLMConfig.providerConfigs || {};
         const newConfig = {
           activeProvider: formValue.provider,
@@ -401,6 +400,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   updateAnalyticsState(enabled: boolean): void {
     setAnalyticsToggleState(enabled);
+    this.electronService.setStoreValue('analyticsEnabled', enabled);
     if (enabled) {
       this.analyticsTracker.initAnalytics();
     }

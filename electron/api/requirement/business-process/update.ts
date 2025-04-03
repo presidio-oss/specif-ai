@@ -54,7 +54,7 @@ export async function updateBusinessProcess(event: IpcMainInvokeEvent, data: any
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "requirement:bp-update");
     console.log('[update-business-process] LLM Response:', response);
 
     // Parse LLM response

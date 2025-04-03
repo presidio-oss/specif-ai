@@ -5,6 +5,7 @@ export enum LLMProvider {
   BEDROCK = 'bedrock',
   OLLAMA = 'ollama',
   GEMINI = 'gemini',
+  OPENROUTER = 'openrouter',
 }
 
 export interface Message {

@@ -35,7 +35,7 @@ export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<Add
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "task:add");
     console.log('[add-task] LLM Response:', response);
 
     let llmResponseDict;

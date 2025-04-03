@@ -1,27 +1,18 @@
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface OllamaConfig extends LLMConfig {
   baseUrl: string;
   model: string;
 }
 
-interface OllamaMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}
-
-interface OllamaResponse {
-  message: {
-    content: string;
-  };
-  error?: string;
-}
-
 export class OllamaHandler extends LLMHandler {
   protected configData: OllamaConfig;
   private defaultBaseUrl = 'http://localhost:11434';
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<OllamaConfig>) {
     super();
@@ -30,7 +21,7 @@ export class OllamaHandler extends LLMHandler {
 
   getConfig(config: Partial<OllamaConfig>): OllamaConfig {
     if (!config.model) {
-      throw new LLMError("Model ID is required", "ollama");
+      throw new LLMError('Model ID is required', 'ollama');
     }
 
     return {
@@ -40,8 +31,12 @@ export class OllamaHandler extends LLMHandler {
   }
 
   @withRetry({ retryAllErrors: true })
-  async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
-    const messageList: OllamaMessage[] = [];
+  async invoke(
+    messages: Message[],
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
+  ): Promise<string> {
+    const messageList = [];
     
     // Add system prompt if provided
     if (systemPrompt) {
@@ -55,7 +50,7 @@ export class OllamaHandler extends LLMHandler {
     messageList.push(...messages.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'assistant',
       content: msg.content
-    } as OllamaMessage)));
+    })));
 
     const response = await fetch(`${this.configData.baseUrl}/api/chat`, {
       method: 'POST',
@@ -69,6 +64,16 @@ export class OllamaHandler extends LLMHandler {
       })
     });
 
+    const data = await response.json();
+
+    const traceName = `${TRACES.CHAT_OLLAMA}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+
+    trace.generation({
+      name: operation,
+      model: this.configData.model,
+    });
+
     if (!response.ok) {
       const error = await response.text();
       const e = new Error(`HTTP error! status: ${response.status}, message: ${error}`);
@@ -76,8 +81,6 @@ export class OllamaHandler extends LLMHandler {
       throw e;
     }
 
-    const data = await response.json() as OllamaResponse;
-    
     if (data.error) {
       throw new Error(data.error);
     }

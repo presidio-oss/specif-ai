@@ -33,6 +33,9 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
 
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
+      posthog.setPersonProperties({
+        current_llm_provider: this.currentLLMConfig.activeProvider
+      });
     });
   }
 
@@ -107,19 +110,20 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
       return;
     }
 
-    this.core.getAppConfig()
-    .then((config) => {
-      if (config.key && config.host) {
-        this.initPostHog(config.key, config.host, username, userId);
-        this.isPostHogInitialized = true;
-      } else {
-        console.error('Invalid PostHog configuration received.');
-        this.isPostHogInitialized = false;
-      }
-    })
-    .catch((error) => {
-      console.error('Failed to fetch PostHog configuration:', error);
-    });
+    this.core
+      .getAppConfig()
+      .then((config) => {
+        if (config.key && config.host) {
+          this.initPostHog(config.key, config.host, username, userId);
+          this.isPostHogInitialized = true;
+        } else {
+          console.error('Invalid PostHog configuration received.');
+          this.isPostHogInitialized = false;
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to fetch PostHog configuration:', error);
+      });
   }
 
   private initPostHog(
@@ -133,12 +137,13 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
       person_profiles: 'always',
       autocapture: false,
       ip: true,
-      capture_pageview: false,
       capture_pageleave: false,
       capture_performance: false,
       disable_session_recording: true,
     });
-    posthog.identify(userId, { username: username });
+    posthog.identify(userId, {
+      username: username   
+    });
     console.log('PostHog has been initialized.');
   }
 }

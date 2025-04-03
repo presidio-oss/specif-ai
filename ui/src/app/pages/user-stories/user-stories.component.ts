@@ -367,7 +367,6 @@ export class UserStoriesComponent implements OnInit {
       this.toast.showSuccess(
         TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
       );
-      this.loadingService.setLoading(false);
     }, 2000);
   }
 
@@ -377,6 +376,7 @@ export class UserStoriesComponent implements OnInit {
         `${this.currentProject}/${this.navigation.folderName}/${this.newFileName}`,
       ),
     );
+    this.loadingService.setLoading(false);
   }
 
   copyUserStoryContent(event: Event, userStory: IUserStory) {

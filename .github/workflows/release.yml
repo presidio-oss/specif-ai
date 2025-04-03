@@ -70,6 +70,9 @@ jobs:
       APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
       POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
       POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
 
   create_release:
     needs: [determine_workflow, build]

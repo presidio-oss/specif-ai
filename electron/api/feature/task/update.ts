@@ -36,7 +36,7 @@ export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "task:update");
     console.log('[update-task] LLM Response:', response);
 
     try {
