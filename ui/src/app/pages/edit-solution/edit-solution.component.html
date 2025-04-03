@@ -184,7 +184,8 @@
         <app-chat class="h-full block" chatType="requirement" [name]="name" [description]="description" [fileName]="fileName"
           [chatHistory]="chatHistory" [baseContent]="requirementForm.getRawValue().content"
           (getContent)="appendRequirement($event)" (updateChatHistory)="updateChatHistory($event)"
-          [containerClass]="'border-none h-full'" />
+          [containerClass]="'border-none h-full'"
+          [brds]="getBRDDataFromIds(requirementForm.getRawValue().linkedBRDIds)" />
       </div>
     </div>
 

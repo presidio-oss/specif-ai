@@ -278,7 +278,9 @@ export class EditSolutionComponent {
 
     try {
       if (this.isPRD()) {
-        body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []);
+        body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []).map(
+          ({ requirement, title }) => ({ requirement, title }),
+        );
       }
 
       const data = await this.featureService.updateRequirement(body);
@@ -437,7 +439,9 @@ export class EditSolutionComponent {
       };
 
       if (this.isPRD()) {
-        body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []);
+        body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []).map(
+          ({ requirement, title }) => ({ requirement, title }),
+        );
       }
 
       this.featureService.addRequirement(body).then(
@@ -486,7 +490,7 @@ export class EditSolutionComponent {
     }
   }
 
-  private getBRDDataFromIds(brdIds: Array<string>) {
+  getBRDDataFromIds(brdIds: Array<string>) {
     return brdIds
       .map((brdId) => {
         const brd = this.documentList.find(
@@ -502,6 +506,7 @@ export class EditSolutionComponent {
         }
 
         return {
+          id: brdId,
           title: content.title,
           requirement: content.requirement,
         };
@@ -542,17 +547,25 @@ ${chat.assistant}`,
   }
 
   updateChatHistory(chatHistory: any) {
+    const formValue = this.requirementForm.getRawValue();
+
+    const fileData: IList['content'] = {
+      requirement: this.requirementForm.get('content')?.value,
+      title: this.requirementForm.get('title')?.value,
+      chatHistory: chatHistory.map((item: any) =>
+        item.assistant && item.isLiked !== undefined
+          ? { ...item, isLiked: item.isLiked }
+          : item,
+      ),
+    };
+
+    if (this.isPRD()) {
+      fileData.linkedBRDIds = formValue.linkedBRDIds;
+    }
+
     // Persist updated chatHistory with isLiked attribute
     this.store.dispatch(
-      new UpdateFile(this.absoluteFilePath, {
-        requirement: this.requirementForm.get('content')?.value,
-        title: this.requirementForm.get('title')?.value,
-        chatHistory: chatHistory.map((item: any) =>
-          item.assistant && item.isLiked !== undefined
-            ? { ...item, isLiked: item.isLiked }
-            : item,
-        ),
-      }),
+      new UpdateFile(this.absoluteFilePath, fileData),
     );
   }
 
@@ -753,4 +766,12 @@ ${chat.assistant}`,
   isBRD = () => {
     return this.folderName === FOLDER.BRD;
   };
+
+  extractPropertyValues<
+    TData extends Array<TDataItem>,
+    TDataItem extends Record<string, any>,
+  >(data: TData, key: keyof TData[number]) {
+    console.log('-----extractPropertyValues', data)
+    return data.map((item) => item[key]);
+  }
 }

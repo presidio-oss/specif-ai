@@ -65,10 +65,7 @@ we would want to extract detailed product requirements to ensure the product is 
 ## Business Requirement Documents
 
 ${brds.map((brd) =>
-  `
-BRD Id: ${brd.id}
+  `BRD Id: ${brd.id}
 BRD Title: ${brd.title}
-BRD Requirement: ${brd.requirement}\n    
-    `.trim()
-)}`;
+BRD Requirement: ${brd.requirement}`.trim()).join('\n\n')}`;
 };
