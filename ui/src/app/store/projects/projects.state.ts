@@ -1,8 +1,9 @@
-import { IProject } from '../../model/interfaces/projects.interface';
+import { IProject, ISolutionResponseRequirementItem } from '../../model/interfaces/projects.interface';
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 import {
   BulkReadFiles,
+  BulkUpdateFiles,
   CreateFile,
   CreateProject,
   GetProjectFiles,
@@ -31,6 +32,7 @@ import {
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
+import { Optional } from 'src/app/utils/types';
 
 export class ProjectStateModel {
   projects!: IProject[];
@@ -133,7 +135,7 @@ export class ProjectsState {
     getState,
     patchState,
   }: StateContext<ProjectStateModel>) {
-    const projectList = await this.appSystemService.getProjectList() || [];
+    const projectList = (await this.appSystemService.getProjectList()) || [];
     const sortedProjectList = projectList.sort((a, b) => {
       return (
         new Date(b.metadata.createdAt).getTime() -
@@ -215,7 +217,22 @@ export class ProjectsState {
           this.generateFiles(brd, projectName, 'BRD'),
         );
         response.prd?.forEach((prd) => {
-          this.generateFiles(prd, projectName, 'PRD');
+          // since the IDs of requirements are padded (length 2) when saved to fs
+          const updatedPRD = {
+            ...prd,
+            linkedBRDIds: prd['linkedBRDIds']
+              ?.map((brdId) => {
+                try {
+                  return `BRD${brdId.split('BRD')[1].padStart(2, '0')}`;
+                } catch (error) {
+                  this.logger.error('Error padding the linked brd id', error);
+                  return null;
+                }
+              })
+              .filter(Boolean),
+          };
+
+          this.generateFiles(updatedPRD, projectName, 'PRD');
           this.generatePRDFeatureFiles(projectName, 'PRD', prd['id']);
         });
         response.uir?.forEach((uir) =>
@@ -377,12 +394,14 @@ export class ProjectsState {
   }
 
   private generateFiles(
-    document: { [key in string]: string },
+    document: ISolutionResponseRequirementItem,
     projectName: string,
     folderName: string,
   ): void {
     const fileNameParts = document['id'].split(folderName);
-    const content = { ...document };
+    const content: Optional<ISolutionResponseRequirementItem, 'id'> = {
+      ...document,
+    };
     delete content['id'];
 
     const fileName = `${folderName}${fileNameParts[1].padStart(2, '0')}-base.json`;
@@ -642,6 +661,46 @@ export class ProjectsState {
     ctx.patchState({
       selectedFileContents: [],
     });
+  }
+
+  @Action(BulkUpdateFiles)
+  async bulkUpdateFiles(
+    { getState }: StateContext<ProjectStateModel>,
+    { updates }: BulkUpdateFiles,
+  ) {
+    const state = getState();
+
+    const results = await Promise.allSettled(
+      updates.map(async (update) => {
+        const fileContent = JSON.stringify(update.content, null, 2);
+        await this.appSystemService.createFileWithContent(
+          `${state.selectedProject}/${update.path}`,
+          fileContent,
+        );
+      }),
+    );
+
+    const failedReqIds: Array<string> = [];
+
+    results.forEach((res, idx) => {
+      if (res.status === 'rejected') {
+        try {
+          this.logger.error(
+            `Error updating file at path : ${updates[idx].path} - reason : ${res.reason}`,
+          );
+          const reqId = updates[idx].path.split('/')[-1].split('-')[0];
+          failedReqIds.push(reqId);
+        } catch (error) {
+          this.logger.error('Error handling failure of file update', error);
+        }
+      }
+    });
+
+    if (failedReqIds.length > 0) {
+      this.toast.showError(
+        `Failed to update ${failedReqIds.join(', ')} requirements`,
+      );
+    }
   }
 
   @Action(ExportRequirementData)

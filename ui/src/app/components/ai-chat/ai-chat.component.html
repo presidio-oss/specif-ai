@@ -1,45 +1,23 @@
 <div
-  [ngClass]="
-    requirementAbbrivation != 'BP'
-      ? 'h-[calc(100dvh-150px)]'
-      : 'h-[calc(100dvh-200px)]'
-  "
-  class="min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden border border-secondary-200"
->
+  [ngClass]="[requirementAbbrivation != 'BP'
+  ? 'h-[calc(100dvh-150px)]'
+  : 'h-[calc(100dvh-200px)]', 'min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden border border-secondary-200', containerClass]">
   <!-- Fixed Header -->
-  <div
-    *ngIf="isKbAvailable || requirementAbbrivation != 'BP'"
-    class="flex-none px-6 py-3 border-b border-secondary-200"
-  >
-    <p
-      *ngIf="!isKbAvailable && requirementAbbrivation != 'BP'"
-      class="text-md font-medium"
-    >
-      AI Chat
-    </p>
-    <div
-      *ngIf="isKbAvailable"
-      class="kb-container flex justify-between items-center"
-    >
-      <div class="flex items-center space-x-2">
-        <img
-          src="./assets/img/logo/aws_dark_bg_white_logo.svg"
-          class="h-[30px]"
-          alt="AWS logo"
-        />
-        <p class="text-sm text-secondary-600">AWS Bedrock Knowledge Base</p>
-        <ng-icon
-          name="heroInformationCircle"
-          class="text-lg cursor-pointer"
-          matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"
-        ></ng-icon>
-      </div>
-      <div class="flex items-center">
-        <app-toggle
-          *ngIf="isKbAvailable"
-          [isActive]="isKbActive"
-          (toggleChange)="onKbToggle($event)"
-        />
+  <div *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)" class="border-b border-secondary-200 p-1.5">
+    <div class="flex-none border-[0.5px] border-secondary-300 bg-indigo-50 text-sm font-medium rounded-lg text-center py-2.5 border-secondary-300 bg-primary-50 text-primary-600">
+      <p *ngIf="!isKbAvailable && !['BP', 'PRD'].includes(requirementAbbrivation)" class="text-md font-medium">
+        AI Chat
+      </p>
+      <div *ngIf="isKbAvailable" class="kb-container flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <img src="./assets/img/logo/aws_dark_bg_white_logo.svg" class="h-[30px]" alt="AWS logo" />
+          <p class="text-sm text-secondary-600">AWS Bedrock Knowledge Base</p>
+          <ng-icon name="heroInformationCircle" class="text-lg cursor-pointer"
+            matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"></ng-icon>
+        </div>
+        <div class="flex items-center">
+          <app-toggle *ngIf="isKbAvailable" [isActive]="isKbActive" (toggleChange)="onKbToggle($event)" />
+        </div>
       </div>
     </div>
   </div>
@@ -261,10 +239,10 @@
 
     <!-- Suggestions List -->
     <div *ngIf="!loadingChat && chatSuggestions.length > 0">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto flex flex-col gap-3">
         <div
           *ngIf="chatHistory.length == 0"
-          class="text-sm text-secondary-600 font-medium mb-3"
+          class="text-sm text-secondary-600 font-medium"
         >
           Suggestions to improve:
         </div>
@@ -281,11 +259,10 @@
             role="button"
             tabindex="0"
           >
-            <ng-icon
-              name="heroSparklesSolid"
-              class="text-lg text-warning-400"
-            ></ng-icon>
-            <span class="text-secondary-600">{{ suggestion }}</span>
+            <div class="flex flex-col justify-center h-5">
+              <ng-icon name="heroSparklesSolid" class="text-lg text-warning-400"></ng-icon>
+            </div>
+            <span class="text-secondary-950">{{ suggestion }}</span>
           </li>
         </ul>
       </div>
@@ -293,12 +270,12 @@
   </div>
 
   <!-- Fixed Input Area -->
-  <div class="flex-none w-full bg-secondary-100">
+  <div class="flex-none w-full bg-secondary-50">
     <div class="relative">
       <!-- Selected Files Display -->
       <div
         *ngIf="selectedFiles.length > 0"
-        class="max-h-28 overflow-y-auto border-t border-secondary-200"
+        class="max-h-28 overflow-y-auto border-t border-secondary-300"
       >
         <div
           *ngFor="let file of selectedFiles; let i = index"
@@ -337,7 +314,7 @@
               placeholder="Chat to add or modify your requirement"
               [disabled]="generateLoader"
               [(ngModel)]="message"
-              class="w-full h-14 text-sm bg-transparent text-secondary-700 focus:outline-none placeholder:text-secondary-500 focus:right-0 resize-none overflow-x-hidden overflow-y-auto transition-all duration-300 ease-in-out"
+              class="w-full h-14 text-sm bg-transparent text-secondary-950 focus:outline-none placeholder:text-secondary-500 focus:right-0 resize-none overflow-x-hidden overflow-y-auto transition-all duration-300 ease-in-out"
             ></textarea>
           </div>
 

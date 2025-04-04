@@ -14,11 +14,11 @@
         <hr class="my-4" />
         <ul role="list" class="min-h space-y-3">
           <li
-            class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50"
+            class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
             [ngClass]="{
-              'bg-secondary-50 border border-secondary-300':
+              'bg-secondary-50 border-secondary-300':
                 selectedFolder?.title === 'solution',
-              'bg-white': selectedFolder?.title !== 'solution',
+              'bg-white border-transparent': selectedFolder?.title !== 'solution',
             }"
             (click)="selectFolder({ name: 'solution', children: [] })"
             (keydown.enter)="selectFolder({ name: 'solution', children: [] })"
@@ -70,11 +70,11 @@
           <ng-container *ngFor="let folder of directories; index as i">
             <li
               *ngIf="!isArchived(folder)"
-              class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50"
+              class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
               [ngClass]="{
-                'bg-secondary-50 border border-secondary-300':
+                'bg-secondary-50 border-secondary-300':
                   selectedFolder?.title === folder.name,
-                'bg-white': selectedFolder?.title !== folder.name,
+                'bg-white border-transparent': selectedFolder?.title !== folder.name,
               }"
               (click)="selectFolder(folder)"
               (keydown.enter)="selectFolder(folder)"
@@ -182,11 +182,11 @@
             role="button"
             tabindex="0"
             [ngClass]="{
-              'bg-secondary-50 border border-secondary-300':
+              'bg-secondary-50 border-secondary-300':
                 selectedFolder?.title === 'app-integrations',
-              'bg-white': selectedFolder?.title !== 'app-integrations',
+              'bg-white border-transparent': selectedFolder?.title !== 'app-integrations',
             }"
-            class="flex cursor-pointer items-center justify-between p-2.5 rounded-lg bg-white hover:bg-secondary-50"
+            class="flex cursor-pointer items-center justify-between p-2.5 rounded-lg bg-white hover:bg-secondary-50 border-[0.5px]"
           >
             <div class="flex items-center">
               <ng-icon

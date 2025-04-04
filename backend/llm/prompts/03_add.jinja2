@@ -30,6 +30,16 @@ FileContent: {{fileContent}}
 Context:
 {% include context %}
 
+{% if type == 'PRD' and brds and brds|length > 0 %}
+### Business Requirement Documents
+Please consider the following Business Requirements when updating the requirement:
+
+{% for brd in brds %}
+BRD Title: {{brd.title}}
+BRD Requirement: {{brd.requirement}}\n
+{% endfor %}
+{% endif %}
+
 Based on the above context create a one apt requirement justifies the Client Request
 
 Output Structure should be a valid JSON: Here is the sample Structure. Follow this exactly. Don't add or change the response JSON:

@@ -7,6 +7,10 @@ interface AddRequirementParams {
   newReqt: string;
   fileContent?: string;
   addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP';
+  brds?: Array<{
+    title: string;
+    requirement: string;
+  }>;
 }
 
 export function addRequirementPrompt({
@@ -14,7 +18,8 @@ export function addRequirementPrompt({
   description,
   newReqt,
   fileContent,
-  addReqtType
+  addReqtType,
+  brds = []
 }: AddRequirementParams): string {
   const { context, requirementType, format } = getContextAndType(addReqtType);
 
@@ -27,6 +32,8 @@ App Description: ${description}
 
 Client Request: ${newReqt}
 ${fileContentSection}
+
+${buildBRDContextForPRD(brds)}
 
 Context:
 ${context}
@@ -43,4 +50,14 @@ Special Instructions:
 ${MARKDOWN_RULES}
 
 Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.`;
+}
+
+const buildBRDContextForPRD = (brds: AddRequirementParams["brds"])=>{
+  if(!brds || brds.length == 0) return '';
+
+  return `### Business Requirement Documents
+  Please consider the following Business Requirements when updating the requirement:
+  ${brds.map(brd=>
+`BRD Title: ${brd.title}
+BRD Requirement: ${brd.requirement}\n`)}` + '\n';
 }

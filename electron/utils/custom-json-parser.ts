@@ -10,7 +10,15 @@ export function extractRequirementsFromResponse(
 ): any[] {
   try {
     try {
-      const parsedJson = JSON.parse(response);
+      let processedResponse = response;
+      // For cases where the output json is wrapped in ```json\n<content>\n``` - observed with gemini models
+      const jsonWrapperMatch = response.match(/```json\n(.*?)\n```/s);
+
+      if (jsonWrapperMatch != null) {
+        processedResponse = jsonWrapperMatch[1];
+      }
+
+      const parsedJson = JSON.parse(processedResponse);
       if (
         parsedJson[requirementType] &&
         Array.isArray(parsedJson[requirementType])

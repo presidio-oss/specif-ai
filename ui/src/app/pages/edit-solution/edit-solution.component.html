@@ -1,17 +1,15 @@
 <div class="mx-auto max-w-7xl px-4 h-full">
   <div
     [ngClass]="
-      mode === 'add'
-        ? 'grid grid-cols-1 gap-4'
-        : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
+      [
+      'grid gap-4 items-stretch',
+      (mode === 'edit' || isPRD())
+        ? 'lg:grid-cols-[repeat(3,minmax(0,1fr))] grid-cols-1' : 'grid-cols-1',
+      ]
     "
   >
     <div
-      [ngClass]="
-        mode === 'add'
-          ? 'bg-white border border-secondary-200 rounded-lg flex flex-col'
-          : 'bg-white border border-secondary-200 rounded-lg flex flex-col lg:col-span-2'
-      "
+      class="flex flex-col h-max bg-white border border-secondary-200 rounded-lg lg:col-span-2"
     >
       <header
         class="flex justify-between items-center p-4 border-b border-secondary-200"
@@ -72,6 +70,30 @@
           ></app-multi-upload>
         </div>
 
+        <!-- Selected BRDs Section -->
+        <div *ngIf="isPRD() && requirementForm.get('linkedBRDIds')?.value?.length > 0" class="flex flex-col gap-1.5 px-4 mb-4">
+          <h2 class="text-sm font-medium text-secondary-500">Included BRDs</h2>
+          <div class="flex flex-wrap gap-1.5">
+            <div *ngFor="let brdId of requirementForm.get('linkedBRDIds')?.value">
+              <app-pill (clear)="removeLinkedBRDForPRD(brdId)" [showClear]="true">
+                {{brdId}}
+              </app-pill>
+            </div>
+          </div>
+        </div>
+
+        <!-- Linked PRDs Section -->
+        <div *ngIf="isBRD() && requirementForm.get('linkedToPRDIds')?.value?.length > 0" class="flex flex-col gap-1.5 px-4 mb-4">
+          <h2 class="text-sm font-medium text-secondary-900">Linked PRDs</h2>
+          <div class="flex flex-wrap gap-1.5">
+            <div *ngFor="let prdId of requirementForm.get('linkedToPRDIds')?.value">
+              <app-pill (clear)="removeLinkedPRDFromBRD(prdId)" [showClear]="true">
+                {{prdId}}
+              </app-pill>
+            </div>
+          </div>
+        </div>
+
         <div class="flex justify-end gap-2 p-4 border-t border-secondary-200">
           <app-button
             buttonContent="Enhance with AI"
@@ -103,18 +125,78 @@
         </div>
       </form>
     </div>
-    <div *ngIf="mode !== 'add'" class="space-y-4 h-full lg:col-span-1">
-      <app-chat
-        chatType="requirement"
-        class="h-[inherit]"
-        [name]="name"
-        [description]="description"
-        [fileName]="fileName"
-        [chatHistory]="chatHistory"
-        [baseContent]="requirementForm.getRawValue().content"
-        (getContent)="appendRequirement($event)"
-        (updateChatHistory)="updateChatHistory($event)"
-      ></app-chat>
+    
+    <!-- chat/include brds section for prd -->
+    <div *ngIf="isPRD()" class="flex flex-col bg-white border border-secondary-200 rounded-lg h-full lg:col-span-1">
+      <div class="flex justify-center rounded-lg bg-white w-full border-b-[0.5px] border-secondary-300 rounded-b-none">
+        <div class="tabs w-full max-w-4xl overflow-hidden flex rounded-t-lg p-1.5 gap-0.5">
+          <!-- chat tab trigger -->
+          <ng-container *ngIf="mode === 'edit'">
+            <ng-container [ngTemplateOutlet]="TabTrigger"
+            [ngTemplateOutletContext]="{'label': 'Chat', 'isTabActive': activeTab === 'chat', 'tabId': 'chat'}"></ng-container>
+          </ng-container>
+          <!-- include brd files tab trigger -->
+          <ng-container [ngTemplateOutlet]="TabTrigger"
+            [ngTemplateOutletContext]="{'label': 'Include BRDs', 'isTabActive': activeTab === 'includeFiles', 'tabId': 'includeFiles'}"></ng-container>
+    
+          <!-- trigger template -->
+          <ng-template #TabTrigger let-label="label" let-isTabActive="isTabActive" let-tabId="tabId">
+            <button (click)="activeTab = tabId"
+              class="flex-grow text-center py-2.5 text-sm font-medium rounded-lg border-[0.5px]"
+              [ngClass]="{'border-secondary-300 bg-primary-50 text-primary-600':isTabActive,'text-secondary-500 border-transparent hover:bg-primary-50':!isTabActive}">
+              {{label}}
+            </button>
+          </ng-template>
+        </div>
+      </div>
+    
+      <ng-container *ngIf="activeTab === 'includeFiles'">
+        <ng-container *ngIf="documentList.length > 0; else noDocuments">
+          <div class="grow flex flex-col gap-4 w-full p-4 overflow-y-auto h-full doc-section-height">
+            <div *ngFor="let item of documentList" class="flex w-full">
+              <app-checkbox-card [checked]="requirementForm.get('linkedBRDIds')?.value?.includes(item.fileName.split('-')[0])"
+                (onCheckedChange)="handleLinkedBRDSelectionForPRD(item.fileName.split('-')[0], $event)" class="w-full">
+                <div class="text-sm flex flex-col gap-1">
+                  <a class="font-semibold text-secondary-500">
+                    {{ item.fileName.split("-")[0] }}
+                  </a>
+                  <h1 class="text-base font-medium line-clamp-1">
+                    {{ item.content.title }}
+                  </h1>
+                  <app-rich-text-editor editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs" mode="view"
+                    [content]="truncateRequirementContent(item.content.requirement ?? '')" [editable]="false">
+                  </app-rich-text-editor>
+                </div>
+              </app-checkbox-card>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #noDocuments>
+          <div class="py-10 doc-section-height">
+            <h2 class="text-center text-secondary-500">
+              No BRDs available
+            </h2>
+          </div>
+        </ng-template>
+      </ng-container>
+    
+      <div *ngIf="activeTab === 'chat'" class="space-y-4 doc-section-height h-full grow">
+        <app-chat class="h-full block" chatType="requirement" [name]="name" [description]="description" [fileName]="fileName"
+          [chatHistory]="chatHistory" [baseContent]="requirementForm.getRawValue().content"
+          (getContent)="appendRequirement($event)" (updateChatHistory)="updateChatHistory($event)"
+          [containerClass]="'border-none h-full'"
+          [brds]="getBRDDataFromIds(requirementForm.getRawValue().linkedBRDIds)" />
+      </div>
+    </div>
+
+    <!-- for non prd requirements -->
+    <div *ngIf="!isPRD()" class="flex flex-col bg-white border border-secondary-200 rounded-lg h-full lg:col-span-1">
+      <div class="space-y-4 doc-section-height h-full grow">
+        <app-chat class="h-full block" chatType="requirement" [name]="name" [description]="description" [fileName]="fileName"
+          [chatHistory]="chatHistory" [baseContent]="requirementForm.getRawValue().content"
+          (getContent)="appendRequirement($event)" (updateChatHistory)="updateChatHistory($event)"
+          [containerClass]="'border-none h-full'" />
+      </div>
     </div>
   </div>
 </div>

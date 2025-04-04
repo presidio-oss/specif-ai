@@ -33,7 +33,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
-import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgForOf, NgIf, CommonModule } from '@angular/common';
+import { PillComponent } from '../../components/pill/pill.component';
+import { CheckboxCardComponent } from '../../components/checkbox-card/checkbox-card.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { ExpandDescriptionPipe } from '../../pipes/expand-description.pipe';
 import { TruncateEllipsisPipe } from '../../pipes/truncate-ellipsis-pipe';
@@ -70,7 +72,10 @@ import { truncateMarkdown } from 'src/app/utils/markdown.utils';
     ExpandDescriptionPipe,
     TruncateEllipsisPipe,
     NgIconComponent,
-    RichTextEditorComponent
+    RichTextEditorComponent,
+    CommonModule,
+    PillComponent,
+    CheckboxCardComponent
   ],
   providers: [
     provideIcons({
@@ -425,7 +430,7 @@ export class BusinessProcessComponent implements OnInit {
     contentControl?.updateValueAndValidity();
   }
 
-  selectTab(tab: string): void {
+  selectTab = (tab: string): void => {
     this.selectedTab = tab;
     this.getRequirementFiles(this.selectedTab);
   }
@@ -449,9 +454,7 @@ export class BusinessProcessComponent implements OnInit {
     );
   }
 
-  toggleSelection(event: any, type: string): void {
-    const item = JSON.parse(event.target.value);
-    const checked = event.target.checked;
+  toggleSelection(checked: boolean, item: { requirement: string; fileName: string }, type: string): void {
     if (type === this.requirementTypes.PRD) {
       this.updateSelection(this.selectedPRDs, item, checked, 'selectedPRDs');
     } else if (type === this.requirementTypes.BRD) {
@@ -568,7 +571,7 @@ export class BusinessProcessComponent implements OnInit {
     }
   }
 
-  switchTab(tab: string): void {
+  switchTab = (tab: string): void=> {
     this.activeTab = tab;
   }
 
@@ -638,9 +641,11 @@ export class BusinessProcessComponent implements OnInit {
     }
   }
 
-  truncatePRDandBRDRequirement(requirement:string, folderName:string){
+  truncatePRDandBRDRequirement(requirement: string | undefined, folderName: string): string {
+    if (!requirement) return '';
+    
     const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folderName];
-    if (requirementType === REQUIREMENT_TYPE.PRD){
+    if (requirementType === REQUIREMENT_TYPE.PRD) {
       return processPRDContentForView(requirement, 64);
     }
 

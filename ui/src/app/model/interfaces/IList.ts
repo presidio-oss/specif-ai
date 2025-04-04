@@ -9,6 +9,8 @@ export interface IProjectDocument {
   title?: string;
   epicTicketId?: string;
   features?: IFeature[];
+  linkedBRDIds?: string[];
+  chatHistory?: [];
 }
 
 export interface IFeature {

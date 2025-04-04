@@ -24,7 +24,7 @@ export class GeminiHandler extends LLMHandler {
     this.client = genAI.getGenerativeModel({
       model: this.configData.model,
       generationConfig: {
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4096,
         temperature: 0.7,
         topK: 40,
         topP: 0.95,

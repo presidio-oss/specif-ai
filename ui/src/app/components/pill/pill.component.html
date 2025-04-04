@@ -1,0 +1,9 @@
+<div
+    [ngClass]="['flex flex-row items-center gap-1 border-[0.5px] py-1 px-2 rounded-lg', variant === 'secondary' ? 'border-secondary-300 bg-secondary-50 text-secondary-950': '', variant === 'primary' ? 'border-primary-300 bg-primary-50 text-primary-600': '']">
+    <div [ngClass]='["font-normal text-sm text-inherit", contentContainerClass]'>
+        <ng-content></ng-content>
+    </div>
+    <button *ngIf="showClear" aria-label="clear" (click)="handleClear()" class="flex items-center">
+        <ng-icon name="heroXMark" color="#64748b" class="" size="0.875rem" strokeWidth="2px"></ng-icon>
+    </button>
+</div>

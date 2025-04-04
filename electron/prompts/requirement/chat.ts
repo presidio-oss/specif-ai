@@ -7,16 +7,23 @@ interface ChatUpdateRequirementParams {
   requirement: string;
   userMessage: string;
   requirementAbbr: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP';
+  brds?: Array<{
+    id: string;
+    title: string;
+    requirement: string;
+  }>;
 }
 
-export function chatUpdateRequirementPrompt({
-  name,
-  description,
-  type,
-  requirement,
-  userMessage,
-  requirementAbbr,
-}: ChatUpdateRequirementParams): string {
+export function chatUpdateRequirementPrompt(params: ChatUpdateRequirementParams): string {
+  const {
+    name,
+    description,
+    type,
+    requirement,
+    userMessage,
+    requirementAbbr,
+  } = params;
+
   const { context, requirementType } = getContextAndType(requirementAbbr);
   return `You are a requirements analyst tasked to assist users in refining and enhancing their existing ${type} by gathering detailed input, providing expert advice, and suggesting improvements. Do not provide technical implementation details or code snippets and ensure your response is not in markdown format.
 App Details:
@@ -26,6 +33,8 @@ ${type}: ${requirement}
 
 Base Context:
 ${context}
+
+${buildContextForRequirementType(params)}
 
 User Message:
 ${userMessage}
@@ -59,3 +68,28 @@ Output Structure MUST be a valid JSON with this format:
 The output MUST be a valid JSON object strictly adhering to the structure defined above.
 Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.`;
 }
+
+const buildContextForRequirementType = (params: ChatUpdateRequirementParams) => {
+  switch (params.requirementAbbr) {
+    case "PRD": {
+      return buildProductRequirementContext(params.brds)
+    }
+    default: {
+      return '';
+    }
+  }
+}
+
+const buildProductRequirementContext = (brds: ChatUpdateRequirementParams['brds'] = []) => {
+  if (!brds || brds.length === 0) return "";
+
+  return `The above provided product requirement is linked to the following business requirement documents by product managers.
+Consider these when responding to the user.
+
+## Business Requirement Documents
+
+${brds.map((brd) =>
+  `BRD Id: ${brd.id}
+BRD Title: ${brd.title}
+BRD Requirement: ${brd.requirement}`.trim()).join('\n\n')}`;
+};

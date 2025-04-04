@@ -17,7 +17,7 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
     console.log('[get-suggestions] Using LLM config:', llmConfig);
     const validatedData = getSuggestionsSchema.parse(data);
 
-    const { name, description, type, requirement, suggestions, selectedSuggestion, knowledgeBase, bedrockConfig } = validatedData;
+    const { name, description, type, requirement, requirementAbbr, suggestions, selectedSuggestion, knowledgeBase, bedrockConfig, brds } = validatedData;
     let prompt = generateImprovedSuggestionsPrompt({
       name,
       description,
@@ -26,6 +26,8 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
       suggestions,
       selectedSuggestion,
       knowledgeBase,
+      requirementAbbr,
+      brds
     });
 
     if (knowledgeBase) {

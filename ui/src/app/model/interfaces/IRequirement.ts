@@ -1,3 +1,8 @@
+type Requirement = {
+    title: string;
+    requirement: string;
+};
+
 export interface IUpdateRequirementRequest {
     updatedReqt: string;
     fileContent: string;
@@ -9,6 +14,7 @@ export interface IUpdateRequirementRequest {
     name: string;
     description: string;
     useGenAI: boolean;
+    brds?: Array<Requirement>;
 }
 
 export interface IAddRequirementRequest {
@@ -21,4 +27,5 @@ export interface IAddRequirementRequest {
     name: string;
     description: string;
     useGenAI: boolean;
+    brds?: Array<Requirement>;
 }

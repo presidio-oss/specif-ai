@@ -100,52 +100,42 @@
           />
         </div>
       </div>
-      <div class="p-4">
-        <div *ngIf="selectedBRDs.length > 0">
+      <div class="p-4 flex flex-col gap-3">
+        <div>
           <h2 class="text-sm font-medium text-secondary-900">Included BRDs</h2>
-          <div class="mt-2 flex flex-wrap">
-            <div *ngFor="let brd of selectedBRDs" class="m-1">
-              <div
-                class="flex items-center bg-secondary-200 px-2 py-1 rounded-md"
-              >
-                <span class="text-sm font-medium">{{
-                  brd.fileName.split("-")[0]
-                }}</span>
-                <button
-                  class="ml-2 text-secondary-600 hover:text-secondary-800"
-                  (click)="removeBRD(brd)"
-                >
-                  &times;
-                </button>
-              </div>
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            <div *ngFor="let brd of selectedBRDs">
+              <app-pill (clear)="removeBRD(brd)" [showClear]="true" variant="secondary">
+                {{brd.fileName.split('-')[0]}}
+              </app-pill>
             </div>
+            <button (click)="switchTab('includeFiles'); selectTab(requirementTypes.BRD)">
+              <app-pill variant="primary" contentContainerClass="select-none">
+                Add ->
+              </app-pill>
+            </button>
           </div>
         </div>
-        <div *ngIf="selectedPRDs.length > 0" class="mt-3">
+        <div>
           <h2 class="text-sm font-medium text-secondary-900">Included PRDs</h2>
-          <div class="mt-2 flex flex-wrap">
-            <div *ngFor="let prd of selectedPRDs" class="m-1">
-              <div
-                class="flex items-center bg-secondary-200 px-2 py-1 rounded-md"
-              >
-                <span class="text-sm font-medium">{{
-                  prd.fileName.split("-")[0]
-                }}</span>
-                <button
-                  class="ml-2 text-secondary-600 hover:text-secondary-800"
-                  (click)="removePRD(prd)"
-                >
-                  &times;
-                </button>
-              </div>
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            <div *ngFor="let prd of selectedPRDs">
+              <app-pill (clear)="removePRD(prd)" [showClear]="true" variant="secondary">
+                {{prd.fileName.split('-')[0]}}
+              </app-pill>
             </div>
+            <button (click)="switchTab('includeFiles'); selectTab(requirementTypes.PRD)">
+              <app-pill variant="primary" contentContainerClass="select-none">
+                Add ->
+              </app-pill>
+            </button>
           </div>
         </div>
       </div>
       <!-- Display empty message if no documents are present -->
       <div
         *ngIf="selectedPRDs.length === 0 && selectedBRDs.length === 0"
-        class="py-10"
+        class="pb-10"
       >
         <div
           *ngIf="businessProcessForm.errors?.['noPrdOrBrd']"
@@ -157,128 +147,93 @@
     </div>
 
     <div class="bg-white shadow rounded-lg col-span-12 lg:col-span-5">
-      <div class="flex justify-center rounded-lg bg-secondary-100 w-full">
-        <div class="tabs w-full max-w-4xl overflow-hidden flex rounded-t-lg">
-          <button
-            *ngIf="mode === 'edit'"
-            (click)="switchTab('chat')"
-            class="tab flex-grow text-center py-3 text-sm font-semibold border-r-2 border-secondary-300"
-            [ngClass]="{
-              'bg-secondary-100 text-secondary-700 hover:bg-secondary-200':
-                activeTab !== 'chat',
-              'bg-secondary-700 text-white hover:bg-secondary-600':
-                activeTab === 'chat',
-            }"
-          >
-            Chat
-          </button>
-          <button
-            (click)="switchTab('includeFiles')"
-            class="tab flex-grow text-center py-3 text-sm font-semibold"
-            [ngClass]="{
-              'bg-secondary-100 text-secondary-700 hover:bg-secondary-200':
-                activeTab !== 'includeFiles',
-              'bg-secondary-700 text-white hover:bg-secondary-600':
-                activeTab === 'includeFiles',
-            }"
-          >
-            Include BRDs & PRDs
-          </button>
+      <div class="flex justify-center rounded-lg bg-white w-full border-b-[0.5px] border-secondary-300 rounded-b-none">
+        <div class="tabs w-full max-w-4xl overflow-hidden flex rounded-t-lg p-1.5 gap-0.5">
+          <!-- chat tab trigger -->
+          <ng-container *ngIf="mode === 'edit'">
+            <ng-container [ngTemplateOutlet]="TabTrigger"
+              [ngTemplateOutletContext]="{'label': 'Chat', 'isTabActive': activeTab === 'chat', 'tabId': 'chat', 'onClick': switchTab}">
+            </ng-container>
+          </ng-container>
+          <!-- include files tab trigger -->
+          <ng-container [ngTemplateOutlet]="TabTrigger"
+            [ngTemplateOutletContext]="{'label': 'Include BRDs & PRDs', 'isTabActive': activeTab === 'includeFiles', 'tabId': 'includeFiles', 'onClick': switchTab}">
+          </ng-container>
+
+          <!-- trigger template -->
+          <ng-template #TabTrigger let-label="label" let-isTabActive="isTabActive" let-tabId="tabId" let-onClick="onClick">
+            <button (click)="onClick(tabId)"
+              class="flex-grow text-center py-2.5 text-sm font-medium rounded-lg border-[0.5px]"
+              [ngClass]="{'border-secondary-300 bg-primary-50 text-primary-600':isTabActive,'text-secondary-500 border-transparent hover:bg-primary-50':!isTabActive}">
+              {{label}}
+            </button>
+          </ng-template>
         </div>
       </div>
 
       <div *ngIf="activeTab === 'includeFiles'" class="">
         <div class="space-y-12">
           <div>
-            <div>
-              <div class="tabs px-4 pt-4">
-                <button
-                  (click)="selectTab(requirementTypes.PRD)"
-                  class="tab px-3 py-2 text-sm font-semibold rounded-t-md border-b-2"
-                  [class.active]="selectedTab === requirementTypes.PRD"
-                  [ngClass]="{
-                    'border-primary-600 text-primary-600':
-                      selectedTab === requirementTypes.PRD,
-                    'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-secondary-300':
-                      selectedTab !== requirementTypes.PRD,
-                  }"
-                >
-                  PRD ({{ selectedPRDs.length }})
-                </button>
-                <button
-                  (click)="selectTab(requirementTypes.BRD)"
-                  class="tab px-3 py-2 text-sm font-semibold rounded-t-md border-b-2"
-                  [class.active]="selectedTab === requirementTypes.BRD"
-                  [ngClass]="{
-                    'border-primary-600 text-primary-600':
-                      selectedTab === requirementTypes.BRD,
-                    'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-secondary-300':
-                      selectedTab !== requirementTypes.BRD,
-                  }"
-                >
-                  BRD ({{ selectedBRDs.length }})
-                </button>
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-center w-full px-3.5 pt-3.5 gap-0.5">
+                <ng-container [ngTemplateOutlet]="TabTrigger"
+                  [ngTemplateOutletContext]="{'label': 'PRD ( ' + selectedPRDs.length + ' )', 'isTabActive': selectedTab === requirementTypes.PRD, 'tabId': requirementTypes.PRD, 'onClick': selectTab}">
+                </ng-container>
+                <ng-container [ngTemplateOutlet]="TabTrigger"
+                  [ngTemplateOutletContext]="{'label': 'BRD ( ' + selectedBRDs.length + ' )', 'isTabActive': selectedTab === requirementTypes.BRD, 'tabId': requirementTypes.BRD, 'onClick': selectTab}">
+                </ng-container>
               </div>
-              <div class="px-4 pb-4">
+              <div class="pb-4">
                 <div class="" *ngIf="originalDocumentList$ | async as list">
                   <div
                     *ngIf="!!list?.length; else noDocuments"
-                    class="grid grid-cols-1 gap-3 sm:gap-3 lg:gap-3 overflow-y-auto mt-4 doc-section-height auto-rows-max"
+                    class="grow flex flex-col gap-4 w-full overflow-y-auto doc-section-height px-4"
                   >
-                    <ng-container *ngFor="let item of list">
-                      <div
+                    <div *ngFor="let item of list" class="flex w-full">
+                      <ng-container
                         *ngIf="
                           (selectedTab === requirementTypes.PRD &&
                             item.folderName === requirementTypes.PRD) ||
                           (selectedTab === requirementTypes.BRD &&
                             item.folderName === requirementTypes.BRD)
                         "
-                        class="col-span-1 flex h-fit"
                       >
-                        <div class="flex items-center m-2">
-                          <input
-                            type="checkbox"
-                            [value]="
-                              JSON.stringify({
-                                requirement: item.content.requirement,
-                                fileName: item.fileName,
-                              })
-                            "
-                            (change)="toggleSelection($event, selectedTab)"
-                            [checked]="
-                              isSelected(
-                                {
-                                  requirement: item?.content?.requirement,
-                                  fileName: item.fileName,
-                                },
-                                selectedTab
-                              )
-                            "
-                            class="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
-                          />
-                        </div>
-                        <div class="flex-1 truncate rounded-md shadow-sm">
-                          <div
-                            class="flex-1 flex flex-col justify-start rounded-lg border border-secondary-200 bg-white"
-                          >
-                            <!-- Adjusted class here -->
-                            <div class="px-3 py-2 text-sm flex flex-col gap-1">
-                              <a class="font-semibold text-secondary-600">
-                                {{ item.fileName.replace("-base.json", "") }}
-                              </a>
-                              <h1 class="text-base font-medium truncate">
-                                {{ item.content.title }}
-                              </h1>
-                              <ng-container *ngIf="item.content.requirement as requirement">
-                                <app-rich-text-editor editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs" mode="view"
-                                  [content]="truncatePRDandBRDRequirement(item.content.requirement, item.folderName)" [editable]="false">
-                                </app-rich-text-editor>
-                              </ng-container>
-                            </div>
+                        <app-checkbox-card 
+                          [checked]="isSelected(
+                            {
+                              requirement: item?.content?.requirement,
+                              fileName: item.fileName,
+                            },
+                            selectedTab
+                          )"
+                          [value]="JSON.stringify({
+                            requirement: item.content.requirement,
+                            fileName: item.fileName,
+                          })"
+                          (onCheckedChange)="toggleSelection($event, {
+                            requirement: item.content.requirement || '',
+                            fileName: item.fileName,
+                          }, selectedTab)"
+                          class="w-full"
+                        >
+                          <div class="text-sm flex flex-col gap-1">
+                            <a class="font-semibold text-secondary-500">
+                              {{ (item.fileName || '').replace("-base.json", "") }}
+                            </a>
+                            <h1 class="text-base font-medium line-clamp-1">
+                              {{ item.content.title }}
+                            </h1>
+                            <app-rich-text-editor 
+                              editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs" 
+                              mode="view"
+                              [content]="truncatePRDandBRDRequirement(item.content.requirement || '', item.folderName || '')" 
+                              [editable]="false"
+                            >
+                            </app-rich-text-editor>
                           </div>
-                        </div>
-                      </div>
-                    </ng-container>
+                        </app-checkbox-card>
+                      </ng-container>
+                    </div>
                   </div>
                 </div>
                 <ng-template #noDocuments>
@@ -305,6 +260,7 @@
           [baseContent]="businessProcessForm.getRawValue().content"
           (getContent)="appendRequirement($event)"
           (updateChatHistory)="updateChatHistory($event)"
+          [containerClass]="'border-none'"
         />
       </div>
     </div>

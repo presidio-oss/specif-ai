@@ -26,7 +26,8 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
       requirementAbbr,
       chatHistory,
       knowledgeBase,
-      bedrockConfig
+      bedrockConfig,
+      brds
     } = validatedData;
 
     // Generate prompt
@@ -36,7 +37,8 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
       type,
       requirement,
       userMessage,
-      requirementAbbr
+      requirementAbbr,
+      brds
     });
 
     // Generate knowledge base constraint prompt if provided
