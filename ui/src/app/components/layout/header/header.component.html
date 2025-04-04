@@ -22,9 +22,9 @@
       </div>
 
       <button
-        (click)="openSettingsModal()"
-        (keydown.enter)="openSettingsModal()"
-        (keydown.space)="openSettingsModal(); $event.preventDefault()"
+        (click)="navigateToSettings()"
+        (keydown.enter)="navigateToSettings()"
+        (keydown.space)="navigateToSettings(); $event.preventDefault()"
         class="flex items-center justify-center font-medium opacity-100 transition-colors duration-300 px-3 py-2 gap-2 text-xs rounded-lg border border-secondary-700 bg-transparent text-white hover:bg-secondary-900"
       >
         <ng-icon name="heroCog8Tooth" strokeWidth="2" size="16" />

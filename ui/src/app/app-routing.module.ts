@@ -13,6 +13,7 @@ import { UserGuard } from './guards/auth.guard';
 import { BusinessProcessFlowComponent } from './pages/business-process-flow/business-process-flow.component';
 import { CanDeactivateGuard } from './guards/can-deactivate.guard';
 import { LoginComponent } from './pages/login/login.component';
+import { SettingsComponent } from './components/settings/settings.component';
 
 const routes: Routes = [
   {
@@ -108,6 +109,18 @@ const routes: Routes = [
     component: BusinessProcessFlowComponent,
     canActivate: [UserGuard],
   },
+  {
+    path: 'settings',
+    component: SettingsComponent,
+    canActivate: [UserGuard],
+    data: {
+      breadcrumb: {
+        name: 'Settings',
+        link: '/apps',
+        icon: 'settings',
+      },
+    },
+  }
 ];
 
 @NgModule({

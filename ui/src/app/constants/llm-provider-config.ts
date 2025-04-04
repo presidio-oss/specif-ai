@@ -7,6 +7,7 @@ export interface ProviderField {
   defaultValue?: any;
   options?: { value: string; label: string }[];
   placeholder?: string;
+  useAutocomplete?: boolean;
 }
 
 export interface ProviderConfig {
@@ -64,6 +65,7 @@ export async function getLLMProviderConfig(provider: string) {
           label: 'Model',
           required: true,
           options: options,
+          useAutocomplete: true,
         },
         {
           name: 'baseUrl',
