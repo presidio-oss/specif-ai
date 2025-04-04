@@ -59,7 +59,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     LLMConfigState.getConfig,
   );
   currentLLMConfig!: LLMConfigModel;
-  availableProviders = AvailableProviders;
+  availableProviders = [...AvailableProviders].sort((a, b) => 
+    a.displayName.localeCompare(b.displayName)
+  );;
   currentProviderFields: ProviderField[] = [];
   configForm!: FormGroup;
   selectedProvider: FormControl = new FormControl();
