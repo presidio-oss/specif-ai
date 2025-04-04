@@ -54,7 +54,7 @@ export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Pr
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "story:add");
     console.log('[add-user-story] LLM Response:', response);
 
     let result;

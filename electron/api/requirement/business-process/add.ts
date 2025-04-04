@@ -52,7 +52,7 @@ export async function addBusinessProcess(event: IpcMainInvokeEvent, data: any): 
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "requirement:bp-add");
     console.log('[add-business-process] LLM Response:', response);
 
     // Parse LLM response

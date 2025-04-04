@@ -2,6 +2,8 @@ import { AzureOpenAI } from "openai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface AzureOpenAIConfig extends LLMConfig {
   apiKey: string;
@@ -19,6 +21,11 @@ interface AzureModelInfo extends ModelInfo {
 export class AzureOpenAIHandler extends LLMHandler {
   private client: AzureOpenAI;
   protected configData: AzureOpenAIConfig;
+  private modelParameters = {
+    temperature: 0.7,
+    max_tokens: 1000,
+  };
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<AzureOpenAIConfig>) {
     super();
@@ -54,7 +61,8 @@ export class AzureOpenAIHandler extends LLMHandler {
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -69,8 +77,21 @@ export class AzureOpenAIHandler extends LLMHandler {
     const response = await this.client.chat.completions.create({
       model: this.configData.deployment,
       messages: openAIMessages,
-      max_tokens: 1000,
-      temperature: 0.7,
+      ...this.modelParameters,
+    });
+
+    const traceName = `${TRACES.CHAT_COMPLETION}:${this.configData.deployment}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+    
+    trace.generation({
+      name: operation,
+      model: this.configData.deployment,
+      modelParameters: this.modelParameters,
+      usage: {
+        input: response?.usage?.prompt_tokens,
+        output: response?.usage?.completion_tokens,
+        total: response?.usage?.total_tokens,
+      },
     });
 
     if (!response.choices?.[0]?.message?.content) {
@@ -79,7 +100,6 @@ export class AzureOpenAIHandler extends LLMHandler {
         "azure-openai"
       );
     }
-
     return response.choices[0].message.content;
   }
 

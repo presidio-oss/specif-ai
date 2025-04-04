@@ -47,7 +47,7 @@ export async function chatUserStoryTask(event: IpcMainInvokeEvent, data: unknown
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const response = await handler.invoke(messages, null, "story:chat");
     console.log('[chat-user-story-task] LLM Response:', response);
 
     return {

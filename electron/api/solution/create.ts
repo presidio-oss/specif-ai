@@ -61,7 +61,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         const messages = await LLMUtils.prepareMessages(prompt);
         
         try {
-          const response = await handler.invoke(messages);
+          const response = await handler.invoke(messages, null, 'solution:create');
           
           const extractedContent = extractRequirementsFromResponse(response, key);
           

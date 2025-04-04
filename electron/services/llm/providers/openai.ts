@@ -2,6 +2,8 @@ import OpenAI, { AzureOpenAI } from "openai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface OpenAIConfig extends LLMConfig {
   baseUrl?: string;
@@ -15,6 +17,7 @@ interface OpenAIConfig extends LLMConfig {
 export class OpenAIHandler extends LLMHandler {
   private client: OpenAI | AzureOpenAI;
   protected configData: OpenAIConfig;
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<OpenAIConfig>) {
     super();
@@ -68,7 +71,8 @@ export class OpenAIHandler extends LLMHandler {
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -86,6 +90,19 @@ export class OpenAIHandler extends LLMHandler {
       model: this.getModel().id,
       messages: openAIMessages,
       stream: false,
+    });
+
+    const traceName = `${TRACES.CHAT_COMPLETION}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+
+    trace.generation({
+      name: operation,
+      model: this.getModel().id,
+      usage: {
+        input: response.usage?.prompt_tokens,
+        output: response.usage?.completion_tokens,
+        total: response.usage?.total_tokens
+      }
     });
 
     if (!response.choices?.[0]?.message?.content) {
