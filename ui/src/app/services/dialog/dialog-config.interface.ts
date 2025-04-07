@@ -14,4 +14,5 @@ export interface ConfirmationDialogData {
   description: string;
   confirmButtonText?: string;
   cancelButtonText?: string;
+  renderNewLine?: boolean;
 }

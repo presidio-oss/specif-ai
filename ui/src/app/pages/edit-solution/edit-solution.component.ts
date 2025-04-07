@@ -30,7 +30,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { DialogService } from '../../services/dialog/dialog.service';
-import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { MultiUploadComponent } from '../../components/multi-upload/multi-upload.component';
@@ -46,7 +45,7 @@ import {
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
-import { catchError, switchMap, take, Observable, filter, first } from 'rxjs';
+import { catchError, switchMap, take, Observable, filter, first, map, lastValueFrom } from 'rxjs';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
@@ -196,21 +195,14 @@ export class EditSolutionComponent {
     title: string;
     description: string;
     cancelButtonText: string;
-    proceedButtonText: string;
+    confirmButtonText: string;
   }): Promise<boolean> {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    return lastValueFrom(
+      this.dialogService.confirm({
         ...dialogConfig,
-        renderNewLine: true,
-      },
-    });
-
-    return new Promise((resolve) => {
-      dialogRef.afterClosed().subscribe((result) => {
-        resolve(result === false); // false means proceed with update
-      });
-    });
+        renderNewLine: true
+      }).pipe(map(result => !result))
+    );
   }
 
   private async preUpdateChecks(): Promise<boolean> {
@@ -230,7 +222,7 @@ export class EditSolutionComponent {
             hasRemovedLinks: hasRemovedLinks,
           }),
           cancelButtonText: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.CANCEL_BUTTON_TEXT,
-          proceedButtonText: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.PROCEED_BUTTON_TEXT,
+          confirmButtonText: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.PROCEED_BUTTON_TEXT,
         });
       }
     }
@@ -248,7 +240,7 @@ export class EditSolutionComponent {
           title: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.TITLE,
           description: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.DESCRIPTION,
           cancelButtonText: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.CANCEL_BUTTON_TEXT,
-          proceedButtonText: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.PROCEED_BUTTON_TEXT,
+          confirmButtonText: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.PROCEED_BUTTON_TEXT,
         });
       }
     }
