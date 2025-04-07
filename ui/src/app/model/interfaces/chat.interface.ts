@@ -9,15 +9,22 @@ export interface BedrockValidationPayload extends BedrockConfig{
   kbId: string;
 }
 
+export interface BRD {
+  title: string;
+  requirement: string;
+}
+
 export interface suggestionPayload {
   name: string;
   description: string;
   type: string;
   requirement: string;
+  requirementAbbr: string;
   suggestions?: Array<string>;
   selectedSuggestion?: string;
   knowledgeBase?: string;
   bedrockConfig?: BedrockConfig;
+  brds?: Array<BRD>;
 }
 
 export interface conversePayload {
@@ -32,6 +39,7 @@ export interface conversePayload {
   us?: string;
   prd?: string;
   chatHistory?: Array<{}>;
+  brds?: Array<BRD>;
 }
 
 export interface ChatUpdateRequirementResponse {
