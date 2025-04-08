@@ -16,7 +16,6 @@ import {
   SetLLMConfig,
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
-import { MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -448,8 +447,22 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   navigateToHome() {
-    this.analyticsEnabled.setValue(this.initialAnalyticsState);
-    this.router.navigate(['/apps']);
+    if (this.hasChanges) {
+      this.dialogService
+        .confirm({
+          title: CONFIRMATION_DIALOG.UNSAVED_CHANGES.TITLE,
+          description: CONFIRMATION_DIALOG.UNSAVED_CHANGES.DESCRIPTION,
+          cancelButtonText: CONFIRMATION_DIALOG.UNSAVED_CHANGES.CANCEL_BUTTON_TEXT,
+          confirmButtonText: CONFIRMATION_DIALOG.UNSAVED_CHANGES.PROCEED_BUTTON_TEXT,
+        })
+        .subscribe((confirmed: boolean) => {
+          if (!confirmed) {
+            this.analyticsEnabled.setValue(this.initialAnalyticsState);
+            this.router.navigate(['/apps']);
+          }
+        });
+      return;
+    }
   }
 
   logout() {

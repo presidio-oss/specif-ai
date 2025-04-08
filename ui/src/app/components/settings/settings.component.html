@@ -19,7 +19,7 @@
         <div class="space-y-6">
           <div>
             <h2 class="text-base font-medium leading-7 text-secondary-900">LLM Configuration</h2>
-            <p class="mt-1 text-sm leading-6 text-secondary-500">
+            <p class="text-sm leading-6 text-secondary-500">
               Configure your Language Model provider settings
             </p>
           </div>
@@ -182,7 +182,7 @@
         <div class="space-y-6 pt-6">
           <div>
             <h2 class="text-base font-medium leading-7 text-secondary-900">Analytics Settings</h2>
-            <p class="mt-1 text-sm leading-6 text-secondary-500">
+            <p class="text-sm leading-6 text-secondary-500">
               Configure analytics and data collection preferences
             </p>
           </div>
@@ -203,7 +203,7 @@
           </div>
           <div *ngIf="analyticsWarning">
             <p class="text-warning-600 text-xs flex items-center">
-              <ng-icon name="heroExclamationTriangle" class="mr-1"></ng-icon>
+              <ng-icon name="heroExclamationTriangle" class="mr-1 text-md"></ng-icon>
               {{ analyticsWarning }}
             </p>
           </div>
@@ -213,7 +213,7 @@
         <div class="space-y-6 pt-6">
           <div>
             <h2 class="text-base font-medium leading-7 text-secondary-900">Destination Settings</h2>
-            <p class="mt-1 text-sm leading-6 text-secondary-500">
+            <p class="text-sm leading-6 text-secondary-500">
               Configure where your generated requirements will be stored
             </p>
           </div>
@@ -246,7 +246,7 @@
         <div class="space-y-6 pt-6">
           <div>
             <h2 class="text-base font-medium leading-7 text-secondary-900">Update Settings</h2>
-            <p class="mt-1 text-sm leading-6 text-secondary-500">
+            <p class="text-sm leading-6 text-secondary-500">
               Configure automatic updates and version management
             </p>
           </div>
@@ -295,7 +295,7 @@
 
         <!-- Company Info -->
         <div class="space-y-6 pt-6">
-          <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
+          <div class="rounded-lg mt-3 border border-secondary-200 divide-y divide-secondary-200">
             <div class="px-4 py-3 flex items-center justify-between">
               <span class="text-sm text-secondary-900">Accelerate SDLC process with</span>
               <img
@@ -343,14 +343,14 @@
       <div class="mt-8 flex items-center justify-end gap-x-2">
         <app-button
           *ngIf="hasChanges"
-          buttonContent="Discard Changes"
+          buttonContent="Discard"
           theme="secondary_outline"
           size="sm"
           (click)="navigateToHome()"
         />
         <app-button
           *ngIf="hasChanges"
-          buttonContent="Save Changes"
+          buttonContent="Save"
           theme="primary"
           size="sm"
           (click)="onSave()"
