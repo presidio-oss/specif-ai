@@ -3,7 +3,7 @@ import { NGXLogger } from 'ngx-logger';
 import { IpcRendererEvent } from 'electron';
 import { ToasterService } from '../services/toaster/toaster.service';
 import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogService } from '../services/dialog/dialog.service';
 import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
 import { BedrockValidationPayload, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
@@ -55,7 +55,7 @@ export class ElectronService {
     private logger: NGXLogger,
     private toast: ToasterService,
     private router: Router,
-    private dialog: MatDialog,
+    private dialogService: DialogService,
     private ipc: IpcInterceptor,
   ) {
     if (this.isElectron()) {
@@ -342,9 +342,11 @@ export class ElectronService {
 
         this.electronAPI.on('port-error', (_: any, message: string) => {
           console.error('Port Error: ', message);
-          this.dialog.open(PortErrorDialogComponent, {
-            disableClose: true,
-          });
+          this.dialogService
+            .createBuilder()
+            .forComponent(PortErrorDialogComponent)
+            .disableClose()
+            .open();
         });
         this.electronAPI.on('server-started', () => {
           sessionStorage.setItem('serverActive', 'true');
@@ -457,16 +459,18 @@ export class ElectronService {
     }
 
     // Trigger auto updater modal
-    this.dialog.open(AutoUpdateModalComponent, {
-      width: '600px',
-      disableClose: true,
-      data: {
-        version: response.version,
-        currentVersion: response.currentVersion,
-        releaseDate: response.releaseDate,
-        releaseNotes: await htmlToMarkdown(response.releaseNotes ?? '')
-      }
-    });
+    this.dialogService
+    .createBuilder()
+    .forComponent(AutoUpdateModalComponent)
+    .withWidth('600px')
+    .withData({
+      version: response.version,
+      currentVersion: response.currentVersion,
+      releaseDate: response.releaseDate,
+      releaseNotes: await htmlToMarkdown(response.releaseNotes ?? ''),
+    })
+    .disableClose()
+    .open();
   }
 
   async downloadUpdates(version: string) {

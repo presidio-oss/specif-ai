@@ -26,8 +26,7 @@ import { ClipboardService } from '../../services/clipboard.service';
 import { ITaskRequest, ITasksResponse } from '../../model/interfaces/ITask';
 import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { LoadingService } from '../../services/loading.service';
-import { MatDialog } from '@angular/material/dialog';
-import { ModalDialogCustomComponent } from '../../components/modal-dialog/modal-dialog.component';
+import { DialogService } from '../../services/dialog/dialog.service';
 import {
   getJiraTokenInfo,
   storeJiraToken,
@@ -44,7 +43,6 @@ import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent } from '@ng-icons/core';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
-import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import {
   CONFIRMATION_DIALOG,
   REQUIREMENT_TYPE,
@@ -56,6 +54,7 @@ import { BehaviorSubject, map } from 'rxjs';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
+import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
 
 @Component({
   selector: 'app-user-stories',
@@ -127,7 +126,7 @@ export class UserStoriesComponent implements OnInit {
 
   userStoriesInState: IUserStory[] = [];
 
-  readonly dialog = inject(MatDialog);
+  readonly dialogService = inject(DialogService);
 
   onSearch(term: string) {
     this.searchTerm$.next(term);
@@ -295,7 +294,7 @@ export class UserStoriesComponent implements OnInit {
         TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
       );
     })
-    this.dialog.closeAll();
+    this.dialogService.closeAll();
   }
 
   generateTasks(regenerate: boolean): Promise<void[]> {
@@ -404,20 +403,21 @@ export class UserStoriesComponent implements OnInit {
   }
 
   addMoreContext(regenerate: boolean = false) {
-    const dialogText = {
-      title: 'Generate User Story',
-      description: 'Include additional context to generate relevant user story',
-      placeholder: 'Add additional context for the user story',
-    };
-
-    const dialogRef = this.dialog.open(ModalDialogCustomComponent, {
-      width: '600px',
-      data: dialogText,
-    });
-
-    dialogRef.componentInstance.generate.subscribe((emittedValue) => {
-      this.generateUserStories(regenerate, emittedValue);
-    });
+    this.dialogService
+      .createBuilder()
+      .forComponent(ModalDialogCustomComponent)
+      .withData({
+        title: 'Generate User Story',
+        description:
+          'Include additional context to generate relevant user story',
+        placeholder: 'Add additional context for the user story',
+      })
+      .withWidth('600px')
+      .open()
+      .afterClosed()
+      .subscribe((emittedValue) => {
+        this.generateUserStories(regenerate, emittedValue);
+      });
   }
 
   syncRequirementWithJira(): void {
@@ -498,19 +498,16 @@ export class UserStoriesComponent implements OnInit {
     dialogConfig: any,
     onConfirm: () => void,
   ): void {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    this.dialogService
+      .confirm({
         title: dialogConfig.TITLE,
         description: dialogConfig.DESCRIPTION,
         cancelButtonText: dialogConfig.CANCEL_BUTTON_TEXT,
-        proceedButtonText: dialogConfig.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) onConfirm();
-    });
+        confirmButtonText: dialogConfig.PROCEED_BUTTON_TEXT,
+      })
+      .subscribe((res) => {
+        if (res) onConfirm();
+      });
   }
 
   syncJira(token: string, jiraUrl: string): void {

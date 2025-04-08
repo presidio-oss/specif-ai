@@ -40,9 +40,8 @@ import {
   REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from 'src/app/constants/app.constants';
-import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
@@ -116,7 +115,7 @@ export class AddTaskComponent implements OnDestroy {
   };
 
   constructor(
-    private dialog: MatDialog,
+    private dialogService: DialogService,
     private toastService: ToasterService,
     private requirementIdService: RequirementIdService,
   ) {
@@ -465,36 +464,33 @@ ${chat.assistant}`,
   }
 
   deleteTask() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    this.dialogService
+      .confirm({
         title: CONFIRMATION_DIALOG.DELETION.TITLE,
         description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(
           this.existingTask.id,
         ),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) {
-        this.store.dispatch(
-          new ArchiveTask(
-            this.absoluteFilePath,
-            this.config.featureId,
-            this.existingTask.id,
-          ),
-        );
-        this.navigateBackToTasks();
-        this.toastService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
-            this.entityType,
-            this.existingTask.id,
-          ),
-        );
-      }
-    });
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+      })
+      .subscribe((res) => {
+        if (res) {
+          this.store.dispatch(
+            new ArchiveTask(
+              this.absoluteFilePath,
+              this.config.featureId,
+              this.existingTask.id,
+            ),
+          );
+          this.navigateBackToTasks();
+          this.toastService.showSuccess(
+            TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
+              this.entityType,
+              this.existingTask.id,
+            ),
+          );
+        }
+      });
   }
 
   ngOnDestroy() {

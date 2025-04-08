@@ -19,8 +19,10 @@ from llm.prompts import (
 from llm import build_llm_handler
 from schemas.schemas import (
     create_process_flow_chart_schema,
+    create_solution_schema
 )
 from config.executor import ExecutorConfig
+from schemas.schemas import create_prds_schema
 
 
 solution_api = Blueprint('solution_api', __name__)
@@ -71,64 +73,119 @@ def create_process_flow_chart():
 @require_access_code()
 def create_solutions():
     logger.info(f"Request {g.request_id}: Entered <create_solutions>")
-    data = request.get_json()
+
+    data: any
+    try:
+        data = create_solution_schema.load(request.get_json())
+    except ValidationError as err:
+        logger.error(
+            f"Request {g.request_id}: Payload validation failed: {err.messages}"
+        )
+        raise CustomAppException("Payload validation failed.", status_code=400) from err
+
     final_llm_response_dict = {}
     errors = []
     templates = []
 
-    def get_llm_response(template_config):
+    def generate_requirements(template_config):
         logger.info(
-            f"Request {g.request_id}: Fetching LLM response for template: {template_config['template_path']}")
-        template = jinja_template_env.get_template(
-            template_config['template_path'])
-
-        template = template.render(
-            name=data["name"],
-            description=data["description"],
-            max_count=template_config['max_count']
+            f"Request {g.request_id}: Fetching LLM response for template: {template_config['template_path']}"
         )
-        try:
-            # Prepare message for LLM
-            llm_message = LLMUtils.prepare_messages(prompt=template)
 
-            # Invoke LLM
-            llm_handler = build_llm_handler(
-                provider=g.current_provider,
-                model_id=g.current_model
-            )
-            llm_response = llm_handler.invoke(messages=llm_message)
+        def generate_llm_response(config):
+            template = get_template(config["template_path"])
+            gen_preferences = config["preferences"]
 
-            logger.info(
-                f"Request {g.request_id}: Successfully received LLM response for template: {template_config['template_path']}")
-            return json.loads(llm_response)
-        except json.JSONDecodeError:
-            logger.error(
-                f"Request {g.request_id}: Failed to parse LLM response for template: {template_config['template_path']}")
-            abort(500, description="Invalid JSON format. Please try again.")
+            # Prepare template context
+            template_context = {
+                "name": data["name"],
+                "description": data["description"],
+                "max_count": gen_preferences["max_count"],
+            }
+
+            rendered_template = template.render(**template_context)
+
+            try:
+                # Prepare message for LLM
+                llm_message = LLMUtils.prepare_messages(prompt=rendered_template)
+
+                # Invoke LLM
+                llm_handler = build_llm_handler(
+                    provider=g.current_provider, model_id=g.current_model
+                )
+                llm_response = llm_handler.invoke(messages=llm_message)
+
+                logger.info(
+                    f"Request {g.request_id}: Successfully received LLM response for template: {config['template_path']}"
+                )
+                return json.loads(llm_response)
+            except json.JSONDecodeError:
+                logger.error(
+                    f"Request {g.request_id}: Failed to parse LLM response for template: {config['template_path']}"
+                )
+                abort(500, description="Invalid JSON format. Please try again.")
+
+        preferences = template_config["preferences"]
+        isGenerationEnabled = preferences.get("isEnabled", False)
+
+        if template_config["type"] == "brd":
+            brd_response = {}
+            if isGenerationEnabled:
+                # Generate BRD first if BRD generation is enabled
+                brd_response = generate_llm_response(template_config)
+
+            prd_preferences = template_config["preferences"].get("prdPreferences", {})
+
+            # Check if PRD should be generated
+            if prd_preferences.get("isEnabled", False):
+                brds = brd_response.get("brd", [])
+                app = {"name": data["name"], "description": data["description"]}
+                prd_response = _create_prds_from_brds(
+                    app, brds, prd_preferences.get("max_count")
+                )
+                # Merge BRD and PRD responses
+                return {**brd_response, **prd_response}
+
+            return brd_response
+        else:
+            # Handle other requirement types normally
+            if not isGenerationEnabled:
+                return {}
+
+            return generate_llm_response(template_config)
 
     if data["createReqt"]:
         logger.info(f"Request {g.request_id}: Creating requirements using LLM")
-        clean_solution = data['cleanSolution'] if ('cleanSolution' in data) and isinstance(data['cleanSolution'],
-                                                                                           bool) else False
+        clean_solution = (
+            data["cleanSolution"]
+            if ("cleanSolution" in data) and isinstance(data["cleanSolution"], bool)
+            else False
+        )
         if clean_solution is False:
             preference_mapping = {
-                'brdPreferences': {'type': 'brd', 'template': 'create_brd.jinja2'},
-                'prdPreferences': {'type': 'prd', 'template': 'create_prd.jinja2'},
-                'uirPreferences': {'type': 'uir', 'template': 'create_uir.jinja2'},
-                'nfrPreferences': {'type': 'nfr', 'template': 'create_nfr.jinja2'},
+                "brdPreferences": {"type": "brd", "template": "create_brd.jinja2"},
+                "uirPreferences": {"type": "uir", "template": "create_uir.jinja2"},
+                "nfrPreferences": {"type": "nfr", "template": "create_nfr.jinja2"},
             }
 
             templates = [
                 {
-                    'type': config['type'],
-                    'template_path': config['template'],
-                    'max_count': data[pref]['max_count']
+                    "type": config["type"],
+                    "template_path": config["template"],
+                    # for brd type include preferences of prd
+                    "preferences": data.get(pref, {})
+                        if config["type"] != "brd"
+                        else {
+                            **data.get(pref, {}),
+                            "prdPreferences": data.get("prdPreferences", {}),
+                        },
                 }
                 for pref, config in preference_mapping.items()
-                if data.get(pref, {}).get('isEnabled')
             ]
         executor = ExecutorConfig().get_executor()
-        futures = [executor.submit(get_llm_response, template) for template in templates]
+        futures = [
+            executor.submit(generate_requirements, template) for template in templates
+        ]
         for future in concurrent.futures.as_completed(futures):
             try:
                 llm_response_dict = future.result()
@@ -151,10 +208,11 @@ def update_solution_reqt():
     logger.info(f"Request {g.request_id}: Entered <update_solution_reqt>")
     data = request.get_json()
     llm_response_dict = {}  # Initialize the variable here
-    template = jinja_template_env.get_template('02_update.jinja2')
+    template = get_template('02_update.jinja2')
     updatedReqt = data["updatedReqt"]
     fileContent = data["fileContent"]
     if data["useGenAI"] or fileContent:
+        reqType = data["addReqtType"]
         template = template.render(
             name=data["name"],
             description=data["description"],
@@ -162,7 +220,8 @@ def update_solution_reqt():
             fileContent=fileContent,
             updatedReqt=updatedReqt,
             reqId=data["reqId"],
-            addReqtType=data["addReqtType"]
+            addReqtType=reqType,
+            brds=data.get("brds", []) if reqType == "PRD" else None,
         )
 
         # Prepare message for LLM
@@ -201,16 +260,18 @@ def add_solution_reqt():
     logger.info(f"Request {g.request_id}: Entered <add_solution_reqt>")
     data = request.get_json()
     llm_response_dict = {}  # Initialize the variable here
-    template = jinja_template_env.get_template('03_add.jinja2')
+    template = get_template('03_add.jinja2')
     newReqt = data["reqt"]
     fileContent = data["fileContent"]
     if data["useGenAI"] or fileContent:
+        reqType = data["addReqtType"]
         template = template.render(
             name=data["name"],
             description=data["description"],
             newReqt=newReqt,
             fileContent=fileContent,
-            addReqtType=data["addReqtType"],
+            addReqtType=reqType,
+            brds=data.get("brds", []) if reqType == "PRD" else None,
         )
 
         # Prepare message for LLM
@@ -239,6 +300,77 @@ def add_solution_reqt():
     merged_data = {**data, **llm_response_dict}
     logger.info(f"Request {g.request_id}: Exited <add_solution_reqt>")
     return merged_data
+
+@solution_api.route("/api/solutions/prds", methods=["POST"])
+@require_access_code()
+def create_prds():
+    logger.info(f"Request {g.request_id}: Entered <create_prds>")
+    data: any
+    try:
+        data = create_prds_schema.load(request.get_json())
+    except ValidationError as err:
+        logger.error(
+            f"Request {g.request_id}: Payload validation failed: {err.messages}"
+        )
+        raise CustomAppException("Payload validation failed.", status_code=400) from err
+
+    try:
+        preferences = data.get("preferences", {})
+        prds = _create_prds_from_brds(
+            app=data.get("app", {}),
+            brds=data.get("brds", []),
+            max_count=preferences.get("max_count", None),
+            extra_context=data.get("extraContext", None),
+        )
+        logger.info(f"Request {g.request_id}: Exited <create_prds>")
+        return prds
+    except Exception as e:
+        logger.error(
+            f"Request {g.request_id}: An unexpected error occurred in <create_prds>: {str(e)}"
+        )
+        raise CustomAppException(
+            "An unexpected error occurred while creating the prds from brds.",
+            status_code=500,
+        ) from e
+
+
+def _create_prds_from_brds(
+    app: dict[str, str],
+    brds: list[dict[str, str]],
+    max_count: int,
+    extra_context: str = None,
+):
+    create_prds_template = get_template("create_prd.jinja2")
+    create_prds_req = create_prds_template.render(
+        brds=brds,
+        extraContext=extra_context,
+        app_name=app.get("name"),
+        app_description=app.get("description"),
+        app_technical_details=app.get("technicalDetails"),
+    )
+
+    # Create LLM handler
+    llm_handler = build_llm_handler(
+        provider=g.current_provider, model_id=g.current_model
+    )
+
+    # Prepare message and invoke LLM
+    llm_message = LLMUtils.prepare_messages(prompt=create_prds_req)
+    llm_response = llm_handler.invoke(messages=llm_message)
+
+    try:
+        prds = json.loads(llm_response)
+        logger.info(f"Request {g.request_id}: Exited <create_prds_from_brds>")
+        return prds
+    except json.JSONDecodeError as exc:
+        logger.error(
+            f"Request {g.request_id}: Failed to parse LLM response: {llm_response}"
+        )
+        raise CustomAppException(
+            "Invalid JSON format. Please try again.",
+            status_code=500,
+            payload={"raw_llm_response": llm_response},
+        ) from exc
 
 
 @solution_api.route("/api/solutions/stories", methods=["POST"])

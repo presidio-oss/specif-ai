@@ -8,7 +8,7 @@ import { LLMConfigState } from './store/llm-config/llm-config.state';
 import { SetLLMConfig } from './store/llm-config/llm-config.actions';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogService } from './services/dialog/dialog.service';
 import { AnalyticsModalComponent } from './components/analytics-modal/analytics-modal.component';
 import { AnalyticsTracker } from './services/analytics/analytics.interface';
 import { geoAzimuthalEquidistantRaw } from 'd3';
@@ -25,7 +25,7 @@ export class AppComponent implements OnInit, OnDestroy {
   router = inject(Router);
   startupService = inject(StartupService);
   store = inject(Store);
-  dialog = inject(MatDialog);
+  dialogService = inject(DialogService);
   analyticsTracker = inject(AnalyticsTracker);
   
   private subscriptions: Subscription[] = [];
@@ -128,10 +128,12 @@ export class AppComponent implements OnInit, OnDestroy {
     const analyticsPermission = localStorage.getItem(ANALYTICS_PERMISSION_REQUESTED);
     this.validateAnalyticsPermission();
     if (analyticsPermission !== 'true') {
-      this.dialog.open(AnalyticsModalComponent, {
-        width: '600px',
-        disableClose: true,
-      });
+      this.dialogService
+        .createBuilder()
+        .forComponent(AnalyticsModalComponent)
+        .withWidth('600px')
+        .disableClose()
+        .open();
       localStorage.setItem(ANALYTICS_PERMISSION_REQUESTED, 'true');
       return;
     }

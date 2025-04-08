@@ -23,7 +23,7 @@ export class AzureOpenAIHandler extends LLMHandler {
   protected configData: AzureOpenAIConfig;
   private modelParameters = {
     temperature: 0.7,
-    max_tokens: 1000,
+    max_tokens: 4096,
   };
   private observabilityManager = ObservabilityManager.getInstance();
 

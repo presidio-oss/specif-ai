@@ -14,7 +14,7 @@ import {
 } from '../../model/interfaces/chat.interface';
 import { ChatService } from '../../services/chat/chat.service';
 import { UtilityService } from '../../services/utility.service';
-import { TOOLTIP_CONTENT, APP_MESSAGES, CHAT_TYPES, TOASTER_MESSAGES } from '../../constants/app.constants';
+import { TOOLTIP_CONTENT, APP_MESSAGES, CHAT_TYPES, REQUIREMENT_TYPE } from '../../constants/app.constants';
 import { Store } from '@ngxs/store';
 import { Observable, Subscription } from 'rxjs';
 import { ChatSettings } from 'src/app/model/interfaces/ChatSettings';
@@ -89,6 +89,12 @@ export class AiChatComponent implements OnInit {
   @Input() supportsAddFromCode: boolean = true;
   @Input() prd: string | undefined;
   @Input() userStory: string | undefined;
+  @Input() containerClass: string = '';
+  @Input() brds: Array<{
+    id: string;
+    title: string;
+    requirement: string;
+  }> | undefined;
 
   metadata: any = {};
   isKbAvailable: boolean = false;
@@ -109,6 +115,7 @@ export class AiChatComponent implements OnInit {
     type: '',
     description: '',
     requirement: '',
+    requirementAbbr: ''
   };
   type: string = '';
   requirementAbbrivation: string = '';
@@ -190,8 +197,10 @@ export class AiChatComponent implements OnInit {
         .slice(0, -2);
     } else if (this.chatType == CHAT_TYPES.USERSTORY) {
       this.type = 'User Story';
+      this.requirementAbbrivation = REQUIREMENT_TYPE.US;
     } else if (this.chatType == CHAT_TYPES.TASK) {
       this.type = 'Task for User Story';
+      this.requirementAbbrivation = REQUIREMENT_TYPE.TASK;
     }
     this.smoothScroll();
     setTimeout(() => {
@@ -202,6 +211,7 @@ export class AiChatComponent implements OnInit {
         type: this.type,
         requirement: this.baseContent,
         knowledgeBase: this.kb,
+        requirementAbbr: this.requirementAbbrivation
       };
       this.getSuggestion();
     }, 1000);
@@ -209,11 +219,19 @@ export class AiChatComponent implements OnInit {
 
   getSuggestion() {
     this.loadingChat = true;
+    const additionalPRDContext =
+      this.requirementAbbrivation === REQUIREMENT_TYPE.PRD
+        ? {
+            brds: this.brds,
+          }
+        : {};
+
     const suggestionPayload: suggestionPayload = {
       ...this.basePayload,
       requirement: this.baseContent,
       suggestions: this.localSuggestions,
       selectedSuggestion: this.selectedSuggestion,
+      ...additionalPRDContext
     };
 
     if (this.isKbActive && this.kb) {
@@ -243,6 +261,13 @@ export class AiChatComponent implements OnInit {
   }
 
   finalCall(message: string) {
+    const additionalPRDContext =
+        this.requirementAbbrivation === REQUIREMENT_TYPE.PRD
+          ? {
+              brds: this.brds,
+            }
+          : {};
+
     let payload: conversePayload = {
       ...this.basePayload,
       chatHistory: this.chatHistory
@@ -253,6 +278,7 @@ export class AiChatComponent implements OnInit {
         .slice(0, -1),
       userMessage: message,
       knowledgeBase: this.kb,
+      ...additionalPRDContext
     };
 
     // Add Bedrock config if knowledge base is active
