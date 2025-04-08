@@ -23,6 +23,7 @@ import { NgForOf, NgIf } from '@angular/common';
 import { StartupService } from '../../services/auth/startup.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
+import { AppSelectComponent } from '../core/app-select/app-select.component';
 import {
   APP_CONSTANTS,
   CONFIRMATION_DIALOG,
@@ -49,6 +50,7 @@ import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
     NgForOf,
     NgIf,
     ButtonComponent,
+    AppSelectComponent,
   ],
   providers: [
     provideIcons({ 
@@ -63,7 +65,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   currentLLMConfig!: LLMConfigModel;
   availableProviders = [...AvailableProviders].sort((a, b) => 
     a.displayName.localeCompare(b.displayName)
-  );;
+  );
+  providerOptions = this.availableProviders.map(p => ({
+    value: p.key,
+    label: p.displayName
+  }));
   currentProviderFields: ProviderField[] = [];
   configForm!: FormGroup;
   selectedProvider: FormControl = new FormControl();
@@ -79,10 +85,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private initialAutoUpdateState: boolean = true;
   protected themeConfiguration = environment.ThemeConfiguration;
 
-  showDropdown: boolean = false;
-  filteredOptions: { value: string; label: string }[] = [];
-  private allOptions: { value: string; label: string }[] = [];
-
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
@@ -90,14 +92,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   version: string = environment.APP_VERSION;
   currentYear = new Date().getFullYear();
   analyticsWarning: string = '';
-
-  @HostListener('document:click', ['$event'])
-  onClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.autocomplete-container')) {
-      this.showDropdown = false;
-    }
-  }
 
   constructor(
     private store: Store,
@@ -119,22 +113,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  filterOptions(event: Event) {
-    const input = (event.target as HTMLInputElement).value.toLowerCase();
-    this.filteredOptions = this.allOptions.filter(option =>
-      option.label.toLowerCase().includes(input)
-    );
-    this.showDropdown = true;
-  }
-
-  selectOption(fieldName: string, value: string) {
-    const configGroup = this.configForm.get('config') as FormGroup;
-    if (configGroup) {
-      configGroup.get(fieldName)?.setValue(value);
-    }
-    this.showDropdown = false;
-  }
-
   private async updateConfigFields(provider: string) {
     const providerConfig = await getLLMProviderConfig(provider);
     if (!providerConfig) return;
@@ -151,10 +129,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
         )
       );
 
-      if (field.useAutocomplete && field.options) {
-        this.allOptions = field.options;
-        this.filteredOptions = field.options;
-      }
     });
     this.configForm.setControl('config', newConfigGroup);
     this.applyStoredConfigValues(provider);

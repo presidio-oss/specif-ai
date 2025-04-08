@@ -16,7 +16,7 @@
 
       <form [formGroup]="configForm" class="space-y-8 divide-y divide-secondary-200">
         <!-- LLM Configuration -->
-        <div class="space-y-6">
+        <div class="space-y-4">
           <div>
             <h2 class="text-base font-medium leading-7 text-secondary-900">LLM Configuration</h2>
             <p class="text-sm leading-6 text-secondary-500">
@@ -30,34 +30,14 @@
               LLM Provider
             </label>
             <div class="relative">
-              <select
+              <app-select
                 id="providerSelect"
                 formControlName="provider"
-                class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none appearance-none cursor-pointer"
-              >
-                <option
-                  *ngFor="let provider of availableProviders"
-                  [value]="provider.key"
-                  class="py-2"
-                >
-                  {{ provider.displayName }}
-                </option>
-              </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                <svg
-                  class="h-4 w-4 text-secondary-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </div>
+                [options]="providerOptions"
+                [searchable]="true"
+                [required]="true"
+                placeholder="Select LLM Provider"
+              ></app-select>
             </div>
           </div>
 
@@ -87,77 +67,14 @@
                     <span *ngIf="field.required" class="text-danger-500">*</span>
                   </label>
                   <div class="relative">
-                    <ng-container *ngIf="field.useAutocomplete; else regularSelect">
-                      <div class="relative autocomplete-container">
-                        <input
-                          type="text"
-                          [id]="field.name"
-                          [formControlName]="field.name"
-                          (input)="filterOptions($event)"
-                          (focus)="showDropdown = true"
-                          class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none cursor-text"
-                          [placeholder]="'Search ' + field.label"
-                          [required]="field.required || false"
-                          autocomplete="off"
-                        />
-                        <div *ngIf="showDropdown && filteredOptions.length > 0" class="absolute z-10 w-full mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-                          <div
-                            *ngFor="let option of filteredOptions"
-                            class="px-3 py-2 text-sm text-secondary-900 hover:bg-secondary-50 cursor-pointer"
-                            (click)="selectOption(field.name, option.value)"
-                          >
-                            {{ option.label }}
-                          </div>
-                        </div>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                          <svg
-                            class="h-4 w-4 text-secondary-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M19 9l-7 7-7-7"
-                            ></path>
-                          </svg>
-                        </div>
-                      </div>
-                    </ng-container>
-                    <ng-template #regularSelect>
-                      <select
-                        [id]="field.name"
-                        [formControlName]="field.name"
-                        class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none appearance-none cursor-pointer"
-                        [required]="field.required || false"
-                      >
-                        <option value="" disabled selected>Select {{ field.label }}</option>
-                        <option
-                          *ngFor="let option of field.options"
-                          [value]="option.value"
-                          class="py-2"
-                        >
-                          {{ option.label }}
-                        </option>
-                      </select>
-                      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                        <svg
-                          class="h-4 w-4 text-secondary-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 9l-7 7-7-7"
-                          ></path>
-                        </svg>
-                      </div>
-                    </ng-template>
+                    <app-select
+                      [id]="field.name"
+                      [formControlName]="field.name"
+                      [options]="field.options || []"
+                      [searchable]="field.useAutocomplete || false"
+                      [required]="field.required || false"
+                      [placeholder]="'Select ' + field.label"
+                    ></app-select>
                   </div>
                 </div>
 
@@ -179,7 +96,7 @@
         </div>
 
         <!-- Analytics Settings -->
-        <div class="space-y-6 pt-6">
+        <div class="space-y-4 pt-6">
           <div>
             <h2 class="text-base font-medium leading-7 text-secondary-900">Analytics Settings</h2>
             <p class="text-sm leading-6 text-secondary-500">
@@ -202,15 +119,15 @@
             </div>
           </div>
           <div *ngIf="analyticsWarning">
-            <p class="text-warning-600 text-xs flex items-center">
-              <ng-icon name="heroExclamationTriangle" class="mr-1 text-md"></ng-icon>
+            <p class="text-warning-600 text-xs flex items-center gap-1">
+              <ng-icon name="heroExclamationTriangle" class="text-md"></ng-icon>
               {{ analyticsWarning }}
             </p>
           </div>
         </div>
 
         <!-- Destination Settings -->
-        <div class="space-y-6 pt-6">
+        <div class="space-y-4 pt-6">
           <div>
             <h2 class="text-base font-medium leading-7 text-secondary-900">Destination Settings</h2>
             <p class="text-sm leading-6 text-secondary-500">
@@ -243,7 +160,7 @@
         </div>
 
         <!-- Update Settings -->
-        <div class="space-y-6 pt-6">
+        <div class="space-y-4 pt-6">
           <div>
             <h2 class="text-base font-medium leading-7 text-secondary-900">Update Settings</h2>
             <p class="text-sm leading-6 text-secondary-500">
@@ -294,8 +211,8 @@
         </div>
 
         <!-- Company Info -->
-        <div class="space-y-6 pt-6">
-          <div class="rounded-lg mt-3 border border-secondary-200 divide-y divide-secondary-200">
+        <div class="space-y-4 pt-6">
+          <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
             <div class="px-4 py-3 flex items-center justify-between">
               <span class="text-sm text-secondary-900">Accelerate SDLC process with</span>
               <img
