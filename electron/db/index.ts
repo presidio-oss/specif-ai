@@ -1,3 +1,2 @@
-import { drizzle } from "drizzle-orm/libsql";
-
-const db = drizzle(process.env.DB_FILE_NAME!);
+export { DatabaseClient } from './client';
+export type { Database } from './types';
