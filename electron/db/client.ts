@@ -60,7 +60,7 @@ export class DatabaseClient {
     this.closeSolutionDb();
 
     const directoryPath = this.getDirectoryPath();
-    const dbPath = path.join(directoryPath, 'solutions', `${solutionId}.db`);
+    const dbPath = path.join(directoryPath, `${solutionId}.db`);
     
     const sqlite = createClient({
       url: `file:${dbPath}`
