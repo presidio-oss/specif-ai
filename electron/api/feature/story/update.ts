@@ -6,6 +6,8 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { updateStoryPrompt } from '../../../prompts/feature/story/update';
 import { repairJSON } from '../../../utils/custom-json-parser';
+import { traceBuilder } from '../../../utils/trace-builder';
+import { COMPONENT, OPERATIONS } from '../../../helper/constants';
 
 export async function updateStory(event: IpcMainInvokeEvent, data: unknown): Promise<UpdateStoryResponse> {
   try {
@@ -33,7 +35,8 @@ export async function updateStory(event: IpcMainInvokeEvent, data: unknown): Pro
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages, null, "story:update");
+    const traceName = traceBuilder(COMPONENT.STORY, OPERATIONS.UPDATE);
+    const response = await handler.invoke(messages, null, traceName);
     const cleanFeatures = repairJSON(response.trim());
     
     console.log('[update-story] LLM Response:', response);

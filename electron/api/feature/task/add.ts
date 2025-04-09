@@ -6,6 +6,8 @@ import { buildLLMHandler } from '../../../services/llm';
 import { store } from '../../../services/store';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
+import { OPERATIONS, COMPONENT } from '../../../helper/constants';
+import { traceBuilder } from '../../../utils/trace-builder';
 
 export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<AddTaskResponse> {
   try {
@@ -35,7 +37,9 @@ export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<Add
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages, null, "task:add");
+    const traceName = traceBuilder(COMPONENT.TASK, OPERATIONS.ADD);
+    const response = await handler.invoke(messages, null, traceName);
+    
     console.log('[add-task] LLM Response:', response);
 
     let llmResponseDict;
