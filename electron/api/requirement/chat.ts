@@ -6,6 +6,8 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { chatUpdateRequirementPrompt } from '../../prompts/requirement/chat';
 import { repairJSON } from '../../utils/custom-json-parser';
+import { OPERATIONS } from '../../helper/constants';
+import { traceBuilder } from '../../utils/trace-builder';
 
 export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<ChatUpdateRequirementResponse> {
   try {
@@ -62,7 +64,8 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages, null, "requirement:chat");
+    const traceName = traceBuilder(requirementAbbr, OPERATIONS.CHAT)
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[chat-update-requirement] LLM Response:', response);
 
     let result;

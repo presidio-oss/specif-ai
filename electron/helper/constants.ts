@@ -6,3 +6,11 @@ export const TRACES = {
     CHAT_OPENROUTER: "ChatOpenRouter",
     CHAT_ANTHROPIC: "ChatAnthropic"
 }
+
+export enum OPERATIONS {
+    ADD = 'add',
+    UPDATE = 'update',
+    DELETE ='delete',
+    CREATE  = 'create',
+    CHAT = 'chat',
+}

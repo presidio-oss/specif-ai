@@ -6,6 +6,8 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { addRequirementPrompt } from '../../prompts/requirement/add';
 import { repairJSON } from '../../utils/custom-json-parser';
+import { traceBuilder } from '../../utils/trace-builder';
+import { OPERATIONS } from '../../helper/constants';
 
 export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<AddRequirementResponse> {
   try {
@@ -55,7 +57,8 @@ export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): 
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages, null, "requirement:add");
+    const traceName = traceBuilder(addReqtType, OPERATIONS.ADD);
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[add-requirement] LLM Response:', response);
 
     let result;
