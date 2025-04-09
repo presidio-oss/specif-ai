@@ -6,7 +6,7 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { addBusinessProcessPrompt } from '../../../prompts/requirement/business-process/add';
 import { repairJSON } from '../../../utils/custom-json-parser';
-import { OPERATIONS } from '../../../helper/constants';
+import { OPERATIONS, COMPONENT } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
 
 export async function addBusinessProcess(event: IpcMainInvokeEvent, data: any): Promise<AddBusinessProcessResponse> {
@@ -54,7 +54,7 @@ export async function addBusinessProcess(event: IpcMainInvokeEvent, data: any): 
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const traceName = traceBuilder("bp", OPERATIONS.ADD);
+    const traceName = traceBuilder(COMPONENT.BP, OPERATIONS.ADD);
     const response = await handler.invoke(messages, null, traceName);
     console.log('[add-business-process] LLM Response:', response);
 

@@ -13,7 +13,8 @@ export enum OPERATIONS {
   DELETE = "delete",
   CREATE = "create",
   CHAT = "chat",
-  VISUALIZE = "visualize"
+  VISUALIZE = "visualize",
+  SUGGEST = 'suggest'
 }
 
 export const COMPONENT = {
@@ -21,5 +22,5 @@ export const COMPONENT = {
   STORY: "story",
   TASK: "task",
   SOLUTION: "solution",
-  FLOWCHART: "flowchart"
+  FLOWCHART: "flowchart",
 };
