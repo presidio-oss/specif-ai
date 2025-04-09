@@ -3,24 +3,30 @@ import {
   text,
   integer,
   primaryKey,
-  unique,
 } from "drizzle-orm/sqlite-core";
+
+export const docTypeEnum = ["PRD", "BRD"] as const;
+export type DocType = (typeof docTypeEnum)[number];
+
+export const commonColumns = {
+  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  isDeleted: integer("is_deleted", { mode: "boolean" }).default(false),
+};
 
 export const metadata = sqliteTable("Metadata", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  techStacks: text("tech_stacks"),
+  techStacks: text("technical_details"),
   isBrownfield: integer("is_brownfield", { mode: "boolean" }).default(false),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  ...commonColumns,
 });
 
 export const integration = sqliteTable("Integration", {
   id: integer("id").primaryKey(),
   config: text("config"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  ...commonColumns,
 });
 
 export const documentType = sqliteTable("DocumentType", {
@@ -28,8 +34,7 @@ export const documentType = sqliteTable("DocumentType", {
   name: text("name").notNull(),
   typeLabel: text("type_label"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  ...commonColumns,
 });
 
 export const document = sqliteTable("Document", {
@@ -40,12 +45,8 @@ export const document = sqliteTable("Document", {
   documentTypeId: text("document_type_id")
     .notNull()
     .references(() => documentType.id, { onDelete: "set null" }),
-  metadataId: integer("metadata_id")
-    .notNull()
-    .references(() => metadata.id, { onDelete: "cascade" }),
   count: integer("count").default(0),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  ...commonColumns,
 });
 
 export const conversation = sqliteTable("Conversation", {
@@ -54,8 +55,7 @@ export const conversation = sqliteTable("Conversation", {
     .notNull()
     .references(() => document.id, { onDelete: "cascade" }),
   title: text("title"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  ...commonColumns,
 });
 
 export const message = sqliteTable("Message", {
@@ -64,33 +64,33 @@ export const message = sqliteTable("Message", {
     .notNull()
     .references(() => conversation.id, { onDelete: "cascade" }),
   message: text("message").notNull(),
+  role: text("role").notNull(),
   isApplied: integer("is_applied", { mode: "boolean" }).default(false),
-  externalMessageId: text("external_message_id"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  ...commonColumns,
 });
 
-export const businessFlow = sqliteTable("BusinessFlow", {
+export const businessProcess = sqliteTable("BusinessProcess", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
   flowchart: text("flowchart"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  ...commonColumns,
 });
 
 export const businessFlowDocuments = sqliteTable(
-  "BusinessFlow_Documents",
+  "BusinessProcessDocuments",
   {
-    businessFlowId: integer("business_flow_id")
+    businessProcessId: integer("business_process_id")
       .notNull()
-      .references(() => businessFlow.id, { onDelete: "cascade" }),
+      .references(() => businessProcess.id, { onDelete: "cascade" }),
     documentId: integer("document_id")
       .notNull()
       .references(() => document.id, { onDelete: "cascade" }),
-    docType: text("doc_type", { enum: ["PRD", "BRD"] }).notNull(),
+    docType: text("doc_type", { enum: docTypeEnum }).notNull(),
   },
-  (t) => [primaryKey({ columns: [t.businessFlowId, t.documentId, t.docType] })]
+  (t) => [
+    primaryKey({ columns: [t.businessProcessId, t.documentId, t.docType] }),
+  ]
 );
 
 export const analyticsLookup = sqliteTable("AnalyticsLookup", {
@@ -98,6 +98,5 @@ export const analyticsLookup = sqliteTable("AnalyticsLookup", {
   targetType: text("target_type").notNull(),
   targetId: integer("target_id").notNull(),
   isLiked: integer("is_liked", { mode: "boolean" }).default(false),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  ...commonColumns,
 });
