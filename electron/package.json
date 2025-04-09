@@ -16,7 +16,13 @@
     "serve:electron": "electron .",
     "build:ui": "rm -rf ui && cd ../ui && npm run build:dev && cp -r ./dist/ui ../electron/ui/",
     "build-watch:ui": "rm -rf ui && mkdir ui && cd ../ui && npm run watch:dev",
-    "watch:ui": "concurrently \"npm run build-watch:ui\" \"onchange '../ui/dist/**/*' -- cp -r ../ui/dist/* ./\""
+    "watch:ui": "concurrently \"npm run build-watch:ui\" \"onchange '../ui/dist/**/*' -- cp -r ../ui/dist/* ./\"",
+    "db:push": "npx drizzle-kit push",
+    "db:pull": "npx drizzle-kit pull",
+    "db:apply": "npm run db:generate && read -p 'Are you sure you want to run migrations? (y/N) ' confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] && npm run db:migrate",
+    "db:generate": "npx drizzle-kit generate",
+    "db:migrate": "npx drizzle-kit migrate",
+    "db:studio": "npx drizzle-kit studio --port 3003 --verbose"
   },
   "engines": {
     "node": ">=18.17"
@@ -31,6 +37,7 @@
     "@types/semver": "^7.5.8",
     "autoprefixer": "^10.4.20",
     "concurrently": "^8.2.2",
+    "drizzle-kit": "^0.30.6",
     "electron": "^31.2.1",
     "electron-builder": "^24.13.3",
     "electron-reload": "^2.0.0-alpha.1",
@@ -46,9 +53,11 @@
     "@google/generative-ai": "^0.24.0",
     "@langchain/aws": "^0.1.7",
     "@langchain/core": "^0.3.43",
+    "@libsql/client": "^0.15.2",
     "@sentry/electron": "^5.3.0",
     "axios": "^1.7.7",
     "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.41.0",
     "electron-notarize": "^1.2.2",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^8.2.0",
@@ -78,7 +87,10 @@
         "teamId": "9NENB68LF9"
       },
       "hardenedRuntime": true,
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "entitlements": "build-assets/entitlements.mac.plist",
       "entitlementsInherit": "build-assets/entitlements.mac.plist"
     },
