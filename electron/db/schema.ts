@@ -18,7 +18,7 @@ export const metadata = sqliteTable("Metadata", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  techStacks: text("technical_details"),
+  technicalDetails: text("technical_details"),
   isBrownfield: integer("is_brownfield", { mode: "boolean" }).default(false),
   ...commonColumns,
 });
