@@ -313,6 +313,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         (await this.electronService.getStoreValue('APP_CONFIG')) || {};
       const updatedConfig = { ...currentConfig, directoryPath: response[0] };
       await this.electronService.setStoreValue('APP_CONFIG', updatedConfig);
+      await this.electronService.setRootDirectory();
 
       this.logger.debug('===>', this.router.url);
       if (this.router.url === '/apps') {

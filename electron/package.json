@@ -17,12 +17,9 @@
     "build:ui": "rm -rf ui && cd ../ui && npm run build:dev && cp -r ./dist/ui ../electron/ui/",
     "build-watch:ui": "rm -rf ui && mkdir ui && cd ../ui && npm run watch:dev",
     "watch:ui": "concurrently \"npm run build-watch:ui\" \"onchange '../ui/dist/**/*' -- cp -r ../ui/dist/* ./\"",
-    "db:push": "npx drizzle-kit push",
-    "db:pull": "npx drizzle-kit pull",
-    "db:apply": "npm run db:generate && read -p 'Are you sure you want to run migrations? (y/N) ' confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] && npm run db:migrate",
-    "db:generate": "npx drizzle-kit generate",
-    "db:migrate": "npx drizzle-kit migrate",
-    "db:studio": "npx drizzle-kit studio --port 3003 --verbose"
+    "db:generate:master": "npx drizzle-kit generate --config=drizzle.config.master.ts",
+    "db:generate:solution": "npx drizzle-kit generate --config=drizzle.config.solution.ts"
+    
   },
   "engines": {
     "node": ">=18.17"

@@ -86,6 +86,7 @@ CREATE TABLE `Metadata` (
 	`description` text,
 	`technical_details` text,
 	`is_brownfield` integer DEFAULT false,
+	`version` text,
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP',
 	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP',
 	`is_deleted` integer DEFAULT false

@@ -20,6 +20,7 @@ export const metadata = sqliteTable("Metadata", {
   description: text("description"),
   technicalDetails: text("technical_details"),
   isBrownfield: integer("is_brownfield", { mode: "boolean" }).default(false),
+  version: text("version"),
   ...commonColumns,
 });
 

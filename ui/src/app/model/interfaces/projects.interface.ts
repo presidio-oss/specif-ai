@@ -1,5 +1,9 @@
 import { RequirementType } from 'src/app/constants/app.constants';
 
+export interface ISetRootDirectoryResponse {
+  success: boolean;
+  error?: string;
+}
 export interface IProject {
   project: string;
   metadata: IProjectMetadata;

@@ -1,15 +1,19 @@
+import fs from 'fs';
+import path from 'path';
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from 'drizzle-orm/libsql/migrator';
 import { store } from "../services/store";
-import path from 'path';
 import { Database } from "./types";
 import { AppConfig } from "../schema/core/store.schema";
+import * as masterSchema from "./master.schema";
+import * as solutionSchema from "./solution.schema";
 
 export class DatabaseClient {
   private static instance: DatabaseClient;
   private masterDb: Database | null = null;
   private activeSolutionDb: {
-    id: string;
+    name: string;
     db: Database;
   } | null = null;
 
@@ -30,7 +34,7 @@ export class DatabaseClient {
     return appConfig.directoryPath;
   }
 
-  public initializeMasterDb() {
+  public async initializeMasterDb() {
     if (this.masterDb) {
       throw new Error('Master DB already initialized');
     }
@@ -41,8 +45,10 @@ export class DatabaseClient {
     const sqlite = createClient({
       url: `file:${dbPath}`
     });
-    this.masterDb = drizzle(sqlite);
-    return this.masterDb;
+    const db = drizzle(sqlite, { schema: masterSchema });
+    this.masterDb = db;
+    await migrate(db, { migrationsFolder: './drizzle/master' });
+    return db;
   }
 
   public getMasterDb() {
@@ -52,22 +58,29 @@ export class DatabaseClient {
     return this.masterDb;
   }
 
-  public openSolutionDb(solutionId: string) {
-    if (this.activeSolutionDb?.id === solutionId) {
-      return this.activeSolutionDb.db;
-    }
-
-    this.closeSolutionDb();
-
-    const directoryPath = this.getDirectoryPath();
-    const dbPath = path.join(directoryPath, `${solutionId}.db`);
-    
-    const sqlite = createClient({
-      url: `file:${dbPath}`
-    });
-    const db = drizzle(sqlite);
-    this.activeSolutionDb = { id: solutionId, db };
-    return db;
+  public async openSolutionDb(solutionName: string) {
+      if (this.activeSolutionDb?.name === solutionName) {
+        return this.activeSolutionDb.db;
+      }
+  
+      this.closeSolutionDb();
+  
+      const directoryPath = this.getDirectoryPath();
+      const solutionDir = path.join(directoryPath, solutionName);
+  
+      if (!fs.existsSync(solutionDir)) {
+        fs.mkdirSync(solutionDir, { recursive: true });
+      }
+  
+      const dbPath = path.join(directoryPath, `${solutionName}`, "solution.db");
+      
+      const sqlite = createClient({
+        url: `file:${dbPath}`
+      });
+      const db = drizzle(sqlite, { schema: solutionSchema });
+      await migrate(db, { migrationsFolder: './drizzle/solution' });
+      this.activeSolutionDb = { name: solutionName, db };
+      return db;
   }
 
   public closeSolutionDb() {

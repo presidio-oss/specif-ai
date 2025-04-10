@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d92b5c6f-6b6b-4439-8b8a-7d30bbcd2b8a",
+  "id": "680769eb-ddac-4db4-a018-7e77d1e08113",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "AnalyticsLookup": {
@@ -589,6 +589,13 @@
           "notNull": false,
           "autoincrement": false,
           "default": false
+        },
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
