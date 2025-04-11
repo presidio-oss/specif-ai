@@ -206,6 +206,8 @@ export class EditUserStoriesComponent implements OnDestroy {
         } else {
           console.log('No matching feature found for the given ID.');
         }
+        this.userStoryForm.markAsUntouched();
+        this.userStoryForm.markAsPristine();
       })
       .catch((error) => {
         console.error('Error updating requirement:', error);
@@ -234,6 +236,8 @@ export class EditUserStoriesComponent implements OnDestroy {
         }),
       );
 
+      this.userStoryForm.markAsUntouched();
+      this.userStoryForm.markAsPristine();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
           this.entityType,
