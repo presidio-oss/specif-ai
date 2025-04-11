@@ -1,7 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { DialogService } from '../../../services/dialog/dialog.service';
-import { SettingsComponent } from '../../settings/settings.component';
+import { Router, RouterLink } from '@angular/router';
 import { StartupService } from '../../../services/auth/startup.service';
 import { environment } from '../../../../environments/environment';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -29,13 +27,9 @@ export class HeaderComponent {
   protected themeConfiguration = environment.ThemeConfiguration;
 
   startupService = inject(StartupService);
-  dialogService = inject(DialogService);
+  router = inject(Router);
 
-  openSettingsModal() {
-    this.dialogService
-      .createBuilder()
-      .forComponent(SettingsComponent)
-      .disableClose()
-      .open();
+  navigateToSettings() {
+    this.router.navigate(['/settings']);
   }
 }

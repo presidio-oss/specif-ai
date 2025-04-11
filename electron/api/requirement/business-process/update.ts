@@ -6,6 +6,8 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { updateBusinessProcessPrompt } from '../../../prompts/requirement/business-process/update';
 import { repairJSON } from '../../../utils/custom-json-parser';
+import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { traceBuilder } from '../../../utils/trace-builder';
 
 export async function updateBusinessProcess(event: IpcMainInvokeEvent, data: any): Promise<UpdateBusinessProcessResponse> {
   try {
@@ -54,7 +56,8 @@ export async function updateBusinessProcess(event: IpcMainInvokeEvent, data: any
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages, null, "requirement:bp-update");
+    const traceName = traceBuilder(COMPONENT.BP, OPERATIONS.UPDATE);
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[update-business-process] LLM Response:', response);
 
     // Parse LLM response

@@ -1,310 +1,279 @@
-<div class="modal-wrapper w-[30rem] max-w-lg text-sm font-medium">
-  <div class="modal-header flex items-center justify-between px-4 pt-4">
-    <h4 class="font-medium text-base">Settings</h4>
-    <button
-      type="button"
-      class="text-secondary-400 bg-transparent hover:bg-secondary-200 hover:text-secondary-900 rounded-lg p-1 ml-auto inline-flex items-center focus:outline-none focus:ring-0"
-      data-dismiss="modal"
-      aria-label="Close"
-      (click)="closeModal()"
-    >
-      <ng-icon name="heroXMark" strokeWidth="2" size="16"></ng-icon>
-    </button>
-  </div>
-  <div class="modal-body p-4 space-y-6">
-    <!-- Error Message -->
-    <div
-      *ngIf="errorMessage && hasChanges"
-      class="p-2 text-danger-600 font-medium bg-danger-50 rounded"
-    >
-      {{ errorMessage }}
+<div class="w-full px-4 sm:px-6 md:max-w-4xl md:mx-auto">
+  <div class="divide-y divide-secondary-200 overflow-hidden rounded-lg bg-white shadow">
+    <div class="px-4 py-5">
+      <h1 class="text-xl font-medium leading-tight tracking-tight text-secondary-900">
+        Settings
+      </h1>
     </div>
+    <div class="px-4 py-5 sm:p-6">
+      <!-- Error Message -->
+      <div
+        *ngIf="errorMessage && hasChanges"
+        class="mb-6 p-2 text-danger-600 font-medium bg-danger-50 rounded"
+      >
+        {{ errorMessage }}
+      </div>
 
-    <form [formGroup]="configForm">
-      <!-- Providers Dropdown -->
-      <div class="space-y-1">
-          <label for="providerSelect" class="block text-secondary-500"
-            >LLM Provider</label
-          >
-          <div class="relative w-full">
-            <select
-              id="providerSelect"
-              formControlName="provider"
-              class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none appearance-none cursor-pointer"
-            >
-              <option
-                *ngFor="let provider of availableProviders"
-                [value]="provider.key"
-                class="py-2"
-              >
-                {{ provider.displayName }}
-              </option>
-            </select>
-            <div
-              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
-            >
-              <svg
-                class="h-4 w-4 text-secondary-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                ></path>
-              </svg>
+      <form [formGroup]="configForm" class="space-y-8 divide-y divide-secondary-200">
+        <!-- LLM Configuration -->
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-base font-medium leading-7 text-secondary-900">LLM Configuration</h2>
+            <p class="text-sm leading-6 text-secondary-500">
+              Configure your Language Model provider settings
+            </p>
+          </div>
+
+          <!-- Providers Dropdown (Full Width) -->
+          <div class="space-y-2">
+            <label for="providerSelect" class="block text-sm font-medium text-secondary-900">
+              LLM Provider
+            </label>
+            <div class="relative">
+              <app-select
+                id="providerSelect"
+                formControlName="provider"
+                [options]="providerOptions"
+                [searchable]="true"
+                [required]="true"
+                placeholder="Select LLM Provider"
+              ></app-select>
+            </div>
+          </div>
+
+          <!-- Provider-specific Configuration (2-column Grid Layout) -->
+          <div formGroupName="config" class="mt-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ng-container *ngFor="let field of currentProviderFields">
+                <div *ngIf="field.type !== 'checkbox' && field.type !== 'select'" class="space-y-2">
+                  <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
+                    {{ field.label }}
+                    <span *ngIf="field.required" class="text-danger-500">*</span>
+                  </label>
+                  <input
+                    [type]="field.type"
+                    [id]="field.name"
+                    [formControlName]="field.name"
+                    [placeholder]="field.placeholder || ''"
+                    class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
+                    [required]="field.required || false"
+                  />
+                </div>
+
+                <!-- Select Input with Optional Autocomplete -->
+                <div *ngIf="field.type === 'select'" class="space-y-2">
+                  <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
+                    {{ field.label }}
+                    <span *ngIf="field.required" class="text-danger-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <app-select
+                      [id]="field.name"
+                      [formControlName]="field.name"
+                      [options]="field.options || []"
+                      [searchable]="field.useAutocomplete || false"
+                      [required]="field.required || false"
+                      [placeholder]="'Select ' + field.label"
+                    ></app-select>
+                  </div>
+                </div>
+
+                <!-- Checkbox Input (Full Width) -->
+                <div *ngIf="field.type === 'checkbox'" class="col-span-1 sm:col-span-2 gap-3 flex items-center">
+                    <input
+                      type="checkbox"
+                      [id]="field.name"
+                      [formControlName]="field.name"
+                      class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                    />
+                    <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
+                      {{ field.label }}
+                    </label>
+                </div>
+              </ng-container>
             </div>
           </div>
         </div>
 
-        <!-- Provider-specific Configuration -->
-        <div formGroupName="config" class="mt-4">
-          <div class="grid grid-cols-2 gap-4">
-            <ng-container *ngFor="let field of currentProviderFields">
-              <!-- Text/Password/Number Input -->
-              <div *ngIf="field.type !== 'checkbox' && field.type !== 'select'" class="space-y-1">
-                <label [for]="field.name" class="block text-secondary-500">
-                  {{ field.label }}
-                  <span *ngIf="field.required" class="text-danger-500">*</span>
-                </label>
-                <input
-                  [type]="field.type"
-                  [id]="field.name"
-                  [formControlName]="field.name"
-                  [placeholder]="field.placeholder || ''"
-                  class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
-                  [required]="field.required || false"
-                />
-              </div>
+        <!-- Analytics Settings -->
+        <div class="space-y-4 pt-6">
+          <div>
+            <h2 class="text-base font-medium leading-7 text-secondary-900">Analytics Settings</h2>
+            <p class="text-sm leading-6 text-secondary-500">
+              Configure analytics and data collection preferences
+            </p>
+          </div>
 
-              <!-- Select Input -->
-              <div *ngIf="field.type === 'select'" class="space-y-1">
-                <label [for]="field.name" class="block text-secondary-500">
-                  {{ field.label }}
-                  <span *ngIf="field.required" class="text-danger-500">*</span>
-                </label>
-                <div class="relative w-full">
-                  <select
-                    [id]="field.name"
-                    [formControlName]="field.name"
-                    class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none appearance-none cursor-pointer"
-                    [required]="field.required || false"
-                  >
-                    <option value="" disabled selected>Select {{ field.label }}</option>
-                    <option
-                      *ngFor="let option of field.options"
-                      [value]="option.value"
-                      class="py-2"
-                    >
-                      {{ option.label }}
-                    </option>
-                  </select>
-                  <div
-                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
-                  >
-                    <svg
-                      class="h-4 w-4 text-secondary-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Checkbox Input - Full Width -->
-              <div
-                *ngIf="field.type === 'checkbox'"
-                class="col-span-2 flex items-center space-x-2"
-              >
+          <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
+            <div class="px-4 py-3 flex items-center justify-between">
+              <span class="text-sm text-secondary-900">Enable Analytics Tracking</span>
+              <label class="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  [id]="field.name"
-                  [formControlName]="field.name"
-                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                  id="analyticsToggle"
+                  [formControl]="analyticsEnabled"
+                  class="sr-only peer"
                 />
-                <label [for]="field.name" class="text-secondary-500">
-                  {{ field.label }}
-                </label>
-              </div>
-            </ng-container>
+                <div class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+              </label>
+            </div>
+          </div>
+          <div *ngIf="analyticsWarning">
+            <p class="text-warning-600 text-xs flex items-center gap-1">
+              <ng-icon name="heroExclamationTriangle" class="text-md"></ng-icon>
+              {{ analyticsWarning }}
+            </p>
           </div>
         </div>
 
-    </form>
+        <!-- Destination Settings -->
+        <div class="space-y-4 pt-6">
+          <div>
+            <h2 class="text-base font-medium leading-7 text-secondary-900">Destination Settings</h2>
+            <p class="text-sm leading-6 text-secondary-500">
+              Configure where your generated requirements will be stored
+            </p>
+          </div>
 
-    <!-- Analytics Toggle -->
-    <div class="space-y-1">
-      <div class="flex items-center justify-between">
-        <label for="analyticsToggle" class="block text-secondary-500">
-          Enable Analytics Tracking
-        </label>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            id="analyticsToggle"
-            [formControl]="analyticsEnabled"
-            class="sr-only peer"
-          />
-          <div
-            class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"
-          ></div>
-        </label>
-      </div>
-      <p class="text-xs text-secondary-400">
-        Help us improve by allowing usage data collection. This data
-        helps us enhance your experience and prioritize features. Data collected would be for utilized for analytics and cost metrics.
-      </p>
-      <p
-        *ngIf="analyticsWarning"
-        class="py-2 text-warning-600 rounded text-xs flex items-center"
-      >
-        <ng-icon name="heroExclamationTriangle" class="mr-1"></ng-icon>
-        {{ analyticsWarning }}
-      </p>
-    </div>
+          <div class="space-y-2">
+            <label for="workingDir" class="block text-sm font-medium text-secondary-900">
+              Storage Location
+            </label>
+            <div class="flex w-full">
+              <input
+                type="text"
+                [value]="workingDir"
+                placeholder="Choose Destination Folder"
+                disabled
+                id="workingDir"
+                class="bg-secondary-100 border border-secondary-300 text-secondary-400 text-sm rounded-l-lg block w-full p-2"
+              />
+              <app-button
+                [buttonContent]="'Browse'"
+                [theme]="'primary'"
+                [rounded]="'none'"
+                [roundedRight]="'lg'"
+                (click)="openFolderSelector()"
+              ></app-button>
+            </div>
+          </div>
+        </div>
 
-    <!-- Destination Folder -->
-    <div class="space-y-1">
-      <label for="workingDir" class="block text-secondary-500">
-        Folder to store the requirements generated by {{ appName }}
-      </label>
-      <div class="flex w-full">
-        <input
-          type="text"
-          [value]="workingDir"
-          placeholder="Choose Destination Folder"
-          disabled
-          id="workingDir"
-          class="bg-secondary-100 border border-secondary-300 text-secondary-400 text-sm rounded-l-lg block w-full p-2"
+        <!-- Update Settings -->
+        <div class="space-y-4 pt-6">
+          <div>
+            <h2 class="text-base font-medium leading-7 text-secondary-900">Update Settings</h2>
+            <p class="text-sm leading-6 text-secondary-500">
+              Configure automatic updates and version management
+            </p>
+          </div>
+
+          <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
+            <div class="px-4 py-3 flex items-center justify-between">
+              <span class="text-sm text-secondary-900">Automatic Updates</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="autoUpdatesToggle"
+                  [formControl]="autoUpdateEnabled"
+                  class="sr-only peer"
+                />
+                <div class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+              </label>
+            </div>
+            <button
+              class="w-full px-4 py-3 text-sm text-secondary-900 flex items-center justify-between hover:bg-secondary-50"
+              role="button"
+              tabindex="0"
+              (click)="checkForUpdates()"
+              (keydown.enter)="checkForUpdates()"
+              (keydown.space)="checkForUpdates(); $event.preventDefault()"
+            >
+              <span>Check for Updates</span>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                class="text-secondary-400"
+              >
+                <path
+                  d="M7.5 15L12.5 10L7.5 5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Company Info -->
+        <div class="space-y-4 pt-6">
+          <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
+            <div class="px-4 py-3 flex items-center justify-between">
+              <span class="text-sm text-secondary-900">Accelerate SDLC process with</span>
+              <img
+                *ngIf="themeConfiguration.companyLogoColor.length > 0"
+                class="h-3 w-auto"
+                [src]="themeConfiguration.companyLogoColor"
+                [alt]="themeConfiguration.companyName"
+              />
+            </div>
+            <div class="px-4 py-3 flex items-center justify-between">
+              <span class="text-sm text-secondary-900">Version</span>
+              <span class="text-sm text-secondary-600">{{ version }}</span>
+            </div>
+            <button
+              class="w-full px-4 py-3 text-sm text-danger-600 flex items-center justify-between hover:bg-danger-50"
+              role="button"
+              tabindex="0"
+              (click)="logout()"
+              (keydown.enter)="logout()"
+              (keydown.space)="logout(); $event.preventDefault()"
+            >
+              <span>Log Out</span>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                class="text-danger-400"
+              >
+                <path
+                  d="M7.5 15L12.5 10L7.5 5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Action Buttons -->
+      <div class="mt-8 flex items-center justify-end gap-x-2">
+        <app-button
+          *ngIf="hasChanges"
+          buttonContent="Discard"
+          theme="secondary_outline"
+          size="sm"
+          (click)="navigateToHome()"
         />
         <app-button
-          [buttonContent]="'Browse'"
-          [theme]="'primary'"
-          [rounded]="'none'"
-          [roundedRight]="'lg'"
-          (click)="openFolderSelector()"
-        ></app-button>
-      </div>
-    </div>
-
-    <!-- Auto updater settings -->
-    <div
-      class="divide-y-[0.5px] divide-secondary-300 font-medium rounded-lg overflow-hidden border-[0.5px] border-secondary-300 bg-secondary-50"
-    >
-      <div class="px-3.5 py-2 flex items-center justify-between w-full">
-        <span class="text-secondary-500">Automatic Updates</span>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            id="autoUpdatesToggle"
-            [formControl]="autoUpdateEnabled"
-            class="sr-only peer"
-          />
-          <div
-            class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"
-          ></div>
-        </label>
-      </div>
-      <button
-        class="px-3.5 py-2 text-secondary-500 flex items-center justify-between w-full"
-        role="button"
-        tabindex="0"
-        (click)="checkForUpdates()"
-        (keydown.enter)="checkForUpdates()"
-        (keydown.space)="checkForUpdates(); $event.preventDefault()"
-      >
-        <span>Check for Updates</span>
-        <svg
-          width="20"
-          height="21"
-          viewBox="0 0 20 21"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M7.5 15.5L12.5 10.5L7.5 5.5"
-            stroke="#64748B"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-    </div>
-
-    <!-- Save and Cancel Buttons -->
-    <div
-      *ngIf="hasChanges"
-      class="flex justify-end gap-2 pb-4 border-b border-secondary-200"
-    >
-      <app-button
-        buttonContent="Cancel"
-        theme="secondary_outline"
-        size="sm"
-        (click)="closeModal()"
-      />
-      <app-button
-        buttonContent="Save"
-        theme="primary"
-        size="sm"
-        (click)="onSave()"
-        [disabled]="!configForm.valid"
-      />
-    </div>
-
-    <!-- Company Logo, Version and Logout -->
-    <div
-      class="divide-y-[0.5px] divide-secondary-300 font-medium rounded-lg overflow-hidden border-[0.5px] border-secondary-300 bg-secondary-50"
-    >
-      <div class="px-3.5 py-2 flex items-center justify-between w-full">
-        <span class="text-secondary-500">Accelerate SDLC process with</span>
-        <img
-          *ngIf="themeConfiguration.companyLogoColor.length > 0"
-          class="h-3 w-auto"
-          [src]="themeConfiguration.companyLogoColor"
-          [alt]="themeConfiguration.companyName"
+          *ngIf="hasChanges"
+          buttonContent="Save"
+          theme="primary"
+          size="sm"
+          (click)="onSave()"
+          [disabled]="!configForm.valid"
         />
       </div>
-      <div class="px-3.5 py-2 flex items-center justify-between w-full">
-        <span class="text-secondary-500">Version</span>
-        <span>{{ version }}</span>
-      </div>
-      <button
-        class="px-3.5 py-2 text-danger-600 flex items-center justify-between w-full"
-        role="button"
-        tabindex="0"
-        (click)="logout()"
-        (keydown.enter)="logout()"
-        (keydown.space)="logout(); $event.preventDefault()"
-      >
-        <span>Log Out</span>
-        <svg
-          width="20"
-          height="21"
-          viewBox="0 0 20 21"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M7.5 15.5L12.5 10.5L7.5 5.5"
-            stroke="#64748B"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
     </div>
   </div>
 </div>

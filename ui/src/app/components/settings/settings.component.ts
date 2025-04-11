@@ -4,20 +4,18 @@ import {
   OnDestroy,
   ChangeDetectorRef,
   inject,
+  HostListener,
 } from '@angular/core';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
 import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
 import { Store } from '@ngxs/store';
-import {
-  AvailableProviders,
-} from '../../constants/llm.models.constants';
+import { AvailableProviders } from '../../constants/llm.models.constants';
+import { SetBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import {
   SetLLMConfig,
-  SwitchProvider,
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
-import { MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -25,6 +23,7 @@ import { NgForOf, NgIf } from '@angular/common';
 import { StartupService } from '../../services/auth/startup.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
+import { AppSelectComponent } from '../core/app-select/app-select.component';
 import {
   APP_CONSTANTS,
   CONFIRMATION_DIALOG,
@@ -51,6 +50,7 @@ import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
     NgForOf,
     NgIf,
     ButtonComponent,
+    AppSelectComponent,
   ],
   providers: [
     provideIcons({ 
@@ -63,7 +63,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     LLMConfigState.getConfig,
   );
   currentLLMConfig!: LLMConfigModel;
-  availableProviders = AvailableProviders;
+  availableProviders = [...AvailableProviders].sort((a, b) => 
+    a.displayName.localeCompare(b.displayName)
+  );
+  providerOptions = this.availableProviders.map(p => ({
+    value: p.key,
+    label: p.displayName
+  }));
   currentProviderFields: ProviderField[] = [];
   configForm!: FormGroup;
   selectedProvider: FormControl = new FormControl();
@@ -88,7 +94,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   analyticsWarning: string = '';
 
   constructor(
-    private modalRef: MatDialogRef<SettingsComponent>,
     private store: Store,
     private startupService: StartupService,
     private toasterService: ToasterService,
@@ -123,6 +128,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           field.required ? [Validators.required] : []
         )
       );
+
     });
     this.configForm.setControl('config', newConfigGroup);
     this.applyStoredConfigValues(provider);
@@ -147,6 +153,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.store.dispatch(
+      new SetBreadcrumb(
+        {
+          label: 'Settings',
+          url: '/settings'
+        }
+      )
+    );
+
     this.electronService.getStoreValue('APP_CONFIG').then((value) => {
       const { isAutoUpdate = true } = value || {};
       this.autoUpdateEnabled.setValue(isAutoUpdate);
@@ -270,7 +285,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
             this.toasterService.showSuccess(
               `${providerDisplayName} configuration verified successfully.`,
             );
-            this.modalRef.close(true);
+            this.router.navigate(['/apps']);
             this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
               provider: provider,
               model: latestConfigValues.model || latestConfigValues.deployment,
@@ -326,7 +341,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   openFolderSelector() {
     this.selectRootDirectory().then();
-    this.modalRef.close(true);
   }
 
   onProviderChange() {
@@ -407,15 +421,27 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  closeModal() {
-    this.analyticsEnabled.setValue(this.initialAnalyticsState);
-    this.modalRef.close(false);
+  navigateToHome() {
+    if (this.hasChanges) {
+      this.dialogService
+        .confirm({
+          title: CONFIRMATION_DIALOG.UNSAVED_CHANGES.TITLE,
+          description: CONFIRMATION_DIALOG.UNSAVED_CHANGES.DESCRIPTION,
+          cancelButtonText: CONFIRMATION_DIALOG.UNSAVED_CHANGES.CANCEL_BUTTON_TEXT,
+          confirmButtonText: CONFIRMATION_DIALOG.UNSAVED_CHANGES.PROCEED_BUTTON_TEXT,
+        })
+        .subscribe((confirmed: boolean) => {
+          if (!confirmed) {
+            this.analyticsEnabled.setValue(this.initialAnalyticsState);
+            this.router.navigate(['/apps']);
+          }
+        });
+      return;
+    }
   }
 
   logout() {
     // Close the settings modal and open the logout confirmation dialog
-    this.modalRef.close(true);
-
     this.dialogService
       .confirm({
         title: CONFIRMATION_DIALOG.LOGOUT.TITLE,

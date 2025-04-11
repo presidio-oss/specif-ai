@@ -5,6 +5,8 @@ import { store } from '../../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { chatUserStoryTaskPrompt } from '../../../prompts/feature/story/chat';
+import { traceBuilder } from '../../../utils/trace-builder';
+import { OPERATIONS } from '../../../helper/constants';
 
 export async function chatUserStoryTask(event: IpcMainInvokeEvent, data: unknown): Promise<ChatUserStoryTaskResponse> {
   try {
@@ -24,6 +26,7 @@ export async function chatUserStoryTask(event: IpcMainInvokeEvent, data: unknown
       prd: validatedData.prd,
       us: validatedData.us
     });
+    const traceName = traceBuilder(validatedData.type.trim(), OPERATIONS.CHAT);
 
     let basePrompt = prompt;
     if (validatedData.knowledgeBase?.trim()) {
@@ -47,7 +50,7 @@ export async function chatUserStoryTask(event: IpcMainInvokeEvent, data: unknown
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages, null, "story:chat");
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[chat-user-story-task] LLM Response:', response);
 
     return {

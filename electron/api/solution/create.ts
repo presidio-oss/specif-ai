@@ -9,6 +9,8 @@ import { createPRDPrompt } from '../../prompts/solution/create-prd';
 import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
+import { traceBuilder } from '../../utils/trace-builder';
+import { COMPONENT, OPERATIONS } from '../../helper/constants';
 import { DatabaseClient } from '../../db';
 
 // types
@@ -56,7 +58,9 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   const messages = await LLMUtils.prepareMessages(prompt);
 
   try {
-    const response = await llmHandler.invoke(messages, null, 'solution:create');
+
+    const traceName = traceBuilder(COMPONENT.SOLUTION, OPERATIONS.CREATE);
+    const response = await llmHandler.invoke(messages, null, traceName);
     const extractedContent = extractRequirementsFromResponse(response, key);
 
     if (extractedContent && extractedContent.length > 0) {

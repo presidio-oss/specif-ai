@@ -7,6 +7,7 @@ export interface ProviderField {
   defaultValue?: any;
   options?: { value: string; label: string }[];
   placeholder?: string;
+  useAutocomplete?: boolean;
 }
 
 export interface ProviderConfig {
@@ -64,6 +65,7 @@ export async function getLLMProviderConfig(provider: string) {
           label: 'Model',
           required: true,
           options: options,
+          useAutocomplete: true,
         },
         {
           name: 'baseUrl',
@@ -121,7 +123,8 @@ export async function getLLMProviderConfig(provider: string) {
           type: 'select',
           label: 'Model',
           required: true,
-          options:options,
+          options: options,
+          useAutocomplete: true,
         },
       ],
     },
@@ -133,6 +136,7 @@ export async function getLLMProviderConfig(provider: string) {
           label: 'Model',
           required: true,
           options: options,
+          useAutocomplete: true,
         },
         {
           name: 'accessKeyId',
@@ -160,6 +164,7 @@ export async function getLLMProviderConfig(provider: string) {
           label: 'Region',
           required: true,
           options: BEDROCK_REGIONS,
+          useAutocomplete: true,
         },
         {
           name: 'crossRegion',
@@ -184,6 +189,7 @@ export async function getLLMProviderConfig(provider: string) {
           label: 'Model',
           required: true,
           options: options,
+          useAutocomplete: true,
         },
       ],
     },
@@ -215,6 +221,7 @@ export async function getLLMProviderConfig(provider: string) {
           label: 'Model',
           required: true,
           options: options,
+          useAutocomplete: true,
         },
       ],
     },

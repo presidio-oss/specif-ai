@@ -7,6 +7,8 @@ import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { refinePrompt } from '../../../prompts/feature/evaluation/refine';
 import { evaluatePrompt } from '../../../prompts/feature/evaluation/evaluate';
 import { repairJSON } from '../../../utils/custom-json-parser';
+import { OPERATIONS, COMPONENT } from '../../../helper/constants';
+import { traceBuilder } from '../../../utils/trace-builder';
 
 export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
@@ -39,7 +41,8 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages, null, "story:create");
+    const traceName = traceBuilder(COMPONENT.STORY, OPERATIONS.CREATE);
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[create-stories] Initial LLM Response:', response);
 
     let parsedFeatures;
@@ -58,7 +61,7 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
 
     // Prepare messages for evaluation
     const evaluationMessages = await LLMUtils.prepareMessages(evaluationPrompt);
-    const evaluation = await handler.invoke(evaluationMessages, null, "story:create");
+    const evaluation = await handler.invoke(evaluationMessages, null, traceName);
     console.log('[create-stories] Evaluation:', evaluation);
 
     const finalPrompt = refinePrompt({
@@ -70,7 +73,7 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
     });
 
     const finalMessages = await LLMUtils.prepareMessages(finalPrompt);
-    const finalResponse = await handler.invoke(finalMessages, null, "story:create");
+    const finalResponse = await handler.invoke(finalMessages, null, traceName);
     console.log('[create-stories] Final LLM Response:', finalResponse);
 
     try {

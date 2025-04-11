@@ -6,6 +6,8 @@ import { store } from '../../services/store';
 import { LLMUtils } from '../../services/llm/llm-utils';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { repairJSON } from '../../utils/custom-json-parser';
+import { OPERATIONS } from '../../helper/constants';
+import { traceBuilder } from '../../utils/trace-builder';
 
 export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): Promise<string[]> {
   try {
@@ -49,7 +51,8 @@ export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): 
       llmConfig.activeProvider,
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
-    const response = await handler.invoke(messages, null, "core:getSuggestions");
+    const traceName = traceBuilder(requirementAbbr, OPERATIONS.SUGGEST);
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[get-suggestions] LLM Response:', response);
 
     const repairedResponse = repairJSON(response);

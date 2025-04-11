@@ -71,7 +71,6 @@ export class AppComponent implements OnInit, OnDestroy {
     try {
       const localConfig = localStorage.getItem('llmConfig') || await this.electronService.getStoreValue('llmConfig');
       if (localConfig) {
-        console.log("Local Config", localConfig)
         try {
           const config = JSON.parse(localConfig);
           const response = await this.electronService.verifyLLMConfig(
