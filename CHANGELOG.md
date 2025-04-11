@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.1]
+
+### Added
+
+- Dialog service and builder for consistent modal management.
+- Support for linking relevant BRDs in PRDs — linked BRDs are now passed as context during enhance requirement, add requirement, chat suggestions, and conversations.
+
+### Enhancements
+
+- Refactored the Settings page for improved organization and clarity.
+- UI updates to the chat and include sections in requirement workflows.
+- Prompt modal added for unsaved BRD–PRD mapping changes.
+
+### Fixed
+
+- Fixed issue where “Add to Description” persisted on Cancel for BRDs in Create Solution Trace flow.
+
 ## [2.1.0]
 
 ### Added

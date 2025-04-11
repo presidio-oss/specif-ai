@@ -1,7 +1,7 @@
 {
   "name": "specif-ai",
   "displayName": "Specifai",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "AI-powered platform that generates project requirements and transforms them into actionable tasks with intuitive workflows.",
   "repository": {
     "type": "git",
