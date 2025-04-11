@@ -48,8 +48,3 @@ coverage/
 
 # Ignore temporary files
 *.tmp
-
-# SQLite database files
-*.sqlite
-*.sqlite-shm
-*.sqlite-wal
