@@ -40,7 +40,7 @@ export class DatabaseClient {
     }
 
     const directoryPath = this.getDirectoryPath();
-    const dbPath = path.join(directoryPath, 'master.db');
+    const dbPath = path.join(directoryPath, 'master.sqlite');
     
     const sqlite = createClient({
       url: `file:${dbPath}`
@@ -72,7 +72,7 @@ export class DatabaseClient {
         fs.mkdirSync(solutionDir, { recursive: true });
       }
   
-      const dbPath = path.join(directoryPath, `${solutionName}`, "solution.db");
+      const dbPath = path.join(directoryPath, `${solutionName}`, "solution.sqlite");
       
       const sqlite = createClient({
         url: `file:${dbPath}`
