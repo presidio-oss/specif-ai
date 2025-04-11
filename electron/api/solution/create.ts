@@ -58,7 +58,7 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
 
   try {
 
-    const traceName = traceBuilder(COMPONENT.SOLUTION, OPERATIONS.CREATE);
+    const traceName = traceBuilder(key, OPERATIONS.CREATE);
     const response = await llmHandler.invoke(messages, null, traceName);
     const extractedContent = extractRequirementsFromResponse(response, key);
 
