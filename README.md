@@ -95,7 +95,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 - **🔄 Real-time Collaboration**: Collaborate and refine requirements with team members.
 - **📱 Desktop Integration**: Seamlessly integrate with your existing workflow tools.
-
+- **📊 Analytics & Observability**: Optional analytics and observability tracked in PostHog and Langfuse.
 - **🔄 Multi-Model Support**: Choose the model that best suits your needs. Supported models include:
    - Azure OpenAI
       - gpt-4o
@@ -124,6 +124,8 @@ By simply providing a solution name, description, and tech stack details, Specif
       - gemini-1.5-pro-002
       - gemini-1.5-pro-exp-0827
       - gemini-exp-1206
+   - OpenRouter
+   - Ollama
 
 <div align="center">
 
