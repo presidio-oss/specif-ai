@@ -708,24 +708,7 @@ ${chat.assistant}`,
   getDescription(input: string | undefined): string | null {
     return getDescriptionFromInput(input);
   }
-  private checkMappingChanges(): boolean {
-    const formValue = this.requirementForm.getRawValue();
-  
-    if (this.isPRD()) {
-      const currentBRDs = formValue.linkedBRDIds || [];
-      return !(currentBRDs.length === this.currentLinkedBRDIds.length && 
-             currentBRDs.every((id: string) => this.currentLinkedBRDIds.includes(id)));
-    }
-    
-    if (this.isBRD()) {
-      const currentPRDs = formValue.linkedToPRDIds || [];
-      return !(currentPRDs.length === this.currentLinkedPRDIds.length &&
-             currentPRDs.every((id: string) => this.currentLinkedPRDIds.includes(id)));
-    }
-    
-    return false;
-  }
-  
+
   canDeactivate(): boolean {
     return (
       (!this.allowFreeRedirection &&
@@ -775,6 +758,23 @@ ${chat.assistant}`,
     return this.folderName === FOLDER.BRD;
   };
 
+  private checkMappingChanges(): boolean {
+    const formValue = this.requirementForm.getRawValue();
+  
+    if (this.isPRD()) {
+      const currentBRDs = formValue.linkedBRDIds || [];
+      return !(currentBRDs.length === this.currentLinkedBRDIds.length && 
+             currentBRDs.every((id: string) => this.currentLinkedBRDIds.includes(id)));
+    }
+    
+    if (this.isBRD()) {
+      const currentPRDs = formValue.linkedToPRDIds || [];
+      return !(currentPRDs.length === this.currentLinkedPRDIds.length &&
+             currentPRDs.every((id: string) => this.currentLinkedPRDIds.includes(id)));
+    }
+    return false;
+  }
+  
   extractPropertyValues<
     TData extends Array<TDataItem>,
     TDataItem extends Record<string, any>,
