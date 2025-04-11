@@ -201,7 +201,7 @@ export class EditSolutionComponent {
       this.dialogService.confirm({
         ...dialogConfig,
         renderNewLine: true
-      }).pipe(map(result => !result))
+      }).pipe(map(result => result))
     );
   }
 
