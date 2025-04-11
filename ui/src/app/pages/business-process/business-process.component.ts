@@ -111,7 +111,6 @@ export class BusinessProcessComponent implements OnInit {
   bpRequirementId: string = '';
   requirementTypes: any = RequirementTypeEnum;
   readonly dialogService = inject(DialogService);
-  allowFreeEdit: boolean = false;
   activeTab: string = 'includeFiles';
   protected readonly JSON = JSON;
   toastService = inject(ToasterService);
@@ -229,7 +228,6 @@ export class BusinessProcessComponent implements OnInit {
         chatHistory: this.chatHistory,
       }),
     );
-    this.allowFreeEdit = true;
     this.navigateBackToDocumentList(this.data);
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -327,7 +325,6 @@ export class BusinessProcessComponent implements OnInit {
     );
 
     this.loadingService.setLoading(false);
-    this.allowFreeEdit = true;
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
         this.folderName,
@@ -614,7 +611,6 @@ export class BusinessProcessComponent implements OnInit {
       .subscribe((res) => {
         if (res) {
           this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
-          this.allowFreeEdit = true;
           this.navigateBackToDocumentList(this.data);
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
@@ -652,7 +648,6 @@ export class BusinessProcessComponent implements OnInit {
 
   canDeactivate(): boolean {
     return (
-      !this.allowFreeEdit &&
       this.businessProcessForm.dirty &&
       this.businessProcessForm.touched
     );

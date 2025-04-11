@@ -104,7 +104,6 @@ export class EditSolutionComponent {
   requirementForm!: FormGroup;
   response: IList = {} as IList;
   chatHistory: any = [];
-  allowFreeRedirection: boolean = false;
   activeTab: 'includeFiles' | 'chat' = 'includeFiles';
   documentList: IList[] = [];
   currentLinkedPRDIds: Array<string> = [];
@@ -295,7 +294,6 @@ export class EditSolutionComponent {
         this.handlePRDBRDLinkUpdates(formValue);
       }
       
-      this.allowFreeRedirection = true;
       this.store.dispatch(
         new ReadFile(`${this.folderName}/${this.fileName}`),
       );
@@ -343,7 +341,6 @@ export class EditSolutionComponent {
       this.handlePRDBRDLinkUpdates(formValue);
     }
 
-    this.allowFreeRedirection = true;
     this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
     this.selectedFileContent$.subscribe((res: any) => {
       this.oldContent = res.requirement;
@@ -450,7 +447,6 @@ export class EditSolutionComponent {
           }
 
           this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
-          this.allowFreeRedirection = true;
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -475,7 +471,6 @@ export class EditSolutionComponent {
       }
 
       this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
-      this.allowFreeRedirection = true;
       this.navigateBackToDocumentList(this.initialData);
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -692,7 +687,6 @@ ${chat.assistant}`,
       .subscribe((res) => {
         if (res) {
           this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
-          this.allowFreeRedirection = true;
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(this.folderName, reqId),
@@ -711,8 +705,7 @@ ${chat.assistant}`,
 
   canDeactivate(): boolean {
     return (
-      (!this.allowFreeRedirection &&
-      this.requirementForm.dirty &&
+      (this.requirementForm.dirty &&
       this.requirementForm.touched) ||
       this.checkMappingChanges()
     );

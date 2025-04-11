@@ -103,7 +103,6 @@ export class EditUserStoriesComponent implements OnDestroy {
   editLabel: string = '';
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   selectedPRD: any = {};
-  allowFreeRedirection: boolean = false;
   readonly dialogService = inject(DialogService);
   selectedFileContent$ = this.store.select(
     ProjectsState.getSelectedFileContent,
@@ -192,7 +191,6 @@ export class EditUserStoriesComponent implements OnDestroy {
               chatHistory: this.chatHistory,
             }),
           );
-          this.allowFreeRedirection = true;
           this.userStoryForm.patchValue({
             name: featureName,
             description: featureDescription
@@ -235,7 +233,6 @@ export class EditUserStoriesComponent implements OnDestroy {
           chatHistory: this.chatHistory,
         }),
       );
-      this.allowFreeRedirection = true;
 
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
@@ -284,7 +281,6 @@ export class EditUserStoriesComponent implements OnDestroy {
                 this.absoluteFilePath,
               ),
             );
-            this.allowFreeRedirection = true;
             this.navigateBackToUserStories();
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -310,7 +306,6 @@ export class EditUserStoriesComponent implements OnDestroy {
           this.absoluteFilePath,
         ),
       );
-      this.allowFreeRedirection = true;
       this.navigateBackToUserStories();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -428,7 +423,6 @@ export class EditUserStoriesComponent implements OnDestroy {
 
   canDeactivate(): boolean {
     return (
-      !this.allowFreeRedirection &&
       this.userStoryForm.dirty &&
       this.userStoryForm.touched
     );
