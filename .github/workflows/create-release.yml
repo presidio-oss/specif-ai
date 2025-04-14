@@ -51,6 +51,24 @@ jobs:
             echo "❌ No Windows zip file found"
           fi
 
+          # Move Windows exe file
+          WIN_EXE=$(find release-assets/windows -name "*Setup*.exe" -type f | head -1)
+          if [[ -n "$WIN_EXE" ]]; then
+            cp "$WIN_EXE" "renamed-assets/Specif-AI-Setup-${VERSION}.exe"
+            echo "✅ Created Windows installer: Specif-AI-Setup-${VERSION}.exe"
+          else
+            echo "❌ No Windows installer found"
+          fi
+
+          # Move Windows blockmap file
+          WIN_BLOCKMAP=$(find release-assets/windows -name "*Setup*.exe.blockmap" -type f | head -1)
+          if [[ -n "$WIN_BLOCKMAP" ]]; then
+            cp "$WIN_BLOCKMAP" "renamed-assets/Specif-AI-Setup-${VERSION}.exe.blockmap"
+            echo "✅ Created Windows blockmap: Specif-AI-Setup-${VERSION}.exe.blockmap"
+          else
+            echo "❌ No Windows blockmap found"
+          fi
+
           # Move windows yml files
           cp release-assets/windows/dist/latest.yml renamed-assets/latest.yml
 
@@ -66,7 +84,12 @@ jobs:
           done
 
           # Move macos yml files
-          cp release-assets/macos-arm64/latest-mac.yml renamed-assets/latest-mac.yml
+          if [ -f "release-assets/macos-arm64/latest-mac.yml" ]; then
+            cp release-assets/macos-arm64/latest-mac.yml renamed-assets/latest-mac.yml
+            echo "✅ Copied latest-mac.yml for macOS updates"
+          else
+            echo "❌ No macOS latest-mac.yml found"
+          fi
 
           echo "📦 Final release assets:"
           ls -la renamed-assets/
