@@ -72,7 +72,7 @@ jobs:
           fi
 
           # Move windows yml files
-          cp release-assets/windows/dist/latest.yml renamed-assets/latest.yml
+          cp release-assets/windows/out/latest.yml renamed-assets/latest.yml
 
           # Rename macOS artifact
           shopt -s nullglob
