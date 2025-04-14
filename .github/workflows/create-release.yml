@@ -86,12 +86,7 @@ jobs:
           done
 
           # Move macos yml files
-          if [ -f "release-assets/macos-arm64/latest-mac.yml" ]; then
-            cp release-assets/macos-arm64/latest-mac.yml renamed-assets/latest-mac.yml
-            echo "✅ Copied latest-mac.yml for macOS updates"
-          else
-            echo "❌ No macOS latest-mac.yml found"
-          fi
+          cp release-assets/macos-arm64/latest-mac.yml renamed-assets/latest-mac.yml
 
           echo "📦 Final release assets:"
           ls -la renamed-assets/
