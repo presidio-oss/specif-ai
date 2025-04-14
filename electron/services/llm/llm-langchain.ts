@@ -1,7 +1,6 @@
 import { LangChainModelProvider } from "./langchain-providers/base";
 import { LLMError, LLMProvider } from "./llm-types";
 
-// Export langchain implementations
 import { AnthropicLangChainProvider } from "./langchain-providers/anthropic";
 import { AzureOpenAILangChainProvider } from "./langchain-providers/azure-openai";
 import { BedrockLangChainProvider } from "./langchain-providers/bedrock";
