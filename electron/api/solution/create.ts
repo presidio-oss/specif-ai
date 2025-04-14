@@ -12,6 +12,7 @@ import { extractRequirementsFromResponse } from '../../utils/custom-json-parser'
 import { traceBuilder } from '../../utils/trace-builder';
 import { COMPONENT, OPERATIONS } from '../../helper/constants';
 import { DatabaseClient } from '../../db';
+import { metadata, document } from '../../db/solution.schema';
 
 // types
 
@@ -103,9 +104,22 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       name: validatedData.name
     };
 
+    // Initialize database
     const dbClient = DatabaseClient.getInstance();
-    const db = dbClient.openSolutionDb(validatedData.name);
+    const db = await dbClient.openSolutionDb(validatedData.name);
 
+    // Store solution metadata
+    await db.insert(metadata).values([{
+      name: validatedData.name,
+      description: validatedData.description,
+      version: '1.0.0',
+      isBrownfield: validatedData.cleanSolution,
+      technicalDetails: validatedData.description,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }]);
+
+    
     const llmHandler = buildLLMHandler(
       llmConfig.activeProvider,
       llmConfig.providerConfigs[llmConfig.activeProvider].config
@@ -135,6 +149,22 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
             ...prdRequirementType,
             brds: brds
           });
+        }
+      }
+    }
+
+    // Store requirements in database
+    for (const reqType of ['brd', 'prd', 'uir', 'nfr'] as const) {
+      if (results[reqType]) {
+        for (const req of results[reqType]) {
+          await db.insert(document).values([{
+            name: req.title,
+            description: req.requirement,
+            documentTypeId: reqType,
+            count: results[reqType].length,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }]);
         }
       }
     }

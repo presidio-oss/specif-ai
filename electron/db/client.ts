@@ -8,6 +8,7 @@ import { Database } from "./types";
 import { AppConfig } from "../schema/core/store.schema";
 import * as masterSchema from "./master.schema";
 import * as solutionSchema from "./solution.schema";
+import { documentTypeData } from './seeds/document-type-data';
 
 export class DatabaseClient {
   private static instance: DatabaseClient;
@@ -78,7 +79,11 @@ export class DatabaseClient {
         url: `file:${dbPath}`
       });
       const db = drizzle(sqlite, { schema: solutionSchema });
-      await migrate(db, { migrationsFolder: './drizzle/solution' });
+    await migrate(db, { migrationsFolder: './drizzle/solution' });
+    await db
+      .insert(solutionSchema.documentType)
+      .values(documentTypeData)
+      .onConflictDoNothing();
       this.activeSolutionDb = { name: solutionName, db };
       return db;
   }

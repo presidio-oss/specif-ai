@@ -1,0 +1,60 @@
+import { documentType } from "../solution.schema";
+
+export const documentTypeData: Array<typeof documentType.$inferInsert> = [
+  {
+    id: "brd",
+    name: "BRD",
+    typeLabel: "Business Requirements",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "prd",
+    name: "PRD",
+    typeLabel: "Product Requirements",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "us",
+    name: "US",
+    typeLabel: "User Stories",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "task",
+    name: "TASK",
+    typeLabel: "Task",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "nfr",
+    name: "NFR",
+    typeLabel: "Non-Functional Requirements",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "uir",
+    name: "UIR",
+    typeLabel: "User Interface Requirements",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "bp",
+    name: "BP",
+    typeLabel: "Business Process",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
