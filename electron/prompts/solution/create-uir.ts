@@ -5,15 +5,18 @@ interface CreateUIRParams {
   name: string;
   description: string;
   max_count: number;
+  referenceInformation?: string;
 }
 
-export function createUIRPrompt({ name, description, max_count }: CreateUIRParams): string {
+export function createUIRPrompt({ name, description, max_count, referenceInformation }: CreateUIRParams): string {
   return `You are a requirements analyst tasked with extracting User Interface Requirements from the provided app description. Below is the description of the app:
 
 App Name: ${name}
 App Description: ${description}
 
 ${UIR_CONTEXT}
+
+${referenceInformation ? `### Additional Context:\n${referenceInformation}`:''}
 
 Output Structure should be a valid JSON: Here is the sample Structure:
 

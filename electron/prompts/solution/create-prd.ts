@@ -10,10 +10,10 @@ interface CreatePRDParams {
     title: string;
     requirement: string;
   }>;
-  extraContext?:string;
+  referenceInformation?:string;
 }
 
-export function createPRDPrompt({ name, description, max_count, brds,extraContext }: CreatePRDParams): string {
+export function createPRDPrompt({ name, description, max_count, brds, referenceInformation }: CreatePRDParams): string {
   return `You are an award winning product manager tasked with extracting detailed Product Requirements from the provided information.
 ## App Description:
 
@@ -24,7 +24,7 @@ ${buildBusinessRequirementContext(brds)}
 
 ${PRD_CONTEXT}
 
-${extraContext ? `### Additional Context:\n${extraContext}`:''}
+${referenceInformation ? `### Additional Context:\n${referenceInformation}`:''}
 
 Output Structure should be a valid JSON: Here is the sample Structure:
 

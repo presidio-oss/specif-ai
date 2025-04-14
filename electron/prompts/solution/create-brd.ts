@@ -5,9 +5,10 @@ interface CreateBRDParams {
   name: string;
   description: string;
   max_count: number;
+  referenceInformation?: string;
 }
 
-export function createBRDPrompt({ name, description, max_count }: CreateBRDParams): string {
+export function createBRDPrompt({ name, description, max_count, referenceInformation }: CreateBRDParams): string {
   return `You are a requirements analyst tasked with extracting detailed Business Requirements from the provided app description.
 
 Below is the description of the app:
@@ -15,6 +16,8 @@ App Name: ${name}
 App Description: ${description}
 
 ${BRD_CONTEXT}
+
+${referenceInformation ? `### Additional Context:\n${referenceInformation}`:''}
 
 Output Structure should be a valid JSON: Here is the sample Structure:
 

@@ -44,8 +44,15 @@
     "@aws-sdk/client-bedrock-runtime": "^3.758.0",
     "@azure/openai": "^2.0.0",
     "@google/generative-ai": "^0.24.0",
+    "@langchain/anthropic": "^0.3.17",
     "@langchain/aws": "^0.1.7",
-    "@langchain/core": "^0.3.43",
+    "@langchain/community": "^0.3.40",
+    "@langchain/core": "^0.3.44",
+    "@langchain/google-genai": "^0.2.3",
+    "@langchain/langgraph": "^0.2.63",
+    "@langchain/ollama": "^0.2.0",
+    "@langchain/openai": "^0.5.5",
+    "@modelcontextprotocol/sdk": "^1.9.0",
     "@sentry/electron": "^5.3.0",
     "axios": "^1.7.7",
     "dotenv": "^16.4.7",
@@ -78,7 +85,10 @@
         "teamId": "9NENB68LF9"
       },
       "hardenedRuntime": true,
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "entitlements": "build-assets/entitlements.mac.plist",
       "entitlementsInherit": "build-assets/entitlements.mac.plist"
     },

@@ -10,7 +10,11 @@ import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
-import { COMPONENT, OPERATIONS } from '../../helper/constants';
+import { OPERATIONS } from '../../helper/constants';
+import { buildCreateSolutionWorkflow } from '../../agentic/create-solution-workflow';
+import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
+import { ICreateSolutionWorkflowStateAnnotation } from '../../agentic/create-solution-workflow/state';
+import { REQUIREMENT_TYPE } from '../../constants/requirement.constants';
 
 // types
 
@@ -93,8 +97,57 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       throw new Error('LLM configuration not found');
     }
 
-    console.log('[create-solution] Using LLM config:', llmConfig);
+    console.log("[create-solution] Using LLM config:", llmConfig);
+
     const validatedData = createSolutionSchema.parse(data);
+    
+    const useAgent = true;
+
+    if (useAgent) {
+      const createSolutionWorkflow = buildCreateSolutionWorkflow({
+        tools: [],
+        model: buildLangchainModelProvider(
+          llmConfig.activeProvider,
+          llmConfig.providerConfigs[llmConfig.activeProvider].config
+        ),
+      });
+
+      const initialState: Partial<
+        ICreateSolutionWorkflowStateAnnotation["State"]
+      > = {
+        app: {
+          name: validatedData.name,
+          description: validatedData.description,
+        },
+        requirementGenerationPreferences: {
+          [REQUIREMENT_TYPE.PRD]: validatedData.prdPreferences,
+          [REQUIREMENT_TYPE.BRD]: validatedData.brdPreferences,
+          [REQUIREMENT_TYPE.NFR]: validatedData.nfrPreferences,
+          [REQUIREMENT_TYPE.UIR]: validatedData.uirPreferences,
+        },
+      };
+
+      const response = await createSolutionWorkflow.invoke(initialState);
+
+      const generatedRequirements = response.generatedRequirements;
+
+      return {
+        createReqt: validatedData.createReqt ?? false,
+        description: validatedData.description,
+        name: validatedData.name,
+        ...[
+          REQUIREMENT_TYPE.PRD,
+          REQUIREMENT_TYPE.BRD,
+          REQUIREMENT_TYPE.NFR,
+          REQUIREMENT_TYPE.UIR,
+        ].reduce((acc, rt) => {
+          return {
+            ...acc,
+            [rt.toLowerCase()]: generatedRequirements[rt].requirements,
+          };
+        }, {}),
+      };
+    }
 
     const results: SolutionResponse = {
       createReqt: validatedData.createReqt ?? false,

@@ -5,15 +5,18 @@ interface CreateNFRParams {
   name: string;
   description: string;
   max_count: number;
+  referenceInformation?: string;
 }
 
-export function createNFRPrompt({ name, description, max_count }: CreateNFRParams): string {
+export function createNFRPrompt({ name, description, max_count, referenceInformation }: CreateNFRParams): string {
   return `You are a requirements analyst tasked with extracting detailed Non-Functional Requirements from the provided app description. Below is the description of the app:
 
 App Name: ${name}
 App Description: ${description}
 
 ${NFR_CONTEXT}
+
+${referenceInformation ? `### Additional Context:\n${referenceInformation}`:''}
 
 Output Structure should be a valid JSON: Here is the sample Structure:
 
