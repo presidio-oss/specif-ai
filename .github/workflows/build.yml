@@ -144,38 +144,30 @@ jobs:
         run: |
           cd electron
           $VERSION = (node -e "console.log(require('./package.json').version);" | Out-String).Trim()
-          Compress-Archive -Path dist/win-unpacked/* -DestinationPath win-unpacked.zip
-
-          # Upload to S3 for long-term storage
-          aws s3 cp win-unpacked.zip s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/win-unpacked.zip
-          aws s3 cp dist/latest.yml s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/latest.yml
           
-          # Get the exe and blockmap files and upload to S3
-          $exeFile = Get-ChildItem -Path dist -Filter "*Setup*.exe" | Select-Object -First 1
-          if ($exeFile) {
-            echo "Found EXE file: $($exeFile.FullName)"
-            aws s3 cp "$($exeFile.FullName)" "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/$($exeFile.Name)"
-          } else {
-            echo "No EXE installer found"
-          }
+          # Create out directory
+          New-Item -ItemType Directory -Path out -Force
           
-          $blockmapFile = Get-ChildItem -Path dist -Filter "*Setup*.exe.blockmap" | Select-Object -First 1
-          if ($blockmapFile) {
-            echo "Found blockmap file: $($blockmapFile.FullName)"
-            aws s3 cp "$($blockmapFile.FullName)" "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/$($blockmapFile.Name)"
-          } else {
-            echo "No blockmap file found"
-          }
+          # Compress win-unpacked to out folder
+          Compress-Archive -Path dist/win-unpacked/* -DestinationPath out/win-unpacked.zip
+          
+          # Copy necessary files to out folder
+          Copy-Item dist/latest.yml out/
+          Copy-Item dist/*Setup*.exe out/ -ErrorAction SilentlyContinue
+          Copy-Item dist/*Setup*.exe.blockmap out/ -ErrorAction SilentlyContinue
+          
+          # Upload to S3 for long-term storage using sync
+          aws s3 sync out/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/"
 
       - name: Upload Windows Build as GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-electron-build
           path: |
-            electron/win-unpacked.zip
-            electron/dist/latest.yml
-            electron/dist/*-Setup-*.exe
-            electron/dist/*-Setup-*.exe.blockmap
+            electron/out/win-unpacked.zip
+            electron/out/latest.yml
+            electron/out/*Setup*.exe
+            electron/out/*Setup*.exe.blockmap
           retention-days: 90
 
   build_electron_mac:
