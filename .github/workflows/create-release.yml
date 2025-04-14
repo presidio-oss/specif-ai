@@ -38,7 +38,7 @@ jobs:
         run: |
           VERSION="${{ inputs.version }}"
           APP_NAME="Specif-AI"
-          APP_SETUP_NAME="Specif-AI-Setup"
+          APP_SETUP_NAME="${APP_NAME}-Setup"
           echo "Creating consistently named assets for version $VERSION"
 
           # Create directory for renamed files
