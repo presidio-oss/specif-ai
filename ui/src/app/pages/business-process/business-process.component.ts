@@ -345,6 +345,8 @@ export class BusinessProcessComponent implements OnInit {
         selectedBRDs: formValue.selectedBRDs,
         selectedPRDs: formValue.selectedPRDs,
       });
+      this.businessProcessForm.markAsUntouched();
+      this.businessProcessForm.markAsPristine();
       return;
     }
 
@@ -382,6 +384,8 @@ export class BusinessProcessComponent implements OnInit {
         selectedBRDs: selectedBRDsWithId,
         selectedPRDs: selectedPRDsWithId,
       });
+      this.businessProcessForm.markAsUntouched();
+      this.businessProcessForm.markAsPristine();
     })
     .catch((error) => {
       this.loggerService.error('Error updating requirement:', error);

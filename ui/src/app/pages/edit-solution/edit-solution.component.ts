@@ -308,6 +308,9 @@ export class EditSolutionComponent {
         this.chatHistory = res.chatHistory || [];
       });
       
+      this.requirementForm.markAsUntouched();
+      this.requirementForm.markAsPristine();
+
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
       );
@@ -350,6 +353,8 @@ export class EditSolutionComponent {
       });
       this.chatHistory = res.chatHistory || [];
     });
+    this.requirementForm.markAsUntouched();
+    this.requirementForm.markAsPristine();
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
         this.folderName,
