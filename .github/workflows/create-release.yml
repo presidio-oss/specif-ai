@@ -37,6 +37,8 @@ jobs:
       - name: Rename files with consistent naming convention
         run: |
           VERSION="${{ inputs.version }}"
+          APP_NAME="Specif-AI"
+          APP_SETUP_NAME="Specif-AI-Setup"
           echo "Creating consistently named assets for version $VERSION"
 
           # Create directory for renamed files
@@ -45,8 +47,8 @@ jobs:
           # Rename Windows artifact
           WIN_ZIP=$(find release-assets/windows -name "*.zip" -type f | head -1)
           if [[ -n "$WIN_ZIP" ]]; then
-            cp "$WIN_ZIP" "renamed-assets/Specif-AI-${VERSION}-windows.zip"
-            echo "✅ Created Windows artifact: Specif-AI-${VERSION}-windows.zip"
+            cp "$WIN_ZIP" "renamed-assets/${APP_NAME}-${VERSION}-windows.zip"
+            echo "✅ Created Windows artifact: ${APP_NAME}-${VERSION}-windows.zip"
           else
             echo "❌ No Windows zip file found"
           fi
@@ -54,8 +56,8 @@ jobs:
           # Move Windows exe file
           WIN_EXE=$(find release-assets/windows -name "*Setup*.exe" -type f | head -1)
           if [[ -n "$WIN_EXE" ]]; then
-            cp "$WIN_EXE" "renamed-assets/Specif-AI-Setup-${VERSION}.exe"
-            echo "✅ Created Windows installer: Specif-AI-Setup-${VERSION}.exe"
+            cp "$WIN_EXE" "renamed-assets/${APP_SETUP_NAME}-${VERSION}.exe"
+            echo "✅ Created Windows installer: ${APP_SETUP_NAME}-${VERSION}.exe"
           else
             echo "❌ No Windows installer found"
           fi
@@ -63,8 +65,8 @@ jobs:
           # Move Windows blockmap file
           WIN_BLOCKMAP=$(find release-assets/windows -name "*Setup*.exe.blockmap" -type f | head -1)
           if [[ -n "$WIN_BLOCKMAP" ]]; then
-            cp "$WIN_BLOCKMAP" "renamed-assets/Specif-AI-Setup-${VERSION}.exe.blockmap"
-            echo "✅ Created Windows blockmap: Specif-AI-Setup-${VERSION}.exe.blockmap"
+            cp "$WIN_BLOCKMAP" "renamed-assets/${APP_SETUP_NAME}-${VERSION}.exe.blockmap"
+            echo "✅ Created Windows blockmap: ${APP_SETUP_NAME}-${VERSION}.exe.blockmap"
           else
             echo "❌ No Windows blockmap found"
           fi
@@ -77,7 +79,7 @@ jobs:
 
           for dir in release-assets/macos-intel release-assets/macos-arm64; do
               for file in "$dir"/Specif\ AI-*; do
-                  new_name="renamed-assets/$(basename "$file" | sed 's/Specif AI/Specif-AI/g')"
+                  new_name="renamed-assets/$(basename "$file" | sed 's/Specif AI/${APP_NAME}/g')"
                   mv "$file" "$new_name"
                   echo "Moved and Renamed: $file → $new_name"
               done
