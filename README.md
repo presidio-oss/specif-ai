@@ -86,6 +86,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 - **📊 Business Process Visualization**: Easily generate and manage process flows.
 - **📋 User Story Generation**: Convert requirements into actionable user stories and tasks.
+- **🔗 Linking BRDs and PRDs**: Share BRD context to PRDs for holistic output.
 
 <div align="center">
 
@@ -95,7 +96,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 - **🔄 Real-time Collaboration**: Collaborate and refine requirements with team members.
 - **📱 Desktop Integration**: Seamlessly integrate with your existing workflow tools.
-- **📊 Analytics & Observability**: Optional analytics and observability tracked in PostHog and Langfuse.
+- **🔍 Analytics & Observability**: Optional analytics and observability tracked in PostHog and Langfuse.
 - **🔄 Multi-Model Support**: Choose the model that best suits your needs. Supported models include:
    - Azure OpenAI
       - gpt-4o
@@ -171,7 +172,6 @@ Specifai is a powerful desktop application built to streamline and organize your
 
 ## 🗺 Roadmap
 
-- [ ] Advanced BRD-PRD linking capabilities.
 - [ ] Enhanced collaboration features.
 - [ ] Custom template support.
 - [ ] v2.0 - Web version with enhanced collaboration capabilities.
