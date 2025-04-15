@@ -11,8 +11,7 @@ import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
 import { COMPONENT, OPERATIONS } from '../../helper/constants';
-import { DatabaseClient } from '../../db';
-import { metadata, document } from '../../db/solution.schema';
+import { SolutionRepository } from '../../repo/solution.repo';
 
 // types
 
@@ -28,10 +27,7 @@ type GenerateRequirementParams = RequirementTypeMeta & {
   brds?: any[];
 };
 
-// types
-
 // constants
-
 const requirementTypes: Array<RequirementTypeMeta> = [
   { key: 'brd', generatePrompt: createBRDPrompt, preferencesKey: 'brdPreferences' },
   { key: 'uir', generatePrompt: createUIRPrompt, preferencesKey: 'uirPreferences' },
@@ -39,8 +35,6 @@ const requirementTypes: Array<RequirementTypeMeta> = [
 ];
 
 const prdRequirementType = { key: 'prd', generatePrompt: createPRDPrompt, preferencesKey: 'prdPreferences' } as const;
-
-// constants
 
 const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, llmHandler, brds }: GenerateRequirementParams) => {
   console.log(`[create-solution] Generating ${key.toUpperCase()} requirements...`);
@@ -59,7 +53,6 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   const messages = await LLMUtils.prepareMessages(prompt);
 
   try {
-
     const traceName = traceBuilder(COMPONENT.SOLUTION, OPERATIONS.CREATE);
     const response = await llmHandler.invoke(messages, null, traceName);
     const extractedContent = extractRequirementsFromResponse(response, key);
@@ -87,7 +80,6 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   return result;
 }
 
-
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
@@ -104,22 +96,13 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       name: validatedData.name
     };
 
-    // Initialize database
-    const dbClient = DatabaseClient.getInstance();
-    const db = await dbClient.openSolutionDb(validatedData.name);
+    // Initialize repository
+    const repository = new SolutionRepository(validatedData.name);
 
-    // Store solution metadata
-    await db.insert(metadata).values([{
-      name: validatedData.name,
-      description: validatedData.description,
-      version: '1.0.0',
-      isBrownfield: validatedData.cleanSolution,
-      technicalDetails: validatedData.description,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }]);
+    // Initialize database and store metadata through repository
+    await repository.initializeSolutionDb();
+    await repository.saveSolutionMetadata(validatedData);
 
-    
     const llmHandler = buildLLMHandler(
       llmConfig.activeProvider,
       llmConfig.providerConfigs[llmConfig.activeProvider].config
@@ -153,21 +136,8 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       }
     }
 
-    // Store requirements in database
-    for (const reqType of ['brd', 'prd', 'uir', 'nfr'] as const) {
-      if (results[reqType]) {
-        for (const req of results[reqType]) {
-          await db.insert(document).values([{
-            name: req.title,
-            description: req.requirement,
-            documentTypeId: reqType,
-            count: results[reqType].length,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }]);
-        }
-      }
-    }
+    // Store requirements through repository
+    await repository.saveRequirements(results);
 
     return results;
   } catch (error) {
