@@ -1,4 +1,3 @@
-// SolutionRepository.ts
 import { withTransaction } from "../utils/transaction.decorator";
 import { DatabaseClient } from "../db/client";
 import { metadata, document } from "../db/solution.schema";
@@ -25,35 +24,33 @@ export class SolutionRepository {
     this.solutionDb = await this.dbClient.openSolutionDb(this.solutionName);
   }
 
+  @withTransaction()
   async saveSolutionMetadata(
-    solutionData: CreateSolutionRequest
+    solutionData: CreateSolutionRequest,
+    tx?: any 
   ) {
-    if (this.solutionDb) {
-      await this.solutionDb.insert(metadata).values([
-        {
-          name: solutionData.name,
-          description: solutionData.description,
-          version: "1.0.0",
-          isBrownfield: solutionData.cleanSolution,
-          technicalDetails: solutionData.description,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ]);
+    await tx.insert(metadata).values([
+      {
+        name: solutionData.name,
+        description: solutionData.description,
+        version: "1.0.0",
+        isBrownfield: solutionData.cleanSolution,
+        technicalDetails: solutionData.description,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ]);
 
-      return this.dbClient.getSolutionDb();
-    } else {
-      throw new Error("Failed to initialize solution DB");
-    }
+    return true;
   }
 
   private async saveRequirement(
-    db: any,
+    tx: any,
     req: { title: string; requirement: string },
     reqType: string,
     count: number
   ) {
-    return await db.insert(document).values([
+    return await tx.insert(document).values([
       {
         name: req.title,
         description: req.requirement,
@@ -65,14 +62,16 @@ export class SolutionRepository {
     ]);
   }
 
-  async saveRequirements(results: SolutionResponse) {
-    const db = this.dbClient.getSolutionDb();
+  @withTransaction()
+  async saveRequirements(results: SolutionResponse, tx?: any) {
     for (const reqType of ["brd", "prd", "uir", "nfr"] as const) {
       if (results[reqType]) {
         for (const req of results[reqType]) {
-          await this.saveRequirement(db, req, reqType, results[reqType].length);
+          await this.saveRequirement(tx, req, reqType, results[reqType].length);
         }
       }
     }
+    
+    return true;
   }
 }

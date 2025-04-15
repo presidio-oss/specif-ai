@@ -2,20 +2,21 @@ import { DatabaseClient } from '../db/client';
 
 /**
  * Decorator that wraps a method with a database transaction.
- * Simply provides transaction context to the method and handles rollback on failure.
+ * Provides transaction context to the method and handles rollback on failure.
  * 
  * Usage:
  * ```typescript
- * class AccountService {
+ * class SolutionRepository {
  *   @withTransaction()
- *   async transferMoney(from: string, to: string, amount: number, tx?: any) {
- *     await tx.update(accounts)
- *       .set({ balance: sql`${accounts.balance} - ${amount}` })
- *       .where(eq(accounts.name, from));
- *     
- *     await tx.update(accounts)
- *       .set({ balance: sql`${accounts.balance} + ${amount}` })
- *       .where(eq(accounts.name, to));
+ *   async saveRequirements(results: SolutionResponse, tx?: any) {
+ *     // Use tx instead of getting a new db connection
+ *     for (const reqType of ["brd", "prd", "uir", "nfr"] as const) {
+ *       if (results[reqType]) {
+ *         for (const req of results[reqType]) {
+ *           await this.saveRequirement(tx, req, reqType, results[reqType].length);
+ *         }
+ *       }
+ *     }
  *   }
  * }
  * ```
