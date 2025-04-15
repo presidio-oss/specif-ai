@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   sqliteTable,
   text,
@@ -9,18 +10,22 @@ export const docTypeEnum = ["PRD", "BRD"] as const;
 export type DocType = (typeof docTypeEnum)[number];
 
 export const commonColumns = {
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  createdAt: text("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
   isDeleted: integer("is_deleted", { mode: "boolean" }).default(false),
 };
 
 export const metadata = sqliteTable("Metadata", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description"),
-  technicalDetails: text("technical_details"),
+  description: text("description").notNull(),
+  technicalDetails: text("technical_details").notNull(),
   isBrownfield: integer("is_brownfield", { mode: "boolean" }).default(false),
-  version: text("version"),
+  version: text("version").notNull(),
   ...commonColumns,
 });
 
@@ -33,7 +38,7 @@ export const integration = sqliteTable("Integration", {
 export const documentType = sqliteTable("DocumentType", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  typeLabel: text("type_label"),
+  typeLabel: text("type_label").notNull(),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
   ...commonColumns,
 });
@@ -41,11 +46,11 @@ export const documentType = sqliteTable("DocumentType", {
 export const document = sqliteTable("Document", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description"),
+  description: text("description").notNull(),
   jiraId: text("jira_id"),
   documentTypeId: text("document_type_id")
-    .notNull()
-    .references(() => documentType.id, { onDelete: "set null" }),
+    .references(() => documentType.id, { onDelete: "set null" })
+    .notNull(),
   count: integer("count").default(0),
   ...commonColumns,
 });
@@ -73,7 +78,7 @@ export const message = sqliteTable("Message", {
 export const businessProcess = sqliteTable("BusinessProcess", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description"),
+  description: text("description").notNull(),
   flowchart: text("flowchart"),
   ...commonColumns,
 });

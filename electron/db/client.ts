@@ -37,7 +37,7 @@ export class DatabaseClient {
 
   public async initializeMasterDb() {
     if (this.masterDb) {
-      throw new Error("Master DB already initialized");
+      return this.masterDb;
     }
 
     const directoryPath = this.getDirectoryPath();

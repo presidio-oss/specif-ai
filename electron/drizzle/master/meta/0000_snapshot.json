@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c7a5f5c2-670f-46f9-9267-e84cb10e04b3",
+  "id": "16d5b20e-964c-44f3-9700-21f4f779c475",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "MasterSolutions": {
@@ -25,7 +25,7 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "solution_path": {
@@ -47,17 +47,17 @@
           "name": "created_at",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
-          "default": "'CURRENT_TIMESTAMP'"
+          "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
-          "default": "'CURRENT_TIMESTAMP'"
+          "default": "CURRENT_TIMESTAMP"
         },
         "is_deleted": {
           "name": "is_deleted",
