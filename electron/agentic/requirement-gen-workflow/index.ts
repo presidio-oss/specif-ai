@@ -1,4 +1,9 @@
-import { END, START, StateGraph } from "@langchain/langgraph";
+import {
+  BaseCheckpointSaver,
+  END,
+  START,
+  StateGraph,
+} from "@langchain/langgraph";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import {
   buildLLMNode,
@@ -9,12 +14,13 @@ import { RequirementGenWorkflowStateAnnotation } from "./state";
 
 type CreateRequirementGenWorkflowParams = {
   model: LangChainModelProvider;
+  checkpointer?: BaseCheckpointSaver | false | undefined;
 };
 
 export const createRequirementGenWorkflow = (
   params: CreateRequirementGenWorkflowParams
 ) => {
-  const { model } = params;
+  const { model, checkpointer } = params;
 
   const builder = new StateGraph(RequirementGenWorkflowStateAnnotation)
     .addNode("generate_requirements", buildLLMNode(model))
@@ -33,6 +39,6 @@ export const createRequirementGenWorkflow = (
       }
     );
 
-  const graph = builder.compile();
+  const graph = builder.compile({ checkpointer: checkpointer });
   return graph;
 };

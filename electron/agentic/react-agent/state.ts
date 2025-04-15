@@ -13,5 +13,9 @@ export const createReactAgentAnnotation = <
       reducer: messagesStateReducer,
       default: () => [],
     }),
+    conversationSummary: Annotation<string>({
+      reducer: (_, action) => action,
+      default: () => "",
+    }),
     structuredResponse: Annotation<T>,
   });

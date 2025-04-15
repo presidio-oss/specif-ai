@@ -4,7 +4,7 @@ import { MARKDOWN_RULES } from '../context/markdown-rules';
 interface CreatePRDParams {
   name: string;
   description: string;
-  max_count: number;
+  maxCount: number;
   brds?: Array<{
     id: string;
     title: string;
@@ -13,7 +13,7 @@ interface CreatePRDParams {
   referenceInformation?:string;
 }
 
-export function createPRDPrompt({ name, description, max_count, brds, referenceInformation }: CreatePRDParams): string {
+export function createPRDPrompt({ name, description, maxCount, brds, referenceInformation }: CreatePRDParams): string {
   return `You are an award winning product manager tasked with extracting detailed Product Requirements from the provided information.
 ## App Description:
 
@@ -52,7 +52,7 @@ Special Instructions:
      The relationship is not strictly hierarchical.
 
 Please ensure the requirements are descriptive and also clear, concise. Output must be valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.
-Generate Product Requirements with a maximum count of ${max_count}. Sort all requirements based on business impact (High to Medium to Low).`;
+Generate Product Requirements with a maximum count of ${maxCount}. Sort all requirements based on business impact (High to Medium to Low).`;
 }
 
 

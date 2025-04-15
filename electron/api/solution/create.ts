@@ -15,12 +15,16 @@ import { buildCreateSolutionWorkflow } from '../../agentic/create-solution-workf
 import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
 import { ICreateSolutionWorkflowStateAnnotation } from '../../agentic/create-solution-workflow/state';
 import { REQUIREMENT_TYPE } from '../../constants/requirement.constants';
+import { getMCPTools } from '../../mcp';
+import { MemorySaver } from "@langchain/langgraph";
+import { randomUUID } from "node:crypto";
+import { ObservabilityManager } from '../../services/observability/observability.manager';
 
 // types
 
 type RequirementTypeMeta = {
   key: keyof Pick<SolutionResponse, 'brd' | 'prd' | 'uir' | 'nfr'>;
-  generatePrompt: (params: { name: string; description: string; max_count: number; brds?: any[] }) => string;
+  generatePrompt: (params: { name: string; description: string; maxCount: number; brds?: any[] }) => string;
   preferencesKey: keyof Pick<CreateSolutionRequest, 'brdPreferences' | 'prdPreferences' | 'uirPreferences' | 'nfrPreferences'>;
 };
 
@@ -52,7 +56,7 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   const prompt = generatePrompt({
     name: data.name,
     description: data.description,
-    max_count: preferences.max_count,
+    maxCount: preferences.maxCount,
     brds
   });
   
@@ -92,24 +96,41 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
   try {
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace('create-solution');
+
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
 
     console.log("[create-solution] Using LLM config:", llmConfig);
 
-    const validatedData = createSolutionSchema.parse(data);
+    const validationSpan = trace.span({name: "input-validation"})
+    const validatedData = await createSolutionSchema.parseAsync(data);
+    validationSpan.end();
     
     const useAgent = true;
 
     if (useAgent) {
+      let mcpTools = [];
+
+      const memoryCheckpointer = new MemorySaver();
+
+      try {
+        mcpTools = await getMCPTools(llmConfig.activeProvider);
+      } catch (error) {
+        console.warn("Error getting mcp tools");
+      }
+
       const createSolutionWorkflow = buildCreateSolutionWorkflow({
-        tools: [],
+        tools: [...mcpTools],
         model: buildLangchainModelProvider(
           llmConfig.activeProvider,
           llmConfig.providerConfigs[llmConfig.activeProvider].config
         ),
+        checkpointer: memoryCheckpointer
       });
 
       const initialState: Partial<
@@ -127,9 +148,27 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         },
       };
 
-      const response = await createSolutionWorkflow.invoke(initialState);
+      const config = {
+        "configurable":{
+          "thread_id": `${randomUUID()}_create_solution`,
+          "trace": trace
+        }
+      }
 
-      const generatedRequirements = response.generatedRequirements;
+      const stream = createSolutionWorkflow.streamEvents(initialState, {
+        version: "v2",
+        streamMode: "messages",
+        ...config,
+      })
+
+      for await (const event of stream){
+      }
+
+      const response = await createSolutionWorkflow.getState({
+        ...config
+      })
+
+      const generatedRequirements = response.values.generatedRequirements;
 
       return {
         createReqt: validatedData.createReqt ?? false,

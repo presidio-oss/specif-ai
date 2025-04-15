@@ -1,14 +1,19 @@
-import { UIR_CONTEXT } from '../context/uir';
-import { MARKDOWN_RULES } from '../context/markdown-rules';
+import { MARKDOWN_RULES } from "../context/markdown-rules";
+import { UIR_CONTEXT } from "../context/uir";
 
 interface CreateUIRParams {
   name: string;
   description: string;
-  max_count: number;
+  maxCount: number;
   referenceInformation?: string;
 }
 
-export function createUIRPrompt({ name, description, max_count, referenceInformation }: CreateUIRParams): string {
+export function createUIRPrompt({
+  name,
+  description,
+  maxCount,
+  referenceInformation,
+}: CreateUIRParams): string {
   return `You are a requirements analyst tasked with extracting User Interface Requirements from the provided app description. Below is the description of the app:
 
 App Name: ${name}
@@ -16,7 +21,9 @@ App Description: ${description}
 
 ${UIR_CONTEXT}
 
-${referenceInformation ? `### Additional Context:\n${referenceInformation}`:''}
+${
+  referenceInformation ? `### Additional Context:\n${referenceInformation}` : ""
+}
 
 Output Structure should be a valid JSON: Here is the sample Structure:
 
@@ -36,5 +43,5 @@ Special Instructions:
   ${MARKDOWN_RULES}
 
 Please ensure the requirements are clear, concise, and comprehensive. Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.
-Generate User Interface Requirements with a maximum count of ${max_count}. Sort all requirements based on business impact (High to Medium to Low).`;
+Generate User Interface Requirements with a maximum count of ${maxCount}. Sort all requirements based on business impact (High to Medium to Low).`;
 }

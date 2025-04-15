@@ -12,7 +12,7 @@ import { CreateSolutionStateAnnotation } from "./state";
 type CreateSolutionWorkflowParams = {
   tools: Array<ITool>;
   model: LangChainModelProvider;
-  checkpointer?: BaseCheckpointSaver | false;
+  checkpointer?: BaseCheckpointSaver | false | undefined;
 };
 
 export const buildCreateSolutionWorkflow = ({
@@ -21,11 +21,11 @@ export const buildCreateSolutionWorkflow = ({
   checkpointer,
 }: CreateSolutionWorkflowParams) => {
   const builder = new StateGraph(CreateSolutionStateAnnotation)
-    .addNode("research", buildResearchNode({ model, tools }))
-    .addNode("generate_prd", buildReqGenerationNode({ type: "PRD", model }))
-    .addNode("generate_brd", buildReqGenerationNode({ type: "BRD", model }))
-    .addNode("generate_uir", buildReqGenerationNode({ type: "UIR", model }))
-    .addNode("generate_nfr", buildReqGenerationNode({ type: "NFR", model }))
+    .addNode("research", buildResearchNode({ model, tools, checkpointer }))
+    .addNode("generate_prd", buildReqGenerationNode({ type: "PRD", model, checkpointer }))
+    .addNode("generate_brd", buildReqGenerationNode({ type: "BRD", model, checkpointer }))
+    .addNode("generate_uir", buildReqGenerationNode({ type: "UIR", model, checkpointer }))
+    .addNode("generate_nfr", buildReqGenerationNode({ type: "NFR", model, checkpointer }))
     // do research and then generate requirements with the findings
     .addEdge(START, "research")
     .addEdge("research", "generate_brd")

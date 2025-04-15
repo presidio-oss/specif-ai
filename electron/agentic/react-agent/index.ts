@@ -1,10 +1,17 @@
-import { START, END, StateGraph } from "@langchain/langgraph";
+import {
+  BaseCheckpointSaver,
+  END,
+  START,
+  StateGraph,
+} from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { ITool } from "../common/types";
 import {
   buildGenerateStructuredResponseNode,
   buildLLMNode,
+  buildSummarizeNode,
+  MessageSummaryConfig,
   shouldContinueEdge,
 } from "./nodes";
 import { createReactAgentAnnotation } from "./state";
@@ -14,6 +21,8 @@ type BuildReactAgentParams = {
   model: LangChainModelProvider;
   tools: Array<ITool>;
   responseFormat?: IResponseFormatInput;
+  summaryConfig?: MessageSummaryConfig;
+  checkpointer: BaseCheckpointSaver | false | undefined;
 };
 
 export const buildReactAgent = <
@@ -21,15 +30,17 @@ export const buildReactAgent = <
 >(
   params: BuildReactAgentParams
 ) => {
-  const { model, tools, responseFormat } = params;
+  const { model, tools, responseFormat, summaryConfig, checkpointer } = params;
 
   const builder = new StateGraph(
     createReactAgentAnnotation<TStructuredResponse>()
   )
+    .addNode("summarize", buildSummarizeNode(model, summaryConfig))
     .addNode("llm", buildLLMNode(model, tools))
     .addNode("tools", new ToolNode(tools))
-    .addEdge(START, "llm")
-    .addEdge("tools", "llm");
+    .addEdge(START, "summarize")
+    .addEdge("summarize", "llm")
+    .addEdge("tools", "summarize");
 
   if (responseFormat) {
     builder
@@ -49,6 +60,8 @@ export const buildReactAgent = <
     });
   }
 
-  const graph = builder.compile();
+  const graph = builder.compile({
+    checkpointer: checkpointer,
+  });
   return graph;
 };

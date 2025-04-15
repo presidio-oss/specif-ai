@@ -44,33 +44,29 @@ export const buildPromptForRequirement = (
       return createBRDPrompt({
         name,
         description,
-        max_count: maxCount,
-        // TODO: add additional context to the prompt
+        maxCount,
         referenceInformation,
       });
     case "NFR":
       return createNFRPrompt({
         name,
         description,
-        max_count: maxCount,
-        // TODO: add additional context to the prompt
+        maxCount,
         referenceInformation,
       });
     case "UIR":
       return createUIRPrompt({
         name,
         description,
-        max_count: maxCount,
-        // TODO: add additional context to the prompt
+        maxCount,
         referenceInformation,
       });
     case "PRD":
       return createPRDPrompt({
         name,
         description,
-        max_count: maxCount,
+        maxCount,
         brds: generationContext.brds,
-        // TODO: add additional context to the prompt
         referenceInformation,
       });
   }

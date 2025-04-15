@@ -6,7 +6,7 @@ export interface IProject {
 }
 
 export interface IGenerationRange {
-  max_count: number;
+  maxCount: number;
   isEnabled: boolean;
 }
 

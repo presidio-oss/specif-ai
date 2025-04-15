@@ -6,7 +6,7 @@ import { toolUseContext } from "./tool-use.context";
 
 interface RequirementPreference {
   isEnabled: boolean;
-  max_count: number;
+  maxCount: number;
 }
 
 interface GatherInfoParams {
@@ -62,14 +62,17 @@ export function createResearchInformationPrompt({
     ${toolUseContext({ recursionLimit })}
     - Once you have explored reasonable avenues and subsequent tool calls are not yielding significant new or valuable information, you should conclude your research phase.
 
-  ## General Guidelines:
-    - Please refrain from asking questions directly to the user, as there is currently no interface for providing responses.
+  ## Strict Guidelines:
+    - You MUST not ask questions directly to the user, as there is currently no interface for providing responses.
+    - You MUST only perform read only or retrieval actions. You must not write to any external data storage like file system, database or any other source.
+      If you don't do this you will not be asked to do this research again.
 
   Your goal is to create a rich and relevant context that will enable the downstream agents to create high-quality and comprehensive requirements for the ${
     app.name
   } app.
+
   Ensure your research is thorough and well-documented in your interactions, and remember to use your tool calls strategically and efficiently, diversifying your sources and adapting your approach when facing errors.
-  Remember, your sole function is to retrieve information using the provided tools. You MUST NOT use any tool to write to, modify, or create any external context or resources.`;
+  I repeat again, your sole function is to retrieve information using the provided tools. You MUST NOT use any tool to write to, modify, or create any external context or resources.`;
 }
 
 // utils

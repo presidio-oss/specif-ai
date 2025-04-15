@@ -1,4 +1,5 @@
 import { HumanMessage } from "@langchain/core/messages";
+import { BaseCheckpointSaver } from "@langchain/langgraph-checkpoint";
 import { z } from "zod";
 import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
@@ -12,6 +13,7 @@ import {
   ICreateSolutionWorkflowStateAnnotation,
   IGenerationRequirementsState,
 } from "./state";
+import { CreateSolutionWorkflowRunnableConfig } from "./types";
 import { buildPromptForRequirement } from "./utils";
 
 // nodes
@@ -19,15 +21,29 @@ import { buildPromptForRequirement } from "./utils";
 type BuildResearchNodeParams = {
   model: LangChainModelProvider;
   tools: Array<ITool>;
+  checkpointer?: BaseCheckpointSaver | false | undefined;
 };
 
 export const buildResearchNode = ({
   model,
   tools,
+  checkpointer,
 }: BuildResearchNodeParams) => {
-  return async (state: ICreateSolutionWorkflowStateAnnotation["State"]) => {
+  return async (
+    state: ICreateSolutionWorkflowStateAnnotation["State"],
+    runnableConfig: CreateSolutionWorkflowRunnableConfig
+  ) => {
+    const trace = runnableConfig.configurable?.trace;
+    const span = trace?.span({
+      name: "research",
+    });
+
     if (tools.length === 0) {
-      console.log("No tools are passed so skipping research phase");
+      const message = "No tools are passed so skipping research phase";
+      span?.end({
+        statusMessage: message,
+      });
+
       return {
         referenceInformation: "",
       };
@@ -37,18 +53,20 @@ export const buildResearchNode = ({
       model: model,
       tools: tools,
       responseFormat: {
-        prompt: createSummarizeResearchPrompt({ 
+        prompt: createSummarizeResearchPrompt({
           app: state.app,
-          requirementPreferences: state.requirementGenerationPreferences
+          requirementPreferences: state.requirementGenerationPreferences,
         }),
         schema: z.object({
           referenceInformation: z.string(),
         }),
       },
+      checkpointer: checkpointer,
     });
 
     // TODO: Discuss
-    const recursionLimit = 64;
+    const maxAllowedToolCalls = 20;
+    const recursionLimit = Math.min(maxAllowedToolCalls*3 + 1, tools.length * 2);
 
     const response = await agent.invoke(
       {
@@ -62,8 +80,16 @@ export const buildResearchNode = ({
       },
       {
         recursionLimit: recursionLimit,
+        configurable: {
+          trace: span,
+          thread_id: runnableConfig.configurable?.thread_id,
+        },
       }
     );
+
+    span?.end({
+      statusMessage: "Research completed successfully!",
+    });
 
     return {
       referenceInformation: response.structuredResponse.referenceInformation,
@@ -74,55 +100,98 @@ export const buildResearchNode = ({
 type BuildGenerationNodeParams = {
   type: IRequirementType;
   model: LangChainModelProvider;
+  checkpointer?: BaseCheckpointSaver | false | undefined;
 };
 
 export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
-  const { type, model } = params;
+  const { type, model, checkpointer } = params;
 
-  return async (state: ICreateSolutionWorkflowStateAnnotation["State"]) => {
-    const preferences = state.requirementGenerationPreferences[type];
+  return async (
+    state: ICreateSolutionWorkflowStateAnnotation["State"],
+    runnableConfig: CreateSolutionWorkflowRunnableConfig
+  ) => {
+    const trace = runnableConfig.configurable?.trace;
+    const span = trace?.span({
+      name: `generate-${type.toLowerCase()}`,
+    });
 
-    if (!preferences.isEnabled) {
+    try {
+      const preferences = state.requirementGenerationPreferences[type];
+
+      if (!preferences.isEnabled) {
+        const message = `User opted not to generate ${type} requirement`;
+        span?.end({
+          statusMessage: message,
+        });
+        return {
+          generatedRequirements: {
+            [type]: {
+              requirements: [],
+              feedback: message,
+            } as IGenerationRequirementsState,
+          },
+        };
+      }
+
+      const subgraph = createRequirementGenWorkflow({
+        model: model,
+        checkpointer: checkpointer,
+      });
+
+      const requirementTypePrompt = buildPromptForRequirement({
+        type,
+        generationContext: {
+          app: state.app,
+          referenceInformation: state.referenceInformation,
+          ...preferences,
+          ...(type === REQUIREMENT_TYPE.PRD
+            ? { brds: state.generatedRequirements.BRD.requirements }
+            : {}),
+        } as any,
+      });
+
+      const initialState: Partial<
+        IRequirementGenWorkflowStateAnnotation["State"]
+      > = {
+        messages: [new HumanMessage(requirementTypePrompt)],
+        requirements: [],
+        type: type,
+      };
+
+      const response = await subgraph.invoke(initialState, {
+        configurable: {
+          trace: span,
+          thread_id: runnableConfig.configurable?.thread_id,
+        },
+      });
+
+      span?.end({
+        statusMessage: "Successfully generated requirements",
+      });
+
+      return {
+        generatedRequirements: {
+          [type]: {
+            requirements: response.requirements,
+            feedback: response.feedbackOnRequirements,
+          } as IGenerationRequirementsState,
+        },
+      };
+    } catch (error) {
+      const message = `[create-solution] Error in generate-${type.toLowerCase()} node: ${error}`;
+      console.error(message, error);
+      span?.end({
+        level: "ERROR",
+      });
+      // handle gracefully for now
       return {
         generatedRequirements: {
           [type]: {
             requirements: [],
-            feedback: "User opted not to generated this requirement",
+            feedback: message,
           } as IGenerationRequirementsState,
         },
       };
     }
-
-    const subgraph = createRequirementGenWorkflow({
-      model: model,
-    });
-
-    const requirementTypePrompt = buildPromptForRequirement({
-      type,
-      generationContext: {
-        app: state.app,
-        ...preferences,
-        ...(type === REQUIREMENT_TYPE.PRD
-          ? { brds: state.generatedRequirements.BRD.requirements }
-          : {}),
-      } as any,
-    });
-
-    const initialState: Partial<IRequirementGenWorkflowStateAnnotation["State"]> = {
-      messages: [new HumanMessage(requirementTypePrompt)],
-      requirements: [],
-      type: type,
-    };
-
-    const response = await subgraph.invoke(initialState);
-
-    return {
-      generatedRequirements: {
-        [type]: {
-          requirements: response.requirements,
-          feedback: response.feedbackOnRequirements,
-        } as IGenerationRequirementsState,
-      },
-    };
   };
 };
