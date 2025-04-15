@@ -618,11 +618,9 @@ export class UserStoriesComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
-    // Only process when dropdown is open
     if (this.isExportOpen) {
       const target = event.target as HTMLElement;
       
-      // Check if click was outside the dropdown container
       if (this.exportDropdownContainer && 
           !this.exportDropdownContainer.nativeElement.contains(target)) {
         this.isExportOpen = false;
