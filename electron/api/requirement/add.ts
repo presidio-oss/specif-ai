@@ -2,6 +2,7 @@ import { addRequirementSchema, type AddRequirementResponse } from '../../schema/
 import { LLMUtils } from '../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
+import { RequirementRepository } from '../../repo/requirement.repo';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { addRequirementPrompt } from '../../prompts/requirement/add';
@@ -73,6 +74,14 @@ export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): 
       console.error('[add-requirement] Error parsing LLM response:', error);
       throw new Error('Failed to parse LLM response as JSON');
     }
+
+    // Save requirement to database
+    const reqRepository = new RequirementRepository();
+    await reqRepository.saveRequirement({
+      title: result.LLMreqt.title,
+      requirement: result.LLMreqt.requirement,
+      documentTypeId: addReqtType
+    });
 
     return {
       ...validatedData,

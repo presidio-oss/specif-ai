@@ -3,6 +3,7 @@ import { createSolution } from "../api/solution/create";
 import { validateBedrock } from "../api/solution/validate-bedrock";
 import { getSolutions } from "../api/solution/get";
 import { DatabaseClient } from "../db";
+import type { IpcMainInvokeEvent } from 'electron';
 
 export function setupSolutionHandlers() {
   ipcMain.handle('solution:createSolution', async (_event, data: any) => {
@@ -43,6 +44,17 @@ export function setupSolutionHandlers() {
       return result;
     } catch (error: any) {
       console.error('Error handling solution:getSolutions:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('solution:activate', async (_event: IpcMainInvokeEvent, solutionName: string) => {
+    try {
+      const dbClient = DatabaseClient.getInstance();
+      await dbClient.openSolutionDb(solutionName);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error activating solution database:', error.message);
       throw error;
     }
   });

@@ -502,4 +502,14 @@ export class ElectronService {
     }
     throw new Error('Electron is not available');
   }
+
+  async activateSolution(solutionName: string): Promise<{ success: boolean }> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'solution:activate',
+        args: [solutionName]
+      });
+    }
+    throw new Error('Electron is not available');
+  }
 }
