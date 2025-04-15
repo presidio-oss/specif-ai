@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
@@ -81,7 +81,10 @@ export class UserStoriesComponent implements OnInit {
   selectedRequirement: any = {};
   metadata: any = {};
   private searchTerm$ = new BehaviorSubject<string>('');
-
+  @ViewChild('exportDropdownContainer') exportDropdownContainer?: ElementRef;
+  @ViewChild('exportButton') exportButton?: ElementRef;
+  isExportOpen = false;
+  
   router = inject(Router);
   logger = inject(NGXLogger);
   store = inject(Store);
@@ -607,5 +610,23 @@ export class UserStoriesComponent implements OnInit {
   ): string | null {
     if (!description) return null;
     return processUserStoryContentForView(description, 180);
+  }
+
+  protected toggleDropdown() {
+    this.isExportOpen = !this.isExportOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    // Only process when dropdown is open
+    if (this.isExportOpen) {
+      const target = event.target as HTMLElement;
+      
+      // Check if click was outside the dropdown container
+      if (this.exportDropdownContainer && 
+          !this.exportDropdownContainer.nativeElement.contains(target)) {
+        this.isExportOpen = false;
+      }
+    }
   }
 }

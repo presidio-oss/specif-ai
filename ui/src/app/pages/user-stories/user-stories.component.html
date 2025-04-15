@@ -33,37 +33,50 @@
             (click)="addMoreContext(userStories.length > 0)"
             rounded="lg"
           />
-          <app-button
-            [disabled]="userStories.length === 0"
-            buttonContent="Export"
-            theme="secondary"
-            size="sm"
-            rounded="lg"
-            [matMenuTriggerFor]="exportOption"
-          />
-          <mat-menu #exportOption="matMenu">
-            <button
-              mat-menu-item
-              class="rounded px-2 py-1 text-xs font-semibold text-primary-600 shadow-sm hover:bg-primary-100 mr-2"
-              (click)="exportUserStories('json')"
+          <div class="relative inline-block text-left" #exportDropdownContainer>
+            <app-button
+              [disabled]="userStories.length === 0"
+              buttonContent="Export"
+              theme="secondary"
+              size="sm"
+              rounded="lg"
+              (click)="toggleDropdown(); $event.stopPropagation()"
+              #exportButton
+              class="export-button"
+            />
+            <!-- Dropdown menu -->
+            <div
+              *ngIf="isExportOpen"
+              class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none export-dropdown"
+              role="menu"
+              aria-orientation="vertical"
+              (click)="$event.stopPropagation()"
             >
-              Copy JSON to Clipboard
-            </button>
-            <button
-              mat-menu-item
-              class="rounded px-2 py-1 text-xs font-semibold text-primary-600 shadow-sm hover:bg-primary-100 mr-2"
-              (click)="exportUserStories('xlsx')"
-            >
-              Download as Excel(.xlsx)
-            </button>
-            <button
-              mat-menu-item
-              class="rounded px-2 py-1 text-xs font-semibold text-primary-600 shadow-sm hover:bg-primary-100 mr-2"
-              (click)="syncRequirementWithJira()"
-            >
-              Sync with Jira
-            </button>
-          </mat-menu>
+              <div class="py-1" role="none">
+                <button
+                  class="block w-full px-4 py-3 text-left text-sm text-secondary-800 hover:bg-gray-100"
+                  role="menuitem"
+                  (click)="exportUserStories('json'); toggleDropdown()"
+                >
+                  Copy JSON to Clipboard
+                </button>
+                <button
+                  class="block w-full px-4 py-3 text-left text-sm text-secondary-800 hover:bg-gray-100"
+                  role="menuitem"
+                  (click)="exportUserStories('xlsx'); toggleDropdown()"
+                >
+                  Download as Excel (.xlsx)
+                </button>
+                <button
+                  class="block w-full px-4 py-3 text-left text-sm text-secondary-800 hover:bg-gray-100"
+                  role="menuitem"
+                  (click)="syncRequirementWithJira(); toggleDropdown()"
+                >
+                  Sync with Jira
+                </button>
+              </div>
+            </div>
+          </div>
           <app-button
             buttonContent="Add New"
             theme="primary"

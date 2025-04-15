@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { BehaviorSubject, combineLatest, Observable, Subscription, first } from 'rxjs';
@@ -56,6 +56,10 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({ title: '', id: '' });
   private subscription: Subscription = new Subscription();
   private scrollContainer: HTMLElement | null = null;
+  isExportOpen = false;
+
+  @ViewChild('exportDropdownContainer') exportDropdownContainer?: ElementRef;
+  @ViewChild('exportButton') exportButton?: ElementRef;
 
   @Input() set folder(value: { title: string; id: string; metadata: any }) {
     this.appInfo = value.metadata;
@@ -271,5 +275,21 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       maxChars: 180,
       ellipsis: true,
     });
+  }
+
+  protected toggleDropdown() {
+    this.isExportOpen = !this.isExportOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.isExportOpen) {
+      const target = event.target as HTMLElement;
+      
+      if (this.exportDropdownContainer && 
+          !this.exportDropdownContainer.nativeElement.contains(target)) {
+        this.isExportOpen = false;
+      }
+    }
   }
 }
