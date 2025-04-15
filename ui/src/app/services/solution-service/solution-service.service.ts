@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ISolutionResponse, ICreateSolutionRequest, ISetRootDirectoryResponse } from '../../model/interfaces/projects.interface';
+import { ISolutionResponse, ICreateSolutionRequest, ISetRootDirectoryResponse, IProject } from '../../model/interfaces/projects.interface';
 import { ElectronService } from '../../electron-bridge/electron.service';
 
 @Injectable({
@@ -23,5 +23,14 @@ export class SolutionService {
 
   async generateDocumentsFromLLM(data: ICreateSolutionRequest): Promise<ISolutionResponse> {
     return this.electronService.createSolution(data);
+  }
+
+  async getSolutions(): Promise<IProject[]> {
+    try {
+      return await this.electronService.getSolutions();
+    } catch (error) {
+      console.error('Error getting solutions:', error);
+      throw error;
+    }
   }
 }

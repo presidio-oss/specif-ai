@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 import { createSolution } from "../api/solution/create";
 import { validateBedrock } from "../api/solution/validate-bedrock";
+import { getSolutions } from "../api/solution/get";
 import { DatabaseClient } from "../db";
 
 export function setupSolutionHandlers() {
@@ -27,11 +28,22 @@ export function setupSolutionHandlers() {
   ipcMain.handle("solution:setRootDir", async (_event) => {
     try {
       const dbClient = DatabaseClient.getInstance();
-      dbClient.initializeMasterDb();
+      dbClient.shutdown();
+      await dbClient.initializeMasterDb();
       return { success: true };
     } catch (error) {
       console.error("Error setting root directory:", error);
       return { success: false, error: "Failed to set root directory" };
+    }
+  });
+
+  ipcMain.handle('solution:getSolutions', async (_event) => {
+    try {
+      const result = await getSolutions(_event);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling solution:getSolutions:', error.message);
+      throw error;
     }
   });
 }

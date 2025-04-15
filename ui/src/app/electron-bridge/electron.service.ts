@@ -9,6 +9,7 @@ import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/p
 import { BedrockValidationPayload, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import {
   ICreateSolutionRequest,
+  IProject,
   ISolutionResponse,
 } from 'src/app/model/interfaces/projects.interface';
 import { ElectronAPI } from './electron.interface';
@@ -488,6 +489,15 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'solution:setRootDir',
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async getSolutions(): Promise<IProject[]> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'solution:getSolutions',
       });
     }
     throw new Error('Electron is not available');

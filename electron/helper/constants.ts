@@ -14,7 +14,8 @@ export enum OPERATIONS {
   CREATE = "create",
   CHAT = "chat",
   VISUALIZE = "visualize",
-  SUGGEST = 'suggest'
+  SUGGEST = 'suggest',
+  GET = 'get'
 }
 
 export const COMPONENT = {

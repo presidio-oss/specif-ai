@@ -12,6 +12,7 @@ import { extractRequirementsFromResponse } from '../../utils/custom-json-parser'
 import { traceBuilder } from '../../utils/trace-builder';
 import { COMPONENT, OPERATIONS } from '../../helper/constants';
 import { SolutionRepository } from '../../repo/solution.repo';
+import { MasterRepository } from '../../repo/master.repo';
 
 // types
 
@@ -97,11 +98,22 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     };
 
     // Initialize repository
-    const repository = new SolutionRepository(validatedData.name);
+    const solRepository = new SolutionRepository(validatedData.name);
+    const masterRepository = new MasterRepository();
+
+    // Master database and check for existing solutions
+    await masterRepository.initializeMasterDb();
+    const existingSolutions = await masterRepository.getSolutionByName(validatedData.name);
+    if (existingSolutions.length > 0) {
+      throw new Error(`Solution with name "${validatedData.name}" already exists.`);
+    }
+    // Create solution in master database
+    await masterRepository.createMasterSolution(validatedData.name, validatedData.description);
+
 
     // Initialize database and store metadata through repository
-    await repository.initializeSolutionDb();
-    await repository.saveSolutionMetadata(validatedData);
+    await solRepository.initializeSolutionDb();
+    await solRepository.saveSolutionMetadata(validatedData);
 
     const llmHandler = buildLLMHandler(
       llmConfig.activeProvider,
@@ -137,7 +149,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     }
 
     // Store requirements through repository
-    await repository.saveRequirements(results);
+    await solRepository.saveRequirements(results);
 
     return results;
   } catch (error) {

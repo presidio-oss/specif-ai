@@ -135,7 +135,7 @@ export class ProjectsState {
     getState,
     patchState,
   }: StateContext<ProjectStateModel>) {
-    const projectList = (await this.appSystemService.getProjectList()) || [];
+    const projectList = await this.solutionService.getSolutions();
     const sortedProjectList = projectList.sort((a, b) => {
       return (
         new Date(b.metadata.createdAt).getTime() -
