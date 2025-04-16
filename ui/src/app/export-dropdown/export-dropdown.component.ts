@@ -17,6 +17,7 @@ export interface DropdownOption {
 export class ExportDropdownComponent {
   @Input() disabled: boolean = false;
   @Input() options: DropdownOption[] = [];
+  @Input() buttonLabel: string = 'Export';  
 
   isOpen = false;
 
