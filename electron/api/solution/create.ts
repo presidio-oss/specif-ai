@@ -110,6 +110,17 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     const validationSpan = trace.span({name: "input-validation"})
     const validatedData = await createSolutionSchema.parseAsync(data);
     validationSpan.end();
+
+    const results: SolutionResponse = {
+      createReqt: validatedData.createReqt ?? false,
+      description: validatedData.description,
+      name: validatedData.name
+    };
+
+    if (!validatedData.createReqt) {
+      return results;
+    }
+
     
     const useAgent = true;
 
@@ -187,12 +198,6 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         }, {}),
       };
     }
-
-    const results: SolutionResponse = {
-      createReqt: validatedData.createReqt ?? false,
-      description: validatedData.description,
-      name: validatedData.name
-    };
 
     const llmHandler = buildLLMHandler(
       llmConfig.activeProvider,

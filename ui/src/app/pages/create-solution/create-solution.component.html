@@ -122,7 +122,8 @@
                     <app-toggle
                       [isActive]="solutionForm.get('cleanSolution')?.value"
                       (toggleChange)="
-                        solutionForm.get('cleanSolution')?.setValue($event)
+                        solutionForm.get('cleanSolution')?.setValue($event);
+                        solutionForm.get('createReqt')?.setValue(!($event));
                       "
                       isPlainToggle="true"
                     ></app-toggle>
