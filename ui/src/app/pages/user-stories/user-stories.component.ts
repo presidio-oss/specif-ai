@@ -55,6 +55,7 @@ import { ExportFileFormat } from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
+import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 
 @Component({
   selector: 'app-user-stories',
@@ -71,6 +72,7 @@ import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/moda
     ListItemComponent,
     BadgeComponent,
     SearchInputComponent,
+    ExportDropdownComponent,
     MatTooltipModule,
   ],
 })
@@ -81,10 +83,6 @@ export class UserStoriesComponent implements OnInit {
   selectedRequirement: any = {};
   metadata: any = {};
   private searchTerm$ = new BehaviorSubject<string>('');
-  @ViewChild('exportDropdownContainer') exportDropdownContainer?: ElementRef;
-  @ViewChild('exportButton') exportButton?: ElementRef;
-  isExportOpen = false;
-  
   router = inject(Router);
   logger = inject(NGXLogger);
   store = inject(Store);
@@ -612,19 +610,18 @@ export class UserStoriesComponent implements OnInit {
     return processUserStoryContentForView(description, 180);
   }
 
-  protected toggleDropdown() {
-    this.isExportOpen = !this.isExportOpen;
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    if (this.isExportOpen) {
-      const target = event.target as HTMLElement;
-      
-      if (this.exportDropdownContainer && 
-          !this.exportDropdownContainer.nativeElement.contains(target)) {
-        this.isExportOpen = false;
-      }
+  exportOptions = [
+    {
+      label: 'Copy JSON to Clipboard',
+      callback: () => this.exportUserStories('json')
+    },
+    {
+      label: 'Download as Excel (.xlsx)',
+      callback: () => this.exportUserStories('xlsx')
+    },
+    {
+      label: 'Sync with Jira',
+      callback: () => this.syncRequirementWithJira()
     }
-  }
+  ];
 }
