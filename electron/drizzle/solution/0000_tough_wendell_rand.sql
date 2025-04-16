@@ -8,6 +8,17 @@ CREATE TABLE `AnalyticsLookup` (
 	`is_deleted` integer DEFAULT false
 );
 --> statement-breakpoint
+CREATE TABLE `AuditTracker` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`audit_type` text,
+	`doc_id` integer,
+	`description` text,
+	`context` text,
+	`created_by` text,
+	`created_at` text,
+	FOREIGN KEY (`doc_id`) REFERENCES `Document`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `BusinessProcess` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -19,10 +30,10 @@ CREATE TABLE `BusinessProcess` (
 );
 --> statement-breakpoint
 CREATE TABLE `BusinessProcessDocuments` (
+	`id` integer PRIMARY KEY NOT NULL,
 	`business_process_id` integer NOT NULL,
 	`document_id` integer NOT NULL,
 	`doc_type` text NOT NULL,
-	PRIMARY KEY(`business_process_id`, `document_id`, `doc_type`),
 	FOREIGN KEY (`business_process_id`) REFERENCES `BusinessProcess`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`document_id`) REFERENCES `Document`(`id`) ON UPDATE no action ON DELETE cascade
 );
@@ -39,6 +50,7 @@ CREATE TABLE `Conversation` (
 --> statement-breakpoint
 CREATE TABLE `Document` (
 	`id` integer PRIMARY KEY NOT NULL,
+	`document_number` integer NOT NULL,
 	`name` text NOT NULL,
 	`description` text,
 	`jira_id` text,
@@ -48,6 +60,19 @@ CREATE TABLE `Document` (
 	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP',
 	`is_deleted` integer DEFAULT false,
 	FOREIGN KEY (`document_type_id`) REFERENCES `DocumentType`(`id`) ON UPDATE no action ON DELETE set null
+);
+--> statement-breakpoint
+CREATE TABLE `DocumentLinks` (
+	`document_link_id` integer PRIMARY KEY NOT NULL,
+	`source_document_id` integer,
+	`target_document_id` integer,
+	`source_document_type` text NOT NULL,
+	`target_document_type` text NOT NULL,
+	`created_by` text,
+	`created_at` text,
+	`is_deleted` integer DEFAULT false,
+	FOREIGN KEY (`source_document_id`) REFERENCES `Document`(`id`) ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY (`target_document_id`) REFERENCES `Document`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE TABLE `DocumentType` (
@@ -72,7 +97,7 @@ CREATE TABLE `Message` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`conversation_id` integer NOT NULL,
 	`message` text NOT NULL,
-	`role` text NOT NULL,
+	`user_type` text NOT NULL,
 	`is_applied` integer DEFAULT false,
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP',
 	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP',

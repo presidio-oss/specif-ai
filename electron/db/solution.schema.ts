@@ -1,9 +1,5 @@
-import {
-  sqliteTable,
-  text,
-  integer,
-  primaryKey,
-} from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
 export const docTypeEnum = ["PRD", "BRD"] as const;
 export type DocType = (typeof docTypeEnum)[number];
@@ -26,7 +22,7 @@ export const metadata = sqliteTable("Metadata", {
 
 export const integration = sqliteTable("Integration", {
   id: integer("id").primaryKey(),
-  config: text("config"),
+  config: text("config", { mode: "json" }),
   ...commonColumns,
 });
 
@@ -40,6 +36,7 @@ export const documentType = sqliteTable("DocumentType", {
 
 export const document = sqliteTable("Document", {
   id: integer("id").primaryKey(),
+  documentNumber: integer("document_number").notNull(),
   name: text("name").notNull(),
   description: text("description"),
   jiraId: text("jira_id"),
@@ -48,6 +45,23 @@ export const document = sqliteTable("Document", {
     .references(() => documentType.id, { onDelete: "set null" }),
   count: integer("count").default(0),
   ...commonColumns,
+});
+
+export const documentLinks = sqliteTable("DocumentLinks", {
+  documentLinkId: integer("document_link_id").primaryKey(),
+  sourceDocumentId: integer("source_document_id").references(
+    () => document.id,
+    { onDelete: "set null" }
+  ),
+  targetDocumentId: integer("target_document_id").references(
+    () => document.id,
+    { onDelete: "set null" }
+  ),
+  sourceDocumentType: text("source_document_type").notNull(),
+  targetDocumentType: text("target_document_type").notNull(),
+  createdBy: text("created_by"),
+  createdAt: text("created_at"),
+  isDeleted: integer("is_deleted", { mode: "boolean" }).default(false),
 });
 
 export const conversation = sqliteTable("Conversation", {
@@ -65,7 +79,7 @@ export const message = sqliteTable("Message", {
     .notNull()
     .references(() => conversation.id, { onDelete: "cascade" }),
   message: text("message").notNull(),
-  role: text("role").notNull(),
+  userType: text("user_type").notNull(),
   isApplied: integer("is_applied", { mode: "boolean" }).default(false),
   ...commonColumns,
 });
@@ -81,6 +95,7 @@ export const businessProcess = sqliteTable("BusinessProcess", {
 export const businessProcessDocuments = sqliteTable(
   "BusinessProcessDocuments",
   {
+    id: integer("id").primaryKey(),
     businessProcessId: integer("business_process_id")
       .notNull()
       .references(() => businessProcess.id, { onDelete: "cascade" }),
@@ -88,10 +103,7 @@ export const businessProcessDocuments = sqliteTable(
       .notNull()
       .references(() => document.id, { onDelete: "cascade" }),
     docType: text("doc_type", { enum: docTypeEnum }).notNull(),
-  },
-  (t) => [
-    primaryKey({ columns: [t.businessProcessId, t.documentId, t.docType] }),
-  ]
+  }
 );
 
 export const analyticsLookup = sqliteTable("AnalyticsLookup", {
@@ -100,4 +112,14 @@ export const analyticsLookup = sqliteTable("AnalyticsLookup", {
   targetId: integer("target_id").notNull(),
   isLiked: integer("is_liked", { mode: "boolean" }).default(false),
   ...commonColumns,
+});
+
+export const auditTracker = sqliteTable("AuditTracker", {
+  id: integer("id").primaryKey(),
+  auditType: text("audit_type"),
+  docId: integer("doc_id").references(() => document.id),
+  description: text("description"),
+  context: text("context", { mode: "json" }),
+  createdBy: text("created_by"),
+  createdAt: text("created_at"),
 });

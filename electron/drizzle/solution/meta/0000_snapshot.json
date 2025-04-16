@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "680769eb-ddac-4db4-a018-7e77d1e08113",
+  "id": "9ba49b4e-108e-4c3c-9fec-b49a9401617f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "AnalyticsLookup": {
@@ -63,6 +63,79 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "AuditTracker": {
+      "name": "AuditTracker",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "audit_type": {
+          "name": "audit_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "doc_id": {
+          "name": "doc_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "context": {
+          "name": "context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "AuditTracker_doc_id_Document_id_fk": {
+          "name": "AuditTracker_doc_id_Document_id_fk",
+          "tableFrom": "AuditTracker",
+          "tableTo": "Document",
+          "columnsFrom": [
+            "doc_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -132,6 +205,13 @@
     "BusinessProcessDocuments": {
       "name": "BusinessProcessDocuments",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
         "business_process_id": {
           "name": "business_process_id",
           "type": "integer",
@@ -183,16 +263,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "BusinessProcessDocuments_business_process_id_document_id_doc_type_pk": {
-          "columns": [
-            "business_process_id",
-            "document_id",
-            "doc_type"
-          ],
-          "name": "BusinessProcessDocuments_business_process_id_document_id_doc_type_pk"
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -275,6 +346,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "document_number": {
+          "name": "document_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -344,6 +422,100 @@
           "tableTo": "DocumentType",
           "columnsFrom": [
             "document_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "DocumentLinks": {
+      "name": "DocumentLinks",
+      "columns": {
+        "document_link_id": {
+          "name": "document_link_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_document_id": {
+          "name": "source_document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_document_id": {
+          "name": "target_document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_document_type": {
+          "name": "source_document_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_document_type": {
+          "name": "target_document_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "DocumentLinks_source_document_id_Document_id_fk": {
+          "name": "DocumentLinks_source_document_id_Document_id_fk",
+          "tableFrom": "DocumentLinks",
+          "tableTo": "Document",
+          "columnsFrom": [
+            "source_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "DocumentLinks_target_document_id_Document_id_fk": {
+          "name": "DocumentLinks_target_document_id_Document_id_fk",
+          "tableFrom": "DocumentLinks",
+          "tableTo": "Document",
+          "columnsFrom": [
+            "target_document_id"
           ],
           "columnsTo": [
             "id"
@@ -491,8 +663,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "role": {
-          "name": "role",
+        "user_type": {
+          "name": "user_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
