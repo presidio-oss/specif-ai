@@ -24,6 +24,7 @@ import {
   APP_CONSTANTS,
   RootRequirementType,
   SOLUTION_CREATION_TOGGLE_MESSAGES,
+  REQUIREMENT_COUNT,
 } from '../../constants/app.constants';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
@@ -72,14 +73,17 @@ export class CreateSolutionComponent implements OnInit {
     );
   }
 
-  private initRequirementGroup(enabled: boolean = true, maxCount: number = 15) {
+  private initRequirementGroup(enabled: boolean = true, maxCount: number = REQUIREMENT_COUNT.DEFAULT) {
     return {
       enabled: new FormControl(enabled),
-      maxCount: new FormControl(maxCount, [
-        Validators.required,
-        Validators.min(0),
-        Validators.max(30),
-      ]),
+      maxCount: new FormControl(maxCount, {
+        validators: [
+          Validators.required,
+          Validators.min(0),
+          Validators.max(REQUIREMENT_COUNT.MAX),
+        ],
+        updateOn: 'change'
+      }),
     };
   }
 
@@ -111,10 +115,18 @@ export class CreateSolutionComponent implements OnInit {
   onRequirementToggle(type: RootRequirementType, enabled: boolean) {
     const requirementGroup = this.solutionForm.get(type);
     if (!requirementGroup) return;
+    
+    // Always set a valid maxCount value whether enabled or disabled
+    const maxCount = enabled ? REQUIREMENT_COUNT.DEFAULT : 0;
     requirementGroup.patchValue({
       enabled,
-      maxCount: enabled ? 15 : 0,
+      maxCount
     });
+    
+    // Ensure the control is marked as touched to trigger validation
+    requirementGroup.get('maxCount')?.markAsTouched();
+    requirementGroup.get('enabled')?.markAsTouched();
+    requirementGroup.updateValueAndValidity();
   }
 
   async createSolution() {
