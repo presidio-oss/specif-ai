@@ -20,44 +20,10 @@
           (click)="navigateToAdd(projectList[0].id, projectList[0].folderName)"
         />
         <ng-container *ngIf="documentList$ | async as documentList">
-          <div class="relative inline-block text-left" #exportDropdownContainer>
-            <app-button
-              [disabled]="documentList.length == 0"
-              icon="heroArrowDownTray"
-              buttonContent="Export"
-              theme="secondary"
-              size="sm"
-              rounded="lg"
-              (click)="toggleDropdown(); $event.stopPropagation()"
-              class="export-button"
-              #exportButton
-            />
-            <!-- Dropdown menu -->
-            <div
-              *ngIf="isExportOpen"
-              class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none export-dropdown"
-              role="menu"
-              aria-orientation="vertical"
-              (click)="$event.stopPropagation()"
-            >
-              <div class="py-1" role="none">
-                <button
-                  class="block w-full px-4 py-3 text-left text-sm text-secondary-800 hover:bg-gray-100"
-                  role="menuitem"
-                  (click)="exportDocumentList(projectList[0].folderName, 'json'); toggleDropdown()"
-                >
-                  Copy JSON to Clipboard
-                </button>
-                <button
-                  class="block w-full px-4 py-3 text-left text-sm text-secondary-800 hover:bg-gray-100"
-                  role="menuitem"
-                  (click)="exportDocumentList(projectList[0].folderName, 'xlsx'); toggleDropdown()"
-                >
-                  Download as Excel (.xlsx)
-                </button>
-              </div>
-            </div>
-          </div>
+          <app-export-dropdown
+            [disabled]="projectList.length === 0"
+            [options]="getExportOptions(projectList[0].folderName)"
+          />
         </ng-container>
       </div>
     </div>
