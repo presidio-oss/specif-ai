@@ -11,6 +11,7 @@ import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
 import { COMPONENT, OPERATIONS } from '../../helper/constants';
+import { DatabaseClient } from '../../db';
 
 // types
 
@@ -101,6 +102,9 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       description: validatedData.description,
       name: validatedData.name
     };
+
+    const dbClient = DatabaseClient.getInstance();
+    const db = dbClient.openSolutionDb(validatedData.name);
 
     const llmHandler = buildLLMHandler(
       llmConfig.activeProvider,

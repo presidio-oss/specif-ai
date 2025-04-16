@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1744293590615,
+      "tag": "0000_curly_timeslip",
+      "breakpoints": true
+    }
+  ]
+}

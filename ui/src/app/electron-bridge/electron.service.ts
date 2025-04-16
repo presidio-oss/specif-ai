@@ -483,4 +483,13 @@ export class ElectronService {
       args: [{ version }]
     });
   }
+
+  async setRootDirectory(): Promise<{ success: boolean; error?: string }> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'solution:setRootDir',
+      });
+    }
+    throw new Error('Electron is not available');
+  }
 }
