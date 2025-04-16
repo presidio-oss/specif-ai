@@ -45,13 +45,22 @@ import {
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
-import { catchError, switchMap, take, Observable, filter, first, map, lastValueFrom } from 'rxjs';
+import {
+  catchError,
+  switchMap,
+  take,
+  Observable,
+  filter,
+  first,
+  map,
+  lastValueFrom,
+} from 'rxjs';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 import { CheckboxCardComponent } from 'src/app/components/checkbox-card/checkbox-card.component';
-import { PillComponent } from "../../components/pill/pill.component";
+import { PillComponent } from '../../components/pill/pill.component';
 
 @Component({
   selector: 'app-edit-solution',
@@ -72,8 +81,8 @@ import { PillComponent } from "../../components/pill/pill.component";
     RichTextEditorComponent,
     CommonModule,
     CheckboxCardComponent,
-    PillComponent
-],
+    PillComponent,
+  ],
   providers: [
     provideIcons({
       heroSparklesSolid,
@@ -198,22 +207,25 @@ export class EditSolutionComponent {
     confirmButtonText: string;
   }): Promise<boolean> {
     return lastValueFrom(
-      this.dialogService.confirm({
-        ...dialogConfig,
-        renderNewLine: true
-      }).pipe(map(result => !result))
+      this.dialogService
+        .confirm({
+          ...dialogConfig,
+          renderNewLine: true,
+        })
+        .pipe(map((result) => !result)),
     );
   }
 
   private async preUpdateChecks(): Promise<boolean> {
     if (this.isBRD()) {
-      const linkedPRDs = this.requirementForm.get('linkedToPRDIds')?.value || [];
-      
+      const linkedPRDs =
+        this.requirementForm.get('linkedToPRDIds')?.value || [];
+
       // Check for removed links by comparing array contents
-      const hasRemovedLinks = this.currentLinkedPRDIds.some(prdId => 
-        !linkedPRDs.includes(prdId)
+      const hasRemovedLinks = this.currentLinkedPRDIds.some(
+        (prdId) => !linkedPRDs.includes(prdId),
       );
-      
+
       if (linkedPRDs.length > 0 || hasRemovedLinks) {
         return this.getUserConfirmation({
           title: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.TITLE,
@@ -221,26 +233,31 @@ export class EditSolutionComponent {
             hasLinkedPRDs: linkedPRDs.length > 0,
             hasRemovedLinks: hasRemovedLinks,
           }),
-          cancelButtonText: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.CANCEL_BUTTON_TEXT,
-          confirmButtonText: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.PROCEED_BUTTON_TEXT,
+          cancelButtonText:
+            CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.CANCEL_BUTTON_TEXT,
+          confirmButtonText:
+            CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.PROCEED_BUTTON_TEXT,
         });
       }
     }
 
     if (this.isPRD()) {
-      const updatedLinkedBRDs = this.requirementForm.get('linkedBRDIds')?.value || [];
+      const updatedLinkedBRDs =
+        this.requirementForm.get('linkedBRDIds')?.value || [];
 
       // Check for removed links by comparing array contents
-      const hasRemovedBRDs = this.currentLinkedBRDIds.some(brdId => 
-        !updatedLinkedBRDs.includes(brdId)
+      const hasRemovedBRDs = this.currentLinkedBRDIds.some(
+        (brdId) => !updatedLinkedBRDs.includes(brdId),
       );
 
-      if(hasRemovedBRDs) {
+      if (hasRemovedBRDs) {
         return this.getUserConfirmation({
           title: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.TITLE,
           description: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.DESCRIPTION,
-          cancelButtonText: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.CANCEL_BUTTON_TEXT,
-          confirmButtonText: CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.PROCEED_BUTTON_TEXT,
+          cancelButtonText:
+            CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.CANCEL_BUTTON_TEXT,
+          confirmButtonText:
+            CONFIRMATION_DIALOG.CONFIRM_PRD_UPDATE.PROCEED_BUTTON_TEXT,
         });
       }
     }
@@ -279,11 +296,11 @@ export class EditSolutionComponent {
       const data = await this.featureService.updateRequirement(body);
 
       const fileData: IList['content'] = {
-            requirement: data.updated.requirement,
-            title: data.updated.title,
-            chatHistory: this.chatHistory,
-            epicTicketId: this.initialData.epicTicketId,
-          };
+        requirement: data.updated.requirement,
+        title: data.updated.title,
+        chatHistory: this.chatHistory,
+        epicTicketId: this.initialData.epicTicketId,
+      };
 
       if (this.isPRD()) {
         fileData.linkedBRDIds = formValue.linkedBRDIds;
@@ -294,12 +311,10 @@ export class EditSolutionComponent {
       if (this.isBRD()) {
         this.handlePRDBRDLinkUpdates(formValue);
       }
-      
+
       this.allowFreeRedirection = true;
-      this.store.dispatch(
-        new ReadFile(`${this.folderName}/${this.fileName}`),
-      );
-      
+      this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+
       this.selectedFileContent$.subscribe((res: any) => {
         this.oldContent = res.requirement;
         this.requirementForm.patchValue({
@@ -309,7 +324,7 @@ export class EditSolutionComponent {
         });
         this.chatHistory = res.chatHistory || [];
       });
-      
+
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
       );
@@ -418,69 +433,49 @@ export class EditSolutionComponent {
 
   addRequirement(useAI = false) {
     const formValue = this.requirementForm.getRawValue();
-    if (formValue.expandAI || useAI || this.uploadedFileContent.length > 0) {
-      const body: IAddRequirementRequest = {
-        reqt: formValue.content,
-        addReqtType: this.folderName,
-        contentType: this.uploadedFileContent ? 'fileContent' : 'userContent',
-        description: this.initialData.description,
-        fileContent: this.uploadedFileContent,
-        id: this.initialData.id,
-        name: this.initialData.name,
-        title: formValue.title,
-        useGenAI: true,
-      };
+    const body: IAddRequirementRequest = {
+      reqt: formValue.content,
+      addReqtType: this.folderName,
+      contentType: this.uploadedFileContent ? 'fileContent' : 'userContent',
+      description: this.initialData.description,
+      fileContent: this.uploadedFileContent,
+      id: this.initialData.id,
+      name: this.initialData.name,
+      title: formValue.title,
+      useGenAI: formValue.expandAI || useAI,
+    };
 
-      if (this.isPRD()) {
-        body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []).map(
-          ({ requirement, title }) => ({ requirement, title }),
-        );
-      }
-
-      this.featureService.addRequirement(body).then(
-        (data) => {
-          const fileData: any = {
-            requirement: data.LLMreqt.requirement,
-            title: data.LLMreqt.title,
-            chatHistory: this.chatHistory,
-          };
-
-          if (this.isPRD()) {
-            fileData.linkedBRDIds = formValue.linkedBRDIds;
-          }
-
-          this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
-          this.allowFreeRedirection = true;
-          this.navigateBackToDocumentList(this.initialData);
-          this.toastService.showSuccess(
-            TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
-          );
-        },
-        (error) => {
-          console.error('Error updating requirement:', error); // Handle any errors
-          this.toastService.showError(
-            TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.folderName),
-          );
-        },
-      );
-    } else {
-      const fileData: any = {
-        requirement: formValue.content,
-        title: formValue.title,
-        chatHistory: this.chatHistory,
-      };
-
-      if (this.isPRD()) {
-        fileData.linkedBRDIds = formValue.linkedBRDIds;
-      }
-
-      this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
-      this.allowFreeRedirection = true;
-      this.navigateBackToDocumentList(this.initialData);
-      this.toastService.showSuccess(
-        TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
+    if (this.isPRD()) {
+      body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []).map(
+        ({ requirement, title }) => ({ requirement, title }),
       );
     }
+
+    this.featureService.addRequirement(body).then(
+      (data) => {
+        const fileData: any = {
+          requirement: data.LLMreqt.requirement,
+          title: data.LLMreqt.title,
+          chatHistory: this.chatHistory,
+        };
+
+        if (this.isPRD()) {
+          fileData.linkedBRDIds = formValue.linkedBRDIds;
+        }
+
+        this.allowFreeRedirection = true;
+        this.navigateBackToDocumentList(this.initialData);
+        this.toastService.showSuccess(
+          TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
+        );
+      },
+      (error) => {
+        console.error('Error updating requirement:', error); // Handle any errors
+        this.toastService.showError(
+          TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.folderName),
+        );
+      },
+    );
   }
 
   getBRDDataFromIds(brdIds: Array<string>) {
@@ -557,9 +552,7 @@ ${chat.assistant}`,
     }
 
     // Persist updated chatHistory with isLiked attribute
-    this.store.dispatch(
-      new UpdateFile(this.absoluteFilePath, fileData),
-    );
+    this.store.dispatch(new UpdateFile(this.absoluteFilePath, fileData));
   }
 
   createRequirementForm() {
@@ -633,10 +626,13 @@ ${chat.assistant}`,
   deleteFile() {
     const reqId = this.fileName.replace(/\-base.json$/, '');
 
-    if(this.isBRD()){
-      if(this.currentLinkedPRDIds.length > 0){
+    if (this.isBRD()) {
+      if (this.currentLinkedPRDIds.length > 0) {
         this.toastService.showWarning(
-          ERROR_MESSAGES.DELETE_ASSOCIATED_PRDs_ERROR(reqId, this.currentLinkedPRDIds),
+          ERROR_MESSAGES.DELETE_ASSOCIATED_PRDs_ERROR(
+            reqId,
+            this.currentLinkedPRDIds,
+          ),
         );
         return;
       }
@@ -731,7 +727,7 @@ ${chat.assistant}`,
     this.requirementForm.patchValue({ linkedToPRDIds: updatedPRDs });
   }
 
-  handleLinkedBRDSelectionForPRD(brdId:string, isChecked: boolean) {
+  handleLinkedBRDSelectionForPRD(brdId: string, isChecked: boolean) {
     const currentBrdIds = this.requirementForm.get('linkedBRDIds')?.value || [];
 
     if (isChecked && !currentBrdIds.includes(brdId)) {
@@ -761,7 +757,7 @@ ${chat.assistant}`,
     TData extends Array<TDataItem>,
     TDataItem extends Record<string, any>,
   >(data: TData, key: keyof TData[number]) {
-    console.log('-----extractPropertyValues', data)
+    console.log('-----extractPropertyValues', data);
     return data.map((item) => item[key]);
   }
 }
