@@ -1,9 +1,10 @@
-import { sql } from "drizzle-orm";
+import { count, sql } from "drizzle-orm";
 import {
   sqliteTable,
   text,
   integer,
   primaryKey,
+  sqliteView,
 } from "drizzle-orm/sqlite-core";
 
 export const docTypeEnum = ["PRD", "BRD"] as const;
@@ -51,9 +52,18 @@ export const document = sqliteTable("Document", {
   documentTypeId: text("document_type_id")
     .references(() => documentType.id, { onDelete: "set null" })
     .notNull(),
-  count: integer("count").default(0),
   ...commonColumns,
 });
+
+export const documentCountByType = sqliteView("DocumentCountByType").as((qb) =>
+  qb
+    .select({
+      documentTypeId: document.documentTypeId,
+      count: count(document.id).as("count"), 
+    })
+    .from(document)
+    .groupBy(document.documentTypeId)
+);
 
 export const conversation = sqliteTable("Conversation", {
   id: integer("id").primaryKey(),

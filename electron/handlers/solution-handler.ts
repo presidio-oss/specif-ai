@@ -1,7 +1,7 @@
 import { ipcMain } from "electron";
 import { createSolution } from "../api/solution/create";
 import { validateBedrock } from "../api/solution/validate-bedrock";
-import { getSolutions } from "../api/solution/get";
+import { getSolutionByName, getSolutions } from "../api/solution/get";
 import { DatabaseClient } from "../db";
 import type { IpcMainInvokeEvent } from 'electron';
 
@@ -55,6 +55,16 @@ export function setupSolutionHandlers() {
       return { success: true };
     } catch (error: any) {
       console.error('Error activating solution database:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('solution:getSolutionByName', async (_event: IpcMainInvokeEvent, solutionName: string) => {
+    try {
+      const result = await getSolutionByName(_event, solutionName);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling solution:getSolutionByName:', error.message);
       throw error;
     }
   });

@@ -3,6 +3,7 @@ import type { GetSolutionsResponse } from "../../schema/solution/get.schema";
 import { MasterRepository } from "../../repo/master.repo";
 import { traceBuilder } from "../../utils/trace-builder";
 import { COMPONENT, OPERATIONS } from "../../helper/constants";
+import { SolutionRepository } from "../../repo/solution.repo";
 
 export async function getSolutions(
   event: IpcMainInvokeEvent
@@ -35,4 +36,12 @@ export async function getSolutions(
     console.error("Error in getSolutions:", error);
     throw error;
   }
+}
+
+export async function getSolutionByName(
+  event: IpcMainInvokeEvent,
+  name: string
+) {
+  const solutionRepo = new SolutionRepository(name);
+  return await solutionRepo.getSolutionByName(name);
 }

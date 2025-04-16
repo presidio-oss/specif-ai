@@ -1,0 +1,2 @@
+ALTER TABLE `Document` DROP COLUMN `count`;--> statement-breakpoint
+CREATE VIEW `DocumentCountByType` AS select "document_type_id", count("id") as "count" from "Document" group by "Document"."document_type_id";

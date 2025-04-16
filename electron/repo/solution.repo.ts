@@ -1,6 +1,6 @@
 import { withTransaction } from "../utils/transaction.decorator";
 import { DatabaseClient } from "../db/client";
-import { metadata, document } from "../db/solution.schema";
+import { metadata, document, integration, documentCountByType } from "../db/solution.schema";
 import type {
   SolutionResponse,
   CreateSolutionRequest,
@@ -25,10 +25,7 @@ export class SolutionRepository {
   }
 
   @withTransaction()
-  async saveSolutionMetadata(
-    solutionData: CreateSolutionRequest,
-    tx?: any 
-  ) {
+  async saveSolutionMetadata(solutionData: CreateSolutionRequest, tx?: any) {
     await tx.insert(metadata).values([
       {
         name: solutionData.name,
@@ -73,5 +70,22 @@ export class SolutionRepository {
     }
     
     return true;
+  }
+
+  async getSolutionByName(name: string) {
+    const currentDb = this.dbClient.getSolutionDb();
+
+    const solutioMetadata = await currentDb.select().from(metadata);
+    const documents = await currentDb.select().from(document);
+    const documentMetadata = await currentDb.select().from(documentCountByType)
+    const integrations = await currentDb.select().from(integration);
+
+    const res = {
+      solutioMetadata,
+      documentMetadata,
+      documents,
+      integrations
+    };
+    return res;
   }
 }

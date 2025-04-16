@@ -512,4 +512,14 @@ export class ElectronService {
     }
     throw new Error('Electron is not available');
   }
+
+  async getSolutionByName(solutionName: string) {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'solution:getSolutionByName',
+        args: [solutionName]
+      });
+    }
+    throw new Error('Electron is not available');
+  }
 }

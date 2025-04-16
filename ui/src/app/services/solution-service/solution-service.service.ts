@@ -33,4 +33,14 @@ export class SolutionService {
       throw error;
     }
   }
+
+  async getsolutionByName(name: string) {
+    try {
+      const result = await this.electronService.getSolutionByName(name);
+      return result;
+    } catch (error) {
+      console.error('Error getting solution by name:', error);
+      throw error;
+    }
+  }
 }
