@@ -1,0 +1,27 @@
+<div class="relative inline-block text-left" #dropdownContainer>
+    <app-button
+      [disabled]="disabled"
+      buttonContent="Export"
+      theme="secondary"
+      size="sm"
+      rounded="lg"
+      (click)="toggleDropdown($event)"
+      class="export-button"
+    ></app-button>
+    <div *ngIf="isOpen"
+         class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none export-dropdown"
+         role="menu"
+         aria-orientation="vertical">
+      <div class="py-1" role="none">
+        <button
+          *ngFor="let option of options"
+          class="block w-full px-4 py-3 text-left text-sm text-secondary-800 hover:bg-gray-100"
+          role="menuitem"
+          (click)="onOptionClick(option, $event)"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+    </div>
+  </div>
+  
