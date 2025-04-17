@@ -101,7 +101,6 @@ export class CreateSolutionComponent implements OnInit {
         Validators.required,
         Validators.pattern(/\S/),
       ]),
-      createReqt: new FormControl(true),
       id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
@@ -150,6 +149,7 @@ export class CreateSolutionComponent implements OnInit {
     ) {
       this.addOrUpdate = true;
       const data = this.solutionForm.getRawValue();
+      data.createReqt = !data.cleanSolution;
       this.store.dispatch(new CreateProject(data.name, data));
     }
   }

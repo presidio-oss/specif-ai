@@ -285,6 +285,8 @@ export class EditUserStoriesComponent implements OnDestroy {
                 this.absoluteFilePath,
               ),
             );
+            this.userStoryForm.markAsPristine();
+            this.userStoryForm.markAsUntouched();
             this.navigateBackToUserStories();
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -310,6 +312,8 @@ export class EditUserStoriesComponent implements OnDestroy {
           this.absoluteFilePath,
         ),
       );
+      this.userStoryForm.markAsPristine();
+      this.userStoryForm.markAsUntouched();
       this.navigateBackToUserStories();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
