@@ -5,121 +5,116 @@ export const docTypeEnum = ["PRD", "BRD"] as const;
 export type DocType = (typeof docTypeEnum)[number];
 
 export const commonColumns = {
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
-  isDeleted: integer("is_deleted", { mode: "boolean" }).default(false),
+  createdAt: text({ mode: "text" })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: text({ mode: "text" })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  isDeleted: integer({ mode: "boolean" }).default(false).notNull(),
 };
 
-export const metadata = sqliteTable("Metadata", {
-  id: integer("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  technicalDetails: text("technical_details"),
-  isBrownfield: integer("is_brownfield", { mode: "boolean" }).default(false),
-  version: text("version"),
+export const metadata = sqliteTable("metadata", {
+  id: integer().primaryKey(),
+  name: text({ mode: "text" }).notNull(),
+  description: text({ mode: "text" }).notNull(),
+  technicalDetails: text({ mode: "text" }).notNull(),
+  isBrownfield: integer({ mode: "boolean" }).default(false),
+  version: text({ mode: "text" }),
   ...commonColumns,
 });
 
-export const integration = sqliteTable("Integration", {
-  id: integer("id").primaryKey(),
-  config: text("config", { mode: "json" }),
+export const integration = sqliteTable("integration", {
+  id: integer().primaryKey(),
+  config: text({ mode: "json" }),
   ...commonColumns,
 });
 
-export const documentType = sqliteTable("DocumentType", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  typeLabel: text("type_label"),
-  isActive: integer("is_active", { mode: "boolean" }).default(true),
+export const documentType = sqliteTable("documentType", {
+  id: integer().primaryKey(),
+  name: text({ mode: "text" }).notNull(),
+  typeLabel: text({ mode: "text" }).notNull(),
+  isActive: integer({ mode: "boolean" }).default(true),
   ...commonColumns,
 });
 
-export const document = sqliteTable("Document", {
-  id: integer("id").primaryKey(),
-  documentNumber: integer("document_number").notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  jiraId: text("jira_id"),
-  documentTypeId: text("document_type_id")
+export const document = sqliteTable("document", {
+  id: integer().primaryKey(),
+  documentNumber: integer().notNull(),
+  name: text({ mode: "text" }).notNull(),
+  description: text({ mode: "text" }).notNull(),
+  jiraId: text({ mode: "text" }),
+  documentTypeId: integer().references(() => documentType.id),
+  count: integer().default(0),
+  ...commonColumns,
+});
+
+export const documentLinks = sqliteTable("documentLinks", {
+  id: integer().primaryKey(),
+  sourceDocumentId: integer().references(() => document.id),
+  targetDocumentId: integer().references(() => document.id),
+  sourceDocumentType: text({ mode: "text" }).notNull(),
+  targetDocumentType: text({ mode: "text" }).notNull(),
+  createdBy: text({ mode: "text" }),
+  ...commonColumns,
+});
+
+export const conversation = sqliteTable("conversation", {
+  id: integer().primaryKey(),
+  documentId: integer()
     .notNull()
-    .references(() => documentType.id, { onDelete: "set null" }),
-  count: integer("count").default(0),
+    .references(() => document.id),
+  title: text({ mode: "text" }),
   ...commonColumns,
 });
 
-export const documentLinks = sqliteTable("DocumentLinks", {
-  documentLinkId: integer("document_link_id").primaryKey(),
-  sourceDocumentId: integer("source_document_id").references(
-    () => document.id,
-    { onDelete: "set null" }
-  ),
-  targetDocumentId: integer("target_document_id").references(
-    () => document.id,
-    { onDelete: "set null" }
-  ),
-  sourceDocumentType: text("source_document_type").notNull(),
-  targetDocumentType: text("target_document_type").notNull(),
-  createdBy: text("created_by"),
-  createdAt: text("created_at"),
-  isDeleted: integer("is_deleted", { mode: "boolean" }).default(false),
-});
-
-export const conversation = sqliteTable("Conversation", {
-  id: integer("id").primaryKey(),
-  documentId: integer("document_id")
+export const message = sqliteTable("message", {
+  id: integer().primaryKey(),
+  conversationId: integer()
     .notNull()
-    .references(() => document.id, { onDelete: "cascade" }),
-  title: text("title"),
+    .references(() => conversation.id),
+  message: text({ mode: "text" }).notNull(),
+  userType: text({ mode: "text" }).notNull(),
+  isApplied: integer({ mode: "boolean" }).default(false),
   ...commonColumns,
 });
 
-export const message = sqliteTable("Message", {
-  id: integer("id").primaryKey(),
-  conversationId: integer("conversation_id")
-    .notNull()
-    .references(() => conversation.id, { onDelete: "cascade" }),
-  message: text("message").notNull(),
-  userType: text("user_type").notNull(),
-  isApplied: integer("is_applied", { mode: "boolean" }).default(false),
-  ...commonColumns,
-});
-
-export const businessProcess = sqliteTable("BusinessProcess", {
-  id: integer("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  flowchart: text("flowchart"),
+export const businessProcess = sqliteTable("businessProcess", {
+  id: integer().primaryKey(),
+  name: text({ mode: "text" }).notNull(),
+  description: text({ mode: "text" }).notNull(),
+  flowchart: text({ mode: "text" }),
   ...commonColumns,
 });
 
 export const businessProcessDocuments = sqliteTable(
-  "BusinessProcessDocuments",
+  "businessProcessDocuments",
   {
-    id: integer("id").primaryKey(),
-    businessProcessId: integer("business_process_id")
+    id: integer().primaryKey(),
+    businessProcessId: integer()
       .notNull()
-      .references(() => businessProcess.id, { onDelete: "cascade" }),
-    documentId: integer("document_id")
+      .references(() => businessProcess.id),
+    documentId: integer()
       .notNull()
-      .references(() => document.id, { onDelete: "cascade" }),
-    docType: text("doc_type", { enum: docTypeEnum }).notNull(),
+      .references(() => document.id),
+    docType: text({ enum: docTypeEnum }).notNull(),
   }
 );
 
-export const analyticsLookup = sqliteTable("AnalyticsLookup", {
-  id: integer("id").primaryKey(),
-  targetType: text("target_type").notNull(),
-  targetId: integer("target_id").notNull(),
-  isLiked: integer("is_liked", { mode: "boolean" }).default(false),
+export const analyticsLookup = sqliteTable("analyticsLookup", {
+  id: integer().primaryKey(),
+  targetType: text({ mode: "text" }).notNull(),
+  targetId: text({ mode: "text" }).notNull(),
+  isLiked: integer({ mode: "boolean" }).default(false),
   ...commonColumns,
 });
 
-export const auditTracker = sqliteTable("AuditTracker", {
-  id: integer("id").primaryKey(),
-  auditType: text("audit_type"),
-  docId: integer("doc_id").references(() => document.id),
-  description: text("description"),
-  context: text("context", { mode: "json" }),
-  createdBy: text("created_by"),
-  createdAt: text("created_at"),
+export const auditTracker = sqliteTable("auditTracker", {
+  id: integer().primaryKey(),
+  auditType: text({ mode: "text" }),
+  docId: integer().references(() => document.id),
+  description: text({ mode: "text" }),
+  context: text({ mode: "json" }),
+  createdBy: text({ mode: "text" }),
+  ...commonColumns,
 });

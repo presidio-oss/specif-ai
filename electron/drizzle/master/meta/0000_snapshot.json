@@ -1,18 +1,18 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4c7ec68b-e296-4b0f-b3a1-f4e6845039c1",
+  "id": "5efcc641-e711-42b2-b4a3-786b25a9a9c2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "MasterSolutions": {
-      "name": "MasterSolutions",
+    "masterSolutions": {
+      "name": "masterSolutions",
       "columns": {
         "id": {
           "name": "id",
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "name": {
           "name": "name",
@@ -25,54 +25,54 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
-        "solution_path": {
-          "name": "solution_path",
+        "solutionPath": {
+          "name": "solutionPath",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "is_active": {
-          "name": "is_active",
+        "isActive": {
+          "name": "isActive",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": true
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
-          "default": "'CURRENT_TIMESTAMP'"
+          "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
-          "default": "'CURRENT_TIMESTAMP'"
+          "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
       },
       "indexes": {
-        "MasterSolutions_solution_path_unique": {
-          "name": "MasterSolutions_solution_path_unique",
+        "masterSolutions_solutionPath_unique": {
+          "name": "masterSolutions_solutionPath_unique",
           "columns": [
-            "solution_path"
+            "solutionPath"
           ],
           "isUnique": true
         }
