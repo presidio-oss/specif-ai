@@ -1,6 +1,8 @@
 import { Component, Input, Output, EventEmitter, forwardRef, HostListener } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { heroXMark } from '@ng-icons/heroicons/outline';
 
 export interface SelectOption {
   value: string;
@@ -11,8 +13,9 @@ export interface SelectOption {
   selector: 'app-select',
   templateUrl: './app-select.component.html',
   standalone: true,
-  imports: [NgForOf, NgIf],
+  imports: [NgForOf, NgIf, NgIconComponent],
   providers: [
+    provideIcons({ heroXMark }),
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AppSelectComponent),
@@ -31,8 +34,9 @@ export class AppSelectComponent implements ControlValueAccessor {
   @Input() customClass: string = '';
   @Input() dropdownClass: string = '';
   @Input() optionClass: string = '';
+  @Input() clearable: boolean = false;
 
-  @Output() selectionChange = new EventEmitter<string>();
+  @Output() selectionChange = new EventEmitter<string | null>();
 
   showDropdown: boolean = false;
   filteredOptions: SelectOption[] = [];
@@ -112,6 +116,14 @@ export class AppSelectComponent implements ControlValueAccessor {
     this.showDropdown = false;
     this.onChange(option.value);
     this.selectionChange.emit(option.value);
+  }
+
+  clear(event: Event): void {
+    event.stopPropagation();
+    this.selectedOption = null;
+    this.searchText = '';
+    this.onChange(null);
+    this.selectionChange.emit(null);
   }
 
   private filterOptions(): void {
