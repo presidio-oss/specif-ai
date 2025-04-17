@@ -133,6 +133,22 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 </div>
 
+#### ✨ Agentic Solution Requirement Generation Flow
+
+Specif AI utilises the Langgraph framework to deliver an efficient agentic workflow, enhancing the creation of solution requirements with precision. Following are the key phases involved:
+
+- **Context Gathering Phase:** 
+  - **Summarisation:** Analyses solution metadata and conversation history, employing summarisation to manage conversation context data effectively.
+  - **Context Gathering:** Integrates data from a Knowledge-Base, incorporating adaptable MCP server tools for enhanced flexibility.
+  - **Decision Point:** Assesses the need for Large Language Model (LLM) tool execution, iterating until the tool executions phase is complete.
+  - **Data Consolidation** Organises data into a structured ReferenceInfo format.
+- **Requirement Generation Phase**: The structured output from previous phase drives the creation of Business Requirements Document (BRD), Product Requirements Document (PRD), Non-functional Requirements Document (NFR) and User Interface Requirements (UIR). 
+
+This Agentic architecture ensures seamless task orchestration and accelerates the solution  creation process.
+
+![Agentic Flow](assets/img/specif-ai-create-solution-agentic-flow.png)  
+
+
 
 ### 🔌 Integrations
 
