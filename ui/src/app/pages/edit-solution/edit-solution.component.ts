@@ -452,6 +452,8 @@ export class EditSolutionComponent {
           }
 
           this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
+          this.requirementForm.markAsPristine();
+          this.requirementForm.markAsUntouched();          
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -476,6 +478,8 @@ export class EditSolutionComponent {
       }
 
       this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
+      this.requirementForm.markAsPristine();
+      this.requirementForm.markAsUntouched();          
       this.navigateBackToDocumentList(this.initialData);
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),

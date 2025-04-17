@@ -228,6 +228,8 @@ export class BusinessProcessComponent implements OnInit {
         chatHistory: this.chatHistory,
       }),
     );
+    this.businessProcessForm.markAsUntouched();
+    this.businessProcessForm.markAsPristine();
     this.navigateBackToDocumentList(this.data);
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
