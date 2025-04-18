@@ -456,9 +456,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       });
   }
 
-  selectTab(documentMetadata: DocumentMetadata): void {
+  selectTab(title: string): void {
     this.selectedTab = {
-      title: documentMetadata.typeName,
+      title: title,
       id: this.projectId as string,
       metadata: this.solutionMetadata,
     };

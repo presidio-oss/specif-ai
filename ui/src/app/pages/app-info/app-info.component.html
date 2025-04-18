@@ -14,6 +14,7 @@
         <ul role="list" class="min-h space-y-3">
           <li
             class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
+            (click)="selectTab('solution')"
             [ngClass]="{
               'bg-secondary-50 border-secondary-300':
                 selectedTab?.title === 'solution',
@@ -67,9 +68,9 @@
                 'bg-secondary-50 border-secondary-300': selectedTab?.title === metadata.typeName,
                 'bg-white border-transparent': selectedTab?.title !== metadata.typeName,
               }"
-              (click)="selectTab(metadata)"
-              (keydown.enter)="selectTab(metadata)"
-              (keydown.space)="selectTab(metadata); $event.preventDefault()"
+              (click)="selectTab(metadata.typeName)"
+              (keydown.enter)="selectTab(metadata.typeName)"
+              (keydown.space)="selectTab(metadata.typeName); $event.preventDefault()"
               role="button"
               tabindex="0"
             >
@@ -111,6 +112,7 @@
           <li
             role="button"
             tabindex="0"
+            (click)="selectTab('app-integrations')"
             [ngClass]="{
               'bg-secondary-50 border-secondary-300':
                 selectedTab?.title === 'app-integrations',
@@ -150,23 +152,23 @@
       <div class="overflow-hidden rounded-lg bg-white shadow h-full">
         <div
           *ngIf="
-            selectedFolder?.title !== 'solution' &&
-            selectedFolder?.title !== 'app-integrations'
+            selectedTab?.title !== 'solution' &&
+            selectedTab?.title !== 'app-integrations'
           "
           class="h-full"
         >
           <app-document-listing
-            *ngIf="directoryContainsFolder(selectedFolder?.title, directories)"
-            [folder]="selectedFolder"
+            *ngIf="documents.length > 0"
+            [folder]="selectedTab"
           />
           <div
-            *ngIf="!directoryContainsFolder(selectedFolder?.title, directories)"
+            *ngIf="documents.length === 0"
             class="flex items-center justify-center h-full"
           >
             No documents available.
           </div>
         </div>
-        <div class="p-6" *ngIf="selectedFolder?.title === 'solution'">
+        <div class="p-6" *ngIf="selectedTab?.title === 'solution'">
           <h1
             class="text-title font-semibold text-secondary-700 mb-3 pb-3 border-b"
           >
@@ -188,7 +190,7 @@
             </div>
           </div>
         </div>
-        <div class="p-6" *ngIf="selectedFolder?.title === 'app-integrations'">
+        <div class="p-6" *ngIf="selectedTab?.title === 'app-integrations'">
           <h1
             class="text-title font-semibold text-secondary-950 mb-3 pb-3 border-b"
           >
