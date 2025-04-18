@@ -59,9 +59,9 @@ export function setupSolutionHandlers() {
     }
   });
 
-  ipcMain.handle('solution:getSolutionByName', async (_event: IpcMainInvokeEvent, solutionName: string) => {
+  ipcMain.handle('solution:getSolutionByName', async (_event: IpcMainInvokeEvent, solutionName: string, docTypes?: string[]) => {
     try {
-      const result = await getSolutionByName(_event, solutionName);
+      const result = await getSolutionByName(_event, solutionName, docTypes);
       return result;
     } catch (error: any) {
       console.error('Error handling solution:getSolutionByName:', error.message);

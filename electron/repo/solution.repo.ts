@@ -7,6 +7,7 @@ import type {
 } from "../schema/solution/create.schema";
 import { Client } from "@libsql/client/lib-esm/node";
 import { LibSQLDatabase } from "drizzle-orm/libsql";
+import { inArray } from "drizzle-orm";
 
 export class SolutionRepository {
   private dbClient: DatabaseClient;
@@ -72,16 +73,19 @@ export class SolutionRepository {
     return true;
   }
 
-  async getSolutionByName(name: string) {
+  async getSolutionByName(name: string, docTypes?: string[]) {
     const currentDb = this.dbClient.getSolutionDb();
 
-    const solutioMetadata = await currentDb.select().from(metadata);
+    // TODO: Filter non-deleted items
+    const solutionMetadata = await currentDb.select().from(metadata);
     const documents = await currentDb.select().from(document);
-    const documentMetadata = await currentDb.select().from(documentCountByType)
+    const documentMetadata = await currentDb.select().from(documentCountByType).where(
+      docTypes ? inArray(documentCountByType.typeName, docTypes) : undefined
+    );
     const integrations = await currentDb.select().from(integration);
 
     const res = {
-      solutioMetadata,
+      solutionMetadata,
       documentMetadata,
       documents,
       integrations

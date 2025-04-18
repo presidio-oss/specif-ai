@@ -40,8 +40,9 @@ export async function getSolutions(
 
 export async function getSolutionByName(
   event: IpcMainInvokeEvent,
-  name: string
+  name: string,
+  docTypes?: string[]
 ) {
   const solutionRepo = new SolutionRepository(name);
-  return await solutionRepo.getSolutionByName(name);
+  return await solutionRepo.getSolutionByName(name, docTypes);
 }

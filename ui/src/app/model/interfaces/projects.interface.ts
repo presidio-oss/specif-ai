@@ -74,3 +74,40 @@ export interface IBreadcrumb {
   };
   tooltipLabel?: string;
 }
+
+export interface AppInfoResponse {
+  solutionMetadata: SolutionMetadata[];
+  documentMetadata: DocumentMetadata[];
+  documents: Document[];
+  integrations: any[]; 
+}
+
+export interface SolutionMetadata {
+  id: number;
+  name: string;
+  description: string;
+  technicalDetails: string;
+  isBrownfield: boolean;
+  version: string;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
+}
+
+export interface DocumentMetadata {
+  documentTypeId: string;
+  count: number;
+  typeName: string;
+  typeLabel: string;
+}
+
+export interface Document {
+  id: number;
+  name: string;
+  description: string;
+  jiraId: string | null;
+  documentTypeId: string;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
+}

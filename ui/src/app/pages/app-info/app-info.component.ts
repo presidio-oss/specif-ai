@@ -50,6 +50,12 @@ import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { FeatureService } from '../../services/feature/feature.service';
 import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
+import {
+  AppInfoResponse,
+  DocumentMetadata,
+  Document,
+  SolutionMetadata,
+} from 'src/app/model/interfaces/projects.interface';
 
 @Component({
   selector: 'app-info',
@@ -84,7 +90,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     key,
     value: IconPairingEnum[key as keyof typeof IconPairingEnum],
   }));
-  
   useGenAI: any = true;
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
     LLMConfigState.getConfig,
@@ -98,7 +103,11 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   editButtonDisabled: boolean = false;
   bedrockEditButtonDisabled: boolean = false;
   directories$ = this.store.select(ProjectsState.getProjectsFolders);
-  selectedFolder: any = { title: 'solution', id: '' };
+  documentMetadata: DocumentMetadata[] = [];
+  documents: Document[] = [];
+  integrations: any[] = [];
+  solutionMetadata: SolutionMetadata[] = [];
+  selectedTab: any = { title: 'solution', id: '' };
   content = new FormControl<string>('');
   appInfo: any = {};
   projectId = this.route.snapshot.paramMap.get('id');
@@ -116,7 +125,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   chatSettings$: Observable<ChatSettings> = this.store.select(
     ChatSettingsState.getConfig,
   );
-  
   // Predefined order of folders
   folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
   isBedrockConfigPresent: boolean = false;
@@ -141,11 +149,44 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.store.dispatch(new GetProjectFiles(this.projectId as string));
   }
 
+  getIconPairing(type: string): string {
+    switch (type) {
+      case RequirementTypeEnum.BRD.toLowerCase():
+        return IconPairingEnum.BRD;
+      case RequirementTypeEnum.PRD.toLowerCase():
+        return IconPairingEnum.PRD;
+      case RequirementTypeEnum.UIR.toLowerCase():
+        return IconPairingEnum.UIR;
+      case RequirementTypeEnum.NFR.toLowerCase():
+        return IconPairingEnum.NFR;
+      case RequirementTypeEnum.BP.toLowerCase():
+        return IconPairingEnum.BP;
+      default:
+        return "";
+    }
+  }
+
   ngOnInit(): void {
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
-      this.isBedrockConfigPresent = this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
-    })
+      this.isBedrockConfigPresent =
+        this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
+    });
+
+    this.electronService
+      .getSolutionByName(this.appName, this.folderOrder)
+      .then((response: AppInfoResponse) => {
+        console.log('Solution response:', response);
+        this.documentMetadata = response.documentMetadata.sort((a, b) => {
+          return (
+            this.folderOrder.indexOf(a.typeName) -
+            this.folderOrder.indexOf(b.typeName)
+          );
+        });
+        this.documents = response.documents;
+        this.integrations = response.integrations;
+        this.solutionMetadata = response.solutionMetadata;
+      });
     this.store
       .select(ProjectsState.getProjects)
       .pipe(first())
@@ -180,11 +221,13 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       )
       .subscribe((directories) => {
         if (this.navigationState && this.navigationState['selectedFolder']) {
-          this.selectedFolder = this.navigationState['selectedFolder'];
+          this.selectedTab = this.navigationState['selectedFolder'];
         }
         // Sort directories based on predefined order
         directories.sort((a, b) => {
-          return this.folderOrder.indexOf(a.name) - this.folderOrder.indexOf(b.name);
+          return (
+            this.folderOrder.indexOf(a.name) - this.folderOrder.indexOf(b.name)
+          );
         });
       });
 
@@ -216,10 +259,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         Validators.required,
       ),
       sessionKey: new FormControl(
-        this.appInfo.integration?.bedrock?.sessionKey || ''
+        this.appInfo.integration?.bedrock?.sessionKey || '',
       ),
     });
-
 
     this.jiraForm = new FormGroup({
       jiraProjectKey: new FormControl(
@@ -340,7 +382,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     const { kbId, accessKey, secretKey, region, sessionKey } =
       this.bedrockForm.getRawValue();
     const config = { kbId, accessKey, secretKey, region, sessionKey };
-      
+
     this.featureService
       .validateBedrockId(config)
       .then((isValid) => {
@@ -350,21 +392,21 @@ export class AppInfoComponent implements OnInit, OnDestroy {
             accessKey,
             secretKey,
             region,
-            ...(sessionKey && { sessionKey })
+            ...(sessionKey && { sessionKey }),
           };
 
           const updatedMetadata = {
             ...this.appInfo,
-            integration: { 
-              ...this.appInfo.integration, 
-              bedrock: bedrockConfig
+            integration: {
+              ...this.appInfo.integration,
+              bedrock: bedrockConfig,
             },
           };
 
           this.store.dispatch(
             new SetChatSettings({
               ...this.currentSettings,
-              ...bedrockConfig
+              ...bedrockConfig,
             }),
           );
 
@@ -400,7 +442,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         accessKey: '',
         sessionKey: '',
         secretKey: '',
-        region: ''
+        region: '',
       }),
     );
 
@@ -414,11 +456,11 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       });
   }
 
-  selectFolder(folder: any): void {
-    this.selectedFolder = {
-      title: folder.name,
+  selectTab(documentMetadata: DocumentMetadata): void {
+    this.selectedTab = {
+      title: documentMetadata.typeName,
       id: this.projectId as string,
-      metadata: this.appInfo,
+      metadata: this.solutionMetadata,
     };
   }
 
@@ -516,7 +558,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
   handleIntegrationNavState(): void {
     if (this.navigationState && this.navigationState['openAppIntegrations']) {
-      this.selectFolder({ name: 'app-integrations', children: [] });
+      // this.selectTab({ name: 'app-integrations', children: [] });
       this.toggleAccordion('jira');
     }
   }

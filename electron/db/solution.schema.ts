@@ -1,4 +1,4 @@
-import { count, sql } from "drizzle-orm";
+import { count, sql, eq } from "drizzle-orm";
 import {
   sqliteTable,
   text,
@@ -58,11 +58,14 @@ export const document = sqliteTable("Document", {
 export const documentCountByType = sqliteView("DocumentCountByType").as((qb) =>
   qb
     .select({
-      documentTypeId: document.documentTypeId,
-      count: count(document.id).as("count"), 
+      documentTypeId: documentType.id,
+      typeName: documentType.name,
+      typeLabel: documentType.typeLabel,
+      count: count(document.id).as("count"),
     })
-    .from(document)
-    .groupBy(document.documentTypeId)
+    .from(documentType)
+    .leftJoin(document, eq(document.documentTypeId, documentType.id))
+    .groupBy(documentType.id)
 );
 
 export const conversation = sqliteTable("Conversation", {

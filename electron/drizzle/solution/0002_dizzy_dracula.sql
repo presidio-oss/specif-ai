@@ -1,0 +1,2 @@
+DROP VIEW `DocumentCountByType`;--> statement-breakpoint
+CREATE VIEW `DocumentCountByType` AS select "Document"."document_type_id", "DocumentType"."name", "DocumentType"."type_label", count("Document"."id") as "count" from "Document" left join "DocumentType" on "Document"."document_type_id" = "DocumentType"."id" group by "Document"."document_type_id";
