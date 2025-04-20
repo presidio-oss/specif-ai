@@ -39,7 +39,7 @@ import { FileTypeEnum, IconPairingEnum } from '../../model/enum/file-type.enum';
 import { SetChatSettings } from 'src/app/store/chat-settings/chat-settings.action';
 import { ChatSettings } from 'src/app/model/interfaces/ChatSettings';
 import { ChatSettingsState } from 'src/app/store/chat-settings/chat-settings.state';
-import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
+import { DocumentTypeMappingEnum, RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { APP_INTEGRATIONS } from 'src/app/constants/toast.constant';
 import {
   getJiraTokenInfo,
@@ -151,15 +151,15 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
   getIconPairing(type: string): string {
     switch (type) {
-      case RequirementTypeEnum.BRD.toLowerCase():
+      case DocumentTypeMappingEnum.BRD:
         return IconPairingEnum.BRD;
-      case RequirementTypeEnum.PRD.toLowerCase():
+      case DocumentTypeMappingEnum.PRD:
         return IconPairingEnum.PRD;
-      case RequirementTypeEnum.UIR.toLowerCase():
+      case DocumentTypeMappingEnum.UIR:
         return IconPairingEnum.UIR;
-      case RequirementTypeEnum.NFR.toLowerCase():
+      case DocumentTypeMappingEnum.NFR:
         return IconPairingEnum.NFR;
-      case RequirementTypeEnum.BP.toLowerCase():
+      case DocumentTypeMappingEnum.BP:
         return IconPairingEnum.BP;
       default:
         return "";

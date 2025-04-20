@@ -60,7 +60,7 @@
 
           <div class="absolute top-4 right-4 flex space-x-2">
             <app-button
-              *ngIf="item.folderName === requirementTypes.PRD"
+              *ngIf="item.folderName === documentTypes.PRD"
               (click)="navigateToUserStories(item)"
               buttonContent="Stories"
               theme="secondary_outline"
@@ -70,7 +70,7 @@
             </app-button>
 
             <div
-              *ngIf="item.folderName === requirementTypes.BP"
+              *ngIf="item.folderName === documentTypes.BP"
               (click)="navigateToBPFlow(item)"
               role="button"
               tabindex="0"

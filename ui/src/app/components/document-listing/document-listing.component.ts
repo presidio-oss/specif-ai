@@ -14,7 +14,7 @@ import { SearchService } from '../../services/search/search.service';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { IList } from '../../model/interfaces/IList';
 import { Document } from 'src/app/model/interfaces/projects.interface';
-import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
+import { DocumentTypeMappingEnum } from 'src/app/model/enum/requirement-type.enum';
 import { processPRDContentForView } from '../../utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 import { getDescriptionFromInput } from '../../utils/common.utils';
@@ -48,7 +48,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   @Input() documents: Document[] = [];
   @Input() selectedType: string = '';
 
-  requirementTypes = RequirementTypeEnum;
+  documentTypes = DocumentTypeMappingEnum;
   @ViewChild(SearchInputComponent) searchInput!: SearchInputComponent;
   private scrollContainer: HTMLElement | null = null;
   private searchTerm$ = new BehaviorSubject<string>('');
@@ -145,7 +145,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
 
   navigateToEdit(item: any) {
     const url =
-      item.folderName === RequirementTypeEnum.BP ? '/bp-edit' : '/edit';
+      item.folderName === DocumentTypeMappingEnum.BP ? '/bp-edit' : '/edit';
     this.router.navigate([url], {
       state: {
         data: item,
@@ -195,7 +195,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     folderName?: string
   ): string | null {
     if (!requirement) return null;
-    if (folderName === RequirementTypeEnum.PRD) {
+    if (folderName === DocumentTypeMappingEnum.PRD) {
       return processPRDContentForView(requirement, 150);
     }
     return truncateMarkdown(requirement, {

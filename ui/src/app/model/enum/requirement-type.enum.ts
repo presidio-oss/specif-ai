@@ -5,3 +5,11 @@ export enum RequirementTypeEnum {
     NFR = 'NFR',
     BP = 'BP'
 }
+
+export enum DocumentTypeMappingEnum {
+    BRD = 'brd',
+    PRD = 'prd',
+    UIR = 'uir',
+    NFR = 'nfr',
+    BP = 'bp'
+}
