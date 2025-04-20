@@ -1,27 +1,30 @@
-import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
-import { Store } from '@ngxs/store';
-import { ProjectsState } from '../../store/projects/projects.state';
-import { BehaviorSubject, combineLatest, Observable, Subscription, first } from 'rxjs';
-import { BulkReadFiles, ExportRequirementData } from '../../store/projects/projects.actions';
-import { getDescriptionFromInput } from '../../utils/common.utils';
-import { filter, map, switchMap } from 'rxjs/operators';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  OnChanges,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
+import { of, BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { SearchService } from '../../services/search/search.service';
+import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { IList } from '../../model/interfaces/IList';
-import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
-import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { Document } from 'src/app/model/interfaces/projects.interface';
+import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
+import { processPRDContentForView } from '../../utils/prd.utils';
+import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { getDescriptionFromInput } from '../../utils/common.utils';
+import { SearchInputComponent } from '../core/search-input/search-input.component';
 import { BadgeComponent } from '../core/badge/badge.component';
 import { ButtonComponent } from '../core/button/button.component';
 import { NgIconComponent } from '@ng-icons/core';
-import { SearchInputComponent } from '../core/search-input/search-input.component';
-import { SearchService } from '../../services/search/search.service';
-import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
-import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
-import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
-import { ExportFileFormat } from 'src/app/constants/export.constants';
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
-import { processPRDContentForView } from '../../utils/prd.utils';
-import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { NgIf, AsyncPipe, NgForOf, NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-document-listing',
@@ -31,143 +34,133 @@ import { truncateMarkdown } from 'src/app/utils/markdown.utils';
   imports: [
     NgIf,
     AsyncPipe,
+    NgForOf,
+    NgClass,
     BadgeComponent,
     ButtonComponent,
     NgIconComponent,
-    NgForOf,
-    SearchInputComponent,
     MatMenuModule,
     RichTextEditorComponent,
-    NgClass
-],
+    SearchInputComponent
+  ],
 })
-export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
+  @Input() documents: Document[] = [];
+  @Input() selectedType: string = '';
+
+  requirementTypes = RequirementTypeEnum;
   @ViewChild(SearchInputComponent) searchInput!: SearchInputComponent;
-
-  loadingProjectFiles$ = this.store.select(ProjectsState.loadingProjectFiles);
-  requirementTypes: any = RequirementTypeEnum;
-  private searchTerm$ = new BehaviorSubject<string>('');
-
-  appInfo: any = {};
-  originalDocumentList$: Observable<IList[]> = this.store.select(ProjectsState.getSelectedFileContents);
-  documentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
-  filteredDocumentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
-  selectedFolder: any = {};
-  private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({ title: '', id: '' });
-  private subscription: Subscription = new Subscription();
   private scrollContainer: HTMLElement | null = null;
+  private searchTerm$ = new BehaviorSubject<string>('');
+  filteredDocumentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
+  private subs = new Subscription();
 
-  @Input() set folder(value: { title: string; id: string; metadata: any }) {
-    this.appInfo = value.metadata;
-    this.selectedFolder = value;
-    this.combinedSubject.next({ title: value.title, id: value.id });
+  constructor(
+    private searchService: SearchService,
+    private router: Router,
+    private toast: ToasterService
+  ) {}
 
-    // Reset scroll position when a new folder is set
-    if (this.scrollContainer) {
-      this.scrollContainer.scrollTop = 0;
-    }
-
-    // Reset search input when a new folder is set
-    if (this.searchInput) {
-      this.searchInput.clearSearch();
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['documents'] || changes['selectedType']) {
+      this.buildList();
     }
   }
 
-  currentRoute: string;
-  constructor(
-    private store: Store, 
-    private router: Router, 
-    private searchService: SearchService, 
-    private toast: ToasterService) {
-    this.currentRoute = this.router.url;
-    this.documentList$ = combineLatest([
-      this.originalDocumentList$,
-      this.combinedSubject,
-    ]).pipe(
-      map(([documents, folder]) =>
-        documents.map((doc) => ({
-          ...doc,
-          id: folder.id,
-          formattedRequirement: this.formatRequirementForView(doc.content?.requirement, doc.folderName)
-        })),
-      ),
-    );
+  ngOnInit() {
+    // ensure initial build
+    this.buildList();
+  }
 
-    this.filteredDocumentList$ = this.searchService.filterItems(
-      this.documentList$,
-      this.searchTerm$,
-      (doc) => [doc.fileName, doc.content?.title, doc.content?.epicTicketId],
-    );
+  ngAfterViewInit() {
+    this.scrollContainer = document.querySelector('.doc-section-height');
+    if (this.scrollContainer) {
+      this.scrollContainer.addEventListener('scroll', this.saveScrollPosition.bind(this));
+      const pos = sessionStorage.getItem('scrollPosition');
+      if (pos) this.scrollContainer.scrollTop = parseInt(pos, 10);
+    }
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe();
+    if (this.scrollContainer) {
+      this.scrollContainer.removeEventListener('scroll', this.saveScrollPosition.bind(this));
+    }
   }
 
   onSearch(term: string) {
     this.searchTerm$.next(term);
   }
 
-  ngOnInit() {
-    this.subscription.add(
-      combineLatest([this.combinedSubject, this.loadingProjectFiles$])
-        .pipe(
-          filter(([folder, isLoading]) => !!folder && !isLoading),
-          switchMap(([folder, _]) => {
-            return this.store.dispatch(new BulkReadFiles(folder.title));
-          }),
-        )
-        .subscribe(),
+  private buildList() {
+    // debug: inspect inputs
+    console.debug('DocumentListing buildList', {
+      selectedType: this.selectedType,
+      totalDocs: this.documents.length,
+    });
+
+    // 1) filter by matching type (case-insensitive) and non-deleted
+    const docsOfType = this.documents.filter(
+      d =>
+        d.documentTypeId?.toLowerCase() === this.selectedType?.toLowerCase() &&
+        !d.isDeleted
     );
-  }
 
-  ngAfterViewInit() {
-    // Set up the scroll container reference to the correct element
-    this.scrollContainer = document.querySelector('.doc-section-height');
+    console.debug(`Found ${docsOfType.length} docs for type`, this.selectedType);
 
-    // Add scroll event listener to the scrollable container
-    if (this.scrollContainer) {
-      this.scrollContainer.addEventListener('scroll', () => {
-        this.saveScrollPosition();
-      });
-    }
+    // 2) map to IList + formattedRequirement
+    const items = docsOfType.map(d => {
+      const base: IList = {
+        fileName: d.name,
+        folderName: d.documentTypeId,
+        content: {
+          requirement: d.description,
+          title: d.name,
+          epicTicketId: d.jiraId ?? undefined,
+        }
+      };
+      return {
+        ...base,
+        id: String(d.id),
+        formattedRequirement: this.formatRequirementForView(
+          base.content.requirement,
+          base.folderName
+        )
+      };
+    });
 
-    // Restore scroll position if available
-    this.restoreScrollPosition();
-  }
-
-  ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-
-    this.saveScrollPosition();
-    if (this.scrollContainer) {
-      this.scrollContainer.removeEventListener('scroll', this.saveScrollPosition.bind(this)); // Clean up event listener
-    }
+    // 3) plug into search pipe. initial term is '', so all items should show
+    this.filteredDocumentList$ = this.searchService.filterItems(
+      of(items),
+      this.searchTerm$,
+      doc => [doc.fileName, doc.content.title, doc.content.epicTicketId ?? '']
+    );
   }
 
   private saveScrollPosition() {
     if (this.scrollContainer) {
-      const scrollY = this.scrollContainer.scrollTop;
-      sessionStorage.setItem('scrollPosition', scrollY.toString());
+      sessionStorage.setItem('scrollPosition', String(this.scrollContainer.scrollTop));
     }
   }
 
-  private restoreScrollPosition() {
-    const savedScrollPosition = sessionStorage.getItem('scrollPosition');
-    if (savedScrollPosition && this.scrollContainer) {
-      this.scrollContainer.scrollTop = parseInt(savedScrollPosition, 10);
-    }
-  }
-
-  navigateToEdit({ id, folderName, fileName, content }: any) {
-    const url = folderName === this.requirementTypes.BP ? '/bp-edit' : '/edit';
+  navigateToEdit(item: any) {
+    const url =
+      item.folderName === RequirementTypeEnum.BP ? '/bp-edit' : '/edit';
     this.router.navigate([url], {
-      state: { data: this.appInfo, id, folderName, fileName, req: content },
+      state: {
+        data: item,
+        id: item.id,
+        folderName: item.folderName,
+        fileName: item.fileName,
+        req: item.content,
+      },
     });
   }
 
   navigateToUserStories(item: any) {
     this.router.navigate(['/user-stories', item.id], {
       state: {
-        data: this.appInfo,
+        data: item,
         id: item.id,
         folderName: item.folderName,
         fileName: item.fileName,
@@ -176,97 +169,35 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     });
   }
 
-  navigateToAdd(id: any, folderName: any) {
-    if (folderName === this.requirementTypes.BP) {
-      // Check if any non-archived PRD or BRD exists
-      this.store.select(ProjectsState.getProjectsFolders).pipe(first()).subscribe(directories => {
-        const prdDir = directories.find(dir => dir.name === 'PRD');
-        const brdDir = directories.find(dir => dir.name === 'BRD');
-
-        // For PRD, only check base files that aren't archived
-        const hasPRD = prdDir && prdDir.children
-          .filter(child => child.includes('-base.json'))
-          .some(child => !child.includes('-archived'));
-
-        // For BRD, only check base files that aren't archived
-        const hasBRD = brdDir && brdDir.children
-          .filter(child => child.includes('-base.json'))
-          .some(child => !child.includes('-archived'));
-
-        if (!hasPRD && !hasBRD) {
-          this.toast.showWarning(APP_INFO_COMPONENT_ERROR_MESSAGES.REQUIRES_PRD_OR_BRD);
-          return;
-        }
-
-        this.router.navigate(['/bp-add'], {
-          state: {
-            data: this.appInfo,
-            id,
-            folderName,
-            breadcrumb: {
-              name: 'Add Document',
-              link: this.currentRoute,
-              icon: 'add',
-            },
-          },
-        });
-      });
-    } else {
-      this.router.navigate(['/add'], {
-        state: {
-          data: this.appInfo,
-          id,
-          folderName,
-          breadcrumb: {
-            name: 'Add Document',
-            link: this.currentRoute,
-            icon: 'add',
-          },
-        },
-      });
-    }
-  }
-
   navigateToBPFlow(item: any) {
     this.router.navigate(['/bp-flow/view', item.id], {
       state: {
-        data: this.appInfo,
+        data: item,
         id: item.id,
         folderName: item.folderName,
         fileName: item.fileName,
         req: item.content,
         selectedFolder: {
           title: item.folderName,
-          id: this.appInfo.id,
-          metadata: this.appInfo,
+          id: item.id,
+          metadata: item,
         },
       },
     });
   }
 
-  exportDocumentList(folder: string, format: ExportFileFormat) {
-    const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folder];
-
-    this.store.dispatch(
-      new ExportRequirementData(requirementType, {
-        type: format,
-      }),
-    );
-  }
-
-  getDescription(input: string | undefined): string | null {
+  getDescription(input?: string): string | null {
     return getDescriptionFromInput(input);
   }
 
-  private formatRequirementForView(requirement: string | undefined, folderName: string): string | null {
+  private formatRequirementForView(
+    requirement?: string,
+    folderName?: string
+  ): string | null {
     if (!requirement) return null;
-    
-    const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folderName];
-
-    if (requirementType === this.requirementTypes.PRD) {
-      return processPRDContentForView(requirement, 150); // 150 chars per section
+    if (folderName === RequirementTypeEnum.PRD) {
+      return processPRDContentForView(requirement, 150);
     }
-
     return truncateMarkdown(requirement, {
       maxChars: 180,
       ellipsis: true,

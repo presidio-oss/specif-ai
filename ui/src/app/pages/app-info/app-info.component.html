@@ -1,6 +1,4 @@
-<div
-  class="mx-auto max-w-3xl px-4 py-1 sm:px-6 lg:max-w-7xl lg:px-8 h-full"
->
+<div class="mx-auto max-w-3xl px-4 py-1 sm:px-6 lg:max-w-7xl lg:px-8 h-full">
   <!-- Main 3 column grid -->
   <div class="grid items-start gap-4 grid-cols-3 h-full">
     <section aria-labelledby="section-2-title" class="h-full">
@@ -65,12 +63,16 @@
             <li
               class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
               [ngClass]="{
-                'bg-secondary-50 border-secondary-300': selectedTab?.title === metadata.typeName,
-                'bg-white border-transparent': selectedTab?.title !== metadata.typeName,
+                'bg-secondary-50 border-secondary-300':
+                  selectedTab?.title === metadata.typeName,
+                'bg-white border-transparent':
+                  selectedTab?.title !== metadata.typeName,
               }"
               (click)="selectTab(metadata.typeName)"
               (keydown.enter)="selectTab(metadata.typeName)"
-              (keydown.space)="selectTab(metadata.typeName); $event.preventDefault()"
+              (keydown.space)="
+                selectTab(metadata.typeName); $event.preventDefault()
+              "
               role="button"
               tabindex="0"
             >
@@ -78,22 +80,29 @@
                 <ng-icon
                   class="w-5 h-5 text-xl mr-2"
                   [ngClass]="{
-                    'text-primary-600': selectedTab?.title === metadata.typeName,
-                    'text-secondary-500': selectedTab?.title !== metadata.typeName,
+                    'text-primary-600':
+                      selectedTab?.title === metadata.typeName,
+                    'text-secondary-500':
+                      selectedTab?.title !== metadata.typeName,
                   }"
-                   [name]="getIconPairing(metadata.documentTypeId)"
+                  [name]="getIconPairing(metadata.documentTypeId)"
                 ></ng-icon>
                 <h4
                   class="text-sm font-medium"
                   [ngClass]="{
-                    'text-primary-600': selectedTab?.title === metadata.typeName,
-                    'text-secondary-500': selectedTab?.title !== metadata.typeName,
+                    'text-primary-600':
+                      selectedTab?.title === metadata.typeName,
+                    'text-secondary-500':
+                      selectedTab?.title !== metadata.typeName,
                   }"
                 >
                   {{ getDescription(metadata.typeName) }}
                 </h4>
               </div>
-              <app-badge [badgeText]="metadata.count" *ngIf="metadata.count > 0"/> 
+              <app-badge
+                [badgeText]="metadata.count"
+                *ngIf="metadata.count > 0"
+              />
               <app-button
                 *ngIf="metadata.count === 0"
                 buttonContent="Add"
@@ -116,7 +125,8 @@
             [ngClass]="{
               'bg-secondary-50 border-secondary-300':
                 selectedTab?.title === 'app-integrations',
-              'bg-white border-transparent': selectedTab?.title !== 'app-integrations',
+              'bg-white border-transparent':
+                selectedTab?.title !== 'app-integrations',
             }"
             class="flex cursor-pointer items-center justify-between p-2.5 rounded-lg bg-white hover:bg-secondary-50 border-[0.5px]"
           >
@@ -124,8 +134,7 @@
               <ng-icon
                 class="w-5 h-5 text-xl mr-2"
                 [ngClass]="{
-                  'text-primary-600':
-                    selectedTab?.title === 'app-integrations',
+                  'text-primary-600': selectedTab?.title === 'app-integrations',
                   'text-secondary-500':
                     selectedTab?.title !== 'app-integrations',
                 }"
@@ -134,8 +143,7 @@
               <h4
                 class="text-sm font-medium"
                 [ngClass]="{
-                  'text-primary-600':
-                    selectedTab?.title === 'app-integrations',
+                  'text-primary-600': selectedTab?.title === 'app-integrations',
                   'text-secondary-500':
                     selectedTab?.title !== 'app-integrations',
                 }"
@@ -159,8 +167,11 @@
         >
           <app-document-listing
             *ngIf="documents.length > 0"
-            [folder]="selectedTab"
-          />
+            [documents]="documents"
+            [selectedType]="selectedTab.title"
+          >
+          </app-document-listing>
+
           <div
             *ngIf="documents.length === 0"
             class="flex items-center justify-center h-full"
@@ -306,7 +317,10 @@
                 [disabled]="isBedrockConnected"
                 class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <label for="useBedrockConfig" class="ml-2 text-sm font-medium text-secondary-700">
+              <label
+                for="useBedrockConfig"
+                class="ml-2 text-sm font-medium text-secondary-700"
+              >
                 Use existing Bedrock configuration from LLM settings
               </label>
             </div>
