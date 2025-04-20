@@ -18,6 +18,7 @@ export const environment = {
     companyName: 'Presidio',
     companyLogo: 'assets/img/presidio-white.svg',
     companyLogoColor: 'assets/img/presidio-blue.svg',
+    appShortLogo: 'assets/img/logo/presidio-short.png',
     appIcons: {
       mac: 'assets/icons/mac_icon.icns',
       win: 'assets/icons/win_icon.ico',

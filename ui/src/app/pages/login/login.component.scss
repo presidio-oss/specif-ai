@@ -1,0 +1,105 @@
+.login-card {
+    backdrop-filter: blur(16px);
+    background: linear-gradient(135deg,
+            rgba(17, 24, 39, 0.7) 0%,
+            rgba(17, 24, 39, 0.6) 100%);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.form-input {
+    @apply text-white text-sm rounded-lg block w-full p-3;
+    background: rgba(17, 24, 39, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+
+    &:hover {
+        background: rgba(17, 24, 39, 0.5);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    &:focus {
+        @apply outline-none;
+        background: rgba(17, 24, 39, 0.6);
+        border-color: rgba(99, 102, 241, 0.5);
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    &::placeholder {
+        @apply text-secondary-400;
+        opacity: 0.5;
+    }
+}
+
+.browse-button {
+    @apply flex items-center justify-center font-medium text-sm px-5 py-3;
+    background: rgba(99, 102, 241, 0.9);
+    color: white;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+
+    &:hover {
+        background: rgba(99, 102, 241, 1);
+    }
+}
+
+.get-started-button {
+    @apply font-medium text-sm py-4;
+    background: rgba(99, 102, 241, 0.9);
+    color: white;
+
+    &:hover {
+        background: rgba(99, 102, 241, 1);
+    }
+}
+
+.input-group {
+    @apply space-y-2;
+
+    label {
+        @apply block text-sm font-medium;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    &:focus-within label {
+        color: rgba(99, 102, 241, 0.9);
+    }
+}
+
+#app-title {
+    @apply text-white font-bold text-2xl;
+}
+
+#app-description {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+#company-logo {
+    opacity: 0.8;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.help-text {
+    color: rgba(255, 255, 255, 0.5);
+
+    #app-name {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+    }
+}
+
+// Form layout improvements
+.form-container {
+    padding: 2rem;
+
+    .input-section {
+        margin-bottom: 1.5rem;
+    }
+}
