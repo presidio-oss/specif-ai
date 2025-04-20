@@ -1,0 +1,44 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    background: linear-gradient(135deg, rgb(30, 41, 59) 0%, rgb(15, 23, 42) 100%);
+    color: white;
+    padding: 2rem 0;
+}
+
+.apps-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+
+.solutions-container {
+    background-color: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .header {
+        background-color: rgba(17, 24, 39, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .empty-state {
+        border-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(255, 255, 255, 0.05);
+        transition: all 0.2s ease-in-out;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    .list-item {
+        transition: all 0.2s ease;
+
+        &:hover {
+            background-color: rgba(51, 65, 85, 0.3);
+        }
+    }
+}

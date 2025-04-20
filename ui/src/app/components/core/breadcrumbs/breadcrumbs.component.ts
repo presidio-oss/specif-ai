@@ -21,13 +21,14 @@ import { heroArrowLeft, heroHome } from '@ng-icons/heroicons/outline';
     AsyncPipe,
     MatTooltipModule,
   ],
-  viewProviders: [provideIcons({ heroArrowLeft, heroHome })],
+  viewProviders: [provideIcons({ heroArrowLeft, heroHome })]
 })
 export class BreadcrumbsComponent implements OnInit {
   pageHistory: IBreadcrumb[] = [];
 
   store = inject(Store);
   router = inject(Router);
+
   breadcrumbs$ = this.store.select(BreadcrumbState.getBreadcrumbs);
 
   ngOnInit() {
@@ -43,8 +44,8 @@ export class BreadcrumbsComponent implements OnInit {
           [breadcrumb.url],
           breadcrumb.state
             ? {
-                state: breadcrumb.state,
-              }
+              state: breadcrumb.state,
+            }
             : undefined,
         )
         .then();

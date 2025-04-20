@@ -3,15 +3,9 @@
     <div class="flex items-center justify-between pt-3 pb-4 px-8">
       <div class="hidden lg:flex lg:items-center lg:pr-0.5">
         <a routerLink="/apps">
-          <ng-container
-            *ngIf="themeConfiguration.appLogo.length > 0; else showAppName"
-          >
+          <ng-container *ngIf="themeConfiguration.appLogo.length > 0; else showAppName">
             <span class="sr-only">{{ themeConfiguration.appName }}</span>
-            <img
-              [src]="themeConfiguration.appLogo"
-              class="mx-auto h-6"
-              [alt]="themeConfiguration.appName"
-            />
+            <img [src]="themeConfiguration.appLogo" class="mx-auto h-6" [alt]="themeConfiguration.appName" />
           </ng-container>
           <ng-template #showAppName>
             <h1 class="text-2xl text-secondary-50">
@@ -21,12 +15,9 @@
         </a>
       </div>
 
-      <button
-        (click)="navigateToSettings()"
-        (keydown.enter)="navigateToSettings()"
+      <button (click)="navigateToSettings()" (keydown.enter)="navigateToSettings()"
         (keydown.space)="navigateToSettings(); $event.preventDefault()"
-        class="flex items-center justify-center font-medium opacity-100 transition-colors duration-300 px-3 py-2 gap-2 text-xs rounded-lg border border-secondary-700 bg-transparent text-white hover:bg-secondary-900"
-      >
+        class="flex items-center justify-center font-medium opacity-100 transition-colors duration-300 px-3 py-2 gap-2 text-xs rounded-lg border border-secondary-700 bg-transparent text-white hover:bg-secondary-900">
         <ng-icon name="heroCog8Tooth" strokeWidth="2" size="16" />
         Settings
       </button>

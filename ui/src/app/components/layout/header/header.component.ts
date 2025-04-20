@@ -21,7 +21,7 @@ import { heroCog8Tooth } from '@ng-icons/heroicons/outline';
     AsyncPipe,
     MatTooltipModule,
   ],
-  viewProviders: [provideIcons({ heroCog8Tooth })],
+  viewProviders: [provideIcons({ heroCog8Tooth })]
 })
 export class HeaderComponent {
   protected themeConfiguration = environment.ThemeConfiguration;

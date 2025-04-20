@@ -1,86 +1,129 @@
-<div class="px-8" *ngIf="projectList$ | async as apps">
-  <div class="mb-4 bg-white rounded-lg shadow h-full relative min-h-96">
-    <div
-      class="flex items-center justify-between p-6 sticky top-0 bg-white rounded-t-lg"
-    >
-      <h1 class="text-xl font-semibold leading-6 text-secondary-900">
-        Solutions
-      </h1>
-      <app-button
-        (click)="navigateToCreate()"
-        buttonContent="Create Solution"
-        size="sm"
-      />
-    </div>
-    <main>
-      <!-- Your content -->
-      <div class="px-6 pb-6" *ngIf="apps.length === 0">
-        <button
-          (click)="navigateToCreate()"
-          type="button"
-          class="relative block w-full rounded-lg border-2 border-dashed border-secondary-300 p-12 text-center hover:border-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-        >
-          <svg
-            class="mx-auto h-12 w-12 text-secondary-400"
-            stroke="currentColor"
-            fill="none"
-            viewBox="0 0 48 48"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6"
-            />
-          </svg>
-          <span class="mt-2 block text-sm font-semibold text-secondary-900"
-            >Create a new solution</span
-          >
-        </button>
-      </div>
+<div class="banner mb-8 rounded-lg  overflow-hidden mx-8 relative">
 
-      <ul
-        role="list"
-        class="divide-y divide-secondary-100 h-full overflow-hidden"
-      >
-        <li
-          class="flex items-center justify-between gap-x-6 px-6 py-3 hover:bg-secondary-50"
-          *ngFor="let app of apps; index as i"
-        >
-          <div class="min-w-0">
-            <div class="flex items-start gap-x-3">
-              <p
-                class="capitalize text-sm font-semibold leading-6 text-secondary-900"
-              >
-                {{ app.project }}
-              </p>
-              <!-- <p
-                class="rounded-md whitespace-nowrap mt-0.5 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset text-success-700 bg-success-50 ring-success-600/20"
-              >
-                Complete
-              </p> -->
-            </div>
-            <div
-              class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-secondary-500"
-            >
-              <p class="whitespace-nowrap">
-                Created
-                {{ app?.metadata?.createdAt | timezone }}
-              </p>
-            </div>
+  <div class="px-8 py-16 relative">
+    <div class="flex flex-col items-center text-center max-w-3xl mx-auto">
+ 
+
+      <!-- Main content -->
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+        Accelerate Your <span
+          class="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-300">SDLC Process</span>
+      </h1>
+      <p class="text-secondary-300 text-lg mb-8 leading-relaxed max-w-2xl">
+        Transform your development workflow with our AI-powered solutions. Automate testing, enhance code quality, and
+        deliver faster than ever before.
+      </p>
+
+      <!-- Buttons -->
+      <div class="flex gap-4">
+        <app-button buttonContent="Get Started" (click)="navigateToCreate()"
+          class="bg-gradient-to-r from-primary-500 to-primary-600 cursor-pointer hover:from-primary-600 hover:to-primary-700"
+          theme="primary" size="lg" />
+        <app-button buttonContent="Get VSCode Extension"
+          class="backdrop-blur-sm bg-white text-black cursor-pointer border border-white/20 hover:bg-white/20"
+          theme="secondary_outline" size="lg" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="w-11/12 h-2 p-2 border-b border-white/10  mb-10 mx-auto "></div>
+<div class="flex gap-6 mx-8">
+  <!-- Main Solutions Section -->
+  <div class="w-[45%]" *ngIf="projectList$ | async as apps">
+    <div class="w-full">
+      <div class="solutions-container rounded-lg h-full relative min-h-[300px]">
+        <div class="header flex items-center justify-between p-4 sticky top-0 rounded-t-lg backdrop-blur-md">
+          <h1 class="text-lg font-semibold leading-6 text-white">
+            Solutions
+          </h1>
+          <app-button (click)="navigateToCreate()" buttonContent="Create Solution" size="sm" theme="primary" />
+        </div>
+        <main>
+          <!-- Empty state -->
+          <div class="px-6 pb-6 pt-5" *ngIf="apps.length === 0">
+            <button (click)="navigateToCreate()" type="button"
+              class="empty-state relative block w-full rounded-lg border-2 border-dashed p-8 text-center">
+              <svg class="mx-auto h-10 w-10 text-secondary-500" stroke="currentColor" fill="none" viewBox="0 0 48 48"
+                aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6" />
+              </svg>
+              <span class="mt-2 block text-sm font-semibold text-white">
+                Create a new solution
+              </span>
+            </button>
           </div>
-          <div class="flex flex-none items-center gap-x-4">
-            <app-button
-              buttonContent="View Solution"
-              theme="secondary_outline"
-              size="sm"
-              rounded="lg"
-              (click)="navigateToApp(app?.metadata)"
-            />
-          </div>
-        </li>
-      </ul>
-    </main>
+
+          <!-- List -->
+          <ul role="list" class="divide-y divide-secondary-700">
+            <li class="flex items-center justify-between gap-x-6 px-6 py-3" *ngFor="let app of apps; index as i">
+              <div class="min-w-0">
+                <div class="flex items-start gap-x-3">
+                  <p class="capitalize text-sm font-semibold leading-6 text-white">
+                    {{ app.project }}
+                  </p>
+                </div>
+                <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-secondary-400">
+                  <p class="whitespace-nowrap">
+                    Created {{ app?.metadata?.createdAt | timezone }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex flex-none items-center gap-x-4">
+                <app-button buttonContent="View" theme="secondary_outline" size="xs" rounded="lg"
+                  (click)="navigateToApp(app?.metadata)" />
+              </div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Solutions Section -->
+  <div class="w-[55%]">
+    <div class="solutions-container rounded-lg relative min-h-[450px]">
+      <div class="header flex items-center justify-between p-4 sticky top-0 rounded-t-lg backdrop-blur-md">
+        <h2 class="text-lg font-semibold leading-6 text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Recent Solutions
+        </h2>
+      </div>
+      <div class="px-4 pb-4 h-[calc(450px-4rem)] overflow-y-auto">
+        <!-- Empty state -->
+        <div class="text-center py-8 text-secondary-400" *ngIf="recentSolutions.length === 0">
+          <svg class="w-8 h-8 mx-auto mb-2 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          <p class="text-sm">No recent solutions</p>
+          <p class="text-xs mt-1">Solutions you view will appear here</p>
+        </div>
+
+        <!-- Recent solutions list -->
+        <ul class="space-y-3" *ngIf="recentSolutions.length > 0">
+          <li class="bg-secondary-700/30 rounded-md p-3 hover:bg-secondary-700/50 transition-colors duration-150"
+            *ngFor="let solution of recentSolutions">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <h3 class="text-sm font-medium text-white">{{solution.name}}</h3>
+                <p class="text-xs text-secondary-400">{{getTimeAgo(solution.lastAccessed)}}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="p-1.5 rounded-md hover:bg-secondary-600 text-secondary-400 hover:text-white"
+                  (click)="navigateToApp({id: solution.id, name: solution.name})">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
