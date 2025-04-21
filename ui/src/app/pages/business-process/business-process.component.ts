@@ -230,6 +230,7 @@ export class BusinessProcessComponent implements OnInit {
       }),
     );
     this.allowForceRedirect = true;
+    this.allowForceRedirect = true;
     this.navigateBackToDocumentList(this.data);
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),

@@ -454,6 +454,7 @@ export class EditSolutionComponent {
 
           this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
           this.allowForceRedirect = true;
+          this.allowForceRedirect = true;
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -478,6 +479,7 @@ export class EditSolutionComponent {
       }
 
       this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
+      this.allowForceRedirect = true;
       this.allowForceRedirect = true;
       this.navigateBackToDocumentList(this.initialData);
       this.toastService.showSuccess(
