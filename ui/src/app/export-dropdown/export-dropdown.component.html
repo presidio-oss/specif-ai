@@ -17,7 +17,10 @@
           *ngFor="let option of options"
           class="block w-full px-4 py-3 text-left text-sm text-secondary-800 hover:bg-gray-100"
           role="menuitem"
+          type="button"
+          (mousedown)="$event.preventDefault()"
           (click)="onOptionClick(option, $event)"
+          (mouseup)="$event.preventDefault()"
         >
           {{ option.label }}
         </button>

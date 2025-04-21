@@ -23,8 +23,22 @@
             <label for="providerSelect">
               LLM Provider
             </label>
+
             <app-select id="providerSelect" formControlName="provider" [options]="providerOptions" [searchable]="true"
               [required]="true" [clearable]="true" placeholder="Select LLM Provider"></app-select>
+
+            <div class="relative">
+              <app-select
+                id="providerSelect"
+                formControlName="provider"
+                [options]="providerOptions"
+                [searchable]="false"
+                [required]="true"
+                [clearable]="true"
+                placeholder="Select LLM Provider"
+              ></app-select>
+            </div>
+
           </div>
 
           <!-- Provider-specific Configuration -->
