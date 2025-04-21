@@ -429,11 +429,7 @@ export class EditUserStoriesComponent implements OnDestroy {
   }
 
   canDeactivate(): boolean {
-    return (
-      !this.skipRedirectionPopup &&
-      this.userStoryForm.dirty &&
-      this.userStoryForm.touched
-    );
+    return !this.skipRedirectionPopup && this.userStoryForm.dirty;
   }
 
   ngOnDestroy(): void {

@@ -653,14 +653,12 @@ export class BusinessProcessComponent implements OnInit {
   }
 
   canDeactivate(): boolean {
-    const hasUnsavedChanges =
-      this.businessProcessForm.dirty && this.businessProcessForm.touched;
     const hasSelectedRequirements =
       this.selectedPRDs.length > 0 || this.selectedBRDs.length > 0;
 
     return (
       !this.skipRedirectionPopup &&
-      (hasUnsavedChanges || hasSelectedRequirements)
+      (this.businessProcessForm.dirty || hasSelectedRequirements)
     );
   }
 }

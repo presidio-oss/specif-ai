@@ -713,9 +713,7 @@ ${chat.assistant}`,
 
   canDeactivate(): boolean {
     return (
-      (!this.skipRedirectionPopup &&
-        this.requirementForm.dirty &&
-        this.requirementForm.touched) ||
+      (!this.skipRedirectionPopup && this.requirementForm.dirty) ||
       this.checkMappingChanges()
     );
   }
