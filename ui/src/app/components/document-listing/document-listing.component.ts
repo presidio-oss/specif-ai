@@ -111,7 +111,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     // 2) map to IList + formattedRequirement
     const items = docsOfType.map(d => {
       const base: IList = {
-        fileName: d.name,
+        fileName: String(d.id),
         folderName: d.documentTypeId,
         content: {
           requirement: d.description,

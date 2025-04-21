@@ -61,20 +61,21 @@
 
           <ng-container *ngFor="let metadata of documentMetadata; index as i">
             <li
-              class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
+              class="flex items-center justify-between p-2.5 rounded-lg border-[0.5px]"
               [ngClass]="{
                 'bg-secondary-50 border-secondary-300':
                   selectedTab?.title === metadata.typeName,
                 'bg-white border-transparent':
                   selectedTab?.title !== metadata.typeName,
+                'cursor-pointer hover:bg-secondary-50': metadata.count > 0
               }"
-              (click)="selectTab(metadata.typeName)"
-              (keydown.enter)="selectTab(metadata.typeName)"
+              (click)="metadata.count > 0 && selectTab(metadata.typeName)"
+              (keydown.enter)="metadata.count > 0 && selectTab(metadata.typeName)"
               (keydown.space)="
-                selectTab(metadata.typeName); $event.preventDefault()
+                metadata.count > 0 && selectTab(metadata.typeName); $event.preventDefault()
               "
-              role="button"
-              tabindex="0"
+              [attr.role]="metadata.count > 0 ? 'button' : null"
+              [attr.tabindex]="metadata.count > 0 ? '0' : null"
             >
               <div class="flex items-center">
                 <ng-icon
