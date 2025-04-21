@@ -97,7 +97,7 @@ export class BusinessProcessComponent implements OnInit {
   selectedRequirement: any = {};
   absoluteFilePath: string = '';
   oldContent: string = '';
-  skipRedirectionPopup: boolean = false;
+  allowForceRedirect: boolean = false;
   existingFlowDiagram: string = '';
   public loading: boolean = false;
   selectedBPFileContent$ = this.store.select(
@@ -229,7 +229,7 @@ export class BusinessProcessComponent implements OnInit {
         chatHistory: this.chatHistory,
       }),
     );
-    this.skipRedirectionPopup = true;
+    this.allowForceRedirect = true;
     this.navigateBackToDocumentList(this.data);
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -657,7 +657,7 @@ export class BusinessProcessComponent implements OnInit {
       this.selectedPRDs.length > 0 || this.selectedBRDs.length > 0;
 
     return (
-      !this.skipRedirectionPopup &&
+      !this.allowForceRedirect &&
       (this.businessProcessForm.dirty || hasSelectedRequirements)
     );
   }

@@ -95,7 +95,7 @@ export class EditSolutionComponent {
   generateLoader: boolean = false;
   initialData: any = {};
   selectedRequirement: any = {};
-  skipRedirectionPopup: boolean = false;
+  allowForceRedirect: boolean = false;
   absoluteFilePath: string = '';
   oldContent: string = '';
   public loading: boolean = false;
@@ -453,7 +453,7 @@ export class EditSolutionComponent {
           }
 
           this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
-          this.skipRedirectionPopup = true;
+          this.allowForceRedirect = true;
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -478,7 +478,7 @@ export class EditSolutionComponent {
       }
 
       this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
-      this.skipRedirectionPopup = true;
+      this.allowForceRedirect = true;
       this.navigateBackToDocumentList(this.initialData);
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -713,7 +713,7 @@ ${chat.assistant}`,
 
   canDeactivate(): boolean {
     return (
-      (!this.skipRedirectionPopup && this.requirementForm.dirty) ||
+      (!this.allowForceRedirect && this.requirementForm.dirty) ||
       this.checkMappingChanges()
     );
   }
