@@ -313,6 +313,7 @@ export class EditUserStoriesComponent implements OnDestroy {
         ),
       );
       this.skipRedirectionPopup = true;
+      this.navigateBackToUserStories();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
       );
