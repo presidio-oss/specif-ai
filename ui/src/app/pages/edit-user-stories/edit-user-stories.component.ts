@@ -102,7 +102,6 @@ export class EditUserStoriesComponent implements OnDestroy {
   userStoryId: string | null = '';
   editLabel: string = '';
   allowForceRedirect: boolean = false;
-  allowForceRedirect: boolean = false;
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   selectedPRD: any = {};
   readonly dialogService = inject(DialogService);
@@ -288,7 +287,6 @@ export class EditUserStoriesComponent implements OnDestroy {
               ),
             );
             this.allowForceRedirect = true;
-            this.allowForceRedirect = true;
             this.navigateBackToUserStories();
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -314,7 +312,6 @@ export class EditUserStoriesComponent implements OnDestroy {
           this.absoluteFilePath,
         ),
       );
-      this.allowForceRedirect = true;
       this.allowForceRedirect = true;
       this.navigateBackToUserStories();
       this.toasterService.showSuccess(
