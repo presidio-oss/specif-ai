@@ -429,7 +429,11 @@ export class EditUserStoriesComponent implements OnDestroy {
   }
 
   canDeactivate(): boolean {
-    return !this.allowForceRedirect && this.userStoryForm.dirty;
+    return (
+      !this.allowForceRedirect &&
+      this.userStoryForm.dirty &&
+      this.userStoryForm.touched
+    );
   }
 
   ngOnDestroy(): void {

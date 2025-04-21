@@ -712,8 +712,8 @@ ${chat.assistant}`,
   }
 
   canDeactivate(): boolean {
-    return (
-      (!this.allowForceRedirect && this.requirementForm.dirty) ||
+    return !this.allowForceRedirect && (
+      (this.requirementForm.dirty && this.requirementForm.touched) ||
       this.checkMappingChanges()
     );
   }
