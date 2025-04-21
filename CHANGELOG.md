@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.2.1]
+## [2.2.0]
 
 ### Added
 - Implemented Agentic flow within the Create Solution workflow utilising LangGraph.
