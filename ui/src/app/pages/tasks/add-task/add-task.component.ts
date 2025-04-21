@@ -500,6 +500,6 @@ ${chat.assistant}`,
   }
 
   canDeactivate(): boolean {
-    return this.taskForm.dirty && this.taskForm.touched;
+    return this.taskForm.dirty;
   }
 }
