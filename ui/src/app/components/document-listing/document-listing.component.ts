@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { BehaviorSubject, combineLatest, Observable, Subscription, first } from 'rxjs';
@@ -22,6 +22,7 @@ import { ExportFileFormat } from 'src/app/constants/export.constants';
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
 import { processPRDContentForView } from '../../utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { ExportDropdownComponent } from "../../export-dropdown/export-dropdown.component";
 
 @Component({
   selector: 'app-document-listing',
@@ -38,7 +39,8 @@ import { truncateMarkdown } from 'src/app/utils/markdown.utils';
     SearchInputComponent,
     MatMenuModule,
     RichTextEditorComponent,
-    NgClass
+    NgClass,
+    ExportDropdownComponent
 ],
 })
 export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -56,7 +58,6 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({ title: '', id: '' });
   private subscription: Subscription = new Subscription();
   private scrollContainer: HTMLElement | null = null;
-
   @Input() set folder(value: { title: string; id: string; metadata: any }) {
     this.appInfo = value.metadata;
     this.selectedFolder = value;
@@ -271,5 +272,18 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       maxChars: 180,
       ellipsis: true,
     });
+  }
+
+  getExportOptions(folderName: string) {
+    return [
+      {
+        label: 'Copy JSON to Clipboard',
+        callback: () => this.exportDocumentList(folderName, 'json')
+      },
+      {
+        label: 'Download as Excel (.xlsx)',
+        callback: () => this.exportDocumentList(folderName, 'xlsx')
+      }
+    ];
   }
 }

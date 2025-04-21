@@ -44,7 +44,7 @@ export class AppSliderComponent implements ControlValueAccessor {
   }
 
   onSliderChange(event: Event | number): void {
-    const newValue = typeof event === 'number' ? event : (event.target as any).value;
+    const newValue = typeof event === 'number' ? event : parseInt((event.target as any).value);
     this.value = newValue;
     this.onChange(newValue);
     this.onTouch();

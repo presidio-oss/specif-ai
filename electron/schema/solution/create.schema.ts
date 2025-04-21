@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const generationRangeSchema = z.object({
-  max_count: z.number(),
+  maxCount: z.number(),
   isEnabled: z.boolean()
 });
 

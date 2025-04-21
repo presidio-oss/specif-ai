@@ -103,7 +103,6 @@ export class EditUserStoriesComponent implements OnDestroy {
   editLabel: string = '';
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   selectedPRD: any = {};
-  allowFreeRedirection: boolean = false;
   readonly dialogService = inject(DialogService);
   selectedFileContent$ = this.store.select(
     ProjectsState.getSelectedFileContent,
@@ -192,7 +191,6 @@ export class EditUserStoriesComponent implements OnDestroy {
               chatHistory: this.chatHistory,
             }),
           );
-          this.allowFreeRedirection = true;
           this.userStoryForm.patchValue({
             name: featureName,
             description: featureDescription
@@ -208,6 +206,8 @@ export class EditUserStoriesComponent implements OnDestroy {
         } else {
           console.log('No matching feature found for the given ID.');
         }
+        this.userStoryForm.markAsUntouched();
+        this.userStoryForm.markAsPristine();
       })
       .catch((error) => {
         console.error('Error updating requirement:', error);
@@ -235,8 +235,9 @@ export class EditUserStoriesComponent implements OnDestroy {
           chatHistory: this.chatHistory,
         }),
       );
-      this.allowFreeRedirection = true;
 
+      this.userStoryForm.markAsUntouched();
+      this.userStoryForm.markAsPristine();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
           this.entityType,
@@ -284,7 +285,8 @@ export class EditUserStoriesComponent implements OnDestroy {
                 this.absoluteFilePath,
               ),
             );
-            this.allowFreeRedirection = true;
+            this.userStoryForm.markAsPristine();
+            this.userStoryForm.markAsUntouched();
             this.navigateBackToUserStories();
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -310,7 +312,8 @@ export class EditUserStoriesComponent implements OnDestroy {
           this.absoluteFilePath,
         ),
       );
-      this.allowFreeRedirection = true;
+      this.userStoryForm.markAsPristine();
+      this.userStoryForm.markAsUntouched();
       this.navigateBackToUserStories();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -428,7 +431,6 @@ export class EditUserStoriesComponent implements OnDestroy {
 
   canDeactivate(): boolean {
     return (
-      !this.allowFreeRedirection &&
       this.userStoryForm.dirty &&
       this.userStoryForm.touched
     );

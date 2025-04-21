@@ -178,7 +178,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
       .open()
       .afterClosed()
       .subscribe((emittedValue) => {
-        this.refineUserStoryIntoTasks(regenerate, emittedValue);
+        if (emittedValue !== undefined)
+          this.refineUserStoryIntoTasks(regenerate, emittedValue);
+        return;
       });
   }
 

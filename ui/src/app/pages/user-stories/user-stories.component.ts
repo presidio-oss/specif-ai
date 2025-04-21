@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
@@ -55,6 +55,7 @@ import { ExportFileFormat } from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
+import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 
 @Component({
   selector: 'app-user-stories',
@@ -71,6 +72,7 @@ import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/moda
     ListItemComponent,
     BadgeComponent,
     SearchInputComponent,
+    ExportDropdownComponent,
     MatTooltipModule,
   ],
 })
@@ -81,7 +83,6 @@ export class UserStoriesComponent implements OnInit {
   selectedRequirement: any = {};
   metadata: any = {};
   private searchTerm$ = new BehaviorSubject<string>('');
-
   router = inject(Router);
   logger = inject(NGXLogger);
   store = inject(Store);
@@ -416,7 +417,9 @@ export class UserStoriesComponent implements OnInit {
       .open()
       .afterClosed()
       .subscribe((emittedValue) => {
-        this.generateUserStories(regenerate, emittedValue);
+        if (emittedValue !== undefined)
+          this.generateUserStories(regenerate, emittedValue);
+        return;
       });
   }
 
@@ -606,4 +609,19 @@ export class UserStoriesComponent implements OnInit {
     if (!description) return null;
     return processUserStoryContentForView(description, 180);
   }
+
+  exportOptions = [
+    {
+      label: 'Copy JSON to Clipboard',
+      callback: () => this.exportUserStories('json')
+    },
+    {
+      label: 'Download as Excel (.xlsx)',
+      callback: () => this.exportUserStories('xlsx')
+    },
+    {
+      label: 'Sync with Jira',
+      callback: () => this.syncRequirementWithJira()
+    }
+  ];
 }

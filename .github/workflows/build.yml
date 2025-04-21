@@ -144,19 +144,30 @@ jobs:
         run: |
           cd electron
           $VERSION = (node -e "console.log(require('./package.json').version);" | Out-String).Trim()
-          Compress-Archive -Path dist/win-unpacked/* -DestinationPath win-unpacked.zip
-
-          # Upload to S3 for long-term storage
-          aws s3 cp win-unpacked.zip s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/win-unpacked.zip
-          aws s3 cp dist/latest.yml s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/latest.yml
+          
+          # Create out directory
+          New-Item -ItemType Directory -Path out -Force
+          
+          # Compress win-unpacked to out folder
+          Compress-Archive -Path dist/win-unpacked/* -DestinationPath out/win-unpacked.zip
+          
+          # Copy necessary files to out folder
+          Copy-Item dist/latest.yml out/
+          Copy-Item dist/*Setup*.exe out/ -ErrorAction SilentlyContinue
+          Copy-Item dist/*Setup*.exe.blockmap out/ -ErrorAction SilentlyContinue
+          
+          # Upload to S3 for long-term storage using sync
+          aws s3 sync out/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/"
 
       - name: Upload Windows Build as GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-electron-build
           path: |
-            electron/win-unpacked.zip
-            electron/dist/latest.yml
+            electron/out/win-unpacked.zip
+            electron/out/latest.yml
+            electron/out/*Setup*.exe
+            electron/out/*Setup*.exe.blockmap
           retention-days: 90
 
   build_electron_mac:

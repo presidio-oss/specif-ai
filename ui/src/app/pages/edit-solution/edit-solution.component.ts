@@ -104,7 +104,6 @@ export class EditSolutionComponent {
   requirementForm!: FormGroup;
   response: IList = {} as IList;
   chatHistory: any = [];
-  allowFreeRedirection: boolean = false;
   activeTab: 'includeFiles' | 'chat' = 'includeFiles';
   documentList: IList[] = [];
   currentLinkedPRDIds: Array<string> = [];
@@ -201,7 +200,7 @@ export class EditSolutionComponent {
       this.dialogService.confirm({
         ...dialogConfig,
         renderNewLine: true
-      }).pipe(map(result => !result))
+      }).pipe(map(result => result))
     );
   }
 
@@ -295,7 +294,6 @@ export class EditSolutionComponent {
         this.handlePRDBRDLinkUpdates(formValue);
       }
       
-      this.allowFreeRedirection = true;
       this.store.dispatch(
         new ReadFile(`${this.folderName}/${this.fileName}`),
       );
@@ -310,6 +308,9 @@ export class EditSolutionComponent {
         this.chatHistory = res.chatHistory || [];
       });
       
+      this.requirementForm.markAsUntouched();
+      this.requirementForm.markAsPristine();
+
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
       );
@@ -343,7 +344,6 @@ export class EditSolutionComponent {
       this.handlePRDBRDLinkUpdates(formValue);
     }
 
-    this.allowFreeRedirection = true;
     this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
     this.selectedFileContent$.subscribe((res: any) => {
       this.oldContent = res.requirement;
@@ -353,6 +353,8 @@ export class EditSolutionComponent {
       });
       this.chatHistory = res.chatHistory || [];
     });
+    this.requirementForm.markAsUntouched();
+    this.requirementForm.markAsPristine();
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
         this.folderName,
@@ -450,7 +452,8 @@ export class EditSolutionComponent {
           }
 
           this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
-          this.allowFreeRedirection = true;
+          this.requirementForm.markAsPristine();
+          this.requirementForm.markAsUntouched();          
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -475,7 +478,8 @@ export class EditSolutionComponent {
       }
 
       this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
-      this.allowFreeRedirection = true;
+      this.requirementForm.markAsPristine();
+      this.requirementForm.markAsUntouched();          
       this.navigateBackToDocumentList(this.initialData);
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -692,7 +696,6 @@ ${chat.assistant}`,
       .subscribe((res) => {
         if (res) {
           this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
-          this.allowFreeRedirection = true;
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
             TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(this.folderName, reqId),
@@ -711,9 +714,9 @@ ${chat.assistant}`,
 
   canDeactivate(): boolean {
     return (
-      !this.allowFreeRedirection &&
-      this.requirementForm.dirty &&
-      this.requirementForm.touched
+      (this.requirementForm.dirty &&
+      this.requirementForm.touched) ||
+      this.checkMappingChanges()
     );
   }
 
@@ -757,6 +760,23 @@ ${chat.assistant}`,
     return this.folderName === FOLDER.BRD;
   };
 
+  private checkMappingChanges(): boolean {
+    const formValue = this.requirementForm.getRawValue();
+  
+    if (this.isPRD()) {
+      const currentBRDs = formValue.linkedBRDIds || [];
+      return !(currentBRDs.length === this.currentLinkedBRDIds.length && 
+             currentBRDs.every((id: string) => this.currentLinkedBRDIds.includes(id)));
+    }
+    
+    if (this.isBRD()) {
+      const currentPRDs = formValue.linkedToPRDIds || [];
+      return !(currentPRDs.length === this.currentLinkedPRDIds.length &&
+             currentPRDs.every((id: string) => this.currentLinkedPRDIds.includes(id)));
+    }
+    return false;
+  }
+  
   extractPropertyValues<
     TData extends Array<TDataItem>,
     TDataItem extends Record<string, any>,
