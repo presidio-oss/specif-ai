@@ -658,7 +658,8 @@ export class BusinessProcessComponent implements OnInit {
 
     return (
       !this.allowForceRedirect &&
-      (this.businessProcessForm.dirty || hasSelectedRequirements)
+      ((this.businessProcessForm.dirty && this.businessProcessForm.touched) ||
+        hasSelectedRequirements)
     );
   }
 }
