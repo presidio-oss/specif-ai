@@ -104,6 +104,11 @@ export const CONFIRMATION_DIALOG = {
   },
 };
 
+export const REQUIREMENT_COUNT = {
+  DEFAULT: 15,
+  MAX: 30,
+} as const;
+
 export const REQUIREMENT_TYPE = {
   BRD: 'BRD',
   PRD: 'PRD',

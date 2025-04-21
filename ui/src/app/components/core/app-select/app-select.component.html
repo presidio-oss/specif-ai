@@ -32,6 +32,15 @@
       </div>
     </ng-template>
 
+    <!-- Cross Button -->
+    <button
+      *ngIf="clearable && selectedOption"
+      (click)="clear($event)"
+      class="pointer-events-auto absolute inset-y-0 right-8 flex items-center pr-2 cursor-pointer"
+    >
+    <ng-icon name="heroXMark" class="text-secondary-500 h-4 w-4"></ng-icon>
+    </button>
+
     <!-- Dropdown Arrow -->
     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
       <svg
