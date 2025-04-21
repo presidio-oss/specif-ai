@@ -25,6 +25,7 @@ import { NgIconComponent } from '@ng-icons/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
 import { NgIf, AsyncPipe, NgForOf, NgClass } from '@angular/common';
+import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 
 @Component({
   selector: 'app-document-listing',
@@ -41,8 +42,10 @@ import { NgIf, AsyncPipe, NgForOf, NgClass } from '@angular/common';
     NgIconComponent,
     MatMenuModule,
     RichTextEditorComponent,
-    SearchInputComponent
-  ],
+    SearchInputComponent,
+    NgClass,
+    ExportDropdownComponent
+],
 })
 export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
   @Input() documents: Document[] = [];
@@ -203,4 +206,18 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       ellipsis: true,
     });
   }
+
+  // TODO export and add req
+  // getExportOptions(folderName: string) {
+  //   return [
+  //     {
+  //       label: 'Copy JSON to Clipboard',
+  //       callback: () => this.exportDocumentList(folderName, 'json')
+  //     },
+  //     {
+  //       label: 'Download as Excel (.xlsx)',
+  //       callback: () => this.exportDocumentList(folderName, 'xlsx')
+  //     }
+  //   ];
+  // }
 }

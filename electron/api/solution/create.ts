@@ -10,7 +10,15 @@ import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
-import { COMPONENT, OPERATIONS } from '../../helper/constants';
+import { OPERATIONS } from '../../helper/constants';
+import { buildCreateSolutionWorkflow } from '../../agentic/create-solution-workflow';
+import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
+import { ICreateSolutionWorkflowStateAnnotation } from '../../agentic/create-solution-workflow/state';
+import { REQUIREMENT_TYPE } from '../../constants/requirement.constants';
+import { getMCPTools } from '../../mcp';
+import { MemorySaver } from "@langchain/langgraph";
+import { randomUUID } from "node:crypto";
+import { ObservabilityManager } from '../../services/observability/observability.manager';
 import { SolutionRepository } from '../../repo/solution.repo';
 import { MasterRepository } from '../../repo/master.repo';
 
@@ -18,7 +26,7 @@ import { MasterRepository } from '../../repo/master.repo';
 
 type RequirementTypeMeta = {
   key: keyof Pick<SolutionResponse, 'brd' | 'prd' | 'uir' | 'nfr'>;
-  generatePrompt: (params: { name: string; description: string; max_count: number; brds?: any[] }) => string;
+  generatePrompt: (params: { name: string; description: string; maxCount: number; brds?: any[] }) => string;
   preferencesKey: keyof Pick<CreateSolutionRequest, 'brdPreferences' | 'prdPreferences' | 'uirPreferences' | 'nfrPreferences'>;
 };
 
@@ -45,7 +53,7 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   const prompt = generatePrompt({
     name: data.name,
     description: data.description,
-    max_count: preferences.max_count,
+    maxCount: preferences.maxCount,
     brds
   });
   
@@ -54,7 +62,8 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   const messages = await LLMUtils.prepareMessages(prompt);
 
   try {
-    const traceName = traceBuilder(COMPONENT.SOLUTION, OPERATIONS.CREATE);
+
+    const traceName = traceBuilder(key, OPERATIONS.CREATE);
     const response = await llmHandler.invoke(messages, null, traceName);
     const extractedContent = extractRequirementsFromResponse(response, key);
 
@@ -83,13 +92,20 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
   try {
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace('create-solution');
+
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
 
-    console.log('[create-solution] Using LLM config:', llmConfig);
-    const validatedData = createSolutionSchema.parse(data);
+    console.log("[create-solution] Using LLM config:", llmConfig);
+
+    const validationSpan = trace.span({name: "input-validation"})
+    const validatedData = await createSolutionSchema.parseAsync(data);
+    validationSpan.end();
 
     const results: SolutionResponse = {
       createReqt: validatedData.createReqt ?? false,
@@ -114,6 +130,87 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     // Initialize database and store metadata through repository
     await solRepository.initializeSolutionDb();
     await solRepository.saveSolutionMetadata(validatedData);
+    if (!validatedData.createReqt) {
+      return results;
+    }
+
+    
+    const useAgent = true;
+
+    if (useAgent) {
+      let mcpTools = [];
+
+      const memoryCheckpointer = new MemorySaver();
+
+      try {
+        mcpTools = await getMCPTools(llmConfig.activeProvider);
+      } catch (error) {
+        console.warn("Error getting mcp tools");
+      }
+
+      const createSolutionWorkflow = buildCreateSolutionWorkflow({
+        tools: [...mcpTools],
+        model: buildLangchainModelProvider(
+          llmConfig.activeProvider,
+          llmConfig.providerConfigs[llmConfig.activeProvider].config
+        ),
+        checkpointer: memoryCheckpointer
+      });
+
+      const initialState: Partial<
+        ICreateSolutionWorkflowStateAnnotation["State"]
+      > = {
+        app: {
+          name: validatedData.name,
+          description: validatedData.description,
+        },
+        requirementGenerationPreferences: {
+          [REQUIREMENT_TYPE.PRD]: validatedData.prdPreferences,
+          [REQUIREMENT_TYPE.BRD]: validatedData.brdPreferences,
+          [REQUIREMENT_TYPE.NFR]: validatedData.nfrPreferences,
+          [REQUIREMENT_TYPE.UIR]: validatedData.uirPreferences,
+        },
+      };
+
+      const config = {
+        "configurable":{
+          "thread_id": `${randomUUID()}_create_solution`,
+          "trace": trace
+        }
+      }
+
+      const stream = createSolutionWorkflow.streamEvents(initialState, {
+        version: "v2",
+        streamMode: "messages",
+        ...config,
+      })
+
+      for await (const event of stream){
+      }
+
+      const response = await createSolutionWorkflow.getState({
+        ...config
+      })
+
+      const generatedRequirements = response.values.generatedRequirements;
+
+      return {
+        createReqt: validatedData.createReqt ?? false,
+        description: validatedData.description,
+        name: validatedData.name,
+        ...[
+          REQUIREMENT_TYPE.PRD,
+          REQUIREMENT_TYPE.BRD,
+          REQUIREMENT_TYPE.NFR,
+          REQUIREMENT_TYPE.UIR,
+        ].reduce((acc, rt) => {
+          return {
+            ...acc,
+            [rt.toLowerCase()]: generatedRequirements[rt].requirements,
+          };
+        }, {}),
+      };
+    }
 
     const llmHandler = buildLLMHandler(
       llmConfig.activeProvider,

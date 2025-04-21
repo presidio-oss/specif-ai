@@ -86,6 +86,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 - **📊 Business Process Visualization**: Easily generate and manage process flows.
 - **📋 User Story Generation**: Convert requirements into actionable user stories and tasks.
+- **🔗 Linking BRDs and PRDs**: Share BRD context to PRDs for holistic output.
 
 <div align="center">
 
@@ -93,9 +94,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 *User story and task generation*
 </div>
 
-- **🔄 Real-time Collaboration**: Collaborate and refine requirements with team members.
-- **📱 Desktop Integration**: Seamlessly integrate with your existing workflow tools.
-
+- **🔍 Analytics & Observability**: Optional analytics and observability tracked in PostHog and Langfuse.
 - **🔄 Multi-Model Support**: Choose the model that best suits your needs. Supported models include:
    - Azure OpenAI
       - gpt-4o
@@ -124,6 +123,8 @@ By simply providing a solution name, description, and tech stack details, Specif
       - gemini-1.5-pro-002
       - gemini-1.5-pro-exp-0827
       - gemini-exp-1206
+   - OpenRouter
+   - Ollama
 
 <div align="center">
 
@@ -164,15 +165,14 @@ Specifai follows a modern, scalable architecture designed for optimal performanc
 
 ## 📝 Version Controlled Requirements Management Made Easy
 
-Specifai is a powerful desktop application built to streamline and organize your project requirements. With Specifai, users can create a unified directory where all essential files are not only accessible and editable but also seamlessly synced with platforms like OneDrive, Dropbox, or any git-enabled local folder. This setup allows users to point to specific artifacts and data sources in a version-controlled environment, making collaboration and tracking effortless. Our goal is to enhance your development workflow by integrating seamlessly with the tools you already use, without adding complexity or obstacles.
+Specifai is a powerful desktop application built to streamline and organize your project requirements. With Specifai, users can create a unified directory where all essential files are not only accessible and editable but also seamlessly synced with platforms like OneDrive, Dropbox etc. This setup allows users to point to specific artifacts and data sources in a version-controlled environment, making collaboration and tracking effortless. Our goal is to enhance your development workflow by integrating seamlessly with the tools you already use, without adding complexity or obstacles.
 
 
 ## 🗺 Roadmap
-
-- [ ] Advanced BRD-PRD linking capabilities.
+- [x] Advanced BRD-PRD linking capabilities.
+- [ ] Agentic Workflow.
 - [ ] Enhanced collaboration features.
 - [ ] Custom template support.
-- [ ] v2.0 - Web version with enhanced collaboration capabilities.
 
 ## 🤝 Contributing
 

@@ -1,6 +1,6 @@
 import { Langfuse } from "langfuse";
-import { store } from '../store';
 import { AppConfig } from ".././../schema/core/store.schema";
+import { store } from "../store";
 
 export class ObservabilityManager {
   private static instance: ObservabilityManager;
@@ -9,8 +9,8 @@ export class ObservabilityManager {
   private userName: string;
 
   private constructor() {
-    this.tracingEnabled = store.get<boolean>('analyticsEnabled') || false;
-    const APP_CONFIG = store.get<AppConfig>('APP_CONFIG');
+    this.tracingEnabled = store.get<boolean>("analyticsEnabled") || false;
+    const APP_CONFIG = store.get<AppConfig>("APP_CONFIG");
     this.userName = APP_CONFIG?.username || "anonymous";
 
     if (this.tracingEnabled) {
@@ -37,7 +37,7 @@ export class ObservabilityManager {
 
     return this.langfuse.trace({
       name,
-      userId: this.userName
+      userId: this.userName,
     });
   }
 
@@ -47,8 +47,10 @@ export class ObservabilityManager {
         console.debug("[observability-manager] generation method called");
         return {
           end: () => {
-            console.debug("[observability-manager] generation.end method called");
-          }
+            console.debug(
+              "[observability-manager] generation.end method called"
+            );
+          },
         };
       },
       span: () => {
@@ -56,7 +58,9 @@ export class ObservabilityManager {
         return {
           end: () => {
             console.debug("[observability-manager] span.end method called");
-          }
+          },
+          span: () => this.getMockTrace(),
+          generation: () => this.getMockTrace(),
         };
       },
       update: () => {
@@ -64,7 +68,7 @@ export class ObservabilityManager {
       },
       end: () => {
         console.debug("[observability-manager] end method called");
-      }
+      },
     };
   }
 }
