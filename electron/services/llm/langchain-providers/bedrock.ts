@@ -1,4 +1,4 @@
-import { BedrockChat } from "@langchain/community/chat_models/bedrock";
+import { ChatBedrockConverse } from "@langchain/aws";
 import { LLMConfig, LLMError, ModelInfo } from "../llm-types";
 import { LangChainModelProvider } from "./base";
 
@@ -12,11 +12,11 @@ interface BedrockConfig extends LLMConfig {
 
 export class BedrockLangChainProvider implements LangChainModelProvider {
   protected configData: BedrockConfig;
-  private model: BedrockChat;
+  private model: ChatBedrockConverse;
 
   constructor(config: Partial<BedrockConfig>) {
     this.configData = this.getConfig(config);
-    this.model = new BedrockChat({
+    this.model = new ChatBedrockConverse({
       model: this.configData.model,
       region: this.configData.region,
       credentials: {
@@ -24,9 +24,7 @@ export class BedrockLangChainProvider implements LangChainModelProvider {
         secretAccessKey: this.configData.secretAccessKey,
         sessionToken: this.configData.sessionToken,
       },
-      modelKwargs: {
-        maxTokens: 4096,
-      },
+      maxTokens: 4096,
     });
   }
 
@@ -53,7 +51,7 @@ export class BedrockLangChainProvider implements LangChainModelProvider {
     };
   }
 
-  getModel(): BedrockChat {
+  getModel(): ChatBedrockConverse {
     return this.model;
   }
 
