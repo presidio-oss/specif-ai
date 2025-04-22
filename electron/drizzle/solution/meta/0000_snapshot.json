@@ -1,11 +1,11 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "680e69fb-d613-473c-a324-63e73426e975",
+  "id": "9f862508-9dea-4a8b-8ba9-c38dfe7b3878",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "AnalyticsLookup": {
-      "name": "AnalyticsLookup",
+    "analyticsLookup": {
+      "name": "analyticsLookup",
       "columns": {
         "id": {
           "name": "id",
@@ -14,49 +14,49 @@
           "notNull": true,
           "autoincrement": false
         },
-        "target_type": {
-          "name": "target_type",
+        "targetType": {
+          "name": "targetType",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "target_id": {
-          "name": "target_id",
-          "type": "integer",
+        "targetId": {
+          "name": "targetId",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "is_liked": {
-          "name": "is_liked",
+        "isLiked": {
+          "name": "isLiked",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
           "default": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
@@ -67,8 +67,98 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "BusinessProcess": {
-      "name": "BusinessProcess",
+    "auditTracker": {
+      "name": "auditTracker",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "auditType": {
+          "name": "auditType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "docId": {
+          "name": "docId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "context": {
+          "name": "context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdBy": {
+          "name": "createdBy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "isDeleted": {
+          "name": "isDeleted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "auditTracker_docId_document_id_fk": {
+          "name": "auditTracker_docId_document_id_fk",
+          "tableFrom": "auditTracker",
+          "tableTo": "document",
+          "columnsFrom": [
+            "docId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "businessProcess": {
+      "name": "businessProcess",
       "columns": {
         "id": {
           "name": "id",
@@ -98,27 +188,27 @@
           "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
@@ -129,75 +219,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "BusinessProcessDocuments": {
-      "name": "BusinessProcessDocuments",
-      "columns": {
-        "business_process_id": {
-          "name": "business_process_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "document_id": {
-          "name": "document_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "doc_type": {
-          "name": "doc_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "BusinessProcessDocuments_business_process_id_BusinessProcess_id_fk": {
-          "name": "BusinessProcessDocuments_business_process_id_BusinessProcess_id_fk",
-          "tableFrom": "BusinessProcessDocuments",
-          "tableTo": "BusinessProcess",
-          "columnsFrom": [
-            "business_process_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "BusinessProcessDocuments_document_id_Document_id_fk": {
-          "name": "BusinessProcessDocuments_document_id_Document_id_fk",
-          "tableFrom": "BusinessProcessDocuments",
-          "tableTo": "Document",
-          "columnsFrom": [
-            "document_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "BusinessProcessDocuments_business_process_id_document_id_doc_type_pk": {
-          "columns": [
-            "business_process_id",
-            "document_id",
-            "doc_type"
-          ],
-          "name": "BusinessProcessDocuments_business_process_id_document_id_doc_type_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "Conversation": {
-      "name": "Conversation",
+    "businessProcessDocuments": {
+      "name": "businessProcessDocuments",
       "columns": {
         "id": {
           "name": "id",
@@ -206,8 +229,73 @@
           "notNull": true,
           "autoincrement": false
         },
-        "document_id": {
-          "name": "document_id",
+        "businessProcessId": {
+          "name": "businessProcessId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "documentId": {
+          "name": "documentId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "docType": {
+          "name": "docType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "businessProcessDocuments_businessProcessId_businessProcess_id_fk": {
+          "name": "businessProcessDocuments_businessProcessId_businessProcess_id_fk",
+          "tableFrom": "businessProcessDocuments",
+          "tableTo": "businessProcess",
+          "columnsFrom": [
+            "businessProcessId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "businessProcessDocuments_documentId_document_id_fk": {
+          "name": "businessProcessDocuments_documentId_document_id_fk",
+          "tableFrom": "businessProcessDocuments",
+          "tableTo": "document",
+          "columnsFrom": [
+            "documentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "conversation": {
+      "name": "conversation",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "documentId": {
+          "name": "documentId",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -220,44 +308,44 @@
           "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "Conversation_document_id_Document_id_fk": {
-          "name": "Conversation_document_id_Document_id_fk",
-          "tableFrom": "Conversation",
-          "tableTo": "Document",
+        "conversation_documentId_document_id_fk": {
+          "name": "conversation_documentId_document_id_fk",
+          "tableFrom": "conversation",
+          "tableTo": "document",
           "columnsFrom": [
-            "document_id"
+            "documentId"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -265,13 +353,20 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "Document": {
-      "name": "Document",
+    "document": {
+      "name": "document",
       "columns": {
         "id": {
           "name": "id",
           "type": "integer",
           "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "documentNumber": {
+          "name": "documentNumber",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -289,66 +384,58 @@
           "notNull": true,
           "autoincrement": false
         },
-        "jira_id": {
-          "name": "jira_id",
+        "jiraId": {
+          "name": "jiraId",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "document_type_id": {
-          "name": "document_type_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "count": {
-          "name": "count",
+        "documentTypeId": {
+          "name": "documentTypeId",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false,
-          "default": 0
+          "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "Document_document_type_id_DocumentType_id_fk": {
-          "name": "Document_document_type_id_DocumentType_id_fk",
-          "tableFrom": "Document",
-          "tableTo": "DocumentType",
+        "document_documentTypeId_documentType_id_fk": {
+          "name": "document_documentTypeId_documentType_id_fk",
+          "tableFrom": "document",
+          "tableTo": "documentType",
           "columnsFrom": [
-            "document_type_id"
+            "documentTypeId"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -356,12 +443,115 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "DocumentType": {
-      "name": "DocumentType",
+    "documentLinks": {
+      "name": "documentLinks",
       "columns": {
         "id": {
           "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sourceDocumentId": {
+          "name": "sourceDocumentId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "targetDocumentId": {
+          "name": "targetDocumentId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sourceDocumentType": {
+          "name": "sourceDocumentType",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "targetDocumentType": {
+          "name": "targetDocumentType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdBy": {
+          "name": "createdBy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "isDeleted": {
+          "name": "isDeleted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "documentLinks_sourceDocumentId_document_id_fk": {
+          "name": "documentLinks_sourceDocumentId_document_id_fk",
+          "tableFrom": "documentLinks",
+          "tableTo": "document",
+          "columnsFrom": [
+            "sourceDocumentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "documentLinks_targetDocumentId_document_id_fk": {
+          "name": "documentLinks_targetDocumentId_document_id_fk",
+          "tableFrom": "documentLinks",
+          "tableTo": "document",
+          "columnsFrom": [
+            "targetDocumentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "documentType": {
+      "name": "documentType",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
@@ -373,42 +563,42 @@
           "notNull": true,
           "autoincrement": false
         },
-        "type_label": {
-          "name": "type_label",
+        "typeLabel": {
+          "name": "typeLabel",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "is_active": {
-          "name": "is_active",
+        "isActive": {
+          "name": "isActive",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
           "default": true
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
@@ -419,8 +609,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "Integration": {
-      "name": "Integration",
+    "integration": {
+      "name": "integration",
       "columns": {
         "id": {
           "name": "id",
@@ -436,27 +626,27 @@
           "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
@@ -467,8 +657,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "Message": {
-      "name": "Message",
+    "message": {
+      "name": "message",
       "columns": {
         "id": {
           "name": "id",
@@ -477,8 +667,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "conversation_id": {
-          "name": "conversation_id",
+        "conversationId": {
+          "name": "conversationId",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -491,59 +681,59 @@
           "notNull": true,
           "autoincrement": false
         },
-        "role": {
-          "name": "role",
+        "userType": {
+          "name": "userType",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "is_applied": {
-          "name": "is_applied",
+        "isApplied": {
+          "name": "isApplied",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
           "default": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "Message_conversation_id_Conversation_id_fk": {
-          "name": "Message_conversation_id_Conversation_id_fk",
-          "tableFrom": "Message",
-          "tableTo": "Conversation",
+        "message_conversationId_conversation_id_fk": {
+          "name": "message_conversationId_conversation_id_fk",
+          "tableFrom": "message",
+          "tableTo": "conversation",
           "columnsFrom": [
-            "conversation_id"
+            "conversationId"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -551,8 +741,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "Metadata": {
-      "name": "Metadata",
+    "metadata": {
+      "name": "metadata",
       "columns": {
         "id": {
           "name": "id",
@@ -575,15 +765,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "technical_details": {
-          "name": "technical_details",
+        "technicalDetails": {
+          "name": "technicalDetails",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "is_brownfield": {
-          "name": "is_brownfield",
+        "isBrownfield": {
+          "name": "isBrownfield",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -594,30 +784,31 @@
           "name": "version",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'v1'"
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "is_deleted": {
-          "name": "is_deleted",
+        "isDeleted": {
+          "name": "isDeleted",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         }
@@ -629,7 +820,36 @@
       "checkConstraints": {}
     }
   },
-  "views": {},
+  "views": {
+    "DocumentCountByType": {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "typeLabel": {
+          "name": "typeLabel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "name": "DocumentCountByType",
+      "isExisting": false,
+      "definition": "select \"documentType\".\"id\", \"documentType\".\"name\", \"documentType\".\"typeLabel\", count(\"document\".\"id\") as \"count\" from \"documentType\" left join \"document\" on \"document\".\"documentTypeId\" = \"documentType\".\"id\" group by \"documentType\".\"id\""
+    }
+  },
   "enums": {},
   "_meta": {
     "schemas": {},

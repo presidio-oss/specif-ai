@@ -1,20 +1,11 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-import { sql } from "drizzle-orm";
+import { commonColumns } from "./solution";
 
-const commonColumns = {
-  createdAt: text("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  isDeleted: integer("is_deleted", { mode: "boolean" }).default(false),
-};
-
-export const masterSolutions = sqliteTable("MasterSolutions", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").unique().notNull(),
-  description: text("description").notNull(),
-  isActive: integer("is_active", { mode: "boolean" }).default(true),
+export const masterSolutions = sqliteTable("masterSolutions", {
+  id: integer().primaryKey(),
+  name: text({ mode: "text" }).notNull(),
+  description: text({ mode: "text" }).notNull(),
+  solutionPath: text({ mode: "text" }).notNull().unique(),
+  isActive: integer({ mode: "boolean" }).default(true).notNull(),
   ...commonColumns,
 });
