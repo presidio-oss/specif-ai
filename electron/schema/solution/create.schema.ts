@@ -8,10 +8,7 @@ export const generationRangeSchema = z.object({
 export const createSolutionSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
-  frontend: z.boolean().optional(),
-  backend: z.boolean().optional(),
-  database: z.boolean().optional(),
-  deployment: z.boolean().optional(),
+  technicalDetails: z.string().min(1),
   createReqt: z.boolean().optional(),
   cleanSolution: z.boolean(),
   brdPreferences: generationRangeSchema,

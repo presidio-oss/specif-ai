@@ -238,10 +238,20 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         throw new Error(`Solution with name "${validatedData.name}" already exists.`);
       }
 
+      // Retrieve the base directory path from app config and construct the full solution path.
+      const appConfig = store.getAppConfig();
+
+      if (!appConfig?.directoryPath) {
+        throw new Error("directoryPath not configured in APP_CONFIG");
+      }
+
+      const solutionPath = `${appConfig.directoryPath}/${validatedData.name}`;
+
       // Create a new solution
       const payload: ICreateMasterSolution = {
         name: validatedData.name,
-        description: validatedData.description
+        description: validatedData.description,
+        solutionPath: solutionPath,
       }
       const response = await repo.createMasterSolution(payload);
       if (!response) {
@@ -254,7 +264,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         // Create solution metadata
         await solutionRepo.saveMetadata({
           ...payload,
-          technicalDetails: '', // FIXME: Technical details does not present in the incoming data
+          technicalDetails: validatedData.technicalDetails,
           isBrownfield: validatedData.cleanSolution
         })
         
