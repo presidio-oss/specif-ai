@@ -1,9 +1,9 @@
 import type { IpcMainInvokeEvent } from "electron";
 import type { GetSolutionsResponse } from "../../schema/solution/get.schema";
-import { MasterRepository } from "../../repo/master.repo";
 import { traceBuilder } from "../../utils/trace-builder";
 import { COMPONENT, OPERATIONS } from "../../helper/constants";
-import { SolutionRepository } from "../../repo/solution.repo";
+import { masterFactory } from "../../db/master.factory";
+import { solutionFactory } from "../../db/solution.factory";
 
 export async function getSolutions(
   event: IpcMainInvokeEvent
@@ -14,9 +14,10 @@ export async function getSolutions(
     const traceName = traceBuilder(COMPONENT.SOLUTION, OPERATIONS.GET);
     console.log(`[get-solutions] Using trace: ${traceName}`);
 
-    const masterRepo = new MasterRepository();
-    await masterRepo.initializeMasterDb();
+    // Get Master repository instance
+    const masterRepo = masterFactory.getRepository()
 
+    // Get all the solution details
     const dbSolutions = await masterRepo.getAllSolutions();
 
     const solutions = dbSolutions.map((solution) => ({
@@ -43,6 +44,17 @@ export async function getSolutionByName(
   name: string,
   docTypes?: string[]
 ) {
-  const solutionRepo = new SolutionRepository(name);
+  // Get Master repository instance
+  const masterRepo = masterFactory.getRepository()
+
+  // Check whether the solution exists
+  const solutionDetail = await masterRepo.getSolution({ name });
+  if (!solutionDetail) {
+    throw new Error('Solution does not exists')
+  }
+
+  // Get Solution repository
+  const solutionRepo = await solutionFactory.getRepository(solutionDetail.id)
+
   return await solutionRepo.getSolutionByName(name, docTypes);
 }

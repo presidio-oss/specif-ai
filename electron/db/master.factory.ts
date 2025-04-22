@@ -11,7 +11,7 @@ export type MasterDB = LibSQLDatabase<typeof masterSchema> | LibSQLTransaction<t
 
 export class MasterFactory {
     static DEFAULT_DB_PATH = 'master.sqlite'
-    private static db: MasterDB;
+    private static db: MasterDB | undefined = undefined;
 
     createDatabase(dbPath: string) {
         console.log('Entered <MasterFactory.createDatabase>')
@@ -37,23 +37,25 @@ export class MasterFactory {
 
         if (!MasterFactory.db) {
             console.log('No master database instance found, creating from the current working directory');
-
-            // Default fallback to working directory from the store
-            const appConfig = store.getAppConfig();
-            if (!(appConfig && appConfig.directoryPath)) {
-                throw new Error('Invalid directory path, please verify.')
-            }
-
-            // Initialize database
-            MasterFactory.db = this.createDatabase(appConfig.directoryPath);
+            this.setDatabase();
         }
 
         console.log('Exited <MasterFactory.getDatabase>')
         return MasterFactory.db;
     }
 
-    setDatabase(dbPath: string) {
+    setDatabase(dbPath: string | null = null) {
         console.log('Entered <MasterFactory.setDatabase>')
+
+        // Default fallback to working directory from the store
+        if (!dbPath) {
+            const appConfig = store.getAppConfig();
+            if (!(appConfig && appConfig.directoryPath)) {
+                throw new Error('Invalid directory path, please verify.')
+            }
+
+            dbPath = appConfig.directoryPath
+        }
 
         // Overrides the existing database instance
         MasterFactory.db = this.createDatabase(dbPath);
@@ -66,6 +68,9 @@ export class MasterFactory {
 
         // Get database instance
         const db = this.getDatabase();
+        if (!db) {
+            throw new Error("Invalid database instance.");
+        }
 
         // Create new master repository
         const repo = new MasterRepository(db);
@@ -78,11 +83,20 @@ export class MasterFactory {
         fn: (repo: MasterRepository) => Promise<T>
     ): Promise<T> {
         const db = this.getDatabase();
+        if (!db) {
+            throw new Error("Invalid database instance.");
+        }
 
         return db.transaction(async (tx) => {
             const repo = new MasterRepository(tx);
             return await fn(repo);
         });
+    }
+
+    closeActiveDBConnection() {
+        if (MasterFactory.db) {
+            MasterFactory.db = undefined;
+        }
     }
 }
 

@@ -3,7 +3,6 @@ import { LLMUtils } from '../../services/llm/llm-utils';
 import { buildLLMHandler, LLMHandler } from '../../services/llm';
 import { store } from '../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { createBRDPrompt } from '../../prompts/solution/create-brd';
 import { createPRDPrompt } from '../../prompts/solution/create-prd';
 import { createUIRPrompt } from '../../prompts/solution/create-uir';
@@ -19,8 +18,9 @@ import { getMCPTools } from '../../mcp';
 import { MemorySaver } from "@langchain/langgraph";
 import { randomUUID } from "node:crypto";
 import { ObservabilityManager } from '../../services/observability/observability.manager';
-import { SolutionRepository } from '../../repo/solution.repo';
-import { MasterRepository } from '../../repo/master.repo';
+import { masterFactory } from '../../db/master.factory';
+import { ICreateMasterSolution } from '../../db/interfaces/master.interface';
+import { solutionFactory } from '../../db/solution.factory';
 
 // types
 
@@ -100,40 +100,25 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
+    console.log('[create-solution] Using LLM config:', llmConfig);
 
-    console.log("[create-solution] Using LLM config:", llmConfig);
-
-    const validationSpan = trace.span({name: "input-validation"})
-    const validatedData = await createSolutionSchema.parseAsync(data);
-    validationSpan.end();
-
+    // Validate incoming data
+    const parsedData = createSolutionSchema.safeParse(data);
+    if (!parsedData.success) {
+      console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`)
+      throw new Error('Schema validation failed')
+    }
+    
+    const validatedData = parsedData.data;
     const results: SolutionResponse = {
       createReqt: validatedData.createReqt ?? false,
       description: validatedData.description,
       name: validatedData.name
     };
 
-    // Initialize repository
-    const solRepository = new SolutionRepository(validatedData.name);
-    const masterRepository = new MasterRepository();
-
-    // Master database and check for existing solutions
-    await masterRepository.initializeMasterDb();
-    const existingSolutions = await masterRepository.getSolutionByName(validatedData.name);
-    if (existingSolutions.length > 0) {
-      throw new Error(`Solution with name "${validatedData.name}" already exists.`);
-    }
-    // Create solution in master database
-    await masterRepository.createMasterSolution(validatedData.name, validatedData.description);
-
-
-    // Initialize database and store metadata through repository
-    await solRepository.initializeSolutionDb();
-    await solRepository.saveSolutionMetadata(validatedData);
     if (!validatedData.createReqt) {
       return results;
     }
-
     
     const useAgent = true;
 
@@ -245,8 +230,37 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       }
     }
 
-    // Store requirements through repository
-    await solRepository.saveRequirements(results);
+    // Start DB transaction
+    await masterFactory.runWithTransaction(async (repo) => {
+      // Check whether there are any existing solution with the same name
+      const existingSolution = await repo.getSolution({ name: validatedData.name });
+      if (existingSolution) {
+        throw new Error(`Solution with name "${validatedData.name}" already exists.`);
+      }
+
+      // Create a new solution
+      const payload: ICreateMasterSolution = {
+        name: validatedData.name,
+        description: validatedData.description
+      }
+      const response = await repo.createMasterSolution(payload);
+      if (!response) {
+        throw new Error('Error occurred while creating solution')
+      }
+      console.log(`Successfully created a solution, Solution ID: ${response.id}`)
+
+      // Get solution repository, this would create the solution database and its directory
+      await solutionFactory.runWithTransaction(response.id, async (solutionRepo) => {
+        // Create solution metadata
+        await solutionRepo.saveMetadata({
+          ...payload,
+          technicalDetails: '', // FIXME: Technical details does not present in the incoming data
+          isBrownfield: validatedData.cleanSolution
+        })
+        
+        // TODO: Create all the requirements
+      })
+    })
 
     return results;
   } catch (error) {

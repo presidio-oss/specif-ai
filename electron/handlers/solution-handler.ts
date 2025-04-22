@@ -2,8 +2,9 @@ import { ipcMain } from "electron";
 import { createSolution } from "../api/solution/create";
 import { validateBedrock } from "../api/solution/validate-bedrock";
 import { getSolutionByName, getSolutions } from "../api/solution/get";
-import { DatabaseClient } from "../db";
 import type { IpcMainInvokeEvent } from 'electron';
+import { masterFactory } from "../db/master.factory";
+import { solutionFactory } from "../db/solution.factory";
 
 export function setupSolutionHandlers() {
   ipcMain.handle('solution:createSolution', async (_event, data: any) => {
@@ -28,9 +29,12 @@ export function setupSolutionHandlers() {
 
   ipcMain.handle("solution:setRootDir", async (_event) => {
     try {
-      const dbClient = DatabaseClient.getInstance();
-      dbClient.shutdown();
-      await dbClient.initializeMasterDb();
+      // Close active database connection
+      masterFactory.closeActiveDBConnection()
+
+      // Create new connetion
+      masterFactory.setDatabase();
+
       return { success: true };
     } catch (error) {
       console.error("Error setting root directory:", error);
@@ -50,8 +54,18 @@ export function setupSolutionHandlers() {
 
   ipcMain.handle('solution:activate', async (_event: IpcMainInvokeEvent, solutionName: string) => {
     try {
-      const dbClient = DatabaseClient.getInstance();
-      await dbClient.openSolutionDb(solutionName);
+      // Get Master repository instance
+      const masterRepo = masterFactory.getRepository()
+    
+      // Check whether the solution exists
+      const solutionDetail = await masterRepo.getSolution({ name: solutionName });
+      if (!solutionDetail) {
+        throw new Error('Solution does not exists')
+      }
+    
+      // Get Solution repository
+      await solutionFactory.setDatabase(solutionDetail.id)
+
       return { success: true };
     } catch (error: any) {
       console.error('Error activating solution database:', error.message);

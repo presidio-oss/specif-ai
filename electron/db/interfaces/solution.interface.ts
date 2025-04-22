@@ -1,21 +1,24 @@
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
 import { 
     metadata, 
-    integration, 
-    documentType, 
-    document, 
-    conversation, 
-    message, 
-    businessProcess,
-    businessProcessDocuments,
-    analyticsLookup
+    document
 } from '../schema/solution';
 
-export type IMetadata = typeof metadata.$inferSelect;
-export type IIntegration = typeof integration.$inferSelect;
-export type IDocumentType = typeof documentType.$inferSelect;
-export type IDocument = typeof document.$inferSelect;
-export type IConversation = typeof conversation.$inferSelect;
-export type IMessage = typeof message.$inferSelect;
-export type IBusinessProcess = typeof businessProcess.$inferSelect;
-export type IBusinessProcessDocuments = typeof businessProcessDocuments.$inferSelect;
-export type IAnalyticsLookup = typeof analyticsLookup.$inferSelect;
+// Table: Metadata
+// Below would contain the zod schema and its infered type
+
+export const metadataSelectSchema = createSelectSchema(metadata);
+export const metadataInsertSchema = createInsertSchema(metadata);
+
+export type IMetadata = z.infer<typeof metadataSelectSchema>;
+export type ICreateMetadata = z.infer<typeof metadataInsertSchema>;
+
+// Table: Document
+// Below would contain the zod schema and its infered type
+
+export const documentSelectSchema = createSelectSchema(document);
+export const documentInsertSchema = createInsertSchema(document);
+
+export type IDocument = z.infer<typeof documentSelectSchema>;
+export type ICreateDocument = z.infer<typeof documentInsertSchema>;

@@ -5,7 +5,6 @@ import {
 import { LLMUtils } from "../../services/llm/llm-utils";
 import { buildLLMHandler } from "../../services/llm";
 import { store } from "../../services/store";
-import { RequirementRepository } from "../../repo/requirement.repo";
 import type { IpcMainInvokeEvent } from "electron";
 import type { LLMConfigModel } from "../../services/llm/llm-types";
 import { addRequirementPrompt } from "../../prompts/requirement/add";
@@ -31,7 +30,7 @@ export async function addRequirement(
     } = validatedData;
     
     console.log("[add-requirement] Adding requirement...");
-    const reqRepository = new RequirementRepository();
+
     let requirementTitle = title;
     let requirementContent = reqt || '';
     
@@ -80,12 +79,7 @@ export async function addRequirement(
       }
     }
     
-    // Save requirement to database (whether AI-generated or user-provided)
-    await reqRepository.saveRequirement({
-      title: requirementTitle,
-      requirement: requirementContent,
-      documentTypeId: addReqtType,
-    });
+    // TODO: Save requirement to database (whether AI-generated or user-provided)
     
     return {
       ...validatedData,

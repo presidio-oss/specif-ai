@@ -1,56 +1,61 @@
 import { inArray } from "drizzle-orm";
 import * as solutionSchema from '../schema/solution';
-import { CreateSolutionRequest, SolutionResponse } from "../../schema/solution/create.schema";
 import { SolutionDB } from "../solution.factory";
+import { documentInsertSchema, ICreateDocument, ICreateMetadata } from "../interfaces/solution.interface";
+import { metadataInsertSchema } from "../interfaces/solution.interface";
 
 export class SolutionRepository {
-  constructor(private db: SolutionDB) {}
-  
-  async saveSolutionMetadata(solutionData: CreateSolutionRequest) {
-    await this.db.insert(solutionSchema.metadata).values([
-      {
-        name: solutionData.name,
-        description: solutionData.description,
-        version: "1.0.0",
-        isBrownfield: solutionData.cleanSolution,
-        technicalDetails: solutionData.description,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ]);
-
-    return true;
+  constructor(private db: SolutionDB) {
+    if (!this.db) {
+      throw new Error("Invalid database instance.");
+    }
   }
 
-  // private async saveRequirement(
-  //   req: { title: string; requirement: string },
-  //   reqType: string,
-  //   count: number
-  // ) {
-  //   return await this.db.insert(solutionSchema.document).values([
-  //     {
-  //       name: req.title,
-  //       description: req.requirement,
-  //       documentTypeId: reqType,
-  //       count: count,
-  //       createdAt: new Date().toISOString(),
-  //       updatedAt: new Date().toISOString(),
-  //     },
-  //   ]);
-  // }
+  // Table: Metadata
+  // Below are the functions related to Metadata table
 
-  // async saveRequirements(results: SolutionResponse) {
-  //   for (const reqType of ["brd", "prd", "uir", "nfr"] as const) {
-  //     if (results[reqType]) {
-  //       for (const req of results[reqType]) {
-  //         await this.saveRequirement(req, reqType, results[reqType].length);
-  //       }
-  //     }
-  //   }
-    
-  //   return true;
-  // }
+  async saveMetadata(metadataDetail: ICreateMetadata) {
+    console.log('Entered <SolutionRepository.saveMetadata>')
 
+    // Validate the data
+    const parsedData = metadataInsertSchema.safeParse(metadataDetail);
+    if (!parsedData.success) {
+      console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+      throw new Error('Schema validation failed')
+    }
+
+    const response = await this.db
+      .insert(solutionSchema.metadata)
+      .values(parsedData.data)
+      .returning()
+
+    console.log('Exited <SolutionRepository.saveMetadata>')
+    return (response && response.length) ? response[0] : null;
+  }
+
+  // Table: Document
+  // Below are the functions related to Metadata table
+
+  async createRequirement(requirementDetail: ICreateDocument) {
+    console.log('Entered <SolutionRepository.createRequirement>')
+
+    // Validate the data
+    const parsedData = documentInsertSchema.safeParse(requirementDetail);
+    if (!parsedData.success) {
+      console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+      throw new Error('Schema validation failed')
+    }
+
+    const response = await this.db
+      .insert(solutionSchema.document)
+      .values(parsedData.data)
+      .returning()
+
+    console.log('Exited <SolutionRepository.createRequirement>')
+    return (response && response.length) ? response[0] : null;
+  }
+
+  // FIXME: where are we using this function? and can we optimise this?
   async getSolutionByName(name: string, docTypes?: string[]) {
     // TODO: Filter non-deleted items
     const solutionMetadata = await this.db.select().from(solutionSchema.metadata);

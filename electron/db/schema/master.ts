@@ -13,9 +13,8 @@ const commonColumns = {
 
 export const masterSolutions = sqliteTable("MasterSolutions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
+  name: text("name").unique().notNull(),
   description: text("description").notNull(),
-  solutionPath: text("solution_path").unique().notNull(),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
   ...commonColumns,
 });

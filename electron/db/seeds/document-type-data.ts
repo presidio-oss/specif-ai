@@ -1,4 +1,4 @@
-import { documentType } from "../solution.schema";
+import { documentType } from "../schema/solution";
 
 export const documentTypeData: Array<typeof documentType.$inferInsert> = [
   {

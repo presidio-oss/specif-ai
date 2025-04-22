@@ -5,6 +5,7 @@ import { createClient } from "@libsql/client/lib-esm/node";
 import * as solutionSchema from "./schema/solution";
 import { masterFactory, MasterFactory } from "./master.factory";
 import { SolutionRepository } from "./repo/solution.repo";
+import { store } from "../services/store";
 
 export type SolutionDB = LibSQLDatabase<typeof solutionSchema> | LibSQLTransaction<typeof solutionSchema, any>;
 
@@ -13,7 +14,7 @@ export class SolutionFactory {
 
     // This would hold one solution database instance at a time
     // We can even convert this to hold all the solution database instance, but for now that wasn't required
-    private static dbDetails: { id: number, db: SolutionDB };
+    private static dbDetails: { id: number, db: SolutionDB } | undefined = undefined;
 
     constructor(private masterFactory: MasterFactory) { }
 
@@ -44,6 +45,10 @@ export class SolutionFactory {
             this.setDatabase(solutionId);
         }
 
+        if (!SolutionFactory.dbDetails) {
+            throw new Error('Invalid database details');
+        }
+
         console.log('Exited <SolutionFactory.getDatabase>')
         return SolutionFactory.dbDetails.db;
     }
@@ -60,7 +65,18 @@ export class SolutionFactory {
         }
 
         // Initialize database
-        const db = this.createDatabase(solutionDetail.solutionPath);
+        const { directoryPath } = store.getAppConfig() || {};
+        if (!directoryPath || !fs.existsSync(directoryPath)) {
+            throw new Error('Invalid base directory');
+        }
+
+        // Check if the solution directory present
+        const solutionDBPath = `${directoryPath}/${solutionDetail.name}`;
+        if (!fs.existsSync(solutionDBPath)) {
+            fs.mkdirSync(solutionDBPath)
+        }
+
+        const db = this.createDatabase(solutionDBPath);
         SolutionFactory.dbDetails = { id: solutionDetail.id, db }
 
         console.log('Exited <SolutionFactory.setDatabase>')
@@ -89,6 +105,12 @@ export class SolutionFactory {
             const repo = new SolutionRepository(tx);
             return await fn(repo);
         });
+    }
+
+    closeActiveDBConnection() {
+        if (SolutionFactory.dbDetails) {
+            SolutionFactory.dbDetails = undefined;
+        }
     }
 }
 
