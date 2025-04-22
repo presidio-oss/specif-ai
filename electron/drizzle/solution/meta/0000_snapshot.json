@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9f862508-9dea-4a8b-8ba9-c38dfe7b3878",
+  "id": "630f889f-7821-4576-abd8-bd6d3618ac54",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "analyticsLookup": {
@@ -551,7 +551,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
@@ -825,7 +825,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false

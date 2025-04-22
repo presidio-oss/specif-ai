@@ -78,7 +78,7 @@ CREATE TABLE `documentLinks` (
 );
 --> statement-breakpoint
 CREATE TABLE `documentType` (
-	`id` integer PRIMARY KEY NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`typeLabel` text NOT NULL,
 	`isActive` integer DEFAULT true,

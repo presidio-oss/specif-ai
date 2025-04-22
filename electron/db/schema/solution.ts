@@ -36,7 +36,7 @@ export const integration = sqliteTable("integration", {
 });
 
 export const documentType = sqliteTable("documentType", {
-  id: integer().primaryKey(),
+  id: text().primaryKey(),
   name: text({ mode: "text" }).notNull(),
   typeLabel: text({ mode: "text" }).notNull(),
   isActive: integer({ mode: "boolean" }).default(true),
