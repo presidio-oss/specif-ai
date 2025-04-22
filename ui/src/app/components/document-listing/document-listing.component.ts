@@ -18,7 +18,7 @@ import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.cons
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
-import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
 import { processPRDContentForView } from '../../utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
@@ -73,6 +73,10 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       this.searchInput.clearSearch();
     }
   }
+
+  // For Export Dropdown Options
+  exportOptions: { label: string; callback: () => void }[] = [];
+  exportedFolderName: string = '';
 
   currentRoute: string;
   constructor(
@@ -275,15 +279,34 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   getExportOptions(folderName: string) {
-    return [
+    if (!folderName) {
+      console.warn('Folder name is undefined');
+      return [];
+    }
+
+    if (this.exportedFolderName === folderName) {
+      return this.exportOptions;
+    }
+        
+    const exportJson = () => {
+      this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.JSON);
+    };
+
+    const exportExcel = () => {
+      this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.EXCEL);
+    };
+
+    this.exportedFolderName = folderName;
+    this.exportOptions = [
       {
         label: 'Copy JSON to Clipboard',
-        callback: () => this.exportDocumentList(folderName, 'json')
+        callback: exportJson.bind(this)
       },
       {
         label: 'Download as Excel (.xlsx)',
-        callback: () => this.exportDocumentList(folderName, 'xlsx')
+        callback: exportExcel.bind(this)
       }
     ];
+    return this.exportOptions;
   }
 }

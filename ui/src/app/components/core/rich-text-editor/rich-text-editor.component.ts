@@ -187,10 +187,8 @@ export class RichTextEditorComponent
   }
 
   markAsTouched() {
-    if (!this.touched) {
-      this.onTouched.emit();
-      this.touched = true;
-    }
+    this.onTouched.emit();
+    this.touched = true;
   }
 
   // ControlValueAccessor methods
