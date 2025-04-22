@@ -2,7 +2,7 @@ import * as fs from "fs";
 import path from 'path';
 import { LibSQLTransaction } from 'drizzle-orm/libsql';
 import { drizzle, LibSQLDatabase } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client/lib-esm/node";
+import { createClient } from "@libsql/client";
 import * as masterSchema from "./schema/master";
 import { MasterRepository } from "./repo/master.repo";
 import { store } from "../services/store";

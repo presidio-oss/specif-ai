@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import path from 'path';
 import { drizzle, LibSQLDatabase, LibSQLTransaction } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client/lib-esm/node";
+import { createClient } from "@libsql/client";
 import * as solutionSchema from "./schema/solution";
 import { masterFactory, MasterFactory } from "./master.factory";
 import { SolutionRepository } from "./repo/solution.repo";
