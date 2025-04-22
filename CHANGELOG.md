@@ -1,14 +1,23 @@
 # Changelog
 
+## [2.2.1]
+
+### Fixes
+
+- Resolved an issue with the Create Solution when using AWS Bedrock models. Replaced the community package with the official @langchain/aws package and correctly configured the maxTokens parameter within the expected input path for the Bedrock model.
+
 ## [2.2.0]
 
 ### Added
+
 - Implemented Agentic flow within the Create Solution workflow utilising LangGraph.
 
 ### Enhancements
+
 - Disabled search functionality for the provider dropdown to streamline user interaction.
 
 ### Fixed
+
 - Addressed an issue causing tasks to regenerate upon cancellation.
 - Standardised font consistency in the Export dropdown menu by transitioning from Angular Material to Tailwind CSS.
 - Prevented unintended solution requirement generation when Clean Solution is set to enabled in the Create Solution workflow.
