@@ -22,7 +22,7 @@ export class SolutionFactory {
         console.log('Entered <SolutionFactory.createDatabase>')
 
         if (!fs.existsSync(dbPath)) {
-            new Error('Database path does not exists, please verify.')
+            throw new Error('Database path does not exists, please verify.')
         }
 
         dbPath = path.join(dbPath, SolutionFactory.DEFAULT_DB_PATH);
@@ -42,7 +42,7 @@ export class SolutionFactory {
 
         if (!SolutionFactory.dbDetails || SolutionFactory.dbDetails.id !== solutionId) {
             console.log(`No solution database instance found, so creating one with the ID: ${solutionId}`);
-            this.setDatabase(solutionId);
+            await this.setDatabase(solutionId);
         }
 
         if (!SolutionFactory.dbDetails) {
