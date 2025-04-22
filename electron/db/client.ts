@@ -28,7 +28,7 @@ export class DatabaseClient {
   }
 
   private getDirectoryPath(): string {
-    const appConfig = store.get<AppConfig>("APP_CONFIG");
+    const appConfig = store.getAppConfig();
     if (!appConfig?.directoryPath) {
       throw new Error("directoryPath not configured in APP_CONFIG");
     }

@@ -12,7 +12,7 @@ import { traceBuilder } from '../../../utils/trace-builder';
 
 export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
-    const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const llmConfig = store.getLLMConfig();
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }

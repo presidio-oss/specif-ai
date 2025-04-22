@@ -95,7 +95,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     const o11y = ObservabilityManager.getInstance();
     const trace = o11y.createTrace('create-solution');
 
-    const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const llmConfig = store.getLLMConfig();
     
     if (!llmConfig) {
       throw new Error('LLM configuration not found');

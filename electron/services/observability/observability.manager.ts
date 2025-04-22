@@ -9,8 +9,8 @@ export class ObservabilityManager {
   private userName: string;
 
   private constructor() {
-    this.tracingEnabled = store.get<boolean>("analyticsEnabled") || false;
-    const APP_CONFIG = store.get<AppConfig>("APP_CONFIG");
+    this.tracingEnabled = store.isAnalyticsEnabled() || false;
+    const APP_CONFIG = store.getAppConfig();
     this.userName = APP_CONFIG?.username || "anonymous";
 
     if (this.tracingEnabled) {

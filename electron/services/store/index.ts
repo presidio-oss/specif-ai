@@ -1,4 +1,12 @@
 import Store from 'electron-store';
+import { LLMConfigModel } from '../../services/llm/llm-types';
+import { AppConfig } from '../../schema/core/store.schema';
+
+export enum StoreConfig {
+    LLM_CONFIG = 'llmConfig',
+    APP_CONFIG = 'APP_CONFIG',
+    ANALYTICS_ENABLED = 'analyticsEnabled'
+}
 
 class StoreService {
     private static instance: StoreService;
@@ -19,6 +27,8 @@ class StoreService {
         }
     }
 
+    // Standard utilities
+
     public get<T>(key: string): T | undefined {
         if (!this.store) {
             throw new Error('Store not initialized');
@@ -38,6 +48,20 @@ class StoreService {
             throw new Error('Store not initialized');
         }
         this.store.delete(key);
+    }
+
+    // Application utilities
+
+    public getLLMConfig() {
+        return this.get<LLMConfigModel>(StoreConfig.LLM_CONFIG)
+    }
+
+    public getAppConfig() {
+        return this.get<AppConfig>(StoreConfig.APP_CONFIG)
+    }
+
+    public isAnalyticsEnabled() {
+        return this.get<boolean>(StoreConfig.ANALYTICS_ENABLED)
     }
 }
 

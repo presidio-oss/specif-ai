@@ -11,7 +11,7 @@ import { COMPONENT, OPERATIONS } from '../../../helper/constants';
 
 export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<UpdateTaskResponse> {
   try {
-    const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const llmConfig = store.getLLMConfig();
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }

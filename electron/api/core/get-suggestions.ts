@@ -11,7 +11,7 @@ import { traceBuilder } from '../../utils/trace-builder';
 
 export async function getSuggestions(event: IpcMainInvokeEvent, data: unknown): Promise<string[]> {
   try {
-    const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const llmConfig = store.getLLMConfig();
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }

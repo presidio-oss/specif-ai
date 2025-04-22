@@ -37,7 +37,7 @@ export async function addRequirement(
     
     // Generate requirement with AI if requested
     if (useGenAI) {
-      const llmConfig = store.get<LLMConfigModel>("llmConfig");
+      const llmConfig = store.getLLMConfig();
       if (!llmConfig) {
         throw new Error("LLM configuration not found");
       }
