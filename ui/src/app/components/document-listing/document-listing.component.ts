@@ -185,6 +185,19 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     });
   }
 
+  navigateToAdd() {
+    if (this.selectedType === DocumentTypeMappingEnum.BP) {
+      this.router.navigate(['/bp-add'], {
+        state: { folderName: this.selectedType },
+      });
+    }
+    else {
+      this.router.navigate(['/add'], {
+        state: { folderName: this.selectedType },
+      });
+    }
+  }
+  
   navigateToBPFlow(item: any) {
     this.router.navigate(['/bp-flow/view', item.id], {
       state: {
