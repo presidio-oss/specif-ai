@@ -23,9 +23,13 @@ import { BadgeComponent } from '../core/badge/badge.component';
 import { ButtonComponent } from '../core/button/button.component';
 import { NgIconComponent } from '@ng-icons/core';
 import { MatMenuModule } from '@angular/material/menu';
+import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
+import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
 import { NgIf, AsyncPipe, NgForOf, NgClass } from '@angular/common';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
+import { ExportRequirementData } from 'src/app/store/projects/projects.actions';
+import { Store } from '@ngxs/store';
 
 @Component({
   selector: 'app-document-listing',
@@ -58,11 +62,20 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   filteredDocumentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
   private subs = new Subscription();
 
+  // For Export Dropdown Options
+  exportOptions: { label: string; callback: () => void }[] = [];
+  exportedFolderName: string = '';
+
+  currentRoute: string;
+
   constructor(
     private searchService: SearchService,
     private router: Router,
-    private toast: ToasterService
-  ) {}
+    private toast: ToasterService,
+    private store: Store, 
+  ) {
+    this.currentRoute = this.router.url;
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['documents'] || changes['selectedType']) {
@@ -207,17 +220,45 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     });
   }
 
-  // TODO export and add req
-  // getExportOptions(folderName: string) {
-  //   return [
-  //     {
-  //       label: 'Copy JSON to Clipboard',
-  //       callback: () => this.exportDocumentList(folderName, 'json')
-  //     },
-  //     {
-  //       label: 'Download as Excel (.xlsx)',
-  //       callback: () => this.exportDocumentList(folderName, 'xlsx')
-  //     }
-  //   ];
-  // }
+  exportDocumentList(folder: string, format: ExportFileFormat) {
+    const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folder];
+
+    this.store.dispatch(
+      new ExportRequirementData(requirementType, {
+        type: format,
+      }),
+    );
+  }
+
+  getExportOptions(folderName: string) {
+    if (!folderName) {
+      console.warn('Folder name is undefined');
+      return [];
+    }
+
+    if (this.exportedFolderName === folderName) {
+      return this.exportOptions;
+    }
+        
+    const exportJson = () => {
+      this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.JSON);
+    };
+
+    const exportExcel = () => {
+      this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.EXCEL);
+    };
+
+    this.exportedFolderName = folderName;
+    this.exportOptions = [
+      {
+        label: 'Copy JSON to Clipboard',
+        callback: exportJson.bind(this)
+      },
+      {
+        label: 'Download as Excel (.xlsx)',
+        callback: exportExcel.bind(this)
+      }
+    ];
+    return this.exportOptions;
+  }
 }

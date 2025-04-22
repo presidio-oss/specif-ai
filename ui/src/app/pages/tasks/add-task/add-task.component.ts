@@ -99,6 +99,7 @@ export class AddTaskComponent implements OnDestroy {
   chatHistory: any = [];
   editLabel: string = '';
   userStory: any = {};
+  allowForceRedirect: boolean = false;
   entityType: string = 'TASK';
   absoluteFilePath: string = '';
 
@@ -244,8 +245,7 @@ export class AddTaskComponent implements OnDestroy {
           ),
         );
 
-        this.taskForm.markAsUntouched();
-        this.taskForm.markAsPristine();
+        this.allowForceRedirect = true;
         this.navigateBackToTasks();
         this.toastService.showSuccess(
           TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -500,6 +500,10 @@ ${chat.assistant}`,
   }
 
   canDeactivate(): boolean {
-    return this.taskForm.dirty && this.taskForm.touched;
+    return (
+      !this.allowForceRedirect &&
+      this.taskForm.dirty &&
+      this.taskForm.touched
+    );
   }
 }

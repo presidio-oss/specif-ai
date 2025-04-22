@@ -104,6 +104,7 @@ export class EditSolutionComponent {
   generateLoader: boolean = false;
   initialData: any = {};
   selectedRequirement: any = {};
+  allowForceRedirect: boolean = false;
   absoluteFilePath: string = '';
   oldContent: string = '';
   public loading: boolean = false;
@@ -447,9 +448,55 @@ export class EditSolutionComponent {
       useGenAI: formValue.expandAI || useAI,
     };
 
-    if (this.isPRD()) {
-      body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []).map(
-        ({ requirement, title }) => ({ requirement, title }),
+
+      if (this.isPRD()) {
+        body.brds = this.getBRDDataFromIds(formValue.linkedBRDIds ?? []).map(
+          ({ requirement, title }) => ({ requirement, title }),
+        );
+      
+
+      this.featureService.addRequirement(body).then(
+        (data) => {
+          const fileData: any = {
+            requirement: data.LLMreqt.requirement,
+            title: data.LLMreqt.title,
+            chatHistory: this.chatHistory,
+          };
+
+          if (this.isPRD()) {
+            fileData.linkedBRDIds = formValue.linkedBRDIds;
+          }
+
+          this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
+          this.allowForceRedirect = true;
+          this.navigateBackToDocumentList(this.initialData);
+          this.toastService.showSuccess(
+            TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
+          );
+        },
+        (error) => {
+          console.error('Error updating requirement:', error); // Handle any errors
+          this.toastService.showError(
+            TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.folderName),
+          );
+        },
+      );
+    } else {
+      const fileData: any = {
+        requirement: formValue.content,
+        title: formValue.title,
+        chatHistory: this.chatHistory,
+      };
+
+      if (this.isPRD()) {
+        fileData.linkedBRDIds = formValue.linkedBRDIds;
+      }
+
+      this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
+      this.allowForceRedirect = true;
+      this.navigateBackToDocumentList(this.initialData);
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
       );
     }
 
@@ -710,9 +757,8 @@ ${chat.assistant}`,
   }
 
   canDeactivate(): boolean {
-    return (
-      (this.requirementForm.dirty &&
-      this.requirementForm.touched) ||
+    return !this.allowForceRedirect && (
+      (this.requirementForm.dirty && this.requirementForm.touched) ||
       this.checkMappingChanges()
     );
   }

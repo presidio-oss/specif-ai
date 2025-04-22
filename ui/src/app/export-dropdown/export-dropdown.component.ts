@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, Input, ElementRef, HostListener, ViewChild} from '@angular/core';
 import { ButtonComponent } from "../components/core/button/button.component";
 import { CommonModule } from '@angular/common';
 
@@ -21,7 +21,7 @@ export class ExportDropdownComponent {
 
   isOpen = false;
 
-  @ViewChild('dropdownContainer', { static: true }) dropdownContainer!: ElementRef;
+  @ViewChild('dropdownContainer', { static: false }) dropdownContainer!: ElementRef;
 
   toggleDropdown(event?: MouseEvent): void {
     if (event) {
@@ -30,11 +30,18 @@ export class ExportDropdownComponent {
     this.isOpen = !this.isOpen;
   }
 
-  onOptionClick(option: DropdownOption, event?: MouseEvent): void {
-    if (event) {
-      event.stopPropagation();
+  onOptionClick(option: DropdownOption, event: MouseEvent): void {
+    if (option && typeof option.callback === 'function') {
+      try {
+        option.callback();
+      } catch (error) {
+        console.error('Error executing callback:', error);
+      }
     }
-    option.callback();
+    
+    // Then handle the event and close dropdown
+    event.preventDefault();
+    event.stopPropagation();
     this.closeDropdown();
   }
 
@@ -44,8 +51,17 @@ export class ExportDropdownComponent {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
-    if (this.isOpen && this.dropdownContainer && !this.dropdownContainer.nativeElement.contains(event.target)) {
+    const target = event.target as HTMLElement;
+    const clickedInside = this.dropdownContainer?.nativeElement.contains(target);
+    const isMenuItemClick = target.closest('[role="menuitem"]');
+
+    if (!clickedInside && !isMenuItemClick) {
       this.closeDropdown();
     }
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapePress(event: KeyboardEvent) {
+    this.closeDropdown();
   }
 }

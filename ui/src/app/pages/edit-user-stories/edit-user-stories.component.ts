@@ -101,6 +101,7 @@ export class EditUserStoriesComponent implements OnDestroy {
   activatedRoute = inject(ActivatedRoute);
   userStoryId: string | null = '';
   editLabel: string = '';
+  allowForceRedirect: boolean = false;
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   selectedPRD: any = {};
   readonly dialogService = inject(DialogService);
@@ -285,8 +286,7 @@ export class EditUserStoriesComponent implements OnDestroy {
                 this.absoluteFilePath,
               ),
             );
-            this.userStoryForm.markAsPristine();
-            this.userStoryForm.markAsUntouched();
+            this.allowForceRedirect = true;
             this.navigateBackToUserStories();
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -312,8 +312,7 @@ export class EditUserStoriesComponent implements OnDestroy {
           this.absoluteFilePath,
         ),
       );
-      this.userStoryForm.markAsPristine();
-      this.userStoryForm.markAsUntouched();
+      this.allowForceRedirect = true;
       this.navigateBackToUserStories();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -431,6 +430,7 @@ export class EditUserStoriesComponent implements OnDestroy {
 
   canDeactivate(): boolean {
     return (
+      !this.allowForceRedirect &&
       this.userStoryForm.dirty &&
       this.userStoryForm.touched
     );
