@@ -20,6 +20,10 @@ export class SolutionRepository {
     }
   }
 
+  private defaultDocumentQueryFilters = [
+    eq(document.isDeleted, false)
+  ]
+
   // TODO: Add isDeleted check for all the functions
 
   // Table: Metadata
@@ -74,7 +78,7 @@ export class SolutionRepository {
     const query = searchQuery
       ? baseQuery.where(
           and(
-            eq(document.isDeleted, false),
+            ...this.defaultDocumentQueryFilters,
             or(
               like(document.name, `%${searchQuery}%`),
               like(document.description, `%${searchQuery}%`),
@@ -82,7 +86,7 @@ export class SolutionRepository {
             )
           )
         )
-      : baseQuery.where(eq(document.isDeleted, false));
+      : baseQuery.where(and(...this.defaultDocumentQueryFilters));
 
     const documents = await query;
     console.log("Exited <SolutionRepository.getAllDocuments>");
@@ -91,7 +95,7 @@ export class SolutionRepository {
 
   async getDocumentTypesWithCount() {
     console.log("Entered <SolutionRepository.getDocumentTypesWithCount>");
-    const documentCount = await this.db.select().from(documentCountByType);
+    const documentCount = await this.db.select().from(documentCountByType).where(and(...this.defaultDocumentQueryFilters));
     console.log("Exited <SolutionRepository.getDocumentTypesWithCount>");
     return documentCount;
   }
@@ -101,7 +105,7 @@ export class SolutionRepository {
     const result = await this.db
       .select()
       .from(document)
-      .where(eq(document.id, documentId))
+      .where(and(eq(document.id, documentId), ...this.defaultDocumentQueryFilters))
       .get();
     console.log("Exited <SolutionRepository.getDocument>");
     // TODO: Return Links too
