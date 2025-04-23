@@ -1,11 +1,17 @@
 import { solutionFactory } from "@/db/solution.factory";
+import { documentIdSchema, solutionIdSchema } from "@/db/types";
 import { IpcMainInvokeEvent } from "electron";
 
 export class DocumentController {
-
-    static async getDocumentTypesWithCount(_: IpcMainInvokeEvent, solutionId: number) {
+    static async getDocumentTypesWithCount(_: IpcMainInvokeEvent, data: any) {
         console.log("Entered <DocumentController.getDocumentTypesWithCount>");
+        const parsedData = solutionIdSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+            throw new Error('Schema validation failed')
+        }
 
+        const { solutionId } = data;
         const solutionRepository = await solutionFactory.getRepository(solutionId);
         const documentCount = await solutionRepository.getDocumentTypesWithCount();
 
@@ -13,21 +19,36 @@ export class DocumentController {
         return documentCount;
     }
 
-    static async getAllDocument(_: IpcMainInvokeEvent) {
+    static async getAllDocuments(_: IpcMainInvokeEvent, data: any) {
         console.log('Entered <DocumentController.getAllDocument>');
+        const parsedData = solutionIdSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+            throw new Error('Schema validation failed')
+        }
 
-        // TODO: Implement
-        // Please use the same API for search
+        const { solutionId } = data;
+        const solutionRepository = await solutionFactory.getRepository(solutionId);
+        const documents = await solutionRepository.getAllDocuments();
 
         console.log('Exited <DocumentController.getAllDocument>');
+        return documents;
     }
 
-    static async getDocument(_: IpcMainInvokeEvent) {
+    static async getDocument(_: IpcMainInvokeEvent, data: any) {
         console.log('Entered <DocumentController.getDocument>');
+        const parsedData = documentIdSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+            throw new Error('Schema validation failed')
+        }
 
-        // TODO: Implement
+        const { solutionId, documentId } = parsedData.data;
+        const solutionRepository = await solutionFactory.getRepository(solutionId);
+        const document = await solutionRepository.getDocument(documentId);
 
         console.log('Exited <DocumentController.getDocument>');
+        return document;
     }
 
     static async addDocument(_: IpcMainInvokeEvent) {

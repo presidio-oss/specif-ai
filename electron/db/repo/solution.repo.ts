@@ -1,9 +1,9 @@
-import { inArray } from "drizzle-orm";
+import { inArray, eq } from "drizzle-orm";
 import * as solutionSchema from '../schema/solution';
 import { SolutionDB } from "../solution.factory";
 import { documentInsertSchema, ICreateDocument, ICreateMetadata } from "../interfaces/solution.interface";
 import { metadataInsertSchema } from "../interfaces/solution.interface";
-import { documentCountByType } from "@/db/schema/solution";
+import { documentCountByType, document, documentLinks } from "@/db/schema/solution";
 
 export class SolutionRepository {
   constructor(private db: SolutionDB) {
@@ -11,6 +11,8 @@ export class SolutionRepository {
       throw new Error("Invalid database instance.");
     }
   }
+
+  // TODO: Add isDeleted check for all the functions
 
   // Table: Metadata
   // Below are the functions related to Metadata table
@@ -55,12 +57,28 @@ export class SolutionRepository {
     console.log('Exited <SolutionRepository.createRequirement>')
     return (response && response.length) ? response[0] : null;
   }
+  
+  async getAllDocuments() {
+    console.log("Entered <SolutionRepository.getDocument>");
+    const result = await this.db.select().from(document);
+    console.log("Exited <SolutionRepository.getDocument>");
+    // TODO: Return Links too
+    return result;
+  }
 
   async getDocumentTypesWithCount() {
     console.log("Entered <SolutionRepository.getDocumentTypesWithCount>");
     const documentCount = await this.db.select().from(documentCountByType);
     console.log("Exited <SolutionRepository.getDocumentTypesWithCount>");
     return documentCount;
+  }
+
+  async getDocument(documentId: number) {
+    console.log("Entered <SolutionRepository.getDocument>");
+    const result = await this.db.select().from(document).where(eq(document.id, documentId)).get();
+    console.log("Exited <SolutionRepository.getDocument>");
+    // TODO: Return Links too
+    return result;
   }
 
   // FIXME: where are we using this function? and can we optimise this?

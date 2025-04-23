@@ -12,4 +12,24 @@ export function setupDocumentHandlers() {
       throw error;
     }
   });
+
+  ipcMain.handle(DOCUMENT_CHANNELS.GET_DOCUMENT, async (_event, data: any) => {
+    try {
+      const result = await DocumentController.getDocument(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling document:getDocument:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle(DOCUMENT_CHANNELS.GET_ALL_DOCUMENTS, async (_event, data: any) => {
+    try {
+      const result = await DocumentController.getAllDocuments(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling document:getDocument:', error.message);
+      throw error;
+    }
+  });
 }
