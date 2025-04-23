@@ -1,13 +1,16 @@
+import { solutionFactory } from "@/db/solution.factory";
 import { IpcMainInvokeEvent } from "electron";
 
 export class DocumentController {
 
-    static async getDocumentTypesWithCount(_: IpcMainInvokeEvent) {
-        console.log('Entered <DocumentController.getDocumentTypesWithCount>');
+    static async getDocumentTypesWithCount(_: IpcMainInvokeEvent, solutionId: number) {
+        console.log("Entered <DocumentController.getDocumentTypesWithCount>");
 
-        // TODO: Implement
+        const solutionRepository = await solutionFactory.getRepository(solutionId);
+        const documentCount = await solutionRepository.getDocumentTypesWithCount();
 
-        console.log('Exited <DocumentController.getDocumentTypesWithCount>');
+        console.log("Exited <DocumentController.getDocumentTypesWithCount>");
+        return documentCount;
     }
 
     static async getAllDocument(_: IpcMainInvokeEvent) {

@@ -3,6 +3,7 @@ import * as solutionSchema from '../schema/solution';
 import { SolutionDB } from "../solution.factory";
 import { documentInsertSchema, ICreateDocument, ICreateMetadata } from "../interfaces/solution.interface";
 import { metadataInsertSchema } from "../interfaces/solution.interface";
+import { documentCountByType } from "@/db/schema/solution";
 
 export class SolutionRepository {
   constructor(private db: SolutionDB) {
@@ -53,6 +54,13 @@ export class SolutionRepository {
 
     console.log('Exited <SolutionRepository.createRequirement>')
     return (response && response.length) ? response[0] : null;
+  }
+
+  async getDocumentTypesWithCount() {
+    console.log("Entered <SolutionRepository.getDocumentTypesWithCount>");
+    const documentCount = await this.db.select().from(documentCountByType);
+    console.log("Exited <SolutionRepository.getDocumentTypesWithCount>");
+    return documentCount;
   }
 
   // FIXME: where are we using this function? and can we optimise this?
