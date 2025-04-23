@@ -450,6 +450,21 @@
               </app-button>
             </div>
           </app-accordion>
+
+          <app-accordion
+            [withConnectionStatus]="false"
+            title="MCP Servers"
+            dynamicClass="text-sm font-medium text-secondary-950 ml-3"
+            iconImage="./assets/img/logo/mcp_logo.svg"
+            [isOpen]="accordionState['mcp']"
+            (toggleAccordion)="toggleAccordion('mcp')"
+          >
+            <app-mcp-servers
+              [mcpServers]="mcpServers"
+              [isLoading]="mcpServersLoading"
+              [showHeading]="false"
+            ></app-mcp-servers>
+          </app-accordion>
         </div>
       </div>
     </section>

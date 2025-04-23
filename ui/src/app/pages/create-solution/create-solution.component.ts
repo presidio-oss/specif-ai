@@ -4,7 +4,11 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
+import { JsonValidator } from '../../validators/json.validator';
+import { McpSettingsSchema } from '../../shared/mcp-schemas';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { CreateProject } from '../../store/projects/projects.actions';
@@ -15,7 +19,7 @@ import { DialogService } from '../../services/dialog/dialog.service';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { NgIf } from '@angular/common';
+import { NgIf, NgClass, NgFor } from '@angular/common';
 import { NgxLoadingModule } from 'ngx-loading';
 import { AppSliderComponent } from '../../components/core/slider/slider.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
@@ -30,6 +34,11 @@ import { InputFieldComponent } from '../../components/core/input-field/input-fie
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ToggleComponent } from '../../components/toggle/toggle.component';
 import { SettingsComponent } from 'src/app/components/settings/settings.component';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { heroChevronDown } from '@ng-icons/heroicons/outline';
+import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
+import { MCPServerDetails, MCPSettings } from '../../types/mcp.types';
+import { McpServersModalComponent } from 'src/app/components/mcp-servers-modal/mcp-servers-modal.component';
 
 @Component({
   selector: 'app-create-solution',
@@ -38,6 +47,7 @@ import { SettingsComponent } from 'src/app/components/settings/settings.componen
   standalone: true,
   imports: [
     NgIf,
+    NgClass,
     ReactiveFormsModule,
     NgxLoadingModule,
     ButtonComponent,
@@ -46,12 +56,20 @@ import { SettingsComponent } from 'src/app/components/settings/settings.componen
     TextareaFieldComponent,
     ToggleComponent,
     AppSliderComponent,
+    NgIconComponent,
+    NgClass,
+    CustomAccordionComponent
   ],
+  viewProviders: [provideIcons({ heroChevronDown })],
 })
 export class CreateSolutionComponent implements OnInit {
   solutionForm!: FormGroup;
   loading: boolean = false;
+  validatingMCPSettings: boolean = false;
   addOrUpdate: boolean = false;
+  
+  validatedServerStatuses: MCPServerDetails[] = [];
+  areMCPServersValidated: boolean = true;
 
   logger = inject(NGXLogger);
   appSystemService = inject(AppSystemService);
@@ -73,6 +91,10 @@ export class CreateSolutionComponent implements OnInit {
     );
   }
 
+  showGenerationPreferencesTab(): boolean {
+    return !this.solutionForm.get('cleanSolution')?.value;
+  }
+
   private initRequirementGroup(enabled: boolean = true, maxCount: number = REQUIREMENT_COUNT.DEFAULT) {
     return {
       enabled: new FormControl(enabled),
@@ -88,7 +110,8 @@ export class CreateSolutionComponent implements OnInit {
   }
 
   createSolutionForm() {
-    return new FormGroup({
+    const solutionFormGroup = new FormGroup({
+      id: new FormControl(uuid()),
       name: new FormControl('', [
         Validators.required,
         Validators.pattern(/\S/),
@@ -101,14 +124,83 @@ export class CreateSolutionComponent implements OnInit {
         Validators.required,
         Validators.pattern(/\S/),
       ]),
-      id: new FormControl(uuid()),
+      createReqt: new FormControl(true),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
       BRD: new FormGroup(this.initRequirementGroup()),
       PRD: new FormGroup(this.initRequirementGroup()),
       UIR: new FormGroup(this.initRequirementGroup()),
       NFR: new FormGroup(this.initRequirementGroup()),
+      mcpSettings: new FormControl('{"mcpServers": {}}', [Validators.required, JsonValidator, this.mcpSettingsValidator]),
     });
+
+    solutionFormGroup.get('mcpSettings')?.valueChanges.subscribe(() => {
+      this.onMcpSettingsChange();
+    });
+
+    return solutionFormGroup;
+  }
+
+  onMcpSettingsChange() {
+    this.areMCPServersValidated = false;
+  }
+
+  async validateMcpSettings() {
+    if (this.solutionForm.get('mcpSettings')?.invalid) {
+      this.toast.showError('Invalid MCP settings. Please correct the errors before validating.');
+      return;
+    }
+
+    this.validatingMCPSettings = true;
+
+    try {
+      const mcpSettings = JSON.parse(this.solutionForm.get('mcpSettings')?.value) as MCPSettings;
+      this.validatedServerStatuses = await this.electronService.validateMCPSettings(mcpSettings);
+      this.areMCPServersValidated = true;
+      this.toast.showSuccess('MCP settings validated successfully');
+      
+      const failedConnectingToSomeServers = this.validatedServerStatuses.some(server => server.status === 'error');
+      if (failedConnectingToSomeServers) {
+        this.toast.showWarning('There are issues connecting to some MCP servers. Click "View MCP Servers" for details.');
+      }
+    } catch (error) {
+      console.error('Error validating MCP servers:', error);
+      this.validatedServerStatuses = [];
+      this.areMCPServersValidated = false;
+      this.toast.showError('Failed to validate MCP settings: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      this.validatingMCPSettings = false;
+    }
+  }
+
+  openMcpServersDialog() {
+    this.dialogService
+      .createBuilder()
+      .forComponent(McpServersModalComponent)
+      .withData({
+        mcpServers: this.validatedServerStatuses,
+        isLoading: this.validatingMCPSettings,
+      })
+      .withWidth("800px")
+      .withHeight("80%")
+      .open();
+  }
+
+  hasMcpServerErrors(): boolean {
+    return this.validatedServerStatuses.some(server => server.status === 'error');
+  }
+
+  mcpSettingsValidator(control: AbstractControl): ValidationErrors | null {
+    try {
+      const mcpSettings = JSON.parse(control.value);
+      const validationResult = McpSettingsSchema.safeParse(mcpSettings);
+      if (!validationResult.success) {
+        return { invalidMcpSettings: true };
+      }
+    } catch (error) {
+      return { invalidMcpSettings: true };
+    }
+    return null;
   }
 
   onRequirementToggle(type: RootRequirementType, enabled: boolean) {
@@ -141,17 +233,35 @@ export class CreateSolutionComponent implements OnInit {
       return;
     }
 
+    if (!this.areMCPServersValidated) {
+      this.toast.showError('Please validate MCP settings before creating the solution.');
+      return;
+    }
+
     if (
       this.solutionForm.valid &&
       isRootDirectorySet !== null &&
       isRootDirectorySet !== '' &&
-      isPathValid
+      isPathValid &&
+      this.areMCPServersValidated
     ) {
       this.addOrUpdate = true;
       const data = this.solutionForm.getRawValue();
       data.createReqt = !data.cleanSolution;
+
+      try {
+        data.mcpSettings = JSON.parse(data.mcpSettings);
+      } catch (error) {
+        this.toast.showError('Invalid JSON in MCP Settings');
+        return;
+      }
+
       this.store.dispatch(new CreateProject(data.name, data));
     }
+  }
+
+  get isCreateSolutionDisabled(): boolean {
+    return this.loading || this.solutionForm.invalid || !this.areMCPServersValidated || this.validatingMCPSettings;
   }
 
   openSelectRootDirectoryModal() {
@@ -197,4 +307,17 @@ export class CreateSolutionComponent implements OnInit {
   }
 
   protected readonly FormControl = FormControl;
+
+  get isMcpSettingsInvalid(): boolean {
+    const field = this.solutionForm?.get('mcpSettings');
+    return !!field?.invalid && (!!field?.dirty || !!field?.touched);
+  }
+
+  get isMcpSettingsJsonInvalid(): boolean {
+    return this.solutionForm?.get('mcpSettings')?.hasError('jsonInvalid') ?? false;
+  }
+
+  get isMcpSettingsSchemaInvalid(): boolean {
+    return this.solutionForm?.get('mcpSettings')?.hasError('invalidMcpSettings') ?? false;
+  }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { IpcRendererEvent } from 'electron';
+import { MCPServerDetails, MCPSettings } from '../types/mcp.types';
 import { ToasterService } from '../services/toaster/toaster.service';
 import { Router } from '@angular/router';
 import { DialogService } from '../services/dialog/dialog.service';
@@ -481,6 +482,44 @@ export class ElectronService {
     return this.ipc.request({
       channel: 'app-updater:download-updates',
       args: [{ version }]
+    });
+  }
+
+  async listMCPServers(filter?: Record<string, any>): Promise<MCPServerDetails[]> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+
+    return this.ipc.request({
+      channel: 'mcp:listMCPServers',
+      args: [filter], // Pass the filter object
+      skipLoading: true
+    });
+  }
+
+  async validateMCPSettings(mcpSettings: MCPSettings): Promise<MCPServerDetails[]> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+
+    return this.ipc.request({
+      channel: 'mcp:validateMCPSettings',
+      args: [mcpSettings],
+      skipLoading: true
+    });
+  }
+
+  async setMCPProjectId(projectId: string): Promise<void> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+
+    console.log("setting project id", projectId)
+
+    return this.ipc.request({
+      channel: 'mcp:setProjectId',
+      args: [projectId],
+      skipLoading: true
     });
   }
 }

@@ -19,6 +19,8 @@ import { getMCPTools } from '../../mcp';
 import { MemorySaver } from "@langchain/langgraph";
 import { randomUUID } from "node:crypto";
 import { ObservabilityManager } from '../../services/observability/observability.manager';
+import { MCPHub } from '../../mcp/mcp-hub';
+import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
 
 // types
 
@@ -93,7 +95,6 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   return result;
 }
 
-
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
   try {
     const o11y = ObservabilityManager.getInstance();
@@ -120,19 +121,38 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     if (!validatedData.createReqt) {
       return results;
     }
-
     
+    const mcpSettingsSpan = trace.span({
+      name: "writing-mcp-settings-to-fs",
+      metadata: { projectId: validatedData.id },
+    });
+
+    try {
+      const settingsManager = MCPSettingsManager.getInstance();
+      await settingsManager.writeProjectMCPSettings(validatedData.id, validatedData.mcpSettings);
+      mcpSettingsSpan.end({
+        statusMessage: "Written successfully"
+      });
+    } catch (error) {
+      console.error("Error writing the mcp settings to project location", error);
+      mcpSettingsSpan.end({
+        level: "ERROR",
+      });
+      throw error;
+    }
+
     const useAgent = true;
 
     if (useAgent) {
       let mcpTools = [];
-
       const memoryCheckpointer = new MemorySaver();
 
       try {
-        mcpTools = await getMCPTools(llmConfig.activeProvider);
+        const mcpHub = MCPHub.getInstance();
+        await mcpHub.setProjectId(validatedData.id);
+        mcpTools = await getMCPTools();
       } catch (error) {
-        console.warn("Error getting mcp tools");
+        console.warn("Error getting mcp tools", error);
       }
 
       const createSolutionWorkflow = buildCreateSolutionWorkflow({

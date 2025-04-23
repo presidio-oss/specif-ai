@@ -1,3 +1,4 @@
+import { McpSettingsSchema } from '../../mcp/schema';
 import { z } from 'zod';
 
 export const generationRangeSchema = z.object({
@@ -6,6 +7,7 @@ export const generationRangeSchema = z.object({
 });
 
 export const createSolutionSchema = z.object({
+  id: z.string(),
   name: z.string().min(1),
   description: z.string().min(1),
   frontend: z.boolean().optional(),
@@ -17,7 +19,8 @@ export const createSolutionSchema = z.object({
   brdPreferences: generationRangeSchema,
   prdPreferences: generationRangeSchema,
   uirPreferences: generationRangeSchema,
-  nfrPreferences: generationRangeSchema
+  nfrPreferences: generationRangeSchema,
+  mcpSettings: McpSettingsSchema
 });
 
 export type CreateSolutionRequest = z.infer<typeof createSolutionSchema>;

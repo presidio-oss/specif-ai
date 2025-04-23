@@ -50,6 +50,8 @@ import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { FeatureService } from '../../services/feature/feature.service';
 import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
+import { McpServersListComponent } from '../../components/mcp/mcp-servers-list/mcp-servers-list.component';
+import { MCPServerDetails } from 'src/app/types/mcp.types'; // Import MCPServerDetails
 
 @Component({
   selector: 'app-info',
@@ -68,6 +70,7 @@ import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
     NgIconComponent,
     DocumentListingComponent,
     NgForOf,
+    McpServersListComponent
   ],
 })
 export class AppInfoComponent implements OnInit, OnDestroy {
@@ -107,10 +110,13 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   isJiraConnected: boolean = false;
   isBedrockConnected: boolean = false;
   currentSettings?: ChatSettings;
+  mcpServers: MCPServerDetails[] = [];
+  mcpServersLoading: boolean = false;
 
   accordionState: { [key: string]: boolean } = {
     jira: false,
     knowledgeBase: false,
+    mcp: false
   };
 
   chatSettings$: Observable<ChatSettings> = this.store.select(
@@ -420,10 +426,45 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       id: this.projectId as string,
       metadata: this.appInfo,
     };
+    
+    // Reset MCP servers list if navigating away from integrations
+    if (folder.name !== 'app-integrations') {
+       this.mcpServers = [];
+       this.accordionState['mcp'] = false;
+    }
   }
 
-  toggleAccordion(key: string) {
+  async toggleAccordion(key: string) {
     this.accordionState[key] = !this.accordionState[key];
+    
+    // Load MCP servers when the accordion is opened
+    if (key === 'mcp' && this.accordionState[key]) {
+     await this.loadMcpServers();
+    }
+  }
+
+  async loadMcpServers(): Promise<void> {
+    console.log("loadMCPServers", this.projectId)
+    if (!this.projectId) {
+      this.logger.warn('Project ID not available to load MCP servers.');
+      return;
+    }
+
+    this.mcpServersLoading = true;
+    try {
+      // Pass the projectId in the filter
+      this.mcpServers = await this.electronService.listMCPServers({
+        _hai_mcp_source_id: this.projectId,
+        _hai_mcp_source_type: 'project',
+      });
+      this.logger.debug('MCP Servers loaded for project:', this.projectId, this.mcpServers);
+    } catch (error) {
+      this.logger.error('Error loading MCP servers:', error);
+      this.toast.showError('Failed to load MCP servers.');
+      this.mcpServers = []; // Reset on error
+    } finally {
+      this.mcpServersLoading = false;
+    }
   }
 
   getDescription(input: string | undefined): string | null {

@@ -5,7 +5,7 @@ const StdioOptionsSchema = z.object({
   transportType: z.literal("stdio"),
   command: z.string(),
   args: z.array(z.string()),
-  env: z.record(z.string()).optional(),
+  env: z.record(z.string()).default({}),
 });
 
 // Schema for WebSocketOptions
@@ -21,21 +21,18 @@ const SseOptionsSchema = z.object({
 });
 
 // Schema for MCPServerOptions
-export const McpServerOptionsSchema = z
-  .object({
-    autoApprove: z.array(z.string()).default([]),
-    disabled: z.boolean().default(false),
-    timeout: z.number().positive().optional(),
-    name: z.string().optional(),
-    metadata: z.record(z.string()).default({}),
-  })
-  .and(
-    z.discriminatedUnion("transportType", [
-      StdioOptionsSchema,
-      WebSocketOptionsSchema,
-      SseOptionsSchema,
-    ])
-  );
+export const McpServerOptionsSchema = z.object({
+  disabled: z.boolean().default(false),
+  timeout: z.number().positive().optional(),
+  name: z.string().optional(),
+  metadata: z.record(z.string()).default({})
+}).and(
+  z.discriminatedUnion("transportType", [
+    StdioOptionsSchema,
+    WebSocketOptionsSchema,
+    SseOptionsSchema,
+  ])
+);
 
 // Schema for MCPServers
 export const McpServersSchema = z.record(McpServerOptionsSchema);

@@ -1,0 +1,102 @@
+<article class="border border-secondary-200">
+  <!-- Accordion Header -->
+  <h3>
+    <button type="button"
+      class="w-full p-4 flex items-start justify-between text-left hover:bg-secondary-50 bg-secondar-50 transition-colors flex-col gap-2.5"
+      [attr.aria-expanded]="isExpanded" [attr.aria-controls]="'server-' + server.id" [id]="'accordion-' + server.id"
+      (click)="toggleAccordion()">
+      <div class="flex flex-row gap-1 justify-between items-start w-full">
+        <div class="flex flex-col items-start gap-2">
+          <div>
+            <h4 class="text-sm font-medium text-secondary-900 line-clamp-2">{{ server.name ?? server.id }}</h4>
+            <p class="text-xs text-secondary-500" *ngIf="server.name">ID: {{ server.id }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span
+            [class]="server.status === 'connected' ? 'bg-success-100 text-success-700' : 'bg-danger-100 text-danger-700'"
+            class="px-2 py-1 text-xs font-medium rounded">
+            {{ server.status }}
+          </span>
+          <span class="transform transition-transform duration-200" [class.rotate-180]="isExpanded">
+            <ng-icon name="heroChevronDown" class="h-5 w-5 text-secondary-500"></ng-icon>
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="server.errors && server.errors.length > 0"
+        class="text-sm text-danger-700 bg-danger-100 px-2 py-1 rounded flex flex-row gap-1 items-start">
+        <span *ngFor="let error of server.errors; let last = last">
+          {{ error }}{{ !last ? ', ' : '' }}
+        </span>
+      </div>
+    </button>
+  </h3>
+
+  <!-- Accordion Panel -->
+  <div [id]="'server-' + server.id" role="region" [attr.aria-labelledby]="'accordion-' + server.id"
+    [ngClass]="[isExpanded? 'opacity-100 h-auto': 'opacity-0 h-0', 'overflow-hidden transition-all duration-200 ease-in-out']">
+    <div class="px-1 border-t border-secondary-200">
+      <!-- Tabs Navigation -->
+      <div class="flex justify-center rounded-lg w-full">
+        <div class="tabs w-full overflow-hidden flex rounded-t-lg p-1.5 gap-0.5">
+          <ng-container [ngTemplateOutlet]="tabTrigger"
+            [ngTemplateOutletContext]="{'label': 'Tools', 'isTabActive': activeTab === 'tools', 'tabId': 'tools'}">
+          </ng-container>
+          <ng-container [ngTemplateOutlet]="tabTrigger"
+            [ngTemplateOutletContext]="{'label': 'Resources', 'isTabActive': activeTab === 'resources', 'tabId': 'resources'}">
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Tab Content -->
+      <div [ngSwitch]="activeTab">
+        <!-- Tools Tab -->
+        <div *ngSwitchCase="'tools'" class="">
+          <div *ngIf="server.tools && server.tools.length > 0; else noTools" class="flex flex-col gap-1">
+            <div *ngFor="let tool of server.tools" class="p-3 bg-secondary-50 rounded-md">
+              <div class="flex items-start justify-between gap-0.5">
+                <div>
+                  <h6 class="text-sm font-medium text-secondary-900">{{ tool.name }}</h6>
+                  <p class="text-sm text-secondary-500 line-clamp-2">{{ tool.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noTools>
+            <p class="text-center text-secondary-500 py-4">No tools available</p>
+          </ng-template>
+        </div>
+
+        <!-- Resources Tab -->
+        <div *ngSwitchCase="'resources'" class="">
+          <div *ngIf="server.resources && server.resources.length > 0; else noResources" class="flex flex-col gap-1">
+            <div *ngFor="let resource of server.resources" class="p-3 bg-secondary-50 rounded-md">
+              <div class="flex items-start justify-between">
+                <div class="flex flex-col gap-0.5">
+                  <h6 class="text-sm font-medium text-secondary-900">{{ resource.name }}</h6>
+                  <p class="text-xs text-secondary-500">URI: {{ resource.uri }}</p>
+                  <p *ngIf="resource.description" class="text-sm text-secondary-600 line-clamp-2">
+                    {{ resource.description }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noResources>
+            <p class="text-center text-secondary-500 py-4">No resources available</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Trigger Template -->
+  <ng-template #tabTrigger let-label="label" let-isTabActive="isTabActive" let-tabId="tabId">
+    <button (click)="activeTab = tabId"
+      class="flex-grow text-center py-2.5 text-sm font-medium rounded-lg border-[0.5px]"
+      [ngClass]="{'border-secondary-300 bg-primary-50 text-primary-600': isTabActive, 'text-secondary-500 border-transparent hover:bg-primary-50': !isTabActive}">
+      {{label}}
+    </button>
+  </ng-template>
+</article>

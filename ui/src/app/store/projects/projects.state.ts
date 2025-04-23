@@ -165,6 +165,7 @@ export class ProjectsState {
       }
 
       const response = await this.solutionService.generateDocumentsFromLLM({
+        id: metadata.id,
         createReqt: metadata.createReqt,
         name: projectName,
         description: metadata.description,
@@ -185,6 +186,7 @@ export class ProjectsState {
           maxCount: metadata.NFR.maxCount,
           isEnabled: metadata.NFR.enabled,
         },
+        mcpSettings: metadata.mcpSettings
       });
 
       const responseMap = {

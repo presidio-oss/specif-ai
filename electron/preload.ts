@@ -79,6 +79,13 @@ const appAutoUpdaterListeners = {
     ipcRenderer.invoke("app-updater:download-updates", data)
 }
 
+const mcpListeners = {
+  listMCPServers: (filters?: Record<string, string>) =>
+    ipcRenderer.invoke("mcp:listMCPServers", { filters }),
+  validateMCPSettings: () => ipcRenderer.invoke("mcp:validateMCPSettings"),
+  setProjectId: () => ipcRenderer.invoke("mcp:setProjectId"),
+}
+
 const electronAPI = {
   ...electronListeners,
   ...coreListeners,
@@ -86,7 +93,8 @@ const electronAPI = {
   ...solutionListeners,
   ...visualizationListeners,
   ...featureListeners,
-  ...appAutoUpdaterListeners
+  ...appAutoUpdaterListeners,
+  ...mcpListeners
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);
