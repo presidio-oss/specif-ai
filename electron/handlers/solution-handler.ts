@@ -5,6 +5,7 @@ import { getSolutionByName, getSolutions } from "../api/solution/get";
 import type { IpcMainInvokeEvent } from 'electron';
 import { masterFactory } from "../db/master.factory";
 import { solutionFactory } from "../db/solution.factory";
+import { MigrationUtils } from "../db/utils/migration.utils";
 
 export function setupSolutionHandlers() {
   ipcMain.handle('solution:createSolution', async (_event, data: any) => {
@@ -34,6 +35,9 @@ export function setupSolutionHandlers() {
 
       // Create new connetion
       masterFactory.setDatabase();
+
+      // migrate master DB
+      await MigrationUtils.migrateMaster();
 
       return { success: true };
     } catch (error) {

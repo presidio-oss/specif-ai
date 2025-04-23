@@ -17,7 +17,7 @@ export class MigrationUtils {
   /**
    * Applies migrations for the master database
    */
-  static async runMasterMigration(): Promise<void> {
+  static async migrateMaster(): Promise<void> {
     console.log("Entered <MigrationUtils.migrateMaster>");
 
     const db = masterFactory.getDatabase();
@@ -34,7 +34,7 @@ export class MigrationUtils {
    * Applies migrations for a specific solution database
    * @param solutionId - The ID of the solution to migrate
    */
-  static async runSolutionMigration(solutionId: number): Promise<void> {
+  static async migrateSolution(solutionId: number): Promise<void> {
     console.log(
       `Entered <MigrationUtils.migrateSolution> for solution ${solutionId}`
     );

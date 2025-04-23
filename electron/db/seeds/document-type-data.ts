@@ -1,6 +1,6 @@
-import { documentType } from "../schema/solution";
+import { ICreateDocumentType } from "../interfaces/solution.interface";
 
-export const documentTypeData: Array<typeof documentType.$inferInsert> = [
+export const documentTypeData: Array<ICreateDocumentType> = [
   {
     id: "brd",
     name: "BRD",

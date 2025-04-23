@@ -21,6 +21,7 @@ import { ObservabilityManager } from '../../services/observability/observability
 import { masterFactory } from '../../db/master.factory';
 import { ICreateMasterSolution } from '../../db/interfaces/master.interface';
 import { solutionFactory } from '../../db/solution.factory';
+import { MigrationUtils } from '../../db/utils/migration.utils';
 
 // types
 
@@ -120,160 +121,158 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       return results;
     }
     
-    const useAgent = true;
 
-    if (useAgent) {
-      let mcpTools = [];
+    let mcpTools = [];
 
-      const memoryCheckpointer = new MemorySaver();
+    const memoryCheckpointer = new MemorySaver();
 
-      try {
-        mcpTools = await getMCPTools(llmConfig.activeProvider);
-      } catch (error) {
-        console.warn("Error getting mcp tools");
-      }
-
-      const createSolutionWorkflow = buildCreateSolutionWorkflow({
-        tools: [...mcpTools],
-        model: buildLangchainModelProvider(
-          llmConfig.activeProvider,
-          llmConfig.providerConfigs[llmConfig.activeProvider].config
-        ),
-        checkpointer: memoryCheckpointer
-      });
-
-      const initialState: Partial<
-        ICreateSolutionWorkflowStateAnnotation["State"]
-      > = {
-        app: {
-          name: validatedData.name,
-          description: validatedData.description,
-        },
-        requirementGenerationPreferences: {
-          [REQUIREMENT_TYPE.PRD]: validatedData.prdPreferences,
-          [REQUIREMENT_TYPE.BRD]: validatedData.brdPreferences,
-          [REQUIREMENT_TYPE.NFR]: validatedData.nfrPreferences,
-          [REQUIREMENT_TYPE.UIR]: validatedData.uirPreferences,
-        },
-      };
-
-      const config = {
-        "configurable":{
-          "thread_id": `${randomUUID()}_create_solution`,
-          "trace": trace
-        }
-      }
-
-      const stream = createSolutionWorkflow.streamEvents(initialState, {
-        version: "v2",
-        streamMode: "messages",
-        ...config,
-      })
-
-      for await (const event of stream){
-      }
-
-      const response = await createSolutionWorkflow.getState({
-        ...config
-      })
-
-      const generatedRequirements = response.values.generatedRequirements;
-
-      return {
-        createReqt: validatedData.createReqt ?? false,
-        description: validatedData.description,
-        name: validatedData.name,
-        ...[
-          REQUIREMENT_TYPE.PRD,
-          REQUIREMENT_TYPE.BRD,
-          REQUIREMENT_TYPE.NFR,
-          REQUIREMENT_TYPE.UIR,
-        ].reduce((acc, rt) => {
-          return {
-            ...acc,
-            [rt.toLowerCase()]: generatedRequirements[rt].requirements,
-          };
-        }, {}),
-      };
+    try {
+      mcpTools = await getMCPTools(llmConfig.activeProvider);
+    } catch (error) {
+      console.warn("Error getting mcp tools");
     }
 
-    const llmHandler = buildLLMHandler(
-      llmConfig.activeProvider,
-      llmConfig.providerConfigs[llmConfig.activeProvider].config
-    );
+    const createSolutionWorkflow = buildCreateSolutionWorkflow({
+      tools: [...mcpTools],
+      model: buildLangchainModelProvider(
+        llmConfig.activeProvider,
+        llmConfig.providerConfigs[llmConfig.activeProvider].config
+      ),
+      checkpointer: memoryCheckpointer
+    });
 
-    for (const { key, generatePrompt, preferencesKey } of requirementTypes) {
-      const preferences = validatedData[preferencesKey];
-      if (preferences.isEnabled) {
-        results[key] = await generateRequirement({
-          data: validatedData,
-          generatePrompt: generatePrompt,
-          key: key,
-          preferencesKey: preferencesKey,
-          llmHandler: llmHandler
-        })
-      }
+    const initialState: Partial<
+      ICreateSolutionWorkflowStateAnnotation["State"]
+    > = {
+      app: {
+        name: validatedData.name,
+        description: validatedData.description,
+      },
+      requirementGenerationPreferences: {
+        [REQUIREMENT_TYPE.PRD]: validatedData.prdPreferences,
+        [REQUIREMENT_TYPE.BRD]: validatedData.brdPreferences,
+        [REQUIREMENT_TYPE.NFR]: validatedData.nfrPreferences,
+        [REQUIREMENT_TYPE.UIR]: validatedData.uirPreferences,
+      },
+    };
 
-      if (key == "brd") {
-        let brds = results[key] ?? [];
-
-        const prdPreferences = validatedData[prdRequirementType.preferencesKey];
-
-        if(prdPreferences.isEnabled){
-          results[prdRequirementType.key] = await generateRequirement({
-            data: validatedData,
-            llmHandler: llmHandler,
-            ...prdRequirementType,
-            brds: brds
-          });
-        }
+    const config = {
+      "configurable":{
+        "thread_id": `${randomUUID()}_create_solution`,
+        "trace": trace
       }
     }
 
-    // Start DB transaction
-    await masterFactory.runWithTransaction(async (repo) => {
-      // Check whether there are any existing solution with the same name
-      const existingSolution = await repo.getSolution({ name: validatedData.name });
-      if (existingSolution) {
-        throw new Error(`Solution with name "${validatedData.name}" already exists.`);
-      }
-
-      // Retrieve the base directory path from app config and construct the full solution path.
-      const appConfig = store.getAppConfig();
-
-      if (!appConfig?.directoryPath) {
-        throw new Error("directoryPath not configured in APP_CONFIG");
-      }
-
-      const solutionPath = `${appConfig.directoryPath}/${validatedData.name}`;
-
-      // Create a new solution
-      const payload: ICreateMasterSolution = {
-        name: validatedData.name,
-        description: validatedData.description,
-      }
-      const response = await repo.createMasterSolution(payload);
-      if (!response) {
-        throw new Error('Error occurred while creating solution')
-      }
-      console.log(`Successfully created a solution, Solution ID: ${response.id}`)
-
-      // Get solution repository, this would create the solution database and its directory
-      await solutionFactory.runWithTransaction(response.id, async (solutionRepo) => {
-        // Create solution metadata
-        await solutionRepo.saveMetadata({
-          ...payload,
-          technicalDetails: validatedData.technicalDetails,
-          isBrownfield: validatedData.cleanSolution
-        })
-        
-        // TODO: Create all the requirements
-      })
+    const stream = createSolutionWorkflow.streamEvents(initialState, {
+      version: "v2",
+      streamMode: "messages",
+      ...config,
     })
 
-    return results;
+    for await (const event of stream){
+    }
+
+    const response = await createSolutionWorkflow.getState({
+      ...config
+    })
+
+    const generatedRequirements = response.values.generatedRequirements;
+    await saveSolutionRequirementsInDb(validatedData, generatedRequirements);
+
+    return {
+      createReqt: validatedData.createReqt ?? false,
+      description: validatedData.description,
+      name: validatedData.name,
+      ...[
+        REQUIREMENT_TYPE.PRD,
+        REQUIREMENT_TYPE.BRD,
+        REQUIREMENT_TYPE.NFR,
+        REQUIREMENT_TYPE.UIR,
+      ].reduce((acc, rt) => {
+        return {
+          ...acc,
+          [rt.toLowerCase()]: generatedRequirements[rt].requirements,
+        };
+      }, {}),
+    };
   } catch (error) {
     console.error('Error in createSolution:', error);
     throw error;
   }
+}
+
+async function saveSolutionRequirementsInDb(
+  validatedData: CreateSolutionRequest,
+  generatedRequirements: any
+): Promise<void> {
+  // Check whether there are any existing solution with the same name
+  const masterRepository = await masterFactory.getRepository();
+  const existingSolution = await masterRepository.getSolution({
+    name: validatedData.name,
+  });
+
+  if (existingSolution) {
+    throw new Error(
+      `Solution with name "${validatedData.name}" already exists.`
+    );
+  }
+
+  // Prepare payload for master solution
+  const payload: ICreateMasterSolution = {
+    name: validatedData.name,
+    description: validatedData.description,
+  };
+
+  // Create solution in master DB
+  const newSolution = await masterFactory.runWithTransaction(async (repo) => {
+    const response = await repo.createMasterSolution(payload);
+    if (!response) {
+      throw new Error("Failed to create solution in master database");
+    }
+    return response;
+  });
+
+  console.log(
+    `Successfully created a solution, Solution ID: ${newSolution.id}`
+  );
+
+  // Migrate solution DB
+  await MigrationUtils.migrateSolution(newSolution.id);
+
+  await solutionFactory.runWithTransaction(
+    newSolution.id,
+    async (solutionRepo) => {
+      // Create solution metadata
+      await solutionRepo.saveMetadata({
+        ...payload,
+        technicalDetails: validatedData.technicalDetails,
+        isBrownfield: validatedData.cleanSolution,
+      });
+
+      // create document types
+      await solutionRepo.createDocumentType();
+
+      // Create all the requirements from generatedRequirements
+      const requirementTypes = [
+        REQUIREMENT_TYPE.PRD,
+        REQUIREMENT_TYPE.BRD,
+        REQUIREMENT_TYPE.NFR,
+        REQUIREMENT_TYPE.UIR,
+      ];
+
+      for (const type of requirementTypes) {
+        const requirements = generatedRequirements[type].requirements;
+        if (!requirements || !requirements.length) continue;
+
+        for (const requirement of requirements) {
+          await solutionRepo.createRequirement({
+            documentNumber: requirement.id,
+            name: requirement.title,
+            description: requirement.requirement,
+            documentTypeId: type.toLowerCase(),
+          });
+        }
+      }
+    }
+  );
 }

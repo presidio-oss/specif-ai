@@ -48,7 +48,7 @@ export const document = sqliteTable("document", {
   name: text({ mode: "text" }).notNull(),
   description: text({ mode: "text" }).notNull(),
   jiraId: text({ mode: "text" }),
-  documentTypeId: integer().references(() => documentType.id),
+  documentTypeId: text().references(() => documentType.id),
   ...commonColumns,
 });
 

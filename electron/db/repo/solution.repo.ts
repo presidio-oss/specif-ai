@@ -12,6 +12,7 @@ import {
   document,
   documentLinks,
 } from "../schema/solution";
+import { documentTypeData } from "../seeds/document-type-data";
 
 export class SolutionRepository {
   constructor(private db: SolutionDB) {
@@ -162,5 +163,19 @@ export class SolutionRepository {
       integrations,
     };
     return res;
+  }
+
+  // Table: Document Type
+  // Below are the functions related to Document Type table
+  async createDocumentType() {
+    console.log("Entered <SolutionRepository.createDocumentType>");
+
+    const response = await this.db
+      .insert(solutionSchema.documentType)
+      .values(documentTypeData)
+      .returning();
+
+    console.log("Exited <SolutionRepository.createDocumentType>");
+    return response && response.length ? response[0] : null;
   }
 }
