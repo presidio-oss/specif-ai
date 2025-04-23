@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "630f889f-7821-4576-abd8-bd6d3618ac54",
+  "id": "f9d67676-464d-48a9-a5c5-4959e367ac46",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "analyticsLookup": {
@@ -393,7 +393,7 @@
         },
         "documentTypeId": {
           "name": "documentTypeId",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -780,14 +780,6 @@
           "autoincrement": false,
           "default": false
         },
-        "version": {
-          "name": "version",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'v1'"
-        },
         "createdAt": {
           "name": "createdAt",
           "type": "text",
@@ -813,7 +805,15 @@
           "default": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "metadata_name_unique": {
+          "name": "metadata_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

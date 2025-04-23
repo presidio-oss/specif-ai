@@ -56,7 +56,7 @@ CREATE TABLE `document` (
 	`name` text NOT NULL,
 	`description` text NOT NULL,
 	`jiraId` text,
-	`documentTypeId` integer,
+	`documentTypeId` text,
 	`createdAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updatedAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`isDeleted` integer DEFAULT false NOT NULL,
@@ -113,10 +113,10 @@ CREATE TABLE `metadata` (
 	`description` text NOT NULL,
 	`technicalDetails` text NOT NULL,
 	`isBrownfield` integer DEFAULT false,
-	`version` text DEFAULT 'v1',
 	`createdAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updatedAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`isDeleted` integer DEFAULT false NOT NULL
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `metadata_name_unique` ON `metadata` (`name`);--> statement-breakpoint
 CREATE VIEW `DocumentCountByType` AS select "documentType"."id", "documentType"."name", "documentType"."typeLabel", count("document"."id") as "count" from "documentType" left join "document" on "document"."documentTypeId" = "documentType"."id" group by "documentType"."id";

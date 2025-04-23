@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3c106a4d-f877-459d-a730-63bd8820cca7",
+  "id": "8f6c84db-98d1-4c60-82a8-d2bab4de2637",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "masterSolutions": {
@@ -23,13 +23,6 @@
         },
         "description": {
           "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "solutionPath": {
-          "name": "solutionPath",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -69,10 +62,10 @@
         }
       },
       "indexes": {
-        "masterSolutions_solutionPath_unique": {
-          "name": "masterSolutions_solutionPath_unique",
+        "masterSolutions_name_unique": {
+          "name": "masterSolutions_name_unique",
           "columns": [
-            "solutionPath"
+            "name"
           ],
           "isUnique": true
         }
