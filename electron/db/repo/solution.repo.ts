@@ -3,7 +3,7 @@ import * as solutionSchema from '../schema/solution';
 import { SolutionDB } from "../solution.factory";
 import { documentInsertSchema, ICreateDocument, ICreateMetadata } from "../interfaces/solution.interface";
 import { metadataInsertSchema } from "../interfaces/solution.interface";
-import { documentCountByType, document, documentLinks } from "@/db/schema/solution";
+import { documentCountByType, document, documentLinks } from "../schema/solution";
 
 export class SolutionRepository {
   constructor(private db: SolutionDB) {
