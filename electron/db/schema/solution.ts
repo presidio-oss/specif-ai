@@ -21,11 +21,10 @@ export const commonColumns = {
 
 export const metadata = sqliteTable("metadata", {
   id: integer().primaryKey(),
-  name: text({ mode: "text" }).notNull(),
+  name: text({ mode: "text" }).unique().notNull(),
   description: text({ mode: "text" }).notNull(),
   technicalDetails: text({ mode: "text" }).notNull(),
   isBrownfield: integer({ mode: "boolean" }).default(false),
-  version: text({ mode: "text" }).default("v1"),
   ...commonColumns,
 });
 

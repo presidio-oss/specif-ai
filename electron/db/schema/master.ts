@@ -3,9 +3,8 @@ import { commonColumns } from "./solution";
 
 export const masterSolutions = sqliteTable("masterSolutions", {
   id: integer().primaryKey(),
-  name: text({ mode: "text" }).notNull(),
+  name: text({ mode: "text" }).unique().notNull(),
   description: text({ mode: "text" }).notNull(),
-  solutionPath: text({ mode: "text" }).notNull().unique(),
   isActive: integer({ mode: "boolean" }).default(true).notNull(),
   ...commonColumns,
 });
