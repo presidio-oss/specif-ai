@@ -1,5 +1,5 @@
 import { solutionFactory } from "@/db/solution.factory";
-import { documentIdSchema, solutionIdSchema } from "@/db/types";
+import { documentIdSchema, documentRequestSchema, solutionIdSchema } from "@/db/types";
 import { IpcMainInvokeEvent } from "electron";
 import { z } from "zod";
 
@@ -55,12 +55,29 @@ export class DocumentController {
         return document;
     }
 
-    static async addDocument(_: IpcMainInvokeEvent) {
+    static async addDocument(_: IpcMainInvokeEvent, data: any) {
         console.log('Entered <DocumentController.addDocument>');
+        const parsedData = documentRequestSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+            throw new Error('Schema validation failed');
+        }
 
-        // TODO: Implement
+        const { solutionId, documentData, linkedDocumentIds } = parsedData.data;
+        const solutionRepository = await solutionFactory.getRepository(solutionId);
+        const newDocument = await solutionRepository.createRequirement(documentData);
+
+        // Create document links if linkedDocumentIds are provided
+        if (linkedDocumentIds && linkedDocumentIds.length > 0 && newDocument) {
+            try {
+                await DocumentController.createDocumentLinks(solutionId, newDocument.id, linkedDocumentIds);
+            } catch (error) {
+                console.error(`Error creating document links: ${error}`);
+            }
+        }
 
         console.log('Exited <DocumentController.addDocument>');
+        return newDocument;
     }
 
     static async updateDocument(_: IpcMainInvokeEvent) {
@@ -94,4 +111,29 @@ export class DocumentController {
 
         console.log('Exited <DocumentController.enhance>');
     }
+
+    // FIXME: Check if document types can be received from payload or if needed at all
+    // Get the source document to determine its type
+    private static async createDocumentLinks(solutionId: number, sourceDocumentId: number, targetDocumentIds: number[]) {
+        console.log('Entered <DocumentController.createDocumentLinks>');
+    
+        if (!targetDocumentIds || targetDocumentIds.length === 0) {
+            console.log('No target document IDs provided');
+            return [];
+        }
+    
+        const solutionRepository = await solutionFactory.getRepository(solutionId);
+    
+        // Prepare all link objects
+        const linksPayload = targetDocumentIds.map(targetId => ({
+            sourceDocumentId,
+            targetDocumentId: targetId
+        }));
+    
+        const insertedLinks = await solutionRepository.createDocumentLinks(linksPayload);
+    
+        console.log('Exited <DocumentController.createDocumentLinks>');
+        return insertedLinks;
+    }
+    
 }

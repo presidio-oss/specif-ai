@@ -14,3 +14,14 @@ export const documentIdSchema = solutionIdSchema.extend({
 export const searchQuerySchema = solutionIdSchema.extend({
     searchQuery: z.string().optional()
 });
+
+export const documentRequestSchema = solutionIdSchema.extend({
+    documentData: z.object({
+        documentNumber: z.string(),
+        name: z.string(),
+        description: z.string(),
+        jiraId: z.string().optional(),
+        documentTypeId: z.number().optional()
+    }),
+    linkedDocumentIds: z.array(z.number()).optional()
+});

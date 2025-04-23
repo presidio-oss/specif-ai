@@ -112,6 +112,30 @@ export class SolutionRepository {
     return result;
   }
 
+  async createDocumentLinks(linksPayload: {
+    sourceDocumentId: number;
+    targetDocumentId: number;
+    createdBy?: string;
+  }[]) {
+    console.log("Entered <SolutionRepository.createDocumentLinksBatch>");
+  
+    const records = linksPayload.map(link => ({
+      ...link,
+      sourceDocumentType: 'unknown', // FIXME: Validate if we need type
+      targetDocumentType: 'unknown',    
+      createdBy: link.createdBy || 'system',
+    }));
+  
+    const response = await this.db
+      .insert(documentLinks)
+      .values(records)
+      .returning();
+  
+    console.log("Exited <SolutionRepository.createDocumentLinksBatch>");
+    return response;
+  }
+  
+
   // FIXME: where are we using this function? and can we optimise this?
   async getSolutionByName(name: string, docTypes?: string[]) {
     // TODO: Filter non-deleted items
