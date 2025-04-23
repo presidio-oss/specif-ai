@@ -1,9 +1,17 @@
-import { inArray, eq } from "drizzle-orm";
-import * as solutionSchema from '../schema/solution';
+import { inArray, eq, or, like, and } from "drizzle-orm";
+import * as solutionSchema from "../schema/solution";
 import { SolutionDB } from "../solution.factory";
-import { documentInsertSchema, ICreateDocument, ICreateMetadata } from "../interfaces/solution.interface";
+import {
+  documentInsertSchema,
+  ICreateDocument,
+  ICreateMetadata,
+} from "../interfaces/solution.interface";
 import { metadataInsertSchema } from "../interfaces/solution.interface";
-import { documentCountByType, document, documentLinks } from "../schema/solution";
+import {
+  documentCountByType,
+  document,
+  documentLinks,
+} from "../schema/solution";
 
 export class SolutionRepository {
   constructor(private db: SolutionDB) {
@@ -57,13 +65,28 @@ export class SolutionRepository {
     console.log('Exited <SolutionRepository.createRequirement>')
     return (response && response.length) ? response[0] : null;
   }
-  
-  async getAllDocuments() {
-    console.log("Entered <SolutionRepository.getDocument>");
-    const result = await this.db.select().from(document);
-    console.log("Exited <SolutionRepository.getDocument>");
-    // TODO: Return Links too
-    return result;
+
+  async getAllDocuments(searchQuery?: string) {
+    console.log("Entered <SolutionRepository.getAllDocuments>");
+
+    const baseQuery = this.db.select().from(document);
+
+    const query = searchQuery
+      ? baseQuery.where(
+          and(
+            eq(document.isDeleted, false),
+            or(
+              like(document.name, `%${searchQuery}%`),
+              like(document.description, `%${searchQuery}%`),
+              like(document.documentNumber, `%${searchQuery}%`)
+            )
+          )
+        )
+      : baseQuery.where(eq(document.isDeleted, false));
+
+    const documents = await query;
+    console.log("Exited <SolutionRepository.getAllDocuments>");
+    return documents;
   }
 
   async getDocumentTypesWithCount() {
@@ -75,7 +98,11 @@ export class SolutionRepository {
 
   async getDocument(documentId: number) {
     console.log("Entered <SolutionRepository.getDocument>");
-    const result = await this.db.select().from(document).where(eq(document.id, documentId)).get();
+    const result = await this.db
+      .select()
+      .from(document)
+      .where(eq(document.id, documentId))
+      .get();
     console.log("Exited <SolutionRepository.getDocument>");
     // TODO: Return Links too
     return result;
@@ -84,18 +111,27 @@ export class SolutionRepository {
   // FIXME: where are we using this function? and can we optimise this?
   async getSolutionByName(name: string, docTypes?: string[]) {
     // TODO: Filter non-deleted items
-    const solutionMetadata = await this.db.select().from(solutionSchema.metadata);
+    const solutionMetadata = await this.db
+      .select()
+      .from(solutionSchema.metadata);
     const documents = await this.db.select().from(solutionSchema.document);
-    const documentMetadata = await this.db.select().from(solutionSchema.documentCountByType).where(
-      docTypes ? inArray(solutionSchema.documentCountByType.typeName, docTypes) : undefined
-    );
-    const integrations = await this.db.select().from(solutionSchema.integration);
+    const documentMetadata = await this.db
+      .select()
+      .from(solutionSchema.documentCountByType)
+      .where(
+        docTypes
+          ? inArray(solutionSchema.documentCountByType.typeName, docTypes)
+          : undefined
+      );
+    const integrations = await this.db
+      .select()
+      .from(solutionSchema.integration);
 
     const res = {
       solutionMetadata,
       documentMetadata,
       documents,
-      integrations
+      integrations,
     };
     return res;
   }

@@ -1,6 +1,7 @@
 import { solutionFactory } from "@/db/solution.factory";
 import { documentIdSchema, solutionIdSchema } from "@/db/types";
 import { IpcMainInvokeEvent } from "electron";
+import { z } from "zod";
 
 export class DocumentController {
     static async getDocumentTypesWithCount(_: IpcMainInvokeEvent, data: any) {
@@ -21,15 +22,18 @@ export class DocumentController {
 
     static async getAllDocuments(_: IpcMainInvokeEvent, data: any) {
         console.log('Entered <DocumentController.getAllDocument>');
-        const parsedData = solutionIdSchema.safeParse(data);
+        const parsedData = solutionIdSchema.extend({
+            searchQuery: z.string().optional()
+        }).safeParse(data);
+        
         if (!parsedData.success) {
             console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
             throw new Error('Schema validation failed')
         }
 
-        const { solutionId } = data;
+        const { solutionId, searchQuery } = parsedData.data;
         const solutionRepository = await solutionFactory.getRepository(solutionId);
-        const documents = await solutionRepository.getAllDocuments();
+        const documents = await solutionRepository.getAllDocuments(searchQuery);
 
         console.log('Exited <DocumentController.getAllDocument>');
         return documents;
@@ -90,4 +94,4 @@ export class DocumentController {
 
         console.log('Exited <DocumentController.enhance>');
     }
-}   
+}

@@ -5,8 +5,12 @@ export type Database = ReturnType<typeof drizzle>;
 
 export const solutionIdSchema = z.object({
     solutionId: z.number(),
-})
+});
 
 export const documentIdSchema = solutionIdSchema.extend({
     documentId: z.number(),
-})
+});
+
+export const searchQuerySchema = solutionIdSchema.extend({
+    searchQuery: z.string().optional()
+});
