@@ -17,7 +17,7 @@ export class MasterFactory {
         console.log('Entered <MasterFactory.createDatabase>')
 
         if (!fs.existsSync(dbPath)) {
-            new Error('Database path does not exists, please verify.')
+            throw new Error('Database path does not exists, please verify.')
         }
 
         dbPath = path.join(dbPath, MasterFactory.DEFAULT_DB_PATH);
