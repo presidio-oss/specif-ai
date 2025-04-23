@@ -251,7 +251,6 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       const payload: ICreateMasterSolution = {
         name: validatedData.name,
         description: validatedData.description,
-        solutionPath: solutionPath,
       }
       const response = await repo.createMasterSolution(payload);
       if (!response) {
