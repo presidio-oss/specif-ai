@@ -10,6 +10,7 @@ import { Component, Input } from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroChevronDown } from '@ng-icons/heroicons/outline';
 import { MCPServerDetails } from '../../../types/mcp.types';
+import { CustomAccordionComponent } from '../../custom-accordion/custom-accordion.component';
 
 @Component({
   selector: 'app-mcp-servers-item',
@@ -23,22 +24,13 @@ import { MCPServerDetails } from '../../../types/mcp.types';
     NgSwitch,
     NgSwitchCase,
     NgIconComponent,
+    CustomAccordionComponent,
   ],
   viewProviders: [provideIcons({ heroChevronDown })],
 })
 export class McpServersListItemComponent {
-  // @ts-expect-error
-  @Input() server: MCPServerDetails;
-  isExpanded = false;
+  @Input() server!: MCPServerDetails;
   activeTab: 'tools' | 'resources' = 'tools';
-
-  toggleAccordion() {
-    this.isExpanded = !this.isExpanded;
-  }
-
-  toggleExpand() {
-    this.isExpanded = !this.isExpanded;
-  }
 
   get toolsAndResources(): { tools: any[]; resources: any[] } {
     return {
