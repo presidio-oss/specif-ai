@@ -21,7 +21,7 @@ export const documentRequestSchema = solutionIdSchema.extend({
         name: z.string(),
         description: z.string(),
         jiraId: z.string().optional(),
-        documentTypeId: z.number().optional()
+        documentTypeId: z.string().optional()
     }),
     linkedDocumentIds: z.array(z.number()).optional()
 });

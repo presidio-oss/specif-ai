@@ -1,7 +1,7 @@
 export type GetSolutionsResponse = {
   project: string;
   metadata: {
-    id: string;
+    id: number;
     name: string;
     description: string;
     createdAt: string;

@@ -23,7 +23,7 @@ export async function getSolutions(
     const solutions = dbSolutions.map((solution) => ({
       project: solution.name,
       metadata: {
-        id: solution.name,
+        id: solution.id,
         name: solution.name,
         description: solution.description,
         createdAt: solution.createdAt,
