@@ -56,13 +56,10 @@ export const documentLinks = sqliteTable("documentLinks", {
   id: integer().primaryKey(),
   sourceDocumentId: integer().references(() => document.id),
   targetDocumentId: integer().references(() => document.id),
-  sourceDocumentType: text({ mode: "text" }).notNull(),
-  targetDocumentType: text({ mode: "text" }).notNull(),
-  createdBy: text({ mode: "text" }),
   ...commonColumns,
 });
 
-export const documentCountByType = sqliteView("DocumentCountByType").as((qb) =>
+export const documentCountByType = sqliteView("documentCountByType").as((qb) =>
   qb
     .select({
       documentTypeId: documentType.id,
@@ -80,7 +77,6 @@ export const conversation = sqliteTable("conversation", {
   documentId: integer()
     .notNull()
     .references(() => document.id),
-  title: text({ mode: "text" }),
   ...commonColumns,
 });
 
