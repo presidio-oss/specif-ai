@@ -22,3 +22,7 @@ export const documentRequestSchema = solutionIdSchema.extend({
     }),
     linkedDocumentIds: z.array(z.number()).default([])
 });
+
+export const businessProcessIdSchema = solutionIdSchema.extend({
+    businessProcessId: z.number(),
+});

@@ -2,7 +2,11 @@ import { inArray, eq, or, like, and } from "drizzle-orm";
 import * as solutionSchema from "../schema/solution";
 import { SolutionDB } from "../solution.factory";
 import {
+  businessProcessDocumentsInsertSchema,
+  businessProcessInsertSchema,
   documentInsertSchema,
+  ICreateBusinessProcess,
+  ICreateBusinessProcessDocuments,
   ICreateDocument,
   ICreateMetadata,
 } from "../interfaces/solution.interface";
@@ -11,6 +15,8 @@ import {
   documentCountByType,
   document,
   documentLinks,
+  businessProcess,
+  businessProcessDocuments
 } from "../schema/solution";
 import { documentTypeData } from "../seeds/document-type-data";
 
@@ -23,6 +29,10 @@ export class SolutionRepository {
 
   private defaultDocumentQueryFilters = [
     eq(document.isDeleted, false)
+  ]
+
+  private defaultBusinessProcessQueryFilters = [
+    eq(businessProcess.isDeleted, false)
   ]
 
   // TODO: Add isDeleted check for all the functions
@@ -169,5 +179,187 @@ export class SolutionRepository {
 
     console.log("Exited <SolutionRepository.createDocumentType>");
     return response && response.length ? response[0] : null;
+  }
+
+  // Table: Business Process
+  // Below are the functions related to Business Process table
+  async getBusinessProcessCount() {
+    console.log("Entered <SolutionRepository.getBusinessProcessCount>");
+    const count = await this.db
+      .select({ count: businessProcess.id })
+      .from(businessProcess)
+      .where(and(...this.defaultBusinessProcessQueryFilters));
+    console.log("Exited <SolutionRepository.getBusinessProcessCount>");
+    return count[0]?.count || 0;
+  }
+
+  async getAllBusinessProcesses(searchQuery?: string) {
+    console.log("Entered <SolutionRepository.getAllBusinessProcesses>");
+
+    const baseQuery = this.db.select().from(businessProcess);
+
+    const query = searchQuery
+      ? baseQuery.where(
+          and(
+            ...this.defaultBusinessProcessQueryFilters,
+            or(
+              like(businessProcess.name, `%${searchQuery}%`),
+              like(businessProcess.description, `%${searchQuery}%`)
+            )
+          )
+        )
+      : baseQuery.where(and(...this.defaultBusinessProcessQueryFilters));
+
+    const processes = await query;
+    console.log("Exited <SolutionRepository.getAllBusinessProcesses>");
+    return processes;
+  }
+
+  async getBusinessProcess(businessProcessId: number) {
+    console.log("Entered <SolutionRepository.getBusinessProcess>");
+    const result = await this.db
+      .select()
+      .from(businessProcess)
+      .where(
+        and(
+          eq(businessProcess.id, businessProcessId),
+          ...this.defaultBusinessProcessQueryFilters
+        )
+      )
+      .get();
+    console.log("Exited <SolutionRepository.getBusinessProcess>");
+    return result;
+  }
+
+  async createBusinessProcess(processDetail: ICreateBusinessProcess) {
+    console.log("Entered <SolutionRepository.createBusinessProcess>");
+
+    // Validate the data
+    const parsedData = businessProcessInsertSchema.safeParse(processDetail);
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
+
+    const response = await this.db
+      .insert(businessProcess)
+      .values(parsedData.data)
+      .returning();
+
+    console.log("Exited <SolutionRepository.createBusinessProcess>");
+    return response && response.length ? response[0] : null;
+  }
+
+  async getBusinessProcessFlowchart(businessProcessId: number) {
+    console.log("Entered <SolutionRepository.getBusinessProcessFlowchart>");
+    const result = await this.db
+      .select({ flowchart: businessProcess.flowchart })
+      .from(businessProcess)
+      .where(
+        and(
+          eq(businessProcess.id, businessProcessId),
+          ...this.defaultBusinessProcessQueryFilters
+        )
+      )
+      .get();
+    console.log("Exited <SolutionRepository.getBusinessProcessFlowchart>");
+    return result?.flowchart;
+  }
+
+  async updateBusinessProcess(
+    businessProcessId: number,
+    processDetail: ICreateBusinessProcess
+  ) {
+    console.log("Entered <SolutionRepository.updateBusinessProcess>");
+
+    // Validate the data
+    const parsedData = businessProcessInsertSchema.safeParse(processDetail);
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
+
+    const response = await this.db
+      .update(businessProcess)
+      .set({
+        ...parsedData.data,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(
+        and(
+          eq(businessProcess.id, businessProcessId),
+          ...this.defaultBusinessProcessQueryFilters
+        )
+      )
+      .returning();
+
+    console.log("Exited <SolutionRepository.updateBusinessProcess>");
+    return response && response.length ? response[0] : null;
+  }
+
+  // Table: Business Process Documents
+  // Below are the functions related to Business Process Documents table
+  async createBusinessProcessDocument(
+    documentDetail: ICreateBusinessProcessDocuments
+  ) {
+    console.log("Entered <SolutionRepository.createBusinessProcessDocument>");
+
+    // Validate the data
+    const parsedData =
+      businessProcessDocumentsInsertSchema.safeParse(documentDetail);
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
+
+    const response = await this.db
+      .insert(businessProcessDocuments)
+      .values(parsedData.data)
+      .returning();
+
+    console.log("Exited <SolutionRepository.createBusinessProcessDocument>");
+    return response && response.length ? response[0] : null;
+  }
+
+  async getBusinessProcessDocuments(businessProcessId: number) {
+    console.log("Entered <SolutionRepository.getBusinessProcessDocuments>");
+    const result = await this.db
+      .select()
+      .from(businessProcessDocuments)
+      .where(
+        eq(
+          solutionSchema.businessProcessDocuments.businessProcessId,
+          businessProcessId
+        )
+      );
+    console.log("Exited <SolutionRepository.getBusinessProcessDocuments>");
+    return result;
+  }
+
+  async deleteBusinessProcessDocument(
+    businessProcessId: number,
+    documentId: number
+  ) {
+    console.log("Entered <SolutionRepository.deleteBusinessProcessDocument>");
+    const result = await this.db
+      .delete(businessProcessDocuments)
+      .where(
+        and(
+          eq(
+            solutionSchema.businessProcessDocuments.businessProcessId,
+            businessProcessId
+          ),
+          eq(solutionSchema.businessProcessDocuments.documentId, documentId)
+        )
+      )
+      .returning();
+    console.log("Exited <SolutionRepository.deleteBusinessProcessDocument>");
+    return result;
   }
 }

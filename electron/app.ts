@@ -10,6 +10,7 @@ import { setupFeatureHandlers } from "./handlers/feature-handler";
 import { setupSolutionHandlers } from "./handlers/solution-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
+import { setupBusinessProcessHandlers } from "./handlers/api/business-process-handler";
 
 // ========================
 // CONFIGURATION
@@ -191,5 +192,6 @@ app.whenReady().then(async () => {
     setupVisualizationHandlers();
     setupFeatureHandlers();
     setupSolutionHandlers();
+    setupBusinessProcessHandlers();
   }
 });

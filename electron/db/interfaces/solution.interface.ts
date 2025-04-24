@@ -4,6 +4,8 @@ import {
     metadata, 
     document,
     documentType,
+    businessProcess,
+    businessProcessDocuments,
 } from '../schema/solution';
 
 // Table: Metadata
@@ -32,3 +34,19 @@ export const documentTypeInsertSchema = createInsertSchema(documentType);
 
 export type IDocumentType = z.infer<typeof documentTypeSelectSchema>;
 export type ICreateDocumentType = z.infer<typeof documentTypeInsertSchema>;
+
+// Table: Business Process
+// Below would contain the zod schema and its infered type
+export const businessProcessSelectSchema = createSelectSchema(businessProcess);
+export const businessProcessInsertSchema = createInsertSchema(businessProcess);
+
+export type IBusinessProcess = z.infer<typeof businessProcessSelectSchema>;
+export type ICreateBusinessProcess = z.infer<typeof businessProcessInsertSchema>;
+
+// Table : BusinessProcessDocuments
+// Below would contain the zod schema and its infered type
+export const businessProcessDocumentsSelectSchema = createSelectSchema(businessProcessDocuments);
+export const businessProcessDocumentsInsertSchema = createInsertSchema(businessProcessDocuments);
+
+export type IBusinessProcessDocuments = z.infer<typeof businessProcessDocumentsSelectSchema>;
+export type ICreateBusinessProcessDocuments = z.infer<typeof businessProcessDocumentsInsertSchema>;
