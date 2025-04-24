@@ -15,11 +15,14 @@ import { traceBuilder } from "../../utils/trace-builder";
 import { updateBusinessProcessPrompt } from "../../prompts/requirement/business-process/update";
 import { flowchartPrompt } from "../../prompts/visualization/flowchart";
 import {
-  AddBusinessProcessResponse,
   addBusinessProcessSchema,
   updateBusinessProcessSchema,
-  UpdateBusinessProcessResponse,
   flowchartSchema,
+  enhanceBusinessProcessSchema,
+  EnhanceBusinessProcessResponse,
+  EnhanceBusinessProcessRequest,
+  DocumentType,
+  DocumentTypeValue,
 } from "../../schema/businessProcess.schema";
 
 export class BusinessProcessController {
@@ -164,50 +167,39 @@ export class BusinessProcessController {
     }
   }
 
-  static async addBusinessProcess(
+  static async enhance(
     _: IpcMainInvokeEvent,
-    data: any
-  ): Promise<AddBusinessProcessResponse> {
-    console.log("Entered <BusinessProcessController.addBusinessProcess>");
+    data: EnhanceBusinessProcessRequest
+  ): Promise<EnhanceBusinessProcessResponse> {
+    console.log("Entered <BusinessProcessController.enhance>");
     try {
       const llmConfig = store.getLLMConfig();
       if (!llmConfig) {
         throw new Error("LLM configuration not found");
       }
 
-      console.log("[add-business-process] Using LLM config:", llmConfig);
-      const validatedData = addBusinessProcessSchema.parse(data);
+      console.log("[enhance-business-process] Using LLM config:", llmConfig);
+      const validatedData = enhanceBusinessProcessSchema.parse(data);
 
       const {
+        type,
         name,
         description,
-        reqt,
-        solutionId,
+        reqt = "",
+        reqDesc = "",
+        updatedReqt = "",
         selectedBRDs = [],
         selectedPRDs = [],
       } = validatedData;
 
-      if (!validatedData.useGenAI) {
-        await solutionFactory.runWithTransaction(
-          solutionId,
-          async (solutionRepo) => {
-            await solutionRepo.createBusinessProcess({
-              name: validatedData.title || "",
-              description: reqt || "",
-            });
-
-            // Todo: Add selectedBRDs and selectedPRDs to the business process Document Table
-          }
-        );
-      }
-
-      // Generate prompt
-      const prompt = addBusinessProcessPrompt({
+      const prompt = this.generatePrompt(type, {
         name,
         description,
-        newReqt: reqt || "",
-        BRDS: selectedBRDs.join("\n"),
-        PRDS: selectedPRDs.join("\n"),
+        reqt,
+        reqDesc,
+        updatedReqt,
+        selectedBRDs,
+        selectedPRDs,
       });
 
       // Prepare messages for LLM
@@ -218,129 +210,218 @@ export class BusinessProcessController {
         llmConfig.providerConfigs[llmConfig.activeProvider].config
       );
 
-      const traceName = traceBuilder(COMPONENT.BP, OPERATIONS.ADD);
+      const traceName = traceBuilder(
+        COMPONENT.BP,
+        type === "add" ? OPERATIONS.ADD : OPERATIONS.UPDATE
+      );
       const response = await handler.invoke(messages, null, traceName);
-      console.log("[add-business-process] LLM Response:", response);
+      console.log("[enhance-business-process] LLM Response:", response);
 
       // Parse LLM response
       const cleanedResponse = repairJSON(response);
       const llmResponse = JSON.parse(cleanedResponse);
 
-      console.log(
-        "[add-business-process] LLM Response after parsing:",
-        llmResponse
-      );
-
-      await solutionFactory.runWithTransaction(
-        solutionId,
-        async (solutionRepo) => {
-          await solutionRepo.createBusinessProcess({
-            name: llmResponse.LLMreqt.title,
-            description: llmResponse.LLMreqt.requirement,
-          });
-
-          // Todo: Add selectedBRDs and selectedPRDs to the business process Document Table
-        }
-      );
+      console.log("Exited <BusinessProcessController.enhance>");
 
       return {
-        ...validatedData,
-        LLMreqt: llmResponse.LLMreqt,
+        type,
+        result:
+          type === "add"
+            ? {
+                title: llmResponse.LLMreqt.title,
+                requirement: llmResponse.LLMreqt.requirement,
+              }
+            : {
+                title: llmResponse.updated.title,
+                requirement: llmResponse.updated.requirement,
+              },
       };
+    } catch (error) {
+      console.error("Error in enhance:", error);
+      throw error;
+    }
+  }
+
+  static async addBusinessProcess(_: IpcMainInvokeEvent, payload: any) {
+    console.log("Entered <BusinessProcessController.addBusinessProcess>");
+    try {
+      const {
+        name,
+        description,
+        solutionId,
+        selectedBRDs: brdIds = [],
+        selectedPRDs: prdIds = [],
+      } = addBusinessProcessSchema.parse(payload);
+
+      return await solutionFactory.runWithTransaction(
+        solutionId,
+        async (solutionRepository) => {
+          const businessProcess =
+            await solutionRepository.createBusinessProcess({
+              name,
+              description,
+            });
+          if (!businessProcess)
+            throw new Error("Failed to create business process");
+
+          const buildDocumentLink = (
+            documentId: number,
+            type: DocumentTypeValue
+          ) => ({
+            businessProcessId: businessProcess.id,
+            documentId,
+            docType: type,
+          });
+
+          const documentLinks = [
+            ...brdIds.map((id) => buildDocumentLink(id, DocumentType.BRD)),
+            ...prdIds.map((id) => buildDocumentLink(id, DocumentType.PRD)),
+          ];
+
+          await Promise.all(
+            documentLinks.map((link) =>
+              solutionRepository.createBusinessProcessDocument(link)
+            )
+          );
+
+          console.log("Exited <BusinessProcessController.addBusinessProcess>");
+          return businessProcess;
+        }
+      );
     } catch (error) {
       console.error("Error in addBusinessProcess:", error);
       throw error;
     }
   }
 
-  static async updateBusinessProcess(
-    _: IpcMainInvokeEvent,
-    data: any
-  ): Promise<UpdateBusinessProcessResponse> {
+  static async updateBusinessProcess(_: IpcMainInvokeEvent, payload: any) {
     console.log("Entered <BusinessProcessController.updateBusinessProcess>");
     try {
-      const llmConfig = store.getLLMConfig();
-      if (!llmConfig) {
-        throw new Error("LLM configuration not found");
-      }
-
-      console.log("[update-business-process] Using LLM config:", llmConfig);
-      const validatedData = updateBusinessProcessSchema.parse(data);
-
       const {
         name,
         description,
-        updatedReqt,
-        reqDesc,
-        selectedBRDs = [],
-        selectedPRDs = [],
         solutionId,
         businessProcessId,
-      } = validatedData;
+        selectedBRDs: brdIds = [],
+        selectedPRDs: prdIds = [],
+      } = updateBusinessProcessSchema.parse(payload);
 
-      if (!validatedData.useGenAI) {
-        await solutionFactory.runWithTransaction(
-          solutionId,
-          async (solutionRepo) => {
-            await solutionRepo.updateBusinessProcess(businessProcessId, {
-              name: validatedData.title || "",
-              description: updatedReqt || "",
-            });
-          }
-          // Todo: Add selectedBRDs and selectedPRDs to the business process Document Table
-        );
-      }
-
-      // Generate prompt
-      const prompt = updateBusinessProcessPrompt({
-        name,
-        description,
-        existingReqt: reqDesc,
-        updatedReqt: updatedReqt || "",
-        BRDS: selectedBRDs.join("\n"),
-        PRDS: selectedPRDs.join("\n"),
-      });
-
-      // Prepare messages for LLM
-      const messages = await LLMUtils.prepareMessages(prompt);
-
-      const handler = buildLLMHandler(
-        llmConfig.activeProvider,
-        llmConfig.providerConfigs[llmConfig.activeProvider].config
-      );
-
-      const traceName = traceBuilder(COMPONENT.BP, OPERATIONS.UPDATE);
-      const response = await handler.invoke(messages, null, traceName);
-      console.log("[update-business-process] LLM Response:", response);
-
-      // Parse LLM response
-      const cleanedResponse = repairJSON(response);
-      const llmResponse = JSON.parse(cleanedResponse);
-
-      console.log(
-        "[update-business-process] LLM Response after parsing:",
-        llmResponse
-      );
-
-      await solutionFactory.runWithTransaction(
+      return await solutionFactory.runWithTransaction(
         solutionId,
-        async (solutionRepo) => {
-          await solutionRepo.updateBusinessProcess(businessProcessId, {
-            name: llmResponse.updated.title,
-            description: llmResponse.updated.requirement,
-          });
+        async (repo) => {
+          const updatedProcess = await repo.updateBusinessProcess(
+            businessProcessId,
+            {
+              name,
+              description,
+            }
+          );
+
+          const existingLinks = await repo.getBusinessProcessDocuments(
+            businessProcessId
+          );
+
+          const existingKeys = new Set(
+            existingLinks.map((link) => `${link.docType}:${link.documentId}`)
+          );
+
+          const incomingLinks = [
+            ...brdIds.map((id) => ({
+              key: `${DocumentType.BRD}:${id}`,
+              documentId: id,
+              docType: DocumentType.BRD,
+            })),
+            ...prdIds.map((id) => ({
+              key: `${DocumentType.PRD}:${id}`,
+              documentId: id,
+              docType: DocumentType.PRD,
+            })),
+          ];
+
+          const incomingKeys = new Set(incomingLinks.map((link) => link.key));
+
+          const toAdd = incomingLinks.filter(
+            (link) => !existingKeys.has(link.key)
+          );
+          const toRemove = existingLinks.filter(
+            (link) => !incomingKeys.has(`${link.docType}:${link.documentId}`)
+          );
+
+          await Promise.all([
+            ...toAdd.map((link) =>
+              repo.createBusinessProcessDocument({
+                businessProcessId,
+                documentId: link.documentId,
+                docType: link.docType,
+              })
+            ),
+            ...toRemove.map((link) =>
+              repo.deleteBusinessProcessDocument(
+                businessProcessId,
+                link.documentId
+              )
+            ),
+          ]);
+
+          console.log(
+            "Exited <BusinessProcessController.updateBusinessProcess>"
+          );
+          return updatedProcess;
         }
-
-        // Todo: Add selectedBRDs and selectedPRDs to the business process Document Table
       );
-
-      return {
-        ...validatedData,
-        updated: llmResponse.updated,
-      };
     } catch (error) {
       console.error("Error in updateBusinessProcess:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Generates the appropriate prompt based on operation type
+   */
+  private static generatePrompt(
+    type: "add" | "update",
+    data: {
+      name: string;
+      description: string;
+      reqt: string;
+      reqDesc: string;
+      updatedReqt: string;
+      selectedBRDs: number[];
+      selectedPRDs: number[];
+    }
+  ): string {
+    const {
+      name,
+      description,
+      reqt,
+      reqDesc,
+      updatedReqt,
+      selectedBRDs,
+      selectedPRDs,
+    } = data;
+    const brdsText = selectedBRDs.join("\n");
+    const prdsText = selectedPRDs.join("\n");
+
+    switch (type) {
+      case "add":
+        return addBusinessProcessPrompt({
+          name,
+          description,
+          newReqt: reqt,
+          BRDS: brdsText,
+          PRDS: prdsText,
+        });
+      case "update":
+        return updateBusinessProcessPrompt({
+          name,
+          description,
+          existingReqt: reqDesc,
+          updatedReqt,
+          BRDS: brdsText,
+          PRDS: prdsText,
+        });
+      default:
+        throw new Error(`Invalid operation type: ${type}`);
     }
   }
 }

@@ -7,7 +7,6 @@ const baseBPFields = {
   title: z.string().optional(),
   name: z.string(),
   description: z.string(),
-  useGenAI: z.boolean(),
   selectedBRDs: z.array(z.number()).default([]),
   selectedPRDs: z.array(z.number()).default([]),
 };
@@ -22,13 +21,6 @@ export type AddBusinessProcessRequest = z.infer<
   typeof addBusinessProcessSchema
 >;
 
-export interface AddBusinessProcessResponse extends AddBusinessProcessRequest {
-  LLMreqt: {
-    title: string;
-    requirement: string;
-  };
-}
-
 export const updateBusinessProcessSchema = businessProcessIdSchema.extend({
   ...baseBPFields,
   updatedReqt: z.string().optional(),
@@ -39,14 +31,6 @@ export const updateBusinessProcessSchema = businessProcessIdSchema.extend({
 export type UpdateBusinessProcessRequest = z.infer<
   typeof updateBusinessProcessSchema
 >;
-
-export interface UpdateBusinessProcessResponse
-  extends UpdateBusinessProcessRequest {
-  updated: {
-    title: string;
-    requirement: string;
-  };
-}
 
 export const flowchartSchema = businessProcessIdSchema.extend({
   title: z.string(),
@@ -60,3 +44,36 @@ export type FlowchartRequest = z.infer<typeof flowchartSchema>;
 export interface FlowchartResponse {
   flowChartData: string;
 }
+
+export const enhanceBusinessProcessSchema = z.object({
+  solutionId: z.string(),
+  type: z.enum(["add", "update"]),
+  name: z.string(),
+  description: z.string(),
+  reqt: z.string().optional(),
+  reqDesc: z.string().optional(),
+  updatedReqt: z.string().optional(),
+  selectedBRDs: z.array(z.number()).default([]),
+  selectedPRDs: z.array(z.number()).default([]),
+});
+
+export type EnhanceBusinessProcessRequest = z.infer<
+  typeof enhanceBusinessProcessSchema
+>;
+
+export interface BusinessProcessEnhanceResult {
+  title: string;
+  requirement: string;
+}
+
+export interface EnhanceBusinessProcessResponse {
+  type: "add" | "update";
+  result: BusinessProcessEnhanceResult;
+}
+
+export enum DocumentType {
+  BRD = "BRD",
+  PRD = "PRD",
+}
+
+export type DocumentTypeValue = `${DocumentType}`;
