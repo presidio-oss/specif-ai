@@ -19,10 +19,10 @@ import {
   updateBusinessProcessSchema,
   flowchartSchema,
   enhanceBusinessProcessSchema,
-  EnhanceBusinessProcessResponse,
-  EnhanceBusinessProcessRequest,
   DocumentType,
   DocumentTypeValue,
+  BusinessProcessPromptData,
+  OperationType,
 } from "../../schema/businessProcess.schema";
 
 export class BusinessProcessController {
@@ -167,10 +167,7 @@ export class BusinessProcessController {
     }
   }
 
-  static async enhance(
-    _: IpcMainInvokeEvent,
-    data: EnhanceBusinessProcessRequest
-  ): Promise<EnhanceBusinessProcessResponse> {
+  static async enhance(_: IpcMainInvokeEvent, data: any) {
     console.log("Entered <BusinessProcessController.enhance>");
     try {
       const llmConfig = store.getLLMConfig();
@@ -212,7 +209,7 @@ export class BusinessProcessController {
 
       const traceName = traceBuilder(
         COMPONENT.BP,
-        type === "add" ? OPERATIONS.ADD : OPERATIONS.UPDATE
+        type === OPERATIONS.ADD ? OPERATIONS.ADD : OPERATIONS.UPDATE
       );
       const response = await handler.invoke(messages, null, traceName);
       console.log("[enhance-business-process] LLM Response:", response);
@@ -224,17 +221,8 @@ export class BusinessProcessController {
       console.log("Exited <BusinessProcessController.enhance>");
 
       return {
-        type,
-        result:
-          type === "add"
-            ? {
-                title: llmResponse.LLMreqt.title,
-                requirement: llmResponse.LLMreqt.requirement,
-              }
-            : {
-                title: llmResponse.updated.title,
-                requirement: llmResponse.updated.requirement,
-              },
+        data:
+          type === OPERATIONS.ADD ? llmResponse.LLMreqt : llmResponse.updated,
       };
     } catch (error) {
       console.error("Error in enhance:", error);
@@ -242,7 +230,7 @@ export class BusinessProcessController {
     }
   }
 
-  static async addBusinessProcess(_: IpcMainInvokeEvent, payload: any) {
+  static async addBusinessProcess(_: IpcMainInvokeEvent, data: any) {
     console.log("Entered <BusinessProcessController.addBusinessProcess>");
     try {
       const {
@@ -251,7 +239,7 @@ export class BusinessProcessController {
         solutionId,
         selectedBRDs: brdIds = [],
         selectedPRDs: prdIds = [],
-      } = addBusinessProcessSchema.parse(payload);
+      } = addBusinessProcessSchema.parse(data);
 
       return await solutionFactory.runWithTransaction(
         solutionId,
@@ -294,7 +282,7 @@ export class BusinessProcessController {
     }
   }
 
-  static async updateBusinessProcess(_: IpcMainInvokeEvent, payload: any) {
+  static async updateBusinessProcess(_: IpcMainInvokeEvent, data: any) {
     console.log("Entered <BusinessProcessController.updateBusinessProcess>");
     try {
       const {
@@ -304,7 +292,7 @@ export class BusinessProcessController {
         businessProcessId,
         selectedBRDs: brdIds = [],
         selectedPRDs: prdIds = [],
-      } = updateBusinessProcessSchema.parse(payload);
+      } = updateBusinessProcessSchema.parse(data);
 
       return await solutionFactory.runWithTransaction(
         solutionId,
@@ -379,16 +367,8 @@ export class BusinessProcessController {
    * Generates the appropriate prompt based on operation type
    */
   private static generatePrompt(
-    type: "add" | "update",
-    data: {
-      name: string;
-      description: string;
-      reqt: string;
-      reqDesc: string;
-      updatedReqt: string;
-      selectedBRDs: number[];
-      selectedPRDs: number[];
-    }
+    type: OperationType,
+    data: BusinessProcessPromptData
   ): string {
     const {
       name,
@@ -403,7 +383,7 @@ export class BusinessProcessController {
     const prdsText = selectedPRDs.join("\n");
 
     switch (type) {
-      case "add":
+      case OPERATIONS.ADD:
         return addBusinessProcessPrompt({
           name,
           description,
@@ -411,7 +391,7 @@ export class BusinessProcessController {
           BRDS: brdsText,
           PRDS: prdsText,
         });
-      case "update":
+      case OPERATIONS.UPDATE:
         return updateBusinessProcessPrompt({
           name,
           description,
