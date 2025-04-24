@@ -113,23 +113,15 @@ export class SolutionRepository {
     return result;
   }
 
-  async createDocumentLinks(linksPayload: {
+  async createDocumentLinks(data: {
     sourceDocumentId: number;
     targetDocumentId: number;
     createdBy?: string;
   }[]) {
     console.log("Entered <SolutionRepository.createDocumentLinksBatch>");
-  
-    const records = linksPayload.map(link => ({
-      ...link,
-      sourceDocumentType: 'unknown', // FIXME: Validate if we need type
-      targetDocumentType: 'unknown',    
-      createdBy: link.createdBy || 'system',
-    }));
-  
     const response = await this.db
       .insert(documentLinks)
-      .values(records)
+      .values(data)
       .returning();
   
     console.log("Exited <SolutionRepository.createDocumentLinksBatch>");
