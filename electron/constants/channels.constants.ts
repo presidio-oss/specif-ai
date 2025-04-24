@@ -9,7 +9,8 @@ export const BUSINESS_PROCESS_CHANNELS = {
     GET_BUSINESS_PROCESS: 'businessProcess:get',
     GET_ALL_BUSINESS_PROCESSES: 'businessProcess:getAll',
     GET_FLOWCHART: 'businessProcess:getFlowchart',
+    GENERATE_FLOWCHART: 'businessProcess:generateFlowchart',
+    ENHANCE_BUSINESS_PROCESS: 'businessProcess:enhance',
     ADD_BUSINESS_PROCESS: 'businessProcess:add',
     UPDATE_BUSINESS_PROCESS: 'businessProcess:update',
-    GENERATE_FLOWCHART: 'businessProcess:generateFlowchart'
 }

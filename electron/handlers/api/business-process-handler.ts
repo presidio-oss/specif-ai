@@ -74,6 +74,19 @@ export function setupBusinessProcessHandlers() {
   );
 
   ipcMain.handle(
+    BUSINESS_PROCESS_CHANNELS.ENHANCE_BUSINESS_PROCESS,
+    async (_event, data: any) => {
+      try {
+        const result = await BusinessProcessController.enhance(_event, data);
+        return result;
+      } catch (error: any) {
+        console.error("Error handling businessProcess:enhance:", error.message);
+        throw error;
+      }
+    }
+  );
+
+  ipcMain.handle(
     BUSINESS_PROCESS_CHANNELS.ADD_BUSINESS_PROCESS,
     async (_event, data: any) => {
       try {
