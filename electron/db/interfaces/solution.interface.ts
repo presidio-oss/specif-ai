@@ -1,4 +1,4 @@
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { 
     metadata, 
@@ -22,9 +22,11 @@ export type ICreateMetadata = z.infer<typeof metadataInsertSchema>;
 
 export const documentSelectSchema = createSelectSchema(document);
 export const documentInsertSchema = createInsertSchema(document);
+export const documentUpdateSchema = createUpdateSchema(document);
 
 export type IDocument = z.infer<typeof documentSelectSchema>;
 export type ICreateDocument = z.infer<typeof documentInsertSchema>;
+export type IUpdateDocument = z.infer<typeof documentUpdateSchema>;
 
 // Table: Document Type
 // Below would contain the zod schema and its infered type

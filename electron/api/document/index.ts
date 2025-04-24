@@ -78,12 +78,27 @@ export class DocumentController {
         });
     }
 
-    static async updateDocument(_: IpcMainInvokeEvent) {
+    static async updateDocument(_: IpcMainInvokeEvent, data: any) {
         console.log('Entered <DocumentController.updateDocument>');
-
-        // TODO: Implement
-
-        console.log('Exited <DocumentController.updateDocument>');
+        const parsedData = documentRequestSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+            throw new Error('Schema validation failed');
+        }
+        const { solutionId, documentData, linkedDocumentIds } = parsedData.data;
+        await solutionFactory.runWithTransaction(solutionId, async (solutionRepository) => {
+            const updatedDocument = await solutionRepository.updateDocument(documentData);
+            if (updatedDocument && linkedDocumentIds.length > 0) {
+                // TODO: Implement document link updates
+                // const linksPayload = linkedDocumentIds.map(targetId => ({
+                //     sourceDocumentId: updatedDocument.id,
+                //     targetDocumentId: targetId
+                // }));
+                // await solutionRepository.createDocumentLinks(linksPayload);
+            }
+            console.log('Exited <DocumentController.updateDocument>');
+            return updatedDocument;
+        });
     }
 
     static async generateDocuments(_: IpcMainInvokeEvent) {

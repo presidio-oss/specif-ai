@@ -7,8 +7,10 @@ import {
   documentInsertSchema,
   ICreateBusinessProcess,
   ICreateBusinessProcessDocuments,
+  documentUpdateSchema,
   ICreateDocument,
   ICreateMetadata,
+  IUpdateDocument,
 } from "../interfaces/solution.interface";
 import { metadataInsertSchema } from "../interfaces/solution.interface";
 import {
@@ -123,6 +125,25 @@ export class SolutionRepository {
     return result;
   }
 
+  async updateDocument(documentData: Partial<IUpdateDocument>) {
+    console.log("Entered <SolutionRepository.updateDocument>");
+    const parsedData = documentUpdateSchema.partial().safeParse(documentData);
+    if (!parsedData.success) {
+      console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+      throw new Error('Schema validation failed')
+    }
+    if (!documentData.id) {
+      throw new Error("Document id is required for update.");
+    }
+    const response = await this.db
+      .update(document)
+      .set(parsedData.data)
+      .where(and(eq(document.id, documentData.id), ...this.defaultDocumentQueryFilters))
+      .returning();
+    console.log("Exited <SolutionRepository.updateDocument>");
+    return response && response.length ? response[0] : null;
+  }
+  
   async createDocumentLinks(data: {
     sourceDocumentId: number;
     targetDocumentId: number;
@@ -137,7 +158,6 @@ export class SolutionRepository {
     console.log("Exited <SolutionRepository.createDocumentLinksBatch>");
     return response;
   }
-  
 
   // FIXME: where are we using this function? and can we optimise this?
   async getSolutionByName(name: string, docTypes?: string[]) {
