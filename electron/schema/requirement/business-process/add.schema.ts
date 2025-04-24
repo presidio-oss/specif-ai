@@ -10,8 +10,7 @@ export const addBusinessProcessSchema = z.object({
   description: z.string(),
   useGenAI: z.boolean(),
   selectedBRDs: z.array(z.string()).optional(),
-  selectedPRDs: z.array(z.string()).optional(),
-  solutionId: z.number()
+  selectedPRDs: z.array(z.string()).optional()
 });
 
 export type AddBusinessProcessRequest = z.infer<typeof addBusinessProcessSchema>;

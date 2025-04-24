@@ -1,14 +1,6 @@
 import { solutionFactory } from "../../db/solution.factory";
 import { IpcMainInvokeEvent } from "electron";
 import {
-  addBusinessProcessSchema,
-  type AddBusinessProcessResponse,
-} from "../../schema/requirement/business-process/add.schema";
-import {
-  updateBusinessProcessSchema,
-  type UpdateBusinessProcessResponse,
-} from "../../schema/requirement/business-process/update.schema";
-import {
   solutionIdSchema,
   searchQuerySchema,
   businessProcessIdSchema,
@@ -23,6 +15,12 @@ import { traceBuilder } from "../../utils/trace-builder";
 import { updateBusinessProcessPrompt } from "../../prompts/requirement/business-process/update";
 import { flowchartSchema } from "../../schema/visualization/flowchart.schema";
 import { flowchartPrompt } from "../../prompts/visualization/flowchart";
+import {
+  AddBusinessProcessResponse,
+  addBusinessProcessSchema,
+  updateBusinessProcessSchema,
+  UpdateBusinessProcessResponse,
+} from "../../schema/businessProcess.schema";
 
 export class BusinessProcessController {
   static async getBusinessProcessCount(_: IpcMainInvokeEvent, data: any) {
@@ -260,14 +258,14 @@ export class BusinessProcessController {
         selectedBRDs = [],
         selectedPRDs = [],
         solutionId,
-        buisinessProcessId,
+        businessProcessId,
       } = validatedData;
 
       if (!validatedData.useGenAI) {
         await solutionFactory.runWithTransaction(
           solutionId,
           async (solutionRepo) => {
-            await solutionRepo.updateBusinessProcess(buisinessProcessId, {
+            await solutionRepo.updateBusinessProcess(businessProcessId, {
               name: validatedData.title || "",
               description: updatedReqt || "",
             });
@@ -310,7 +308,7 @@ export class BusinessProcessController {
       await solutionFactory.runWithTransaction(
         solutionId,
         async (solutionRepo) => {
-          await solutionRepo.updateBusinessProcess(buisinessProcessId, {
+          await solutionRepo.updateBusinessProcess(businessProcessId, {
             name: llmResponse.updated.title,
             description: llmResponse.updated.requirement,
           });

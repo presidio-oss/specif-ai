@@ -11,9 +11,7 @@ export const updateBusinessProcessSchema = z.object({
   description: z.string(),
   useGenAI: z.boolean(),
   selectedBRDs: z.array(z.string()).optional(),
-  selectedPRDs: z.array(z.string()).optional(),
-  solutionId: z.number(),
-  buisinessProcessId: z.number(),
+  selectedPRDs: z.array(z.string()).optional()
 });
 
 export type UpdateBusinessProcessRequest = z.infer<typeof updateBusinessProcessSchema>;
