@@ -13,13 +13,13 @@ import { repairJSON } from "../../utils/custom-json-parser";
 import { OPERATIONS, COMPONENT } from "../../helper/constants";
 import { traceBuilder } from "../../utils/trace-builder";
 import { updateBusinessProcessPrompt } from "../../prompts/requirement/business-process/update";
-import { flowchartSchema } from "../../schema/visualization/flowchart.schema";
 import { flowchartPrompt } from "../../prompts/visualization/flowchart";
 import {
   AddBusinessProcessResponse,
   addBusinessProcessSchema,
   updateBusinessProcessSchema,
   UpdateBusinessProcessResponse,
+  flowchartSchema,
 } from "../../schema/businessProcess.schema";
 
 export class BusinessProcessController {
@@ -114,7 +114,13 @@ export class BusinessProcessController {
       console.log("[create-flowchart] Using LLM config:", llmConfig);
       const validatedData = flowchartSchema.parse(data);
 
-      const { title, description, selectedBRDs, selectedPRDs } = validatedData;
+      const {
+        title,
+        description,
+        selectedBRDs,
+        selectedPRDs,
+        businessProcessId,
+      } = validatedData;
 
       // Generate prompt
       const prompt = flowchartPrompt({
@@ -137,6 +143,17 @@ export class BusinessProcessController {
       console.log("[create-flowchart] LLM Response:", response);
 
       console.log("Exited <BusinessProcessController.generateMermaid>");
+
+      await solutionFactory.runWithTransaction(
+        validatedData.solutionId,
+        async (solutionRepo) => {
+          await solutionRepo.updateBusinessProcess(businessProcessId, {
+            name: validatedData.title || "",
+            description: validatedData.description || "",
+            flowchart: response,
+          });
+        }
+      );
 
       return {
         flowChartData: response,

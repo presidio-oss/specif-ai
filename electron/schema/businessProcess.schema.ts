@@ -47,3 +47,16 @@ export interface UpdateBusinessProcessResponse
     requirement: string;
   };
 }
+
+export const flowchartSchema = businessProcessIdSchema.extend({
+  title: z.string(),
+  description: z.string(),
+  selectedBRDs: z.array(z.number()).default([]),
+  selectedPRDs: z.array(z.number()).default([]),
+});
+
+export type FlowchartRequest = z.infer<typeof flowchartSchema>;
+
+export interface FlowchartResponse {
+  flowChartData: string;
+}
