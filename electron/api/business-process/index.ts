@@ -57,12 +57,12 @@ export class BusinessProcessController {
 
     const { solutionId, searchQuery } = parsedData.data;
     const solutionRepository = await solutionFactory.getRepository(solutionId);
-    const processes = await solutionRepository.getAllBusinessProcesses(
+    const businessProcesses = await solutionRepository.getAllBusinessProcesses(
       searchQuery
     );
 
     console.log("Exited <BusinessProcessController.getAllBusinessProcess>");
-    return processes;
+    return businessProcesses;
   }
 
   static async getBusinessProcess(_: IpcMainInvokeEvent, data: any) {
@@ -77,12 +77,21 @@ export class BusinessProcessController {
 
     const { solutionId, businessProcessId } = parsedData.data;
     const solutionRepository = await solutionFactory.getRepository(solutionId);
-    const process = await solutionRepository.getBusinessProcess(
+    const results = await solutionRepository.getBusinessProcess(
       businessProcessId
     );
 
+    if (!results.length) return null;
+
+    // Transform the joined results into a business process with its documents
+    const businessProcess = results[0].businessProcess;
+    const documents = results.map((r) => r.documents).filter(Boolean);
+
     console.log("Exited <BusinessProcessController.getBusinessProcess>");
-    return process;
+    return {
+      ...businessProcess,
+      documents,
+    };
   }
 
   static async getFlowchart(_: IpcMainInvokeEvent, data: any) {

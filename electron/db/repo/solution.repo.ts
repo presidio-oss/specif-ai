@@ -230,32 +230,38 @@ export class SolutionRepository {
         )
       : baseQuery.where(and(...this.defaultBusinessProcessQueryFilters));
 
-    const processes = await query;
+    const result = await query;
     console.log("Exited <SolutionRepository.getAllBusinessProcesses>");
-    return processes;
+    return result;
   }
 
   async getBusinessProcess(businessProcessId: number) {
     console.log("Entered <SolutionRepository.getBusinessProcess>");
-    const result = await this.db
-      .select()
+    const results = await this.db
+      .select({
+        businessProcess: businessProcess,
+        documents: businessProcessDocuments
+      })
       .from(businessProcess)
+      .leftJoin(
+        businessProcessDocuments,
+        eq(businessProcess.id, businessProcessDocuments.businessProcessId)
+      )
       .where(
         and(
           eq(businessProcess.id, businessProcessId),
           ...this.defaultBusinessProcessQueryFilters
         )
-      )
-      .get();
+      );
     console.log("Exited <SolutionRepository.getBusinessProcess>");
-    return result;
+    return results;
   }
 
-  async createBusinessProcess(processDetail: ICreateBusinessProcess) {
+  async createBusinessProcess(businessProcessDetail: ICreateBusinessProcess) {
     console.log("Entered <SolutionRepository.createBusinessProcess>");
 
     // Validate the data
-    const parsedData = businessProcessInsertSchema.safeParse(processDetail);
+    const parsedData = businessProcessInsertSchema.safeParse(businessProcessDetail);
     if (!parsedData.success) {
       console.error(
         `Error occurred while validating incoming data, Error: ${parsedData.error}`
@@ -290,12 +296,12 @@ export class SolutionRepository {
 
   async updateBusinessProcess(
     businessProcessId: number,
-    processDetail: ICreateBusinessProcess
+    businessProcessDetail: ICreateBusinessProcess
   ) {
     console.log("Entered <SolutionRepository.updateBusinessProcess>");
 
     // Validate the data
-    const parsedData = businessProcessInsertSchema.safeParse(processDetail);
+    const parsedData = businessProcessInsertSchema.safeParse(businessProcessDetail);
     if (!parsedData.success) {
       console.error(
         `Error occurred while validating incoming data, Error: ${parsedData.error}`
