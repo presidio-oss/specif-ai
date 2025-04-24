@@ -342,6 +342,43 @@ export class SolutionRepository {
     return result;
   }
 
+  async updateBusinessProcessDocument(
+    businessProcessId: number,
+    documentId: number,
+    documentDetail: ICreateBusinessProcessDocuments
+  ) {
+    console.log("Entered <SolutionRepository.updateBusinessProcessDocument>");
+
+    // Validate the data
+    const parsedData =
+      businessProcessDocumentsInsertSchema.safeParse(documentDetail);
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
+
+    const response = await this.db
+      .update(businessProcessDocuments)
+      .set({
+        ...parsedData.data,
+      })
+      .where(
+        and(
+          eq(
+            solutionSchema.businessProcessDocuments.businessProcessId,
+            businessProcessId
+          ),
+          eq(solutionSchema.businessProcessDocuments.documentId, documentId)
+        )
+      )
+      .returning();
+
+    console.log("Exited <SolutionRepository.updateBusinessProcessDocument>");
+    return response && response.length ? response[0] : null;
+  }
+
   async deleteBusinessProcessDocument(
     businessProcessId: number,
     documentId: number
