@@ -160,8 +160,6 @@ export class BusinessProcessController {
         validatedData.solutionId,
         async (solutionRepo) => {
           await solutionRepo.updateBusinessProcess(businessProcessId, {
-            name: validatedData.title || "",
-            description: validatedData.description || "",
             flowchart: response,
           });
         }

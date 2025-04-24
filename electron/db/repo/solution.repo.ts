@@ -11,6 +11,8 @@ import {
   ICreateDocument,
   ICreateMetadata,
   IUpdateDocument,
+  IUpdateBusinessProcess,
+  IUpdateBusinessProcessDocuments,
 } from "../interfaces/solution.interface";
 import { metadataInsertSchema } from "../interfaces/solution.interface";
 import {
@@ -296,7 +298,7 @@ export class SolutionRepository {
 
   async updateBusinessProcess(
     businessProcessId: number,
-    businessProcessDetail: ICreateBusinessProcess
+    businessProcessDetail: Partial<IUpdateBusinessProcess>
   ) {
     console.log("Entered <SolutionRepository.updateBusinessProcess>");
 
@@ -371,7 +373,7 @@ export class SolutionRepository {
   async updateBusinessProcessDocument(
     businessProcessId: number,
     documentId: number,
-    documentDetail: ICreateBusinessProcessDocuments
+    documentDetail: Partial<IUpdateBusinessProcessDocuments>
   ) {
     console.log("Entered <SolutionRepository.updateBusinessProcessDocument>");
 

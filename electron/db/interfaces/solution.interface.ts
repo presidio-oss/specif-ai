@@ -41,14 +41,18 @@ export type ICreateDocumentType = z.infer<typeof documentTypeInsertSchema>;
 // Below would contain the zod schema and its infered type
 export const businessProcessSelectSchema = createSelectSchema(businessProcess);
 export const businessProcessInsertSchema = createInsertSchema(businessProcess);
+export const businessProcessUpdateSchema = createUpdateSchema(businessProcess);
 
 export type IBusinessProcess = z.infer<typeof businessProcessSelectSchema>;
 export type ICreateBusinessProcess = z.infer<typeof businessProcessInsertSchema>;
+export type IUpdateBusinessProcess = z.infer<typeof businessProcessUpdateSchema>;
 
 // Table : BusinessProcessDocuments
 // Below would contain the zod schema and its infered type
 export const businessProcessDocumentsSelectSchema = createSelectSchema(businessProcessDocuments);
 export const businessProcessDocumentsInsertSchema = createInsertSchema(businessProcessDocuments);
+export const businessProcessDocumentsUpdateSchema = createUpdateSchema(businessProcessDocuments);
 
 export type IBusinessProcessDocuments = z.infer<typeof businessProcessDocumentsSelectSchema>;
 export type ICreateBusinessProcessDocuments = z.infer<typeof businessProcessDocumentsInsertSchema>;
+export type IUpdateBusinessProcessDocuments = z.infer<typeof businessProcessDocumentsUpdateSchema>;
