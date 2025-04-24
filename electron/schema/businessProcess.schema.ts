@@ -45,8 +45,7 @@ export const flowchartSchema = businessProcessIdSchema.extend({
 const operationType = z.enum([OPERATIONS.ADD, OPERATIONS.UPDATE]);
 export type OperationType = z.infer<typeof operationType>;
 
-export const enhanceBusinessProcessSchema = z.object({
-  solutionId: z.string(),
+export const enhanceBusinessProcessSchema = solutionIdSchema.extend({
   type: operationType,
   name: z.string(),
   description: z.string(),
@@ -64,4 +63,5 @@ export interface BusinessProcessPromptData {
   updatedReqt: string;
   selectedBRDs: number[];
   selectedPRDs: number[];
+  solutionId: number;
 }

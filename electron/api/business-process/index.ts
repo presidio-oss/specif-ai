@@ -194,9 +194,10 @@ export class BusinessProcessController {
         updatedReqt = "",
         selectedBRDs = [],
         selectedPRDs = [],
+        solutionId,
       } = validatedData;
 
-      const prompt = this.generatePrompt(type, {
+      const prompt = await this.generatePrompt(type, {
         name,
         description,
         reqt,
@@ -204,6 +205,7 @@ export class BusinessProcessController {
         updatedReqt,
         selectedBRDs,
         selectedPRDs,
+        solutionId,
       });
 
       // Prepare messages for LLM
@@ -373,10 +375,10 @@ export class BusinessProcessController {
   /**
    * Generates the appropriate prompt based on operation type
    */
-  private static generatePrompt(
+  private static async generatePrompt(
     type: OperationType,
     data: BusinessProcessPromptData
-  ): string {
+  ): Promise<string> {
     const {
       name,
       description,
@@ -385,9 +387,26 @@ export class BusinessProcessController {
       updatedReqt,
       selectedBRDs,
       selectedPRDs,
+      solutionId,
     } = data;
-    const brdsText = selectedBRDs.join("\n");
-    const prdsText = selectedPRDs.join("\n");
+
+    const solutionRepository = await solutionFactory.getRepository(solutionId);
+
+    const fetchDocumentDescriptions = async (
+      ids: number[]
+    ): Promise<string> => {
+      const docs = await Promise.all(
+        ids.map((id) => solutionRepository.getDocument(id))
+      );
+
+      return docs
+        .filter((doc) => Boolean(doc?.description))
+        .map((doc) => doc?.description)
+        .join("\n");
+    };
+
+    const brdsText = await fetchDocumentDescriptions(selectedBRDs);
+    const prdsText = await fetchDocumentDescriptions(selectedPRDs);
 
     switch (type) {
       case OPERATIONS.ADD:
