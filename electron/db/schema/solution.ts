@@ -44,7 +44,6 @@ export const documentType = sqliteTable("documentType", {
 
 export const document = sqliteTable("document", {
   id: integer().primaryKey(),
-  documentNumber: text({ mode: "text" }).notNull(),
   name: text({ mode: "text" }).notNull(),
   description: text({ mode: "text" }).notNull(),
   jiraId: text({ mode: "text" }),

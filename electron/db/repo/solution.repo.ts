@@ -95,7 +95,7 @@ export class SolutionRepository {
             or(
               like(document.name, `%${searchQuery}%`),
               like(document.description, `%${searchQuery}%`),
-              like(document.documentNumber, `%${searchQuery}%`)
+              like(document.id, `%${searchQuery}%`)
             )
           )
         )

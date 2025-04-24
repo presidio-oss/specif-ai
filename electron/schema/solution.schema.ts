@@ -14,7 +14,6 @@ export const searchQuerySchema = solutionIdSchema.extend({
 
 export const documentRequestSchema = solutionIdSchema.extend({
     documentData: z.object({
-        documentNumber: z.string(),
         name: z.string(),
         description: z.string(),
         jiraId: z.string().optional(),

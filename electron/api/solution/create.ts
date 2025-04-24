@@ -266,7 +266,6 @@ async function saveSolutionRequirementsInDb(
 
         for (const requirement of requirements) {
           await solutionRepo.createRequirement({
-            documentNumber: requirement.id,
             name: requirement.title,
             description: requirement.requirement,
             documentTypeId: type.toLowerCase(),
