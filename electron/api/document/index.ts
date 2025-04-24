@@ -1,5 +1,5 @@
-import { solutionFactory } from "@/db/solution.factory";
-import { documentIdSchema, documentRequestSchema, solutionIdSchema } from "@/db/types";
+import { solutionFactory } from "../../db/solution.factory";
+import { documentIdSchema, documentRequestSchema, solutionIdSchema } from "../../db/types";
 import { IpcMainInvokeEvent } from "electron";
 import { z } from "zod";
 

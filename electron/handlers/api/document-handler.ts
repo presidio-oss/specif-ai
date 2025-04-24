@@ -1,5 +1,5 @@
-import { DocumentController } from "@/api/document";
-import { DOCUMENT_CHANNELS } from "@/constants/channels.constants";
+import { DocumentController } from "../../api/document";
+import { DOCUMENT_CHANNELS } from "../../constants/channels.constants";
 import { ipcMain } from "electron";
 
 export function setupDocumentHandlers() {
