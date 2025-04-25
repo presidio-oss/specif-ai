@@ -2,6 +2,9 @@ export const DOCUMENT_CHANNELS = {
     GET_DOCUMENT_BY_COUNT: 'document:getDocumentTypesWithCount',
     GET_DOCUMENT: 'document:getDocument',
     GET_ALL_DOCUMENTS: 'document:getAllDocuments',
+    ADD_DOCUMENT: 'document:addDocument',
+    UPDATE_DOCUMENT: 'document:updateDocument',
+    ENHANCE_DOCUMENT: 'document:enhanceDocument',
 }
 
 export const BUSINESS_PROCESS_CHANNELS = {

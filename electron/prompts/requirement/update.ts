@@ -1,47 +1,26 @@
 import { MARKDOWN_RULES } from '../context/markdown-rules';
 import { getContextAndType } from '../../utils/get-context';
+import { IRequirementEnhance } from '../../schema/solution.schema';
 
-interface UpdateRequirementParams {
-  name: string;
-  description: string;
-  existingReqt: string;
-  updatedReqt: string;
-  fileContent?: string;
-  reqId: string;
-  addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP';
-  brds?: Array<{
-    title: string;
-    requirement: string;
-  }>;
-}
-
-export function updateRequirementPrompt({
-  name,
-  description,
-  existingReqt,
-  updatedReqt,
-  fileContent,
-  reqId,
-  addReqtType,
-  brds = []
-}: UpdateRequirementParams): string {
-  const { context, requirementType, format } = getContextAndType(addReqtType);
+export function updateRequirementPrompt(promptParams: IRequirementEnhance): string {
+  const { solutionName, solutionDescription, fileContent, linkedDocuments, documentData: { name, description, jiraId, documentTypeId } } = promptParams;
+  const { context, requirementType, format } = getContextAndType(documentTypeId);
 
   const fileContentSection = fileContent ? `\nFileContent: ${fileContent}` : '';
 
   return `You are a requirements analyst tasked with extracting detailed ${requirementType} from the provided app description. Below is the description of the app:
 
-App Name: ${name}
-App Description: ${description}
+App Name: ${solutionName}
+App Description: ${solutionDescription}
 
 Here is the existing requirement:
-${existingReqt}
+${description}
 
 Client Request:
-${updatedReqt}
+${name}
 ${fileContentSection}
 
-${buildBRDContextForPRD(brds)}
+${buildBRDContextForPRD(linkedDocuments)}
 
 Context:
 ${context}
@@ -64,12 +43,12 @@ Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the
 }
 
 
-const buildBRDContextForPRD = (brds: UpdateRequirementParams["brds"])=>{
-  if(!brds || brds.length == 0) return '';
+const buildBRDContextForPRD = (additionalDocuments: IRequirementEnhance["linkedDocuments"])=>{
+  if(!additionalDocuments || additionalDocuments.length == 0) return '';
 
   return `### Business Requirement Documents
   Please consider the following Business Requirements when updating the requirement:
-  ${brds.map(brd=>
-`BRD Title: ${brd.title}
-BRD Requirement: ${brd.requirement}\n`)}` + '\n';
+  ${additionalDocuments.map(doc=>
+`BRD Title: ${doc.title}
+BRD Requirement: ${doc.requirement}\n`)}` + '\n';
 }

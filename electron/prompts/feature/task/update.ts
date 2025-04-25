@@ -1,38 +1,30 @@
+import { ITaskEnhance } from '../../../schema/solution.schema';
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
 
-export interface UpdateTaskPromptParams {
-  name: string;
-  description: string;
-  taskId: string;
-  taskName: string;
-  existingTaskDescription: string;
-  taskDescription: string;
-  fileContent: string;
-}
-
-export function updateTaskPrompt(params: UpdateTaskPromptParams): string {
+export function updateTaskPrompt(params: ITaskEnhance): string {
+  const { storyName, storyDescription, documentData: { id, name, description }, newTaskDescription, fileContent } = params;
   return `You are a senior architect tasked with updated existing task from the provided client input. Below is all the information that you need to derive a task.
 
 User Story Name:
-${params.name}
+${storyName}
 
 User Story Description:
-${params.description}
+${storyDescription}
 
 Task Id:
-${params.taskId}
+${id}
 
 Existing Task Description:
-${params.existingTaskDescription}
+${description}
 
 Client Request - Task Name:
-${params.taskName}
+${name}
 
 Client Request - Task Description:
-${params.taskDescription}
+${newTaskDescription}
 
 FileContent:
-${params.fileContent}
+${fileContent}
 
 Update the existing task by incorporating the client's requests and the information from the provided file content. 
 Ensure that the revised task is clear, concise, and comprehensive.

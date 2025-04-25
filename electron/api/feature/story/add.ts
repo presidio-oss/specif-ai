@@ -7,7 +7,7 @@ import { store } from '../../../services/store';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
 import { traceBuilder } from '../../../utils/trace-builder';
-import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { COMPONENT, DbDocumentType, OPERATIONS, PromptMode } from '../../../helper/constants';
 
 export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Promise<AddUserStoryResponse> {
   try {
@@ -40,12 +40,12 @@ export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Pr
 
     // Generate prompt
     const prompt = addUserStoryPrompt({
-      name: validatedData.name,
-      description: validatedData.description,
-      reqDesc: validatedData.reqDesc,
-      featureId: validatedData.featureId,
-      featureRequest,
-      fileContent
+      solutionName: validatedData.name,
+      solutionDescription: validatedData.description,
+      documentData: { id: validatedData.featureId, description: validatedData.reqDesc, documentTypeId: DbDocumentType.USER_STORY },
+      newStoryDescription: featureRequest,
+      fileContent,
+      mode: PromptMode.UPDATE
     });
 
     // Prepare messages for LLM

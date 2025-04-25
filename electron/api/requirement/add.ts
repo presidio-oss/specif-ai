@@ -46,7 +46,7 @@ export async function addRequirement(
       // Generate prompt and prepare messages
       const prompt = addRequirementPrompt({
         name,
-        description,
+        solutionDescription: description,
         newReqt: reqt || "",
         fileContent,
         addReqtType,

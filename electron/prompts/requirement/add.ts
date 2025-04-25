@@ -1,39 +1,23 @@
 import { MARKDOWN_RULES } from '../context/markdown-rules';
 import { getContextAndType } from '../../utils/get-context';
+import { IRequirementEnhance } from '../../schema/solution.schema';
 
-interface AddRequirementParams {
-  name: string;
-  description: string;
-  newReqt: string;
-  fileContent?: string;
-  addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP';
-  brds?: Array<{
-    title: string;
-    requirement: string;
-  }>;
-}
+export function addRequirementPrompt(promptParams: IRequirementEnhance): string {
+  const { solutionName, solutionDescription, fileContent, linkedDocuments, documentData: { name, description, documentTypeId } } = promptParams;
 
-export function addRequirementPrompt({
-  name,
-  description,
-  newReqt,
-  fileContent,
-  addReqtType,
-  brds = []
-}: AddRequirementParams): string {
-  const { context, requirementType, format } = getContextAndType(addReqtType);
+  const { context, requirementType, format } = getContextAndType(documentTypeId);
 
   const fileContentSection = fileContent ? `\nFileContent: ${fileContent}` : '';
 
   return `You are a requirements analyst tasked with extracting detailed ${requirementType} from the provided app description. Below is the description of the app:
 
-App Name: ${name}
-App Description: ${description}
+App Name: ${solutionName}
+App Description: ${solutionDescription}
 
-Client Request: ${newReqt}
+Client Request: ${description}
 ${fileContentSection}
 
-${buildBRDContextForPRD(brds)}
+${buildBRDContextForPRD(linkedDocuments)}
 
 Context:
 ${context}
@@ -52,7 +36,7 @@ ${MARKDOWN_RULES}
 Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.`;
 }
 
-const buildBRDContextForPRD = (brds: AddRequirementParams["brds"])=>{
+const buildBRDContextForPRD = (brds: IRequirementEnhance["linkedDocuments"])=>{
   if(!brds || brds.length == 0) return '';
 
   return `### Business Requirement Documents

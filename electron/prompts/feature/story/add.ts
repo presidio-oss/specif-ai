@@ -1,34 +1,27 @@
+import { IStoryEnhance } from '../../../schema/solution.schema';
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
 import { USER_STORY } from '../../context/user-story';
 
-export interface AddUserStoryPromptParams {
-  name: string;
-  description: string;
-  reqDesc: string;
-  featureId: string;
-  featureRequest: string;
-  fileContent: string;
-}
-
-export function addUserStoryPrompt(params: AddUserStoryPromptParams): string {
+export function addUserStoryPrompt(promptParams: IStoryEnhance): string {
+  const { solutionName, solutionDescription, prdDescription, documentData: { id, description: storyDescription }, fileContent } = promptParams;
   return `You are a senior architect tasked with extracting detailed feature for the provided app from the User Story description provided by client. Below is the description of the app and inputs from client:
 App Name:
-${params.name}
+${solutionName}
 
 App Description:
-${params.description}
+${solutionDescription}
 
 Requirement type: Product Requirement
-${params.reqDesc}
+${prdDescription}
 
 User Story Id:
-${params.featureId}
+${id}
 
 Client Request - User Story Description:
-${params.featureRequest}
+${storyDescription}
 
 FileContent:
-${params.fileContent}
+${fileContent}
 
 ${USER_STORY}
 

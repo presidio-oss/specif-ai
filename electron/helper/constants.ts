@@ -14,8 +14,8 @@ export enum OPERATIONS {
   CREATE = "create",
   CHAT = "chat",
   VISUALIZE = "visualize",
-  SUGGEST = 'suggest',
-  GET = 'get'
+  SUGGEST = "suggest",
+  GET = "get",
 }
 
 export const COMPONENT = {
@@ -25,3 +25,18 @@ export const COMPONENT = {
   SOLUTION: "solution",
   FLOWCHART: "flowchart",
 };
+
+export enum PromptMode {
+  ADD = "add",
+  UPDATE = "update",
+}
+
+export enum DbDocumentType {
+  BRD = "brd",
+  PRD = "prd",
+  UIR = "uir",
+  NFR = "nfr",
+  BP = "bp",
+  USER_STORY = "us",
+  TASK = "task",
+}

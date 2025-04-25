@@ -1,40 +1,42 @@
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
+import { IStoryEnhance } from '../../../schema/solution.schema';
 
-export interface UpdateStoryPromptParams {
-  name: string;
-  description: string;
-  reqDesc: string;
-  featureId: string;
-  existingFeatureDescription: string;
-  newFeatureDescription: string;
-  fileContent: string;
-}
+// export interface UpdateStoryPromptParams {
+//   name: string;
+//   description: string;
+//   reqDesc: string;
+//   featureId: string;
+//   existingFeatureDescription: string;
+//   newFeatureDescription: string;
+//   fileContent: string;
+// }
 
-export function updateStoryPrompt(params: UpdateStoryPromptParams): string {
+export function updateStoryPrompt(promptParams: IStoryEnhance): string {
+  const { solutionName, solutionDescription, prdDescription, newStoryDescription, documentData: { description: storyDescription, id }, fileContent } = promptParams;
   return `You are a senior architect tasked with updating an existing feature for the provided app based on the new user story description provided by the client. Below is the description of the app and inputs from the client:
 
 App Name:
-${params.name}
+${solutionName}
 
 App Description:
-${params.description}
+${solutionDescription}
 
 Requirement Type: Product Requirement
 
 Product Requirement Description:
-${params.reqDesc}
+${prdDescription}
 
 User Story ID:
-${params.featureId}
+${id}
 
 Existing User Story Description:
-${params.existingFeatureDescription}
+${storyDescription}
 
 Client Request - New User Story Description:
-${params.newFeatureDescription}
+${newStoryDescription}
 
 File Content:
-${params.fileContent}
+${fileContent}
 
 Your task is to update the existing feature by incorporating the client's requests and the information from the provided file content. 
 Ensure that the revised feature is clear, concise, comprehensive, and actionable, while addressing the following:
@@ -67,7 +69,7 @@ Use the following format to generate the user story:
 - I want the <end goal or objective of the feature>
 
 Special Instructions:
-1. The "id" in the response must match the User Story ID provided (${params.featureId}).
+1. The "id" in the response must match the User Story ID provided (${id}).
 2. Return strictly ONE OBJECT in the "features" array.
 3. Ensure the feature description is clear, concise, comprehensive, and follows the specified format.
 5. Provide examples of enriched user stories to guide the output. For instance:

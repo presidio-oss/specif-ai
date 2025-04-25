@@ -47,7 +47,7 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
       name,
       description,
       existingReqt: reqDesc,
-      updatedReqt,
+      updateFeedback: updatedReqt,
       fileContent,
       reqId,
       addReqtType,

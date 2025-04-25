@@ -32,4 +32,36 @@ export function setupDocumentHandlers() {
       throw error;
     }
   });
+
+  ipcMain.handle(DOCUMENT_CHANNELS.ADD_DOCUMENT, async (_event, data: any) => {
+    try {
+      const result = await DocumentController.addDocument(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling document:getDocument:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle(DOCUMENT_CHANNELS.UPDATE_DOCUMENT, async (_event, data: any) => {
+    try {
+      const result = await DocumentController.updateDocument(_event, data);
+      return result;
+    }
+    catch (error: any) {
+      console.error('Error handling document:updateDocument:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle(DOCUMENT_CHANNELS.ENHANCE_DOCUMENT, async (_event, data: any) => {
+    try {
+      const result = await DocumentController.enhance(_event, data);
+      return result;
+    }
+    catch (error: any) {
+      console.error('Error handling document:enhanceDocument:', error.message);
+      throw error;
+    }
+  });
 }

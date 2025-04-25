@@ -2,6 +2,13 @@ import { solutionFactory } from "../../db/solution.factory";
 import { documentIdSchema, documentRequestSchema, solutionIdSchema } from "../../schema/solution.schema";
 import { IpcMainInvokeEvent } from "electron";
 import { z } from "zod";
+import { LLMUtils } from "../../services/llm/llm-utils";
+import { buildLLMHandler } from "../../services/llm";
+import { store } from '../../services/store';
+import { traceBuilder } from "../../utils/trace-builder";
+import { DbDocumentType, OPERATIONS, PromptMode } from "../../helper/constants";
+import { repairJSON } from "../../utils/custom-json-parser";
+import { withRetry } from "../../utils/retry";
 
 export class DocumentController {
     static async getDocumentTypesWithCount(_: IpcMainInvokeEvent, data: any) {
@@ -117,11 +124,46 @@ export class DocumentController {
         console.log('Exited <DocumentController.exportDocuments>');
     }
 
-    static async enhance(_: IpcMainInvokeEvent) {
+    @withRetry()
+    static async enhance(_: IpcMainInvokeEvent, data: any) {
         console.log('Entered <DocumentController.enhance>');
+        const llmConfig = store.getLLMConfig();
+        if (!llmConfig) {
+        throw new Error('LLM configuration not found');
+        }
 
-        // TODO: Implement
+        const { documentData, mode } = data;
+        // check if data is of type ILLMEnhance
+        
+        const prompt = await LLMUtils.getDocumentEnhancerPrompt(documentData.documentTypeId as DbDocumentType, mode as PromptMode, data);
+        
+        const messages = await LLMUtils.prepareMessages(prompt);
+        const handler = buildLLMHandler(
+            llmConfig.activeProvider,
+            llmConfig.providerConfigs[llmConfig.activeProvider].config
+        );
+    
+        if (!documentData.documentTypeId) {
+            throw new Error('documentTypeId is required for tracing');
+        }
+
+        const traceName = traceBuilder(documentData.documentTypeId, OPERATIONS.UPDATE);
+        const response = await handler.invoke(messages, null, traceName);
+        
+        let result;
+        try {
+            const cleanedResponse = repairJSON(response); 
+            const parsed = JSON.parse(cleanedResponse);
+            if (!parsed.features || !Array.isArray(parsed.features)) {
+                throw new Error('Invalid response structure');
+            }
+            result = parsed;
+        } catch (error) {
+            console.error('[add-user-story> Error parsing LLM response:', error);
+            throw new Error('Failed to parse LLM response as JSON');
+        }
 
         console.log('Exited <DocumentController.enhance>');
+        return result;
     }
 }

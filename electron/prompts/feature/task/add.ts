@@ -1,34 +1,27 @@
+import { ITaskEnhance } from '../../../schema/solution.schema';
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
 
-export interface AddTaskPromptParams {
-  name: string;
-  description: string;
-  taskId: string;
-  taskName: string;
-  taskDescription: string;
-  fileContent: string;
-}
-
-export function addTaskPrompt(params: AddTaskPromptParams): string {
+export function addTaskPrompt(params: ITaskEnhance): string {
+  const { storyName, storyDescription, documentData : { name, description, id }, fileContent } = params;
   return `You are a senior architect tasked with creating detailed task from the provided client input. Below is all the information that you need to derive a task.
 
 User Story Name:
-${params.name}
+${storyName}
 
 User Story Description:
-${params.description}
+${storyDescription}
 
 Task Id:
-${params.taskId}
+${id}
 
 Client Request - Task Name:
-${params.taskName}
+${name}
 
 Client Request - Task Description:
-${params.taskDescription}
+${description}
 
 FileContent:
-${params.fileContent}
+${fileContent}
 
 Develop a detailed and well-structured task strictly derived from provided client requests and information from file content, with no additional or irrelevant information included. 
 The "Client Request - Task Description" can be expanded to derive acceptance criteria based on provided input but do not include additional or irrelevant content.
