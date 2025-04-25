@@ -43,7 +43,6 @@ CREATE TABLE `businessProcessDocuments` (
 CREATE TABLE `conversation` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`documentId` integer NOT NULL,
-	`title` text,
 	`createdAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updatedAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`isDeleted` integer DEFAULT false NOT NULL,
@@ -52,7 +51,6 @@ CREATE TABLE `conversation` (
 --> statement-breakpoint
 CREATE TABLE `document` (
 	`id` integer PRIMARY KEY NOT NULL,
-	`documentNumber` text NOT NULL,
 	`name` text NOT NULL,
 	`description` text NOT NULL,
 	`jiraId` text,
@@ -67,9 +65,6 @@ CREATE TABLE `documentLinks` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`sourceDocumentId` integer,
 	`targetDocumentId` integer,
-	`sourceDocumentType` text NOT NULL,
-	`targetDocumentType` text NOT NULL,
-	`createdBy` text,
 	`createdAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updatedAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`isDeleted` integer DEFAULT false NOT NULL,
@@ -119,4 +114,4 @@ CREATE TABLE `metadata` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `metadata_name_unique` ON `metadata` (`name`);--> statement-breakpoint
-CREATE VIEW `DocumentCountByType` AS select "documentType"."id", "documentType"."name", "documentType"."typeLabel", count("document"."id") as "count" from "documentType" left join "document" on "document"."documentTypeId" = "documentType"."id" group by "documentType"."id";
+CREATE VIEW `documentCountByType` AS select "documentType"."id", "documentType"."name", "documentType"."typeLabel", count("document"."id") as "count" from "documentType" left join "document" on "document"."documentTypeId" = "documentType"."id" group by "documentType"."id";

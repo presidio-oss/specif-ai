@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f9d67676-464d-48a9-a5c5-4959e367ac46",
+  "id": "685cd01c-12a8-48ad-9ccb-dfc63997b1ba",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "analyticsLookup": {
@@ -301,13 +301,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "createdAt": {
           "name": "createdAt",
           "type": "text",
@@ -360,13 +353,6 @@
           "name": "id",
           "type": "integer",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "documentNumber": {
-          "name": "documentNumber",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -463,27 +449,6 @@
         "targetDocumentId": {
           "name": "targetDocumentId",
           "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "sourceDocumentType": {
-          "name": "sourceDocumentType",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "targetDocumentType": {
-          "name": "targetDocumentType",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdBy": {
-          "name": "createdBy",
-          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -821,7 +786,7 @@
     }
   },
   "views": {
-    "DocumentCountByType": {
+    "documentCountByType": {
       "columns": {
         "id": {
           "name": "id",
@@ -845,7 +810,7 @@
           "autoincrement": false
         }
       },
-      "name": "DocumentCountByType",
+      "name": "documentCountByType",
       "isExisting": false,
       "definition": "select \"documentType\".\"id\", \"documentType\".\"name\", \"documentType\".\"typeLabel\", count(\"document\".\"id\") as \"count\" from \"documentType\" left join \"document\" on \"document\".\"documentTypeId\" = \"documentType\".\"id\" group by \"documentType\".\"id\""
     }

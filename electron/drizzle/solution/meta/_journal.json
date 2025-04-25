@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1745435854716,
-      "tag": "0000_fuzzy_reavers",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1745475087966,
-      "tag": "0001_far_pestilence",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1745492126875,
-      "tag": "0002_remarkable_lethal_legion",
+      "when": 1745578669585,
+      "tag": "0000_big_thunderbird",
       "breakpoints": true
     }
   ]
