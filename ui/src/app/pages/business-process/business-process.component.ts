@@ -666,11 +666,17 @@ export class BusinessProcessComponent implements OnInit {
   private areSelectionsEqual(original: any[], current: any[]): boolean {
     if (original.length !== current.length) return false;
     
+    // Create a Map to store current items for O(1) lookup
+    const currentMap = new Map(
+      current.map(item => [
+        `${item.requirement}-${item.fileName}`, 
+        item
+      ])
+    );
+    
+    // Single pass through original array with O(1) lookups
     return original.every(orig => 
-      current.some(curr => 
-        curr.requirement === orig.requirement && 
-        curr.fileName === orig.fileName
-      )
+      currentMap.has(`${orig.requirement}-${orig.fileName}`)
     );
   }
 
