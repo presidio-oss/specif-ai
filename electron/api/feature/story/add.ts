@@ -39,13 +39,16 @@ export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Pr
     }
 
     // Generate prompt
+    // TODO: These are currently having placeholders to avoid build errors - since we'll be deprecating this api layer
     const prompt = addUserStoryPrompt({
       solutionName: validatedData.name,
       solutionDescription: validatedData.description,
       documentData: { id: validatedData.featureId, description: validatedData.reqDesc, documentTypeId: DbDocumentType.USER_STORY },
       newStoryDescription: featureRequest,
       fileContent,
-      mode: PromptMode.UPDATE
+      mode: PromptMode.UPDATE,
+      prdName: '',
+      prdDescription: ''
     });
 
     // Prepare messages for LLM

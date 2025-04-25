@@ -7,7 +7,7 @@ import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { updateStoryPrompt } from '../../../prompts/feature/story/update';
 import { repairJSON } from '../../../utils/custom-json-parser';
 import { traceBuilder } from '../../../utils/trace-builder';
-import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { COMPONENT, DbDocumentType, OPERATIONS, PromptMode } from '../../../helper/constants';
 
 export async function updateStory(event: IpcMainInvokeEvent, data: unknown): Promise<UpdateStoryResponse> {
   try {
@@ -19,14 +19,19 @@ export async function updateStory(event: IpcMainInvokeEvent, data: unknown): Pro
     console.log('[update-story] Using LLM config:', llmConfig);
     const validatedData = updateStorySchema.parse(data);
 
+    // TODO: These are currently having placeholders/dummy values to avoid build errors - since we'll be deprecating this api layer
     const prompt = updateStoryPrompt({
-      name: validatedData.name,
-      description: validatedData.description,
-      reqDesc: validatedData.reqDesc,
-      featureId: validatedData.featureId,
-      existingFeatureDescription: validatedData.existingFeatureDesc,
-      newFeatureDescription: validatedData.featureRequest,
-      fileContent: validatedData.fileContent
+      prdName: validatedData.name,
+      prdDescription: validatedData.description,
+      documentData: {
+        id: validatedData.featureId,
+        name: validatedData.existingFeatureTitle,
+        description: validatedData.existingFeatureDesc,
+        documentTypeId: DbDocumentType.USER_STORY
+      },
+      fileContent: validatedData.fileContent,
+      mode: PromptMode.UPDATE,
+      newStoryDescription: validatedData.featureRequest
     });
 
     const messages = await LLMUtils.prepareMessages(prompt);

@@ -7,7 +7,8 @@ import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { updateRequirementPrompt } from '../../prompts/requirement/update';
 import { repairJSON } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
-import { OPERATIONS } from '../../helper/constants';
+import { DbDocumentType, OPERATIONS, PromptMode } from '../../helper/constants';
+import { IRequirementEnhance } from '../../schema/solution.schema';
 
 export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<UpdateRequirementResponse> {
   try {
@@ -26,6 +27,7 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
       reqId,
       updatedReqt,
       addReqtType,
+      title,
       fileContent,
       useGenAI,
       brds
@@ -43,16 +45,20 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
     }
 
     // Generate prompt
-    const prompt = updateRequirementPrompt({
-      name,
-      description,
-      existingReqt: reqDesc,
-      updateFeedback: updatedReqt,
-      fileContent,
-      reqId,
-      addReqtType,
-      brds
-    });
+    const promptParams: IRequirementEnhance = {
+        solutionName: name,
+        solutionDescription: description,
+        fileContent: fileContent,
+        linkedDocuments: brds,
+        documentData: {
+          id: reqId,
+          name: title,
+          description: reqDesc,
+          documentTypeId: addReqtType as DbDocumentType,
+        },
+        mode: PromptMode.UPDATE
+      }
+    const prompt = updateRequirementPrompt(promptParams);
 
     // Prepare messages for LLM
     const messages = await LLMUtils.prepareMessages(prompt);

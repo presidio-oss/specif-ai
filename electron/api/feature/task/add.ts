@@ -6,7 +6,7 @@ import { buildLLMHandler } from '../../../services/llm';
 import { store } from '../../../services/store';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
-import { OPERATIONS, COMPONENT } from '../../../helper/constants';
+import { OPERATIONS, COMPONENT, PromptMode, DbDocumentType } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
 
 export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<AddTaskResponse> {
@@ -20,12 +20,17 @@ export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<Add
     const validatedData = addTaskSchema.parse(data) as AddTaskRequest;
 
     // Generate prompt
+    // TODO: These are currently having placeholders/dummy values to avoid build errors - since we'll be deprecating this api layer
     const prompt = addTaskPrompt({
-      name: validatedData.name,
-      description: validatedData.description,
-      taskId: validatedData.taskId,
-      taskName: validatedData.taskName,
-      taskDescription: validatedData.reqDesc,
+      storyName: validatedData.name,
+      storyDescription: validatedData.description,
+      documentData: {
+        id: validatedData.taskId,
+        name: validatedData.taskName,
+        description: validatedData.reqDesc,
+        documentTypeId: DbDocumentType.TASK
+      },
+      mode: PromptMode.ADD,
       fileContent: validatedData.fileContent
     });
 

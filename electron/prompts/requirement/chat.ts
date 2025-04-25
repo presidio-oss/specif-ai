@@ -1,3 +1,4 @@
+import { DbDocumentType } from "../../helper/constants";
 import { getContextAndType } from "../../utils/get-context";
 
 interface ChatUpdateRequirementParams {
@@ -24,7 +25,7 @@ export function chatUpdateRequirementPrompt(params: ChatUpdateRequirementParams)
     requirementAbbr,
   } = params;
 
-  const { context, requirementType } = getContextAndType(requirementAbbr);
+  const { context } = getContextAndType(requirementAbbr as DbDocumentType);
   return `You are a requirements analyst tasked to assist users in refining and enhancing their existing ${type} by gathering detailed input, providing expert advice, and suggesting improvements. Do not provide technical implementation details or code snippets and ensure your response is not in markdown format.
 App Details:
 App Name: ${name}

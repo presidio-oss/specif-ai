@@ -10,7 +10,8 @@ import type { LLMConfigModel } from "../../services/llm/llm-types";
 import { addRequirementPrompt } from "../../prompts/requirement/add";
 import { repairJSON } from "../../utils/custom-json-parser";
 import { traceBuilder } from "../../utils/trace-builder";
-import { OPERATIONS } from "../../helper/constants";
+import { DbDocumentType, OPERATIONS, PromptMode } from "../../helper/constants";
+import { IRequirementEnhance } from "../../schema/solution.schema";
 
 export async function addRequirement(
   event: IpcMainInvokeEvent,
@@ -44,14 +45,19 @@ export async function addRequirement(
       console.log("[add-requirement] Using LLM config:", llmConfig);
       
       // Generate prompt and prepare messages
-      const prompt = addRequirementPrompt({
-        name,
+      const promptParams: IRequirementEnhance = {
+        solutionName: name,
         solutionDescription: description,
-        newReqt: reqt || "",
-        fileContent,
-        addReqtType,
-        brds,
-      });
+        fileContent: fileContent,
+        linkedDocuments: brds,
+        documentData: {
+          name: title,
+          description: reqt,
+          documentTypeId: addReqtType as DbDocumentType,
+        },
+        mode: PromptMode.ADD
+      }
+      const prompt = addRequirementPrompt(promptParams);
       
       const messages = await LLMUtils.prepareMessages(prompt);
       const handler = buildLLMHandler(

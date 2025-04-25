@@ -7,7 +7,7 @@ import { store } from '../../../services/store';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
 import { traceBuilder } from '../../../utils/trace-builder';
-import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { COMPONENT, DbDocumentType, OPERATIONS, PromptMode } from '../../../helper/constants';
 
 export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<UpdateTaskResponse> {
   try {
@@ -20,14 +20,18 @@ export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<
     const validatedData = updateTaskSchema.parse(data) as UpdateTaskRequest;
 
     // Generate prompt
+    // TODO: These are currently having placeholders/dummy values to avoid build errors - since we'll be deprecating this api layer
     const prompt = updateTaskPrompt({
-      name: validatedData.name,
-      description: validatedData.description,
-      taskId: validatedData.taskId,
-      taskName: validatedData.taskName,
-      existingTaskDescription: validatedData.existingTaskDesc,
-      taskDescription: validatedData.reqDesc,
-      fileContent: validatedData.fileContent
+      storyName: validatedData.name,
+      storyDescription: validatedData.description,
+      documentData: {
+        id: validatedData.taskId,
+        name: validatedData.taskName,
+        description: validatedData.existingTaskDesc,
+        documentTypeId: DbDocumentType.TASK
+      },
+      fileContent: validatedData.fileContent,
+      mode: PromptMode.UPDATE,
     });
 
     // Prepare messages for LLM

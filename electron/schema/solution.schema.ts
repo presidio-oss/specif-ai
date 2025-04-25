@@ -35,8 +35,8 @@ export type IDocumentEnhance = {
         jiraId?: string;
         documentTypeId: DbDocumentType;
     },
-    solutionName: string;
-    solutionDescription: string;
+    solutionName?: string;
+    solutionDescription?: string;
     fileContent?: string;
     mode: PromptMode;
 }
@@ -54,7 +54,7 @@ export type IStoryEnhance = IDocumentEnhance & {
 export type ITaskEnhance = IDocumentEnhance & {
     storyName: string;
     storyDescription: string;
-    newTaskDescription: string;
+    newTaskDescription?: string;
 }
 
 export type ILLMEnhance = IRequirementEnhance | IStoryEnhance | ITaskEnhance;
