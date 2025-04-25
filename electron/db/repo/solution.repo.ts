@@ -97,6 +97,25 @@ export class SolutionRepository {
     return (response && response.length) ? response[0] : null;
   }
 
+  async createRequirements(requirementDetail: ICreateDocument[]) {
+    console.log('Entered <SolutionRepository.createRequirement>')
+
+    // Validate the data
+    const parsedData = documentInsertSchema.array().safeParse(requirementDetail);
+    if (!parsedData.success) {
+      console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+      throw new Error('Schema validation failed')
+    }
+
+    const response = await this.db
+      .insert(solutionSchema.document)
+      .values(parsedData.data)
+      .returning();
+
+    console.log('Exited <SolutionRepository.createRequirement>')
+    return (response && response.length) ? response : null;
+  }
+
   async getAllDocuments(searchQuery?: string) {
     console.log("Entered <SolutionRepository.getAllDocuments>");
 

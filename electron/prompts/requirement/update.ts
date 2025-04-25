@@ -1,6 +1,6 @@
 import { MARKDOWN_RULES } from '../context/markdown-rules';
 import { getContextAndType } from '../../utils/get-context';
-import { IRequirementEnhance } from '../../schema/solution.schema';
+import { IRequirementEnhance } from '../../schema/enhance.schema';
 
 export function updateRequirementPrompt(promptParams: IRequirementEnhance): string {
   const { solutionName, solutionDescription, fileContent, linkedDocuments, documentData: { name, description, jiraId, documentTypeId } } = promptParams;

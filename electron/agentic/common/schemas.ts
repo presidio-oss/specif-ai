@@ -23,3 +23,13 @@ export type IGeneratedRequirements = z.infer<
 
 export type IPRDRequirements = z.infer<typeof PRDGeneratedRequirementsSchema>;
 export type IPRDRequirementItem = IPRDRequirements[number];
+
+export const GenerateUserStoriesSchema = z.object({
+  solutionId: z.number(),
+  prdId: z.number(),
+  technicalDetails: z.string(),
+  requirementDescription: z.string(),
+  extraContext: z.string().optional()
+})
+
+export type IGenerateUserStoriesRequest = z.infer<typeof GenerateUserStoriesSchema>

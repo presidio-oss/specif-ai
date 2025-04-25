@@ -1,14 +1,15 @@
 import { createStorySchema, type CreateStoryResponse } from '../../../schema/feature/story/create.schema';
 import { store } from '../../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
-import { OPERATIONS, COMPONENT } from '../../../helper/constants';
+import { DbDocumentType } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
 import { createUserStoryWorkflow } from '../../../agentic/user-story-workflow';
 import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain';
 import { MemorySaver } from "@langchain/langgraph";
 import { randomUUID } from "node:crypto";
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
-import { LLMConfigModel } from '../../../services/llm/llm-types';
+import { solutionFactory } from '../../../db/solution.factory';
+import { ICreateDocument } from '../../../db/interfaces/solution.interface';
 
 export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
@@ -23,9 +24,11 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
     
     const validatedData = createStorySchema.parse(data);
     const {
+      solutionId,
       reqDesc,
       extraContext,
-      technicalDetails
+      technicalDetails,
+      prdId
     } = validatedData;
     
     const memoryCheckpointer = new MemorySaver();
@@ -68,6 +71,34 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
     const stories = response.values.stories;
     
     try {
+      console.log('[create-stories] Saving user stories to database for solution ID:', solutionId);
+      
+      await solutionFactory.runWithTransaction(
+        solutionId,
+        async (solutionRepo) => {
+          const storyRequirements = stories.map((story: ICreateDocument) => ({
+            name: story.name,
+            description: story.description,
+            documentTypeId: DbDocumentType.USER_STORY
+          }));
+          
+          const createdStories = await solutionRepo.createRequirements(storyRequirements);
+          
+          if (!createdStories || createdStories.length !== stories.length) {
+            throw new Error('Failed to save user stories to database');
+          }
+          
+          const documentLinks = createdStories.map(story => ({
+            sourceDocumentId: story.id,
+            targetDocumentId: prdId
+          }));
+          
+          await solutionRepo.createDocumentLinks(documentLinks);
+        }
+      );
+      
+      console.log('[create-stories] Successfully saved user stories to database');
+      
       const transformedFeatures = stories.map((feature: any) => {
         if (!feature.id || !feature.title || !feature.description) {
           throw new Error(`Invalid feature structure: missing required fields in ${JSON.stringify(feature)}`);

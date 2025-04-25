@@ -1,5 +1,5 @@
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
-import { IStoryEnhance } from '../../../schema/solution.schema';
+import { IStoryEnhance } from '../../../schema/enhance.schema';
 
 // export interface UpdateStoryPromptParams {
 //   name: string;

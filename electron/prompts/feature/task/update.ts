@@ -1,4 +1,4 @@
-import { ITaskEnhance } from '../../../schema/solution.schema';
+import { ITaskEnhance } from '../../../schema/enhance.schema';
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
 
 export function updateTaskPrompt(params: ITaskEnhance): string {

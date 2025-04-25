@@ -11,7 +11,7 @@ import { addRequirementPrompt } from "../../prompts/requirement/add";
 import { repairJSON } from "../../utils/custom-json-parser";
 import { traceBuilder } from "../../utils/trace-builder";
 import { DbDocumentType, OPERATIONS, PromptMode } from "../../helper/constants";
-import { IRequirementEnhance } from "../../schema/solution.schema";
+import { IRequirementEnhance } from "../../schema/enhance.schema";
 
 export async function addRequirement(
   event: IpcMainInvokeEvent,

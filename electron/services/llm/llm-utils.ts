@@ -6,7 +6,7 @@ import {
   IRequirementEnhance,
   IStoryEnhance,
   ITaskEnhance,
-} from "../../schema/solution.schema";
+} from "../../schema/enhance.schema";
 import {
   addRequirementPrompt,
   updateRequirementPrompt,

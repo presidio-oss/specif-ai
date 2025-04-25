@@ -1,4 +1,4 @@
-import { IStoryEnhance } from '../../../schema/solution.schema';
+import { IStoryEnhance } from '../../../schema/enhance.schema';
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
 import { USER_STORY } from '../../context/user-story';
 
