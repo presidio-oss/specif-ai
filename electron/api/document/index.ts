@@ -1,5 +1,5 @@
 import { solutionFactory } from "../../db/solution.factory";
-import { documentIdSchema, documentRequestSchema, solutionIdSchema } from "../../schema/solution.schema";
+import { documentIdSchema, documentRequestSchema, llmEnhanceSchema, solutionIdSchema } from "../../schema/solution.schema";
 import { IpcMainInvokeEvent } from "electron";
 import { z } from "zod";
 import { LLMUtils } from "../../services/llm/llm-utils";
@@ -150,9 +150,15 @@ export class DocumentController {
             throw new Error('LLM configuration not found');
         }
 
-        const { documentData, mode } = data;
+        const parsedData = llmEnhanceSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
+            throw new Error('Schema validation failed');
+        }
+
+        const { documentData, mode } = parsedData.data
         
-        const prompt = await LLMUtils.getDocumentEnhancerPrompt(documentData.documentTypeId as DbDocumentType, mode as PromptMode, data);
+        const prompt = await LLMUtils.getDocumentEnhancerPrompt(documentData.documentTypeId as DbDocumentType, mode as PromptMode, parsedData.data);
         
         const messages = await LLMUtils.prepareMessages(prompt);
         const handler = buildLLMHandler(
