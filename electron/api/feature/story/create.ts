@@ -1,89 +1,74 @@
 import { createStorySchema, type CreateStoryResponse } from '../../../schema/feature/story/create.schema';
-import { LLMUtils } from '../../../services/llm/llm-utils';
-import { buildLLMHandler } from '../../../services/llm';
 import { store } from '../../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { LLMConfigModel } from '../../../services/llm/llm-types';
-import { refinePrompt } from '../../../prompts/feature/evaluation/refine';
-import { evaluatePrompt } from '../../../prompts/feature/evaluation/evaluate';
-import { repairJSON } from '../../../utils/custom-json-parser';
 import { OPERATIONS, COMPONENT } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
+import { createUserStoryWorkflow } from '../../../agentic/user-story-workflow';
+import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain';
+import { MemorySaver } from "@langchain/langgraph";
+import { randomUUID } from "node:crypto";
+import { ObservabilityManager } from '../../../services/observability/observability.manager';
+import { LLMConfigModel } from '../../../services/llm/llm-types';
 
 export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
     const llmConfig = store.getLLMConfig();
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace('create-stories');
+    
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
-
     console.log('[create-stories] Using LLM config:', llmConfig);
+    
     const validatedData = createStorySchema.parse(data);
-
     const {
       reqDesc,
       extraContext,
       technicalDetails
     } = validatedData;
-
-    // 1. Generate initial features
-    const prompt = refinePrompt({
-      requirements: reqDesc,
-      extraContext,
-      technologies: technicalDetails
+    
+    const memoryCheckpointer = new MemorySaver();
+    
+    const userStoryWorkflow = createUserStoryWorkflow({
+      model: buildLangchainModelProvider(
+        llmConfig.activeProvider,
+        llmConfig.providerConfigs[llmConfig.activeProvider].config
+      ),
+      checkpointer: memoryCheckpointer
     });
-
-    // Prepare messages for LLM
-    const messages = await LLMUtils.prepareMessages(prompt);
-
-    const handler = buildLLMHandler(
-      llmConfig.activeProvider,
-      llmConfig.providerConfigs[llmConfig.activeProvider].config
-    );
-
-    const traceName = traceBuilder(COMPONENT.STORY, OPERATIONS.CREATE);
-    const response = await handler.invoke(messages, null, traceName);
-    console.log('[create-stories] Initial LLM Response:', response);
-
-    let parsedFeatures;
-    try {
-      let cleanedResponse = repairJSON(response.trim());
-      parsedFeatures = JSON.parse(cleanedResponse.trim());
-    } catch (error) {
-      console.error('Error parsing initial LLM response:', error);
-      throw new Error('Invalid response format from LLM');
-    }
-
-    const evaluationPrompt = evaluatePrompt({
+    
+    const initialState = {
       requirements: reqDesc,
-      features: JSON.stringify(parsedFeatures.features)
-    });
-
-    // Prepare messages for evaluation
-    const evaluationMessages = await LLMUtils.prepareMessages(evaluationPrompt);
-    const evaluation = await handler.invoke(evaluationMessages, null, traceName);
-    console.log('[create-stories] Evaluation:', evaluation);
-
-    const finalPrompt = refinePrompt({
-      requirements: reqDesc,
-      extraContext,
-      technologies: technicalDetails,
-      features: response,
-      evaluation
-    });
-
-    const finalMessages = await LLMUtils.prepareMessages(finalPrompt);
-    const finalResponse = await handler.invoke(finalMessages, null, traceName);
-    console.log('[create-stories] Final LLM Response:', finalResponse);
-
-    try {
-      const parsedResponse = JSON.parse(finalResponse.trim());
-      
-      if (!parsedResponse.features || !Array.isArray(parsedResponse.features)) {
-        throw new Error('Invalid response structure: missing features array');
+      extraContext: extraContext || "",
+      technicalDetails: technicalDetails || ""
+    };
+    
+    const config = {
+      "configurable": {
+        "thread_id": `${randomUUID()}_create_stories`,
+        "trace": trace
       }
-      
-      const transformedFeatures = parsedResponse.features.map((feature: any) => {
+    };
+    
+    const stream = userStoryWorkflow.streamEvents(initialState, {
+      version: "v2",
+      streamMode: "messages",
+      ...config,
+    });
+    
+    for await (const event of stream) {
+      // Process events if needed
+    }
+    
+    const response = await userStoryWorkflow.getState({
+      ...config
+    });
+    
+    const stories = response.values.stories;
+    
+    try {
+      const transformedFeatures = stories.map((feature: any) => {
         if (!feature.id || !feature.title || !feature.description) {
           throw new Error(`Invalid feature structure: missing required fields in ${JSON.stringify(feature)}`);
         }
@@ -101,7 +86,7 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
         features: transformedFeatures
       };
     } catch (error) {
-      console.error('Error processing final response:', error);
+      console.error('Error processing response:', error);
       throw error;
     }
   } catch (error) {
