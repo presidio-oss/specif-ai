@@ -17,3 +17,9 @@ export const BUSINESS_PROCESS_CHANNELS = {
     ADD_BUSINESS_PROCESS: 'businessProcess:add',
     UPDATE_BUSINESS_PROCESS: 'businessProcess:update',
 }
+
+export const AI_CHAT_CHANNELS = {
+    GET_SUGGESTIONS: 'aiChat:getSuggestions',
+    GET_CHAT_HISTORY: 'aiChat:getChatHistory',
+    CHAT: 'aiChat:chat',
+}

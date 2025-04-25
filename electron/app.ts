@@ -11,6 +11,7 @@ import { setupSolutionHandlers } from "./handlers/solution-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
 import { setupBusinessProcessHandlers } from "./handlers/api/business-process-handler";
+import { setupChatHandlers } from "./handlers/api/chat-handler";
 
 // ========================
 // CONFIGURATION
@@ -193,5 +194,6 @@ app.whenReady().then(async () => {
     setupFeatureHandlers();
     setupSolutionHandlers();
     setupBusinessProcessHandlers();
+    setupChatHandlers();
   }
 });

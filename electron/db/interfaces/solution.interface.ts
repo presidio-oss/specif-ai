@@ -6,6 +6,8 @@ import {
     documentType,
     businessProcess,
     businessProcessDocuments,
+    conversation,
+    message,
 } from '../schema/solution';
 
 // Table: Metadata
@@ -56,3 +58,24 @@ export const businessProcessDocumentsUpdateSchema = createUpdateSchema(businessP
 export type IBusinessProcessDocuments = z.infer<typeof businessProcessDocumentsSelectSchema>;
 export type ICreateBusinessProcessDocuments = z.infer<typeof businessProcessDocumentsInsertSchema>;
 export type IUpdateBusinessProcessDocuments = z.infer<typeof businessProcessDocumentsUpdateSchema>;
+
+
+// Table: Conversion
+// Below would contain the zod schema and its infered type
+export const conversionSelectSchema = createSelectSchema(conversation);
+export const conversionInsertSchema = createInsertSchema(conversation);
+export const conversionUpdateSchema = createUpdateSchema(conversation);
+
+export type IConversation = z.infer<typeof conversionSelectSchema>;
+export type ICreateConversation = z.infer<typeof conversionInsertSchema>;
+export type IUpdateConversation = z.infer<typeof conversionUpdateSchema>;
+
+// Table: Message
+// Below would contain the zod schema and its infered type
+export const messageSelectSchema = createSelectSchema(message);
+export const messageInsertSchema = createInsertSchema(message);
+export const messageUpdateSchema = createUpdateSchema(message);
+
+export type IMessage = z.infer<typeof messageSelectSchema>;
+export type ICreateMessage = z.infer<typeof messageInsertSchema>;
+export type IUpdateMessage = z.infer<typeof messageUpdateSchema>;

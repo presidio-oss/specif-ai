@@ -13,6 +13,10 @@ import {
   IUpdateDocument,
   IUpdateBusinessProcess,
   IUpdateBusinessProcessDocuments,
+  messageInsertSchema,
+  ICreateMessage,
+  conversionInsertSchema,
+  ICreateConversation,
 } from "../interfaces/solution.interface";
 import { metadataInsertSchema } from "../interfaces/solution.interface";
 import {
@@ -38,6 +42,14 @@ export class SolutionRepository {
   private defaultBusinessProcessQueryFilters = [
     eq(businessProcess.isDeleted, false)
   ]
+
+  private defaultMessageQueryFilters = [
+    eq(solutionSchema.message.isDeleted, false),
+  ];
+
+  private defaultConversationQueryFilters = [
+    eq(solutionSchema.conversation.isDeleted, false),
+  ];
 
   // TODO: Add isDeleted check for all the functions
 
@@ -444,5 +456,77 @@ export class SolutionRepository {
       .returning();
     console.log("Exited <SolutionRepository.deleteBusinessProcessDocument>");
     return result;
+  }
+
+  // Table: Conversation and Message
+  // Below are the functions related to Conversation and Message table
+  async createConversation(conversationDetail: ICreateConversation) {
+    console.log("Entered <SolutionRepository.createConversation>");
+    // Validate the data
+    const parsedData = conversionInsertSchema.safeParse(conversationDetail);
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
+
+    const response = await this.db
+      .insert(solutionSchema.conversation)
+      .values(parsedData.data)
+      .returning();
+    console.log("Exited <SolutionRepository.createConversation>");
+    return response && response.length ? response[0] : null;
+  }
+
+  async saveMessage(messageDetail: ICreateMessage) {
+    console.log("Entered <SolutionRepository.saveMessage>");
+    // Validate the data
+    const parsedData = messageInsertSchema.safeParse(messageDetail);
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
+
+    const response = await this.db
+      .insert(solutionSchema.message)
+      .values(parsedData.data)
+      .returning();
+    console.log("Exited <SolutionRepository.saveMessage>");
+    return response && response.length ? response[0] : null;
+  }
+
+  async getConversationMessages(conversationId: number) {
+    console.log("Entered <SolutionRepository.getConversationMessages>");
+    const messages = await this.db
+      .select()
+      .from(solutionSchema.message)
+      .where(
+        and(
+          eq(solutionSchema.message.conversationId, conversationId),
+          ...this.defaultMessageQueryFilters
+        )
+      )
+      .orderBy(solutionSchema.message.createdAt);
+    console.log("Exited <SolutionRepository.getConversationMessages>");
+    return messages;
+  }
+
+  async getConversationByDocumentId(documentId: number) {
+    console.log("Entered <SolutionRepository.getConversationByDocumentId>");
+    const conversation = await this.db
+      .select()
+      .from(solutionSchema.conversation)
+      .where(
+        and(
+          eq(solutionSchema.conversation.documentId, documentId),
+          ...this.defaultConversationQueryFilters
+        )
+      )
+      .get();
+    console.log("Exited <SolutionRepository.getConversationByDocumentId>");
+    return conversation;
   }
 }

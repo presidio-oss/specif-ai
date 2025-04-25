@@ -40,3 +40,14 @@ export enum DbDocumentType {
   USER_STORY = "us",
   TASK = "task",
 }
+
+export enum USER_TYPE {
+  USER = "user",
+  ASSISTANT = "assistant"
+}
+
+export enum CHAT_INTENT {
+  REQUIREMENT_UPDATE = "requirement_update",
+  STORY_TASK_UPDATE = "story_task_update",
+  SUGGESTION_GENERATION = "suggestion_generation",
+}

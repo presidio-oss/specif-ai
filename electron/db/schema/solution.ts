@@ -7,7 +7,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 
 export const docTypeEnum = ["PRD", "BRD"] as const;
-export type DocType = (typeof docTypeEnum)[number];
+export const  UserTypeEnum = ["user", "assistant"] as const;
 
 export const commonColumns = {
   createdAt: text({ mode: "text" })
@@ -85,7 +85,7 @@ export const message = sqliteTable("message", {
     .notNull()
     .references(() => conversation.id),
   message: text({ mode: "text" }).notNull(),
-  userType: text({ mode: "text" }).notNull(),
+  userType: text({ enum: UserTypeEnum }).notNull(),
   isApplied: integer({ mode: "boolean" }).default(false),
   ...commonColumns,
 });
