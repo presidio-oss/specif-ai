@@ -28,8 +28,24 @@ export const GenerateUserStoriesSchema = z.object({
   solutionId: z.number(),
   prdId: z.number(),
   technicalDetails: z.string(),
+  requirementTitle: z.string(),
   requirementDescription: z.string(),
-  extraContext: z.string().optional()
+  extraContext: z.string().optional(),
+  regenerate: z.boolean().default(false),
+  oldUserStoriesIds: z.array(z.number()).default([]),
 })
 
 export type IGenerateUserStoriesRequest = z.infer<typeof GenerateUserStoriesSchema>
+
+export const GenerateTasksSchema = z.object({
+  solutionId: z.number(),
+  storyId: z.number(),
+  technicalDetails: z.string(),
+  requirementTitle: z.string(),
+  requirementDescription: z.string(),
+  extraContext: z.string().optional(),
+  regenerate: z.boolean().default(false),
+  oldTasksIds: z.array(z.number()).default([]),
+})
+
+export type IGenerateTasksRequest = z.infer<typeof GenerateTasksSchema>

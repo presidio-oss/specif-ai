@@ -199,6 +199,17 @@ export class SolutionRepository {
     return result;
   }
 
+  async softDeleteDocuments(documentIds: number[]) {
+    console.log("Entered <SolutionRepository.softDeleteDocuments>");
+    const response = await this.db
+      .update(document)
+      .set({ isDeleted: true })
+      .where(inArray(document.id, documentIds))
+      .returning();
+    console.log("Exited <SolutionRepository.softDeleteDocuments>");
+    return response;
+  }
+
   async softDeleteDocumentLinks(sourceDocumentId: number, documentIds: number[]) {
     console.log("Entered <SolutionRepository.deleteDocumentLinks>");
     const response = await this.db

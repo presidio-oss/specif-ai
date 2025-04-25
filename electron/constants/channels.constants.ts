@@ -5,6 +5,8 @@ export const DOCUMENT_CHANNELS = {
     ADD_DOCUMENT: 'document:addDocument',
     UPDATE_DOCUMENT: 'document:updateDocument',
     ENHANCE_DOCUMENT: 'document:enhanceDocument',
+    GENERATE_STORIES: 'document:generateStories',
+    GENERATE_TASKS: 'document:generateTasks',
 }
 
 export const BUSINESS_PROCESS_CHANNELS = {

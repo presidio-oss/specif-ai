@@ -15,12 +15,16 @@ import { DbDocumentType, OPERATIONS, PromptMode } from "../../helper/constants";
 import { repairJSON } from "../../utils/custom-json-parser";
 import { withRetry } from "../../utils/retry";
 import { ObservabilityManager } from "../../services/observability/observability.manager";
-import { GenerateUserStoriesSchema } from "../../agentic/common/schemas";
+import {
+  GenerateTasksSchema,
+  GenerateUserStoriesSchema,
+} from "../../agentic/common/schemas";
 import { MemorySaver } from "@langchain/langgraph-checkpoint";
 import { createUserStoryWorkflow } from "../../agentic/user-story-workflow";
 import { buildLangchainModelProvider } from "../../services/llm/llm-langchain";
 import { randomUUID } from "node:crypto";
 import { ICreateDocument } from "../../db/interfaces/solution.interface";
+import { createTaskWorkflow } from "../../agentic/task-workflow";
 
 export class DocumentController {
   static async getDocumentTypesWithCount(_: IpcMainInvokeEvent, data: any) {
@@ -194,6 +198,8 @@ export class DocumentController {
       extraContext,
       technicalDetails,
       prdId,
+      regenerate,
+      oldUserStoriesIds,
     } = parsedData.data;
     const memoryCheckpointer = new MemorySaver();
 
@@ -248,6 +254,14 @@ export class DocumentController {
           documentTypeId: DbDocumentType.USER_STORY,
         }));
 
+        if (regenerate) {
+          if (!oldUserStoriesIds || oldUserStoriesIds.length === 0) {
+            // TODO: Discuss if we update on same IDs or soft delete old docs and save as new ones
+            throw new Error("No old user stories found to replace");
+          }
+          await solutionRepo.softDeleteDocuments(oldUserStoriesIds);
+          await solutionRepo.softDeleteDocumentLinks(prdId, oldUserStoriesIds);
+        }
         const createdStories = await solutionRepo.createRequirements(
           storyRequirements
         );
@@ -257,8 +271,8 @@ export class DocumentController {
         }
 
         const documentLinks = createdStories.map((story) => ({
-          sourceDocumentId: story.id,
-          targetDocumentId: prdId,
+          sourceDocumentId: prdId,
+          targetDocumentId: story.id,
         }));
 
         await solutionRepo.createDocumentLinks(documentLinks);
@@ -292,9 +306,133 @@ export class DocumentController {
   }
 
   static async generateTasks(_: IpcMainInvokeEvent, data: any) {
-    console.log("Entered <DocumentController.generateUserStories>");
+    console.log("Entered <DocumentController.generateTasks>");
+    const llmConfig = store.getLLMConfig();
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace("create-task");
 
-    console.log("Exited <DocumentController.generateUserStories>");
+    if (!llmConfig) {
+      throw new Error("LLM configuration not found");
+    }
+
+    console.log("[create-task] Using LLM config:", llmConfig);
+    const parsedData = GenerateTasksSchema.safeParse(data);
+
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
+
+    const { solutionId, requirementTitle, extraContext, requirementDescription, storyId, regenerate, technicalDetails, oldTasksIds } =
+      parsedData.data;
+    const memoryCheckpointer = new MemorySaver();
+
+    const taskWorkflow = createTaskWorkflow({
+      model: buildLangchainModelProvider(
+        llmConfig.activeProvider,
+        llmConfig.providerConfigs[llmConfig.activeProvider].config
+      ),
+      checkpointer: memoryCheckpointer,
+    });
+
+    const initialState = {
+      name: requirementTitle,
+      userStory: requirementDescription,
+      technicalDetails: technicalDetails,
+      extraContext: extraContext || "",
+    };
+
+    const config = {
+      configurable: {
+        thread_id: `${randomUUID()}_create_tasks`,
+        trace: trace,
+      },
+    };
+
+    const stream = taskWorkflow.streamEvents(initialState, {
+      version: "v2",
+      streamMode: "messages",
+      ...config,
+    });
+
+    for await (const event of stream) {
+      // Process events if needed
+    }
+
+    const response = await taskWorkflow.getState({
+      ...config,
+    });
+
+    const tasks = response.values.tasks;
+
+    console.log(
+      "[create-tasks] Saving tasks to database for solution ID:",
+      solutionId
+    );
+
+    await solutionFactory.runWithTransaction(
+      solutionId,
+      async (solutionRepo) => {
+        const taskRequirements = tasks
+          .map((task: { name: string, acceptance: string }) => ({
+            name: task.name,
+            description: task.acceptance,
+            documentTypeId: DbDocumentType.TASK,
+          }));
+
+        if (regenerate) {
+          if (!oldTasksIds || oldTasksIds.length === 0) {
+            // TODO: Discuss if we update on same IDs or soft delete old docs and save as new ones
+            throw new Error("No old tasks found to replace");
+          }
+          await solutionRepo.softDeleteDocuments(oldTasksIds);
+          await solutionRepo.softDeleteDocumentLinks(storyId, oldTasksIds);
+        }
+
+        const createdTasks = await solutionRepo.createRequirements(
+          taskRequirements
+        );
+
+        if (!createdTasks || createdTasks.length !== taskRequirements.length) {
+          throw new Error("Failed to save tasks to database");
+        }
+
+        const documentLinks = createdTasks.map((task) => ({
+          sourceDocumentId: storyId,
+          targetDocumentId: task.id,
+        }));
+
+        await solutionRepo.createDocumentLinks(documentLinks);
+      }
+    );
+
+    console.log("[create-tasks] Successfully saved tasks to database");
+
+    const transformedTasks = tasks.map((task: any) => {
+      if (!task.id || !task.name || !task.acceptance) {
+        throw new Error(
+          `Invalid task structure: missing required fields in ${JSON.stringify(
+            task
+          )}`
+        );
+      }
+
+      const transformedTask: { id: string; [key: string]: string } = {
+        id: task.id,
+      };
+
+      transformedTask[task.name] = task.acceptance;
+
+      return transformedTask;
+    });
+    
+    console.log("Exited <DocumentController.generateTasks>");
+    
+    return {
+      tasks: transformedTasks,
+    };
   }
 
   static async exportDocuments(_: IpcMainInvokeEvent) {

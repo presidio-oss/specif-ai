@@ -1,14 +1,14 @@
 import { IpcMainInvokeEvent } from 'electron';
 import { createTaskSchema, CreateTaskRequest, CreateTaskResponse } from '../../../schema/feature/task/create.schema';
 import { store } from '../../../services/store';
-import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { DbDocumentType } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
 import { createTaskWorkflow } from '../../../agentic/task-workflow';
 import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain';
 import { MemorySaver } from "@langchain/langgraph";
 import { randomUUID } from "node:crypto";
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
-import { LLMConfigModel } from '../../../services/llm/llm-types';
+import { solutionFactory } from '../../../db/solution.factory';
 
 export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<CreateTaskResponse> {
   try {
@@ -63,6 +63,31 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
     const tasks = response.values.tasks;
     
     try {
+      console.log('[create-task] Saving tasks to database for solution ID:', validatedData.appId);
+      
+      // Save tasks to the database
+      await solutionFactory.runWithTransaction(
+        parseInt(validatedData.appId),
+        async (solutionRepo) => {
+          for (const task of tasks) {
+            if (!task.id || !task.name || !task.acceptance) {
+              console.warn(`Skipping invalid task: ${JSON.stringify(task)}`);
+              continue;
+            }
+            
+            await solutionRepo.createRequirement({
+              name: task.name,
+              description: task.acceptance,
+              documentTypeId: DbDocumentType.TASK
+            });
+
+            // TODO: Add us to task link in document link table
+          }
+        }
+      );
+      
+      console.log('[create-task] Successfully saved tasks to database');
+      
       const transformedTasks = tasks.map((task: any) => {
         if (!task.id || !task.name || !task.acceptance) {
           throw new Error(`Invalid task structure: missing required fields in ${JSON.stringify(task)}`);

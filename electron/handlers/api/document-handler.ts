@@ -64,4 +64,24 @@ export function setupDocumentHandlers() {
       throw error;
     }
   });
+
+  ipcMain.handle(DOCUMENT_CHANNELS.GENERATE_STORIES, async (_event, data: any) => {
+    try {
+      const result = await DocumentController.generateUserStories(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling documement:generateStories:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle(DOCUMENT_CHANNELS.GENERATE_TASKS, async (_event, data: any) => {
+    try {
+      const result = await DocumentController.generateTasks(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling document:generateTasks:', error.message);
+      throw error;
+    }
+  });
 }
