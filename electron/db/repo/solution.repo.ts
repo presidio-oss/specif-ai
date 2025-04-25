@@ -161,6 +161,24 @@ export class SolutionRepository {
     return response;
   }
 
+  async getDocumentLinksById(sourceDocumentId: number) {
+    console.log("Entered <SolutionRepository.getDocumentLinksById>");
+    const result = await this.db.select().from(documentLinks).where(eq(documentLinks.sourceDocumentId, sourceDocumentId));
+    console.log("Exited <SolutionRepository.getDocumentLinksById>");
+    return result;
+  }
+
+  async softDeleteDocumentLinks(sourceDocumentId: number, documentIds: number[]) {
+    console.log("Entered <SolutionRepository.deleteDocumentLinks>");
+    const response = await this.db
+      .update(documentLinks)
+      .set({ isDeleted: true })
+      .where(and(eq(documentLinks.sourceDocumentId, sourceDocumentId), inArray(documentLinks.targetDocumentId, documentIds)))
+      .returning();
+    console.log("Exited <SolutionRepository.deleteDocumentLinks>");
+    return response;
+  }
+
   // FIXME: where are we using this function? and can we optimise this?
   async getSolutionByName(name: string, docTypes?: string[]) {
     // TODO: Filter non-deleted items

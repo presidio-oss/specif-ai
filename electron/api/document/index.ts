@@ -92,17 +92,35 @@ export class DocumentController {
             console.error(`Error occurred while validating incoming data, Error: ${parsedData.error}`);
             throw new Error('Schema validation failed');
         }
+        
         const { solutionId, documentData, linkedDocumentIds } = parsedData.data;
+        
         await solutionFactory.runWithTransaction(solutionId, async (solutionRepository) => {
             const updatedDocument = await solutionRepository.updateDocument(documentData);
+            
             if (updatedDocument && linkedDocumentIds.length > 0) {
-                // TODO: Implement document link updates
-                // const linksPayload = linkedDocumentIds.map(targetId => ({
-                //     sourceDocumentId: updatedDocument.id,
-                //     targetDocumentId: targetId
-                // }));
-                // await solutionRepository.createDocumentLinks(linksPayload);
+                const existingDocumentLinks = await solutionRepository.getDocumentLinksById(updatedDocument.id);
+                
+                const existingDocumentLinksTargetIds = existingDocumentLinks
+                    .map(docLink => docLink.targetDocumentId)
+                    .filter((id): id is number => id !== null);
+
+                const documentsToAdd = linkedDocumentIds.filter(docId => !existingDocumentLinksTargetIds.includes(docId)) || [];
+                const documentsToRemove = existingDocumentLinksTargetIds.filter(docId => !linkedDocumentIds.includes(docId)) || [];
+                                
+                if (documentsToRemove.length > 0) {
+                    await solutionRepository.softDeleteDocumentLinks(updatedDocument.id, documentsToRemove);
+                }
+                
+                if (documentsToAdd.length > 0) {
+                    const linksPayload = linkedDocumentIds.map(targetId => ({
+                        sourceDocumentId: updatedDocument.id,
+                        targetDocumentId: targetId
+                    }));
+                    await solutionRepository.createDocumentLinks(linksPayload);
+                }
             }
+            
             console.log('Exited <DocumentController.updateDocument>');
             return updatedDocument;
         });
@@ -129,11 +147,10 @@ export class DocumentController {
         console.log('Entered <DocumentController.enhance>');
         const llmConfig = store.getLLMConfig();
         if (!llmConfig) {
-        throw new Error('LLM configuration not found');
+            throw new Error('LLM configuration not found');
         }
 
         const { documentData, mode } = data;
-        // check if data is of type ILLMEnhance
         
         const prompt = await LLMUtils.getDocumentEnhancerPrompt(documentData.documentTypeId as DbDocumentType, mode as PromptMode, data);
         

@@ -48,7 +48,7 @@ export type IRequirementEnhance = IDocumentEnhance & {
 export type IStoryEnhance = IDocumentEnhance & {
     prdName: string;
     prdDescription: string;
-    newStoryDescription: string;
+    newStoryDescription?: string;
 }
 
 export type ITaskEnhance = IDocumentEnhance & {

@@ -4,7 +4,6 @@ import { updateTaskPrompt } from '../../../prompts/feature/task/update';
 import { LLMUtils } from '../../../services/llm/llm-utils';
 import { buildLLMHandler } from '../../../services/llm';
 import { store } from '../../../services/store';
-import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
 import { traceBuilder } from '../../../utils/trace-builder';
 import { COMPONENT, DbDocumentType, OPERATIONS, PromptMode } from '../../../helper/constants';

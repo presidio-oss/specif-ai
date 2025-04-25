@@ -2,7 +2,6 @@ import { AmazonKnowledgeBaseRetriever } from "@langchain/aws";
 import type { DocumentInterface } from "@langchain/core/documents";
 import { PromptMode, DbDocumentType } from "../../helper/constants";
 import {
-  IDocumentEnhance,
   ILLMEnhance,
   IRequirementEnhance,
   IStoryEnhance,
