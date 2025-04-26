@@ -1,17 +1,27 @@
-<nav class="flex" aria-label="Breadcrumb" *ngIf="breadcrumbs$ | async as breadcrumbs">
+<nav
+  class="flex"
+  aria-label="Breadcrumb"
+  *ngIf="breadcrumbs$ | async as breadcrumbs"
+>
   <!--Back button-->
   <div class="flex mr-3" *ngIf="breadcrumbs.length > 0">
-    <button (click)="navigateToPreviousPage()"
-      class="inline-flex items-center text-xs font-normal text-secondary-300 hover:text-white">
+    <button
+      (click)="navigateToPreviousPage()"
+      class="inline-flex items-center text-xs font-normal text-secondary-300 hover:text-white"
+    >
       <ng-icon class="text-lg" name="heroArrowLeft" strokeWidth="2"></ng-icon>
     </button>
   </div>
   <!--Solutions Breadcrumbs-->
   <ol class="inline-flex items-center space-x-1 md:space-x-2">
     <li class="inline-flex items-center">
-      <a routerLink="/apps" (click)="navigateTo({ label: 'Solutions', url: '/apps' })"
+      <a
+        routerLink="/apps"
+        (click)="navigateTo({ label: 'Solutions', url: '/apps' })"
         class="inline-flex items-center text-sm font-normal text-secondary-300 hover:text-white cursor-pointer"
-        [class.text-white]="breadcrumbs.length == 0" [class.font-semibold]="breadcrumbs.length == 0">
+        [class.text-white]="breadcrumbs.length == 0"
+        [class.font-semibold]="breadcrumbs.length == 0"
+      >
         <ng-icon class="text-sm mr-1" name="heroHome"></ng-icon>
         Solutions
       </a>
@@ -19,11 +29,19 @@
     <li *ngFor="let breadcrumb of breadcrumbs; let last = last">
       <div class="flex items-center">
         <span class="text-secondary-300 text-xs">/</span>
-        <span (click)="navigateTo(breadcrumb)" (keydown.enter)="navigateTo(breadcrumb)"
-          (keydown.space)="navigateTo(breadcrumb); $event.preventDefault()" role="button" tabindex="0"
-          [class.text-white]="last" [class.font-semibold]="last" [class.cursor-pointer]="breadcrumb.url"
+        <span
+          (click)="navigateTo(breadcrumb)"
+          (keydown.enter)="navigateTo(breadcrumb)"
+          (keydown.space)="navigateTo(breadcrumb); $event.preventDefault()"
+          role="button"
+          tabindex="0"
+          [class.text-white]="last"
+          [class.font-semibold]="last"
+          [class.cursor-pointer]="breadcrumb.url"
           class="ml-1 text-sm text-secondary-300 hover:text-white md:ml-2 cursor-pointer"
-          [matTooltip]="breadcrumb.tooltipLabel || ''">{{ breadcrumb.label }}</span>
+          [matTooltip]="breadcrumb.tooltipLabel || ''"
+          >{{ breadcrumb.label }}</span
+        >
       </div>
     </li>
   </ol>
