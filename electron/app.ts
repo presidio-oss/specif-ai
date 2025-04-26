@@ -61,7 +61,7 @@ function createWindow(indexPath: string, themeConfiguration: any) {
     icon: path.join(__dirname, getIconPath(themeConfiguration)),
   });
 
-  if (app.isPackaged == false) {
+  if (!app.isPackaged) {
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL as string);
   } else {
     mainWindow
