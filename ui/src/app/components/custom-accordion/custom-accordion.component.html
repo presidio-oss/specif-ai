@@ -1,20 +1,20 @@
-<div class="accordion-section border border-secondary-200 rounded-lg">
+<div class="accordion-section border-[0.03125rem] border-secondary-300 rounded-lg">
   <h3>
     <button type="button"
-      [ngClass]="['w-full px-4 py-3 flex gap-1 items-start justify-between text-left hover:bg-secondary-50 bg-secondary-50 transition-colors', isOpen ? 'rounded-t-lg': 'rounded-lg']"
+      [ngClass]="['w-full p-4 flex gap-1 items-start justify-between text-left bg-secondary-50/50 transition-colors', isOpen ? 'rounded-t-lg': 'rounded-lg']"
       [attr.aria-expanded]="isOpen"
       [attr.aria-controls]="'section-' + id"
       [id]="'accordion-' + id"
       (click)="toggle()">
       <ng-content select="[accordion-trigger]"></ng-content>
       <span class="transform transition-transform duration-200" [class.rotate-180]="isOpen">
-        <ng-icon name="heroChevronDown" class="h-5 w-5 text-secondary-500"></ng-icon>
+        <ng-icon name="heroChevronDown" class="h-5 w-5 text-secondary-500" strokeWidth="2"></ng-icon>
       </span>
     </button>
   </h3>
   <div [id]="'section-' + id" role="region" [attr.aria-labelledby]="'accordion-' + id"
     [ngClass]="isOpen ? 'block' : 'hidden'" class="overflow-hidden">
-    <div class="px-4 py-2">
+    <div class="px-4 py-2 bg-secondary-50/50">
       <ng-content select="[accordion-body]"></ng-content>
     </div>
   </div>

@@ -27,6 +27,8 @@ module.exports = {
         warning: {
           ...colors.amber,
         },
+        foreground: colors.slate["950"],
+        'muted-foreground': colors.slate["500"]
       },
       typography: ()=>({
         'secondary-edit': {

@@ -9,14 +9,17 @@
     <div class="px-4 py-5 edit-container-height">
       <form [formGroup]="solutionForm">
         <div class="flex flex-col gap-3">
-          <!-- App Information Section -->
-          <app-custom-accordion [id]="'app-info'" [isOpen]="true">
+          <!-- Basic Information Section -->
+          <app-custom-accordion [id]="'basic-info'" [isOpen]="true">
             <ng-container accordion-trigger>
-              <span class="text-sm font-medium text-secondary-900">App Information</span>
+              <div class="flex flex-col text-sm gap-0.5">
+                <span class="font-semibold text-foreground">Basic Information</span>
+                <span class="font-normal text-muted-foreground">Give little bit information about the app which you are planning to build.</span>
+              </div>
             </ng-container>
             <ng-container accordion-body>
               <div class="py-4 sm:px-2">
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-200">
+                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100">
                   <label class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5">Solution Name<span
                       class="text-danger-500 text-xs">
                       *</span></label>
@@ -26,7 +29,7 @@
                   <app-error-message [errorControl]="solutionForm.get('name')" />
                 </div>
 
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-200">
+                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100">
                   <label class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5">Solution
                     Description<span class="text-danger-500 text-xs">
                       *</span></label>
@@ -41,7 +44,7 @@
                   </div>
                 </div>
 
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-200">
+                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100">
                   <label class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5">Technical Details<span
                       class="text-danger-500 text-xs">
                       *</span></label>
@@ -78,10 +81,13 @@
             </ng-container>
           </app-custom-accordion>
 
-          <!-- Generation Preferences Section -->
-          <app-custom-accordion [id]="'gen-preferences'" *ngIf="showGenerationPreferencesTab()" [isOpen]="false">
+          <!-- Preferences Section -->
+          <app-custom-accordion [id]="'preferences'" *ngIf="showGenerationPreferencesTab()" [isOpen]="false">
             <ng-container accordion-trigger>
-              <span class="text-sm font-medium text-secondary-900">Generation Preferences</span>
+              <div class="flex flex-col text-sm gap-0.5">
+                <span class="font-semibold text-foreground">Preferences</span>
+                <span class="font-normal text-muted-foreground">Take the time to carefully adjust and refine the settings of your project.</span>
+              </div>
             </ng-container>
             <ng-container accordion-body>
               <div class="p-4">
@@ -103,7 +109,7 @@
                       </p>
                     </div>
                     <div class="mt-4" *ngIf="solutionForm.get('BRD')?.get('enabled')?.value">
-                      <div class="border rounded-lg p-4" formGroupName="BRD">
+                      <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="BRD">
                         <app-slider formControlName="maxCount"></app-slider>
                       </div>
                     </div>
@@ -128,7 +134,7 @@
                       </p>
                     </div>
                     <div class="mt-4" *ngIf="solutionForm.get('PRD')?.get('enabled')?.value">
-                      <div class="border rounded-lg p-4" formGroupName="PRD">
+                      <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="PRD">
                         <app-slider formControlName="maxCount"></app-slider>
                       </div>
                     </div>
@@ -153,7 +159,7 @@
                       </p>
                     </div>
                     <div class="mt-4" *ngIf="solutionForm.get('UIR')?.get('enabled')?.value">
-                      <div class="border rounded-lg p-4" formGroupName="UIR">
+                      <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="UIR">
                         <app-slider formControlName="maxCount"></app-slider>
                       </div>
                     </div>
@@ -179,7 +185,7 @@
                       </p>
                     </div>
                     <div class="mt-4" *ngIf="solutionForm.get('NFR')?.get('enabled')?.value">
-                      <div class="border rounded-lg p-4" formGroupName="NFR">
+                      <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="NFR">
                         <app-slider formControlName="maxCount"></app-slider>
                       </div>
                     </div>
@@ -192,7 +198,10 @@
           <!-- Integrations Section -->
           <app-custom-accordion [id]="'integrations'" [isOpen]="true">
             <ng-container accordion-trigger>
-              <span class="text-sm font-medium text-secondary-900">Integrations</span>
+              <div class="flex flex-col text-sm gap-0.5">
+                <span class="font-semibold text-foreground">Integrations</span>
+                <span class="font-normal text-muted-foreground">Add MCP Servers and other integrations to your project.</span>
+              </div>
             </ng-container>
             <ng-container accordion-body>
               <div class="p-4">
