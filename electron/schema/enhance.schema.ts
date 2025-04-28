@@ -91,8 +91,8 @@ export type IBusinessProcessEnhancePrompt = Omit<
   z.infer<typeof businessProcessEnhanceSchema>,
   "selectedBRDs" | "selectedPRDs"
 > & {
-  selectedBRDs?: string;
-  selectedPRDs?: string;
+  selectedBRDs?: string | number[];
+  selectedPRDs?: string | number[];
 };
 
 export type IBusinessProcessEnhance = z.infer<typeof businessProcessEnhanceSchema>;

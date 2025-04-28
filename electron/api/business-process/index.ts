@@ -16,7 +16,6 @@ import {
   DbDocumentType,
 } from "../../helper/constants";
 import { traceBuilder } from "../../utils/trace-builder";
-import { updateBusinessProcessPrompt } from "../../prompts/requirement/business-process/update";
 import { flowchartPrompt } from "../../prompts/visualization/flowchart";
 import {
   addBusinessProcessSchema,
@@ -29,7 +28,6 @@ import {
 import { withRetry } from "../../utils/retry";
 import {
   IBusinessProcessEnhance,
-  IBusinessProcessEnhancePrompt,
   llmEnhanceSchema,
 } from "../../schema/enhance.schema";
 
