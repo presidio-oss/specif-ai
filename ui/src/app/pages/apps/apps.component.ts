@@ -1,13 +1,13 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { ProjectsState } from '../../store/projects/projects.state';
-import { GetProjectListAction } from '../../store/projects/projects.actions';
-import { Router, RouterLink } from '@angular/router';
 import { AddBreadcrumbs } from '../../store/breadcrumb/breadcrumb.actions';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { TimeZonePipe } from '../../pipes/timezone-pipe';
 import { ElectronService } from '../../electron-bridge/electron.service';
+import { SolutionService } from '../../services/solution-service/solution-service.service';
+import { IProject } from '../../model/interfaces/projects.interface';
 
 @Component({
   selector: 'app-apps',
@@ -18,7 +18,6 @@ import { ElectronService } from '../../electron-bridge/electron.service';
     NgIf,
     ButtonComponent,
     RouterLink,
-    AsyncPipe,
     NgForOf,
     TimeZonePipe,
   ],
@@ -27,8 +26,9 @@ export class AppsComponent implements OnInit {
   store = inject(Store);
   route = inject(Router);
   electronService = inject(ElectronService);
+  solutionService = inject(SolutionService);
 
-  projectList$ = this.store.select(ProjectsState.getProjects);
+  solutions: IProject[] = [];
 
   async navigateToApp(data: any) {
     try {
@@ -56,8 +56,12 @@ export class AppsComponent implements OnInit {
     this.route.navigate(['/apps/create']);
   }
 
-  ngOnInit() {
-    this.store.dispatch(new AddBreadcrumbs([]));
-    this.store.dispatch(new GetProjectListAction());
+  async ngOnInit() {
+    try {
+      this.solutions = await this.solutionService.getSolutions();
+      this.store.dispatch(new AddBreadcrumbs([]));
+    } catch (error) {
+      console.error('Error loading solutions:', error);
+    }
   }
 }
