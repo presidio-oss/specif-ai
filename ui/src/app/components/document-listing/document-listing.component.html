@@ -10,6 +10,22 @@
         </h1>
         <app-badge [badgeText]="items.length"></app-badge>
       </div>
+      <div class="flex gap-2">
+        <app-button
+          buttonContent="Add"
+          icon="heroPlus"
+          theme="secondary"
+          size="sm"
+          rounded="lg"
+          (click)="navigateToAdd()"
+        />
+        <ng-container *ngIf="filteredDocumentList$ | async as documentList">
+          <app-export-dropdown
+            [disabled]="documentList.length === 0"
+            [options]="getExportOptions(documentList[0].folderName)"
+          ></app-export-dropdown>
+        </ng-container>
+      </div>
     </div>
     <app-search-input
       placeholder="Search..."
