@@ -24,6 +24,7 @@ import {
   document,
   documentLinks,
   businessProcess,
+  metadata,
   businessProcessDocuments
 } from "../schema/solution";
 import { documentTypeData } from "../seeds/document-type-data";
@@ -141,7 +142,7 @@ export class SolutionRepository {
 
   async getDocumentTypesWithCount() {
     console.log("Entered <SolutionRepository.getDocumentTypesWithCount>");
-    const documentCount = await this.db.select().from(documentCountByType).where(and(...this.defaultDocumentQueryFilters));
+    const documentCount = await this.db.select().from(documentCountByType);
     console.log("Exited <SolutionRepository.getDocumentTypesWithCount>");
     return documentCount;
   }
@@ -196,6 +197,13 @@ export class SolutionRepository {
     console.log("Entered <SolutionRepository.getDocumentLinksById>");
     const result = await this.db.select().from(documentLinks).where(eq(documentLinks.sourceDocumentId, sourceDocumentId));
     console.log("Exited <SolutionRepository.getDocumentLinksById>");
+    return result;
+  }
+
+  async getSolutionMetadata(solutionId: number) {
+    console.log("Entered <SolutionRepository.getSolutionMetadata>");
+    const result = this.db.select().from(metadata).where(eq(metadata.id, solutionId));
+    console.log("Exited <SolutionRepository.getSolutionMetadata>");
     return result;
   }
 

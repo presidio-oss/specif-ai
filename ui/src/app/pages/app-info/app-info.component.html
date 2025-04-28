@@ -187,17 +187,17 @@
             Solution Information
           </h1>
           <div class="h-[calc(100vh-275px)] overflow-auto">
-            <h1 class="text-xl capitalize">{{ appInfo.name }}</h1>
+            <h1 class="text-xl capitalize">{{ solutionMetadata[0].name }}</h1>
             <p class="text-secondary-700 pt-2 pb-3">
-              {{ appInfo.description }}
+              {{ solutionMetadata[0].description }}
             </p>
-            <div class="py-3 flex gap-3" *ngIf="appInfo.technicalDetails">
+            <div class="py-3 flex gap-3" *ngIf="solutionMetadata[0].technicalDetails">
               <div>
                 <ng-icon class="text-2xl" name="heroServerStack"></ng-icon>
               </div>
               <div>
                 <div class="text-secondary-500 text-xs">Technical Details</div>
-                <div>{{ appInfo.technicalDetails }}</div>
+                <div>{{ solutionMetadata[0].technicalDetails }}</div>
               </div>
             </div>
           </div>

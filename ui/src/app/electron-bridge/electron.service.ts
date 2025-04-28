@@ -8,6 +8,7 @@ import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
 import { BedrockValidationPayload, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import {
+  DocumentMetadata,
   ICreateSolutionRequest,
   IProject,
   ISolutionResponse,
@@ -45,6 +46,7 @@ import {
 } from '../model/interfaces/IUserStory';
 import { AutoUpdateModalComponent } from '../components/auto-update-modal/auto-update-modal.component';
 import { htmlToMarkdown } from '../utils/html.utils';
+import { DOCUMENT_CHANNELS, SOLUTION_CHANNELS } from './channels.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -521,5 +523,32 @@ export class ElectronService {
       });
     }
     throw new Error('Electron is not available');
+  }
+
+  async getDocumentByCount(request: { solutionId: number }) {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: DOCUMENT_CHANNELS.GET_DOCUMENT_BY_COUNT,
+        args: [request]
+      });
+    }
+  }
+
+  async getAllDocuments(request: { solutionId: number }) {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: DOCUMENT_CHANNELS.GET_ALL_DOCUMENTS,
+        args: [request]
+      });
+    }
+  }
+
+  async getSolutionMetadata(request: { solutionId: number }) {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: SOLUTION_CHANNELS.GET_SOLUTION_METADATA,
+        args: [request]
+      });
+    }
   }
 }

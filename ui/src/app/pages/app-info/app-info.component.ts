@@ -125,8 +125,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   chatSettings$: Observable<ChatSettings> = this.store.select(
     ChatSettingsState.getConfig,
   );
-  // Predefined order of folders
-  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
+  // Predefined order of folders (lowercase to match documentTypeId)
+  folderOrder = ['brd', 'prd', 'nfr', 'uir', 'bp'];
   isBedrockConfigPresent: boolean = false;
 
   constructor(
@@ -173,46 +173,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
     });
 
-    this.electronService
-      .getSolutionByName(this.appName, this.folderOrder)
-      .then((response: AppInfoResponse) => {
-        console.log('Solution response:', response);
-        this.documentMetadata = response.documentMetadata.sort((a, b) => {
-          return (
-            this.folderOrder.indexOf(a.typeName) -
-            this.folderOrder.indexOf(b.typeName)
-          );
-        });
-        this.documents = response.documents;
-        this.integrations = response.integrations;
-        this.solutionMetadata = response.solutionMetadata;
-      });
-    this.store
-      .select(ProjectsState.getProjects)
-      .pipe(first())
-      .subscribe((projects) => {
-        const project = projects.find((p) => p.metadata.id === this.projectId);
-
-        if (project) {
-          this.appInfo = project.metadata;
-          this.appName = project.project;
-
-          this.store.dispatch(new GetProjectFiles(this.projectId as string));
-
-          this.store.dispatch(
-            new AddBreadcrumbs([
-              {
-                label: this.appName.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
-                  letter.toUpperCase(),
-                ),
-                url: `/apps/${this.appInfo.id}`,
-              },
-            ]),
-          );
-        } else {
-          console.error('Project not found with id:', this.projectId);
-        }
-      });
+    // TODO: Get integrations as well
+    // TODO: Fix breadcrumbs
+    this.getSolutionDetails(this.appInfo.id);
 
     this.directories$
       .pipe(
@@ -454,6 +417,33 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.isBedrockConnected = false;
         this.toast.showSuccess(APP_INTEGRATIONS.BEDROCK.DISCONNECT);
       });
+  }
+
+  getSolutionDetails(solutionId: number) {
+    this.electronService.getDocumentByCount({ solutionId: this.appInfo?.id }).then(documentCount => { 
+      // Filter out unwanted document types (user stories and tasks)
+      // Use DocumentTypeMappingEnum values for allowed types
+      const allowedTypes = Object.values(DocumentTypeMappingEnum);
+      
+      // Filter and sort the document metadata
+      this.documentMetadata = documentCount
+        .filter((metadata: DocumentMetadata) => 
+          allowedTypes.includes(metadata.documentTypeId as DocumentTypeMappingEnum)
+        )
+        .sort((a: DocumentMetadata, b: DocumentMetadata) => 
+          this.folderOrder.indexOf(a.documentTypeId) - this.folderOrder.indexOf(b.documentTypeId)
+        );
+      
+      console.log("Document count (filtered and sorted):", this.documentMetadata) 
+    })
+    this.electronService.getAllDocuments({ solutionId: this.appInfo?.id }).then(getAllDocuments => {
+      this.documents = getAllDocuments;
+      console.log("All documents:", getAllDocuments);
+    });
+    this.electronService.getSolutionMetadata({ solutionId: this.appInfo?.id }).then(solutionMetadata => { 
+      this.solutionMetadata = solutionMetadata;
+      console.log("Solution metadata:", solutionMetadata);
+    })
   }
 
   selectTab(title: string): void {

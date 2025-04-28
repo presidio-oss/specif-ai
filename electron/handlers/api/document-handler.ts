@@ -1,5 +1,5 @@
 import { DocumentController } from "../../api/document";
-import { DOCUMENT_CHANNELS } from "../../constants/channels.constants";
+import { DOCUMENT_CHANNELS, SOLUTION_CHANNELS } from "../../constants/channels.constants";
 import { ipcMain } from "electron";
 
 export function setupDocumentHandlers() {
@@ -84,4 +84,15 @@ export function setupDocumentHandlers() {
       throw error;
     }
   });
+
+  ipcMain.handle(SOLUTION_CHANNELS.GET_SOLUTION_METADATA, async (_event, data: any) => {
+    try {
+      const result = await DocumentController.getSolutionMetadata(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling solution:getSolutionMetadata:', error.message);
+      throw error;
+    }
+  });
+
 }

@@ -499,4 +499,20 @@ export class DocumentController {
     console.log("Exited <DocumentController.enhance>");
     return result;
   }
+
+  static async getSolutionMetadata(_: IpcMainInvokeEvent, data: any) {
+    const parsedData = solutionIdSchema.safeParse(data);
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
+
+    const { solutionId } = parsedData.data;
+    const solutionRepository = await solutionFactory.getRepository(solutionId);
+    const solutionMetadata = await solutionRepository.getSolutionMetadata(solutionId);
+    console.log("Solution Metadata", solutionMetadata);
+    return solutionMetadata;
+  }
 }
