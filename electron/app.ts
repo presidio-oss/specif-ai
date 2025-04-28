@@ -63,14 +63,19 @@ function createWindow(indexPath: string, themeConfiguration: any) {
     icon: path.join(__dirname, getIconPath(themeConfiguration)),
   });
 
-  mainWindow
-    .loadFile(`${indexPath}/index.html`)
-    .then(() => {
-      console.debug("Welcome Page loaded successfully", indexPath);
-    })
-    .catch((error) => {
-      console.error("Failed to load welcome page:", error);
-    });
+  if (!app.isPackaged) {
+    mainWindow.loadURL(process.env.DEV_ELECTRON_RENDERER_URL as string);
+  } else {
+    mainWindow
+      .loadFile(`${indexPath}/index.html`)
+      .then(() => {
+        console.debug("Welcome Page loaded successfully", indexPath);
+      })
+      .catch((error) => {
+        console.error("Failed to load welcome page:", error);
+      });
+  }
+
 
   mainWindow.on("closed", () => {
     mainWindow = null;

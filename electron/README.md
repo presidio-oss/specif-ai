@@ -38,21 +38,15 @@ npm install
      ```bash
      npm install
      ```
-   - Then, navigate back to the `electron` directory and build the Angular application to prepare it for integration with Electron. This will copy the build files to the `electron/ui` directory:
+   - Start the UI (renderer) development server using the command below:
      ```bash
-     npm run build:ui
-     ```
-   - To automatically rebuild and reflect changes in the Electron application when making changes to `ui/`, run:
-     ```bash
-     npm run watch:ui
+     npm run start
      ```
 
 3. **Start the Application**: Once the Angular UI is compiled and the build files are copied to the Electron directory, build and launch the Electron application:
    ```bash
    npm run start
    ```
-
-> **Note**: Ensure the Angular UI build (step 2) is completed before starting step 3.
 
 ## 🏗️ Building
 

@@ -89,6 +89,8 @@ export class BusinessProcessComponent implements OnInit {
   folderName: string = '';
   fileName: string = '';
   name: string = '';
+  originalSelectedPRDs: any[] = [];
+  originalSelectedBRDs: any[] = [];
   description: string = '';
   content: string = '';
   title: string = '';
@@ -347,6 +349,9 @@ export class BusinessProcessComponent implements OnInit {
         selectedBRDs: formValue.selectedBRDs,
         selectedPRDs: formValue.selectedPRDs,
       });
+      // Update original values after successful save
+      this.originalSelectedPRDs = [...(formValue.selectedPRDs || [])];
+      this.originalSelectedBRDs = [...(formValue.selectedBRDs || [])];
       this.businessProcessForm.markAsUntouched();
       this.businessProcessForm.markAsPristine();
       return;
@@ -386,6 +391,9 @@ export class BusinessProcessComponent implements OnInit {
         selectedBRDs: selectedBRDsWithId,
         selectedPRDs: selectedPRDsWithId,
       });
+      // Update original values after successful save with AI
+      this.originalSelectedPRDs = [...selectedPRDsWithId];
+      this.originalSelectedBRDs = [...selectedBRDsWithId];
       this.businessProcessForm.markAsUntouched();
       this.businessProcessForm.markAsPristine();
     })
@@ -415,6 +423,9 @@ export class BusinessProcessComponent implements OnInit {
         this.oldContent = res.requirement;
         this.selectedPRDs = res.selectedPRDs;
         this.selectedBRDs = res.selectedBRDs;
+        // Store original selections
+        this.originalSelectedPRDs = [...(res.selectedPRDs || [])];
+        this.originalSelectedBRDs = [...(res.selectedBRDs || [])];
         this.businessProcessForm.patchValue({
           title: res.title,
           content: res.requirement,
@@ -652,14 +663,34 @@ export class BusinessProcessComponent implements OnInit {
     return truncateMarkdown(requirement, {maxChars: 180});
   }
 
-  canDeactivate(): boolean {
-    const hasSelectedRequirements =
-      this.selectedPRDs.length > 0 || this.selectedBRDs.length > 0;
-
-    return (
-      !this.allowForceRedirect &&
-      ((this.businessProcessForm.dirty && this.businessProcessForm.touched) ||
-        hasSelectedRequirements)
+  private areSelectionsEqual(original: any[], current: any[]): boolean {
+    if (original.length !== current.length) return false;
+    
+    // Create a Map to store current items for O(1) lookup
+    const currentMap = new Map(
+      current.map(item => [
+        `${item.requirement}-${item.fileName}`, 
+        item
+      ])
     );
+    
+    // Single pass through original array with O(1) lookups
+    return original.every(orig => 
+      currentMap.has(`${orig.requirement}-${orig.fileName}`)
+    );
+  }
+
+  canDeactivate(): boolean {
+    // Check form changes
+    const hasFormChanges = this.businessProcessForm.dirty && this.businessProcessForm.touched;
+    
+    // Compare original vs current PRD selections
+    const hasPRDChanges = !this.areSelectionsEqual(this.originalSelectedPRDs, this.selectedPRDs);
+    
+    // Compare original vs current BRD selections
+    const hasBRDChanges = !this.areSelectionsEqual(this.originalSelectedBRDs, this.selectedBRDs);
+
+    // Return true to allow navigation only if there are no changes or force redirect is allowed
+    return !this.allowForceRedirect && (hasFormChanges || hasPRDChanges || hasBRDChanges);
   }
 }

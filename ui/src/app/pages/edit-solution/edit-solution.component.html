@@ -190,7 +190,7 @@
     </div>
 
     <!-- for non prd requirements -->
-    <div *ngIf="!isPRD()" class="flex flex-col bg-white border border-secondary-200 rounded-lg h-full lg:col-span-1">
+    <div *ngIf="mode === 'edit' && !isPRD()" class="flex flex-col bg-white border border-secondary-200 rounded-lg h-full lg:col-span-1">
       <div class="space-y-4 doc-section-height h-full grow">
         <app-chat class="h-full block" chatType="requirement" [name]="name" [description]="description" [fileName]="fileName"
           [chatHistory]="chatHistory" [baseContent]="requirementForm.getRawValue().content"
