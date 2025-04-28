@@ -11,7 +11,6 @@ We're excited you're interested in contributing to Specifai! This document outli
    cd https://github.com/presidio-oss/specif-ai
    ```
 3. To set up and run the application locally, follow the guides provided for:
-   - Backend: [Backend setup guide](./backend/README.md)
    - Electron: [Electron setup guide](./electron/README.md)
    
 ## Making Changes
@@ -22,7 +21,6 @@ We're excited you're interested in contributing to Specifai! This document outli
    ```
 2. Make your changes in the codebase:
    - UI Changes: Make your UI code file changes in the `ui/` and `electron/` folders respectively.
-   - Backend Changes: Make backend changes in `backend/` folder.
 3. Write or update tests as necessary.
 4. Format your code.
 5. Run linting checks.
