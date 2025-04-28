@@ -102,6 +102,7 @@ export class LoginComponent implements OnInit {
       );
       localStorage.setItem(APP_CONSTANTS.USER_NAME, username as string);
       localStorage.setItem(APP_CONSTANTS.USER_ID, userId as string);
+      await this.electronService.setRootDirectory();
 
       this.startupService.setIsLoggedIn(true);
       this.routerService
