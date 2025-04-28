@@ -23,7 +23,7 @@ const routes: Routes = [
   {
     path: 'apps/create',
     component: CreateSolutionComponent,
-        canActivate: [UserGuard],
+    canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
     data: {
       breadcrumb: {
@@ -116,7 +116,6 @@ const routes: Routes = [
     data: {
       breadcrumb: {
         name: 'Settings',
-        link: '/apps',
         icon: 'settings',
       },
     },

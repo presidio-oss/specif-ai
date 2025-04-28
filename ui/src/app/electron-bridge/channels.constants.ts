@@ -11,6 +11,7 @@ export const DOCUMENT_CHANNELS = {
 
 export const SOLUTION_CHANNELS = {
     GET_SOLUTION_METADATA: 'solution:getSolutionMetadata',
+    GET_SOLUTION_INTEGRATIONS: 'solution:getSolutionIntegrations',
 }
 
 export const BUSINESS_PROCESS_CHANNELS = {

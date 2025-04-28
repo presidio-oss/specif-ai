@@ -7,6 +7,7 @@ import { IBreadcrumb } from '../../../model/interfaces/projects.interface';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroArrowLeft, heroHome } from '@ng-icons/heroicons/outline';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-breadcrumbs',
@@ -23,44 +24,29 @@ import { heroArrowLeft, heroHome } from '@ng-icons/heroicons/outline';
   ],
   viewProviders: [provideIcons({ heroArrowLeft, heroHome })],
 })
+// TODO: Validate updated breadcrumb component thoroughly in all flows
 export class BreadcrumbsComponent implements OnInit {
-  pageHistory: IBreadcrumb[] = [];
-
   store = inject(Store);
   router = inject(Router);
+  location = inject(Location);
+
   breadcrumbs$ = this.store.select(BreadcrumbState.getBreadcrumbs);
+
+  pageHistory: IBreadcrumb[] = [];
 
   ngOnInit() {
     this.breadcrumbs$.subscribe((pages) => {
-      this.pageHistory = [{ label: 'Apps', url: '/apps', state: {} }, ...pages];
+      this.pageHistory = [{ label: 'Apps', url: '/apps' }, ...pages];
     });
   }
 
   navigateTo(breadcrumb: IBreadcrumb) {
     if (breadcrumb.url) {
-      this.router
-        .navigate(
-          [breadcrumb.url],
-          breadcrumb.state
-            ? {
-                state: breadcrumb.state,
-              }
-            : undefined,
-        )
-        .then();
+      this.router.navigate([breadcrumb.url]);
     }
   }
 
   navigateToPreviousPage() {
-    if (this.pageHistory.length > 1) {
-      const previousPage = this.pageHistory[this.pageHistory.length - 2];
-      if (previousPage.url) {
-        this.router.navigate([previousPage.url], {
-          state: previousPage.state || {},
-        });
-      }
-    } else {
-      console.log('No previous page to navigate to.');
-    }
+    this.location.back();
   }
 }

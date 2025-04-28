@@ -36,16 +36,7 @@ export class AppsComponent implements OnInit {
       await this.electronService.activateSolution(data.name);
       
       // Proceed with navigation
-      await this.route.navigate([`apps/${data.id}`], {
-        state: {
-          data,
-          breadcrumb: {
-            name: data.name,
-            link: '/',
-            icon: '',
-          },
-        },
-      });
+      await this.route.navigate([`apps/${data.id}`]);
     } catch (error) {
       console.error('Error activating solution:', error);
       throw error;

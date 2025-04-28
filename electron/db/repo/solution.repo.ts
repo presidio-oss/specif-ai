@@ -25,6 +25,7 @@ import {
   documentLinks,
   businessProcess,
   metadata,
+  integration,
   businessProcessDocuments
 } from "../schema/solution";
 import { documentTypeData } from "../seeds/document-type-data";
@@ -200,10 +201,17 @@ export class SolutionRepository {
     return result;
   }
 
-  async getSolutionMetadata(solutionId: number) {
+  async getSolutionMetadata() {
     console.log("Entered <SolutionRepository.getSolutionMetadata>");
-    const result = this.db.select().from(metadata).where(eq(metadata.id, solutionId));
+    const result = this.db.select().from(metadata);
     console.log("Exited <SolutionRepository.getSolutionMetadata>");
+    return result;
+  }
+
+  async getSolutionIntegrations() {
+    console.log("Entered <SolutionRepository.getSolutionIntegrations>");
+    const result = this.db.select().from(integration);
+    console.log("Exited <SolutionRepository.getSolutionIntegrations>");
     return result;
   }
 

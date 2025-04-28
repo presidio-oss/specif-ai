@@ -551,4 +551,13 @@ export class ElectronService {
       });
     }
   }
+
+  async getSolutionIntegrations(request: { solutionId: number }) {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: SOLUTION_CHANNELS.GET_SOLUTION_INTEGRATIONS,
+        args: [request]
+      });
+    }
+  }
 }

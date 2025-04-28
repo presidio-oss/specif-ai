@@ -105,11 +105,12 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   directories$ = this.store.select(ProjectsState.getProjectsFolders);
   documentMetadata: DocumentMetadata[] = [];
   documents: Document[] = [];
-  integrations: any[] = [];
+  integration: any = {};
   solutionMetadata: SolutionMetadata[] = [];
   selectedTab: any = { title: 'solution', id: '' };
   content = new FormControl<string>('');
   appInfo: any = {};
+  // FIXME: Remove projectId and check wherever affected
   projectId = this.route.snapshot.paramMap.get('id');
   destroy$: Subject<boolean> = new Subject<boolean>();
   navigationState: any;
@@ -128,6 +129,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   // Predefined order of folders (lowercase to match documentTypeId)
   folderOrder = ['brd', 'prd', 'nfr', 'uir', 'bp'];
   isBedrockConfigPresent: boolean = false;
+  solutionId = Number(this.route.snapshot.paramMap.get('id'));
 
   constructor(
     private route: ActivatedRoute,
@@ -139,9 +141,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private logger: NGXLogger,
   ) {
     const navigation = this.router.getCurrentNavigation();
+    // get id from url params
     this.appInfo = navigation?.extras?.state?.['data'];
     this.navigationState = navigation?.extras?.state;
-    this.appName = this.appInfo?.name;
   }
 
   @HostListener('window:focus')
@@ -166,7 +168,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
       this.isBedrockConfigPresent =
@@ -175,24 +177,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
     // TODO: Get integrations as well
     // TODO: Fix breadcrumbs
-    this.getSolutionDetails(this.appInfo.id);
-
-    this.directories$
-      .pipe(
-        first((directories) => directories && directories.length > 0),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((directories) => {
-        if (this.navigationState && this.navigationState['selectedFolder']) {
-          this.selectedTab = this.navigationState['selectedFolder'];
-        }
-        // Sort directories based on predefined order
-        directories.sort((a, b) => {
-          return (
-            this.folderOrder.indexOf(a.name) - this.folderOrder.indexOf(b.name)
-          );
-        });
-      });
+    this.solutionId = Number(this.route.snapshot.paramMap.get('id'));
+    console.log("Current solution id", this.solutionId)
+    await this.getSolutionDetails(this.solutionId);
 
     // Initialize Mermaid configuration
     mermaid.initialize({
@@ -206,41 +193,41 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     // Initialize forms
     this.bedrockForm = new FormGroup({
       kbId: new FormControl(
-        this.appInfo.integration?.bedrock?.kbId || '',
+        this.integration?.bedrock?.kbId || '',
         Validators.required,
       ),
       accessKey: new FormControl(
-        this.appInfo.integration?.bedrock?.accessKey || '',
+        this.integration?.bedrock?.accessKey || '',
         Validators.required,
       ),
       secretKey: new FormControl(
-        this.appInfo.integration?.bedrock?.secretKey || '',
+        this.integration?.bedrock?.secretKey || '',
         Validators.required,
       ),
       region: new FormControl(
-        this.appInfo.integration?.bedrock?.region || '',
+        this.integration?.bedrock?.region || '',
         Validators.required,
       ),
       sessionKey: new FormControl(
-        this.appInfo.integration?.bedrock?.sessionKey || '',
+        this.integration?.bedrock?.sessionKey || '',
       ),
     });
 
     this.jiraForm = new FormGroup({
       jiraProjectKey: new FormControl(
-        this.appInfo.integration?.jira?.jiraProjectKey || '',
+        this.integration?.jira?.jiraProjectKey || '',
         Validators.required,
       ),
       clientId: new FormControl(
-        this.appInfo.integration?.jira?.clientId || '',
+        this.integration?.jira?.clientId || '',
         Validators.required,
       ),
       clientSecret: new FormControl(
-        this.appInfo.integration?.jira?.clientSecret || '',
+        this.integration?.jira?.clientSecret || '',
         Validators.required,
       ),
       redirectUrl: new FormControl(
-        this.appInfo.integration?.jira?.redirectUrl || '',
+        this.integration?.jira?.redirectUrl || '',
         Validators.required,
       ),
     });
@@ -265,14 +252,14 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       const tokenInfo = getJiraTokenInfo(this.projectId as string);
       return (
         tokenInfo.projectKey ===
-          this.appInfo.integration?.jira?.jiraProjectKey &&
+          this.integration?.jira?.jiraProjectKey &&
         !!tokenInfo.token &&
         this.isTokenValid()
       );
     })();
 
     this.handleIntegrationNavState();
-    this.isBedrockConnected = !!this.appInfo.integration?.bedrock?.kbId;
+    this.isBedrockConnected = !!this.integration?.bedrock?.kbId;
     this.isJiraConnected && this.jiraForm.disable();
     this.isBedrockConnected && this.bedrockForm.disable();
   }
@@ -317,7 +304,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     const updatedMetadata = {
       ...this.appInfo,
       integration: {
-        ...this.appInfo.integration,
+        ...this.integration,
         jira: { jiraProjectKey, clientId, clientSecret, redirectUrl },
       },
     };
@@ -361,7 +348,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           const updatedMetadata = {
             ...this.appInfo,
             integration: {
-              ...this.appInfo.integration,
+              ...this.integration,
               bedrock: bedrockConfig,
             },
           };
@@ -395,7 +382,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   disconnectBedrock(): void {
     const updatedMetadata = {
       ...this.appInfo,
-      integration: { ...this.appInfo.integration, bedrock: '' },
+      integration: { ...this.integration, bedrock: '' },
     };
 
     this.store.dispatch(
@@ -419,33 +406,46 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       });
   }
 
-  getSolutionDetails(solutionId: number) {
-    this.electronService.getDocumentByCount({ solutionId: this.appInfo?.id }).then(documentCount => { 
-      // Filter out unwanted document types (user stories and tasks)
-      // Use DocumentTypeMappingEnum values for allowed types
+  async getSolutionDetails(solutionId: number) {
+    try {
+      const [
+        documentCount,
+        getAllDocuments,
+        solutionMetadata,
+        integrations
+      ] = await Promise.all([
+        this.electronService.getDocumentByCount({ solutionId }),
+        this.electronService.getAllDocuments({ solutionId }),
+        this.electronService.getSolutionMetadata({ solutionId }),
+        this.electronService.getSolutionIntegrations({ solutionId })
+      ]);
+  
+      // Handle document metadata
       const allowedTypes = Object.values(DocumentTypeMappingEnum);
-      
-      // Filter and sort the document metadata
       this.documentMetadata = documentCount
-        .filter((metadata: DocumentMetadata) => 
+        .filter((metadata: DocumentMetadata) =>
           allowedTypes.includes(metadata.documentTypeId as DocumentTypeMappingEnum)
         )
-        .sort((a: DocumentMetadata, b: DocumentMetadata) => 
+        .sort((a: DocumentMetadata, b: DocumentMetadata) =>
           this.folderOrder.indexOf(a.documentTypeId) - this.folderOrder.indexOf(b.documentTypeId)
         );
-      
-      console.log("Document count (filtered and sorted):", this.documentMetadata) 
-    })
-    this.electronService.getAllDocuments({ solutionId: this.appInfo?.id }).then(getAllDocuments => {
+  
+      // Assign other responses
       this.documents = getAllDocuments;
-      console.log("All documents:", getAllDocuments);
-    });
-    this.electronService.getSolutionMetadata({ solutionId: this.appInfo?.id }).then(solutionMetadata => { 
       this.solutionMetadata = solutionMetadata;
-      console.log("Solution metadata:", solutionMetadata);
-    })
+      this.integration = integrations && integrations[0] ? integrations[0] : {};
+  
+      // Handle breadcrumbs
+      if (solutionMetadata && solutionMetadata.length > 0) {
+        this.appName = solutionMetadata[0].name;
+        this.store.dispatch(new AddBreadcrumbs([{ label: this.appName, url: '' }]));
+      }
+    } catch (error) {
+      console.error('Error loading solution details:', error);
+      // Optional: Show user error message
+    }
   }
-
+  
   selectTab(title: string): void {
     this.selectedTab = {
       title: title,
@@ -547,10 +547,11 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   handleIntegrationNavState(): void {
-    if (this.navigationState && this.navigationState['openAppIntegrations']) {
-      // this.selectTab({ name: 'app-integrations', children: [] });
-      this.toggleAccordion('jira');
-    }
+    // FIXME: add integration navigation independent of navigation state
+    // if (this.navigationState && this.navigationState['openAppIntegrations']) {
+    //   this.selectTab({ name: 'app-integrations', children: [] });
+    //   this.toggleAccordion('jira');
+    // }
   }
 
   getIconName(key: string): string {
@@ -570,10 +571,10 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       }, { emitEvent: false });
     } else {
       this.bedrockForm.patchValue({
-        accessKey: this.appInfo.integration?.bedrock?.accessKey || '',
-        secretKey: this.appInfo.integration?.bedrock?.secretKey || '',
-        region: this.appInfo.integration?.bedrock?.region || '',
-        sessionKey: this.appInfo.integration?.bedrock?.sessionKey || ''
+        accessKey: this.integration?.bedrock?.accessKey || '',
+        secretKey: this.integration?.bedrock?.secretKey || '',
+        region: this.integration?.bedrock?.region || '',
+        sessionKey: this.integration?.bedrock?.sessionKey || ''
       }, { emitEvent: false });
     }
   }
