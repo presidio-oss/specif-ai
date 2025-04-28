@@ -62,7 +62,7 @@ function createWindow(indexPath: string, themeConfiguration: any) {
   });
 
   if (!app.isPackaged) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL as string);
+    mainWindow.loadURL(process.env.DEV_ELECTRON_RENDERER_URL as string);
   } else {
     mainWindow
       .loadFile(`${indexPath}/index.html`)
