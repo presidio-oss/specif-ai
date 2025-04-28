@@ -6,7 +6,7 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { updateBusinessProcessPrompt } from '../../../prompts/requirement/business-process/update';
 import { repairJSON } from '../../../utils/custom-json-parser';
-import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { COMPONENT, OPERATIONS, DbDocumentType, PromptMode } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
 
 export async function updateBusinessProcess(event: IpcMainInvokeEvent, data: any): Promise<UpdateBusinessProcessResponse> {
@@ -20,12 +20,12 @@ export async function updateBusinessProcess(event: IpcMainInvokeEvent, data: any
     const validatedData = updateBusinessProcessSchema.parse(data);
 
     const {
-      name,
-      description,
-      updatedReqt,
-      reqDesc,
-      selectedBRDs = [],
-      selectedPRDs = []
+      name = "Sample Business Process",
+      description = "Sample business process description",
+      updatedReqt = "Sample updated requirement text",
+      reqDesc = "Sample existing requirement description",
+      selectedBRDs = [1, 2],
+      selectedPRDs = [1, 2]
     } = validatedData;
 
     if (!validatedData.useGenAI) {
@@ -39,13 +39,19 @@ export async function updateBusinessProcess(event: IpcMainInvokeEvent, data: any
     }
 
     // Generate prompt
+    // TODO: These are currently having placeholders to avoid build errors - since we'll be deprecating this api layer
     const prompt = updateBusinessProcessPrompt({
-      name,
-      description,
-      existingReqt: reqDesc,
-      updatedReqt: updatedReqt || '',
-      BRDS: selectedBRDs.join('\n'),
-      PRDS: selectedPRDs.join('\n')
+      solutionId: 1,
+      solutionName: name,
+      solutionDescription: description ,
+      selectedBRDs: selectedBRDs.map(String).join('\n'),
+      selectedPRDs: selectedPRDs.map(String).join('\n'),
+      documentData: {
+        description: updatedReqt,
+        documentTypeId: DbDocumentType.BP
+      },
+      mode: PromptMode.UPDATE,
+      newBpDescription: reqDesc,
     });
 
     // Prepare messages for LLM

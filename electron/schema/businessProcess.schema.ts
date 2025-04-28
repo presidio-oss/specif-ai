@@ -9,10 +9,12 @@ export enum DocumentType {
 
 export type DocumentTypeValue = `${DocumentType}`;
 
-const documentsArraySchema = {
+export const documentsArraySchema = z.object({
   selectedBRDs: z.array(z.number()).default([]),
   selectedPRDs: z.array(z.number()).default([]),
-};
+});
+
+export type DocumentsArray = z.infer<typeof documentsArraySchema>;
 
 const baseBPSchema = z.object({
   contentType: z.string(),
@@ -20,7 +22,7 @@ const baseBPSchema = z.object({
   title: z.string().optional(),
   name: z.string(),
   description: z.string(),
-  ...documentsArraySchema,
+  ...documentsArraySchema.shape,
 });
 
 export const addBusinessProcessSchema = solutionIdSchema.extend({
@@ -39,29 +41,5 @@ export const updateBusinessProcessSchema = businessProcessIdSchema.extend({
 export const flowchartSchema = businessProcessIdSchema.extend({
   title: z.string(),
   description: z.string(),
-  ...documentsArraySchema,
+  ...documentsArraySchema.shape,
 });
-
-const operationType = z.enum([OPERATIONS.ADD, OPERATIONS.UPDATE]);
-export type OperationType = z.infer<typeof operationType>;
-
-export const enhanceBusinessProcessSchema = solutionIdSchema.extend({
-  type: operationType,
-  name: z.string(),
-  description: z.string(),
-  reqt: z.string().optional(),
-  reqDesc: z.string().optional(),
-  updatedReqt: z.string().optional(),
-  ...documentsArraySchema,
-});
-
-export interface BusinessProcessPromptData {
-  name: string;
-  description: string;
-  reqt: string;
-  reqDesc: string;
-  updatedReqt: string;
-  selectedBRDs: number[];
-  selectedPRDs: number[];
-  solutionId: number;
-}

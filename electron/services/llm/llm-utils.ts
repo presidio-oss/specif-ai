@@ -6,6 +6,7 @@ import {
   IRequirementEnhance,
   IStoryEnhance,
   ITaskEnhance,
+  IBusinessProcessEnhancePrompt,
 } from "../../schema/enhance.schema";
 import {
   addRequirementPrompt,
@@ -15,6 +16,8 @@ import {
   updateTaskPrompt,
   updateStoryPrompt,
 } from "../../prompts";
+import { updateBusinessProcessPrompt } from "../../prompts/requirement/business-process/update";
+import { addBusinessProcessPrompt } from "../../prompts/requirement/business-process/add";
 
 interface ChatMessage {
   role: string;
@@ -193,6 +196,11 @@ export class LLMUtils {
         return mode === PromptMode.UPDATE
           ? updateTaskPrompt(promptParams as ITaskEnhance)
           : addTaskPrompt(promptParams as ITaskEnhance);
+
+      case DbDocumentType.BP:
+        return mode === PromptMode.UPDATE
+          ? updateBusinessProcessPrompt(promptParams as IBusinessProcessEnhancePrompt)
+          : addBusinessProcessPrompt(promptParams as IBusinessProcessEnhancePrompt);
 
       default:
         console.warn(

@@ -8,9 +8,13 @@ import {
 import { LLMUtils } from "../../services/llm/llm-utils";
 import { buildLLMHandler } from "../../services/llm";
 import { store } from "../../services/store";
-import { addBusinessProcessPrompt } from "../../prompts/requirement/business-process/add";
 import { repairJSON } from "../../utils/custom-json-parser";
-import { OPERATIONS, COMPONENT } from "../../helper/constants";
+import {
+  OPERATIONS,
+  COMPONENT,
+  PromptMode,
+  DbDocumentType,
+} from "../../helper/constants";
 import { traceBuilder } from "../../utils/trace-builder";
 import { updateBusinessProcessPrompt } from "../../prompts/requirement/business-process/update";
 import { flowchartPrompt } from "../../prompts/visualization/flowchart";
@@ -18,12 +22,16 @@ import {
   addBusinessProcessSchema,
   updateBusinessProcessSchema,
   flowchartSchema,
-  enhanceBusinessProcessSchema,
   DocumentType,
   DocumentTypeValue,
-  BusinessProcessPromptData,
-  OperationType,
+  DocumentsArray,
 } from "../../schema/businessProcess.schema";
+import { withRetry } from "../../utils/retry";
+import {
+  IBusinessProcessEnhance,
+  IBusinessProcessEnhancePrompt,
+  llmEnhanceSchema,
+} from "../../schema/enhance.schema";
 
 export class BusinessProcessController {
   static async getBusinessProcessCount(_: IpcMainInvokeEvent, data: any) {
@@ -174,69 +182,76 @@ export class BusinessProcessController {
     }
   }
 
+  @withRetry()
   static async enhance(_: IpcMainInvokeEvent, data: any) {
     console.log("Entered <BusinessProcessController.enhance>");
-    try {
-      const llmConfig = store.getLLMConfig();
-      if (!llmConfig) {
-        throw new Error("LLM configuration not found");
-      }
+    const llmConfig = store.getLLMConfig();
+    if (!llmConfig) {
+      throw new Error("LLM configuration not found");
+    }
 
-      console.log("[enhance-business-process] Using LLM config:", llmConfig);
-      const validatedData = enhanceBusinessProcessSchema.parse(data);
+    let parsedData = llmEnhanceSchema.safeParse(data);
+    if (!parsedData.success) {
+      console.error(
+        `Error occurred while validating incoming data, Error: ${parsedData.error}`
+      );
+      throw new Error("Schema validation failed");
+    }
 
-      const {
-        type,
-        name,
-        description,
-        reqt = "",
-        reqDesc = "",
-        updatedReqt = "",
-        selectedBRDs = [],
-        selectedPRDs = [],
-        solutionId,
-      } = validatedData;
+    const { documentData, mode, solutionId, selectedBRDs, selectedPRDs } =
+      parsedData.data as IBusinessProcessEnhance;
 
-      const prompt = await this.generatePrompt(type, {
-        name,
-        description,
-        reqt,
-        reqDesc,
-        updatedReqt,
+    const { brdsText, prdsText } = await this.fetchDocumentDescriptions(
+      {
         selectedBRDs,
         selectedPRDs,
-        solutionId,
-      });
+      },
+      solutionId
+    );
 
-      // Prepare messages for LLM
-      const messages = await LLMUtils.prepareMessages(prompt);
+    const promptData = {
+      ...parsedData.data,
+      selectedBRDs: brdsText,
+      selectedPRDs: prdsText,
+    };
 
-      const handler = buildLLMHandler(
-        llmConfig.activeProvider,
-        llmConfig.providerConfigs[llmConfig.activeProvider].config
-      );
+    const prompt = await LLMUtils.getDocumentEnhancerPrompt(
+      documentData.documentTypeId as DbDocumentType,
+      mode as PromptMode,
+      promptData
+    );
 
-      const traceName = traceBuilder(
-        COMPONENT.BP,
-        type === OPERATIONS.ADD ? OPERATIONS.ADD : OPERATIONS.UPDATE
-      );
-      const response = await handler.invoke(messages, null, traceName);
-      console.log("[enhance-business-process] LLM Response:", response);
+    const messages = await LLMUtils.prepareMessages(prompt);
+    const handler = buildLLMHandler(
+      llmConfig.activeProvider,
+      llmConfig.providerConfigs[llmConfig.activeProvider].config
+    );
 
-      // Parse LLM response
-      const cleanedResponse = repairJSON(response);
-      const llmResponse = JSON.parse(cleanedResponse);
-
-      console.log("Exited <BusinessProcessController.enhance>");
-
-      return {
-        data:
-          type === OPERATIONS.ADD ? llmResponse.LLMreqt : llmResponse.updated,
-      };
-    } catch (error) {
-      console.error("Error in enhance:", error);
-      throw error;
+    if (!documentData.documentTypeId) {
+      throw new Error("documentTypeId is required for tracing");
     }
+
+    const traceName = traceBuilder(
+      documentData.documentTypeId,
+      OPERATIONS.UPDATE
+    );
+
+    const response = await handler.invoke(messages, null, traceName);
+
+    let result;
+    try {
+      const cleanedResponse = repairJSON(response);
+      result = JSON.parse(cleanedResponse);
+    } catch (error) {
+      console.error(
+        "[enhance-business-process] Error parsing LLM response:",
+        error
+      );
+      throw new Error("Failed to parse LLM response as JSON");
+    }
+
+    console.log("Exited <BusinessProcessController.enhance>");
+    return result;
   }
 
   static async addBusinessProcess(_: IpcMainInvokeEvent, data: any) {
@@ -373,61 +388,57 @@ export class BusinessProcessController {
   }
 
   /**
-   * Generates the appropriate prompt based on operation type
+   * Fetches document descriptions for BRDs and PRDs based on the provided data.
+   *
+   * @param {DocumentsArray} data - Contains the selected BRD and PRD IDs
+   * @param {number} solutionId - The ID of the solution to fetch documents from
+   * @returns {Promise<{brdsText: string; prdsText: string}>} - Object containing BRD and PRD document descriptions
    */
-  private static async generatePrompt(
-    type: OperationType,
-    data: BusinessProcessPromptData
-  ): Promise<string> {
-    const {
-      name,
-      description,
-      reqt,
-      reqDesc,
-      updatedReqt,
-      selectedBRDs,
-      selectedPRDs,
-      solutionId,
-    } = data;
+  private static async fetchDocumentDescriptions(
+    data: DocumentsArray,
+    solutionId: number
+  ): Promise<{ brdsText: string; prdsText: string }> {
+    const { selectedBRDs, selectedPRDs } = data;
 
-    const solutionRepository = await solutionFactory.getRepository(solutionId);
-
-    const fetchDocumentDescriptions = async (
-      ids: number[]
-    ): Promise<string> => {
-      const docs = await Promise.all(
-        ids.map((id) => solutionRepository.getDocument(id))
+    try {
+      const solutionRepository = await solutionFactory.getRepository(
+        solutionId
       );
 
-      return docs
-        .filter((doc) => Boolean(doc?.description))
-        .map((doc) => doc?.description)
-        .join("\n");
-    };
+      /**
+       * Fetches and processes documents by their IDs
+       * @param {number[]} documentIds - Array of document IDs to fetch
+       * @returns {Promise<string>} - Concatenated document descriptions
+       */
+      async function getDescriptions(documentIds: number[]): Promise<string> {
+        if (!documentIds?.length) return "";
 
-    const brdsText = await fetchDocumentDescriptions(selectedBRDs);
-    const prdsText = await fetchDocumentDescriptions(selectedPRDs);
+        const documents = await Promise.all(
+          documentIds.map((id) => solutionRepository.getDocument(id))
+        );
 
-    switch (type) {
-      case OPERATIONS.ADD:
-        return addBusinessProcessPrompt({
-          name,
-          description,
-          newReqt: reqt,
-          BRDS: brdsText,
-          PRDS: prdsText,
-        });
-      case OPERATIONS.UPDATE:
-        return updateBusinessProcessPrompt({
-          name,
-          description,
-          existingReqt: reqDesc,
-          updatedReqt,
-          BRDS: brdsText,
-          PRDS: prdsText,
-        });
-      default:
-        throw new Error(`Invalid operation type: ${type}`);
+        return documents
+          .filter((doc) => doc?.description)
+          .map((doc) => doc!.description!)
+          .join("\n");
+      }
+
+      const [brdsText, prdsText] = await Promise.all([
+        getDescriptions(selectedBRDs),
+        getDescriptions(selectedPRDs),
+      ]);
+
+      return { brdsText, prdsText };
+    } catch (error) {
+      console.error(
+        `Error fetching document descriptions for solution ${solutionId}:`,
+        error
+      );
+      throw new Error(
+        `Failed to fetch document descriptions: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
     }
   }
 }

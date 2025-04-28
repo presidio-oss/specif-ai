@@ -6,7 +6,7 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { addBusinessProcessPrompt } from '../../../prompts/requirement/business-process/add';
 import { repairJSON } from '../../../utils/custom-json-parser';
-import { OPERATIONS, COMPONENT } from '../../../helper/constants';
+import { OPERATIONS, COMPONENT, DbDocumentType, PromptMode } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
 
 export async function addBusinessProcess(event: IpcMainInvokeEvent, data: any): Promise<AddBusinessProcessResponse> {
@@ -20,11 +20,11 @@ export async function addBusinessProcess(event: IpcMainInvokeEvent, data: any): 
     const validatedData = addBusinessProcessSchema.parse(data);
 
     const {
-      name,
-      description,
-      reqt,
-      selectedBRDs = [],
-      selectedPRDs = []
+      name = "Sample Business Process",
+      description = "Sample business process description",
+      reqt = "Sample requirement text",
+      selectedBRDs = [1, 2], 
+      selectedPRDs = [1, 2]  
     } = validatedData;
 
     if (!validatedData.useGenAI) {
@@ -38,12 +38,18 @@ export async function addBusinessProcess(event: IpcMainInvokeEvent, data: any): 
     }
 
     // Generate prompt
+    // TODO: These are currently having placeholders to avoid build errors - since we'll be deprecating this api layer
     const prompt = addBusinessProcessPrompt({
-      name,
-      description,
-      newReqt: reqt || '',
-      BRDS: selectedBRDs.join('\n'),
-      PRDS: selectedPRDs.join('\n')
+      solutionId: 1, 
+      solutionName: name,
+      solutionDescription: description,
+      selectedBRDs: selectedBRDs.map(String).join('\n'),
+      selectedPRDs: selectedPRDs.map(String).join('\n'),
+      documentData: {
+        description: reqt,
+        documentTypeId: DbDocumentType.BP
+      },
+      mode: PromptMode.ADD
     });
 
     // Prepare messages for LLM

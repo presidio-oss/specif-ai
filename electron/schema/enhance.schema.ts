@@ -1,5 +1,7 @@
 import { DbDocumentType, PromptMode } from "../helper/constants";
 import { z } from "zod";
+import { documentsArraySchema } from "./businessProcess.schema";
+import { solutionIdSchema } from "./solution.schema";
 
 const DbDocumentTypeSchema = z.nativeEnum(DbDocumentType);
 const PromptModeSchema = z.nativeEnum(PromptMode);
@@ -75,7 +77,38 @@ export const taskEnhanceSchema = documentEnhanceBaseSchema.extend({
 export type ITaskEnhance = z.infer<typeof taskEnhanceSchema>;
 
 /**
+ * Business Process document enhancement
+ * @property {string} solutionId - ID of the associated solution
+ * @property {string} [newBpDescription] - Optional updated Bp description
+ */
+export const businessProcessEnhanceSchema = documentEnhanceBaseSchema.extend({
+  newBpDescription: z.string().optional(),
+  solutionId: solutionIdSchema.shape.solutionId,
+  ...documentsArraySchema.shape,
+});
+
+export type IBusinessProcessEnhancePrompt = Omit<
+  z.infer<typeof businessProcessEnhanceSchema>,
+  "selectedBRDs" | "selectedPRDs"
+> & {
+  selectedBRDs?: string;
+  selectedPRDs?: string;
+};
+
+export type IBusinessProcessEnhance = z.infer<typeof businessProcessEnhanceSchema>;
+
+
+/**
  * Union type for all document enhancement types
  */
-export const llmEnhanceSchema = z.union([requirementEnhanceSchema, storyEnhanceSchema, taskEnhanceSchema]);
-export type ILLMEnhance = IRequirementEnhance | IStoryEnhance | ITaskEnhance;
+export const llmEnhanceSchema = z.union([
+  requirementEnhanceSchema,
+  storyEnhanceSchema,
+  taskEnhanceSchema,
+  businessProcessEnhanceSchema,
+]);
+export type ILLMEnhance =
+  | IRequirementEnhance
+  | IStoryEnhance
+  | ITaskEnhance
+  | IBusinessProcessEnhancePrompt;

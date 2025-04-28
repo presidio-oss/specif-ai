@@ -1,3 +1,5 @@
+import { IBusinessProcessEnhancePrompt } from "../../../schema/enhance.schema";
+
 interface UpdateBusinessProcessPromptParams {
   name: string;
   description: string;
@@ -7,21 +9,24 @@ interface UpdateBusinessProcessPromptParams {
   PRDS: string;
 }
 
-export function updateBusinessProcessPrompt({
-  name,
-  description,
-  existingReqt,
-  updatedReqt,
-  BRDS,
-  PRDS
-}: UpdateBusinessProcessPromptParams): string {
+export function updateBusinessProcessPrompt(
+  promptParams: IBusinessProcessEnhancePrompt
+): string {
+  const {
+    solutionName,
+    solutionDescription,
+    newBpDescription,
+    selectedBRDs,
+    selectedPRDs,
+    documentData: { description: bpDescription },
+  } = promptParams;
   return `You are an expert in creating detailed and efficient Business Process Flows from the provided app description. Below is the description of the app:
 
 App Name:
-${name}
+${solutionName}
 
 App Description:
-${description}
+${solutionDescription}
 
 Business Process should clearly articulate the sequence of actions, decision points, and outcomes necessary to achieve the business objectives.
 1. Identify Key Stakeholders
@@ -32,16 +37,16 @@ Business Process should clearly articulate the sequence of actions, decision poi
 6. Roles and Responsibilities
 
 Here is the existing requirement:
-${existingReqt}
+${bpDescription}
 
 Client Request:
-${updatedReqt}
+${newBpDescription}
 
 Business Requirements:
-${BRDS}
+${selectedBRDs}
 
 Product Requirements:
-${PRDS}
+${selectedPRDs}
 
 Update the existing Business Process Flow that effectively addresses both the client's requests and the information from the provided Business and Product Requirements. 
 final_business_process_flow must be a single paragraph, not a list or json format.
