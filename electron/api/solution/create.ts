@@ -118,6 +118,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     };
 
     if (!validatedData.createReqt) {
+      await saveSolutionRequirementsInDb(validatedData);
       return results;
     }
     
@@ -203,7 +204,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
 async function saveSolutionRequirementsInDb(
   validatedData: CreateSolutionRequest,
-  generatedRequirements: any
+  generatedRequirements?: any
 ): Promise<void> {
   // Check whether there are any existing solution with the same name
   const masterRepository = await masterFactory.getRepository();
@@ -252,6 +253,11 @@ async function saveSolutionRequirementsInDb(
       // create document types
       await solutionRepo.createDocumentType();
 
+      if (!generatedRequirements) {
+        console.log("No generated requirements provided. Skipping requirement creation.");
+        return; 
+      }
+      
       // Create all the requirements from generatedRequirements
       const requirementTypes = [
         REQUIREMENT_TYPE.PRD,
