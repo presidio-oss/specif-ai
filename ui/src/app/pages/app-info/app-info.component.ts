@@ -141,7 +141,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private logger: NGXLogger,
   ) {
     const navigation = this.router.getCurrentNavigation();
-    // get id from url params
+    // TODO: Remove appInfo variable after completing integrations
     this.appInfo = navigation?.extras?.state?.['data'];
     this.navigationState = navigation?.extras?.state;
   }
@@ -512,23 +512,10 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     });
   }
 
-  navigateToAdd(folderName: string) {
-    this.router
-      .navigate(['/add'], {
-        state: {
-          data: this.appInfo,
-          id: this.projectId,
-          folderName: folderName,
-          breadcrumb: {
-            name: 'Add Document',
-            link: this.router.url,
-            icon: 'add',
-          },
-        },
-      })
-      .then();
+  navigateToAdd(documentTypeId: string) {
+    this.router.navigate(['/add', documentTypeId, this.solutionId]).then();
   }
-
+  
   navigateToBPFlow(item: any) {
     this.router.navigate(['/bp-flow/view', item.id], {
       state: {

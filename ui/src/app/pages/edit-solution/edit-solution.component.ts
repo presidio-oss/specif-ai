@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { Store } from '@ngxs/store';
 import {
@@ -89,7 +89,7 @@ import { PillComponent } from '../../components/pill/pill.component';
     }),
   ],
 })
-export class EditSolutionComponent {
+export class EditSolutionComponent implements OnInit, OnDestroy {
   projectId: string = '';
   folderName: string = '';
   fileName: string = '';
@@ -121,10 +121,13 @@ export class EditSolutionComponent {
   originalDocumentList$: Observable<IList[]> = this.store.select(
     ProjectsState.getSelectedFileContents,
   );
+  solutionId!: number;
+  documentTypeId!: string;
 
   constructor(
     private store: Store,
     private router: Router,
+    private route: ActivatedRoute,
     private featureService: FeatureService,
     private dialogService: DialogService,
     private toastService: ToasterService,
@@ -161,44 +164,54 @@ export class EditSolutionComponent {
       this.name = this.initialData?.name;
       this.description = this.initialData?.description;
     }
-    this.subscribeToDocuments();
+    // this.subscribeToDocuments();
     this.createRequirementForm();
   }
-
-  subscribeToDocuments() {
-    let requirementTypeToRead: string;
-
-    const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[this.folderName];
-
-    switch (requirementType) {
-      case REQUIREMENT_TYPE.PRD: {
-        requirementTypeToRead = REQUIREMENT_TYPE.BRD;
-        break;
-      }
-      case REQUIREMENT_TYPE.BRD: {
-        requirementTypeToRead = REQUIREMENT_TYPE.PRD;
-        break;
-      }
-      default: {
-        // need not subscribe to documents list for other types
-        return;
-      }
-    }
-
-    this.store.dispatch(new BulkReadFiles(requirementTypeToRead));
-    this.originalDocumentList$.subscribe((documents) => {
-      const folderName = documents[0].folderName;
-
-      if (
-        folderName ===
-        (REQUIREMENT_TYPE_FOLDER_MAP as Record<string, string>)[
-          requirementTypeToRead
-        ]
-      ) {
-        this.documentList = documents;
-      }
-    });
+  ngOnDestroy(): void {
+    // TODO: check if anything could be destroyed
+    console.log('destroy');
   }
+
+  ngOnInit() {
+    this.solutionId = Number(this.route.snapshot.paramMap.get('solutionId'));
+    this.documentTypeId = this.route.snapshot.paramMap.get('documentTypeId')!;  
+    console.log("Solution ID and Doc Type Id from params", this.solutionId, this.documentTypeId);
+  }
+
+  // subscribeToDocuments() {
+  //   let requirementTypeToRead: string;
+
+  //   const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[this.folderName];
+
+  //   switch (requirementType) {
+  //     case REQUIREMENT_TYPE.PRD: {
+  //       requirementTypeToRead = REQUIREMENT_TYPE.BRD;
+  //       break;
+  //     }
+  //     case REQUIREMENT_TYPE.BRD: {
+  //       requirementTypeToRead = REQUIREMENT_TYPE.PRD;
+  //       break;
+  //     }
+  //     default: {
+  //       // need not subscribe to documents list for other types
+  //       return;
+  //     }
+  //   }
+
+  //   this.store.dispatch(new BulkReadFiles(requirementTypeToRead));
+  //   this.originalDocumentList$.subscribe((documents) => {
+  //     const folderName = documents[0].folderName;
+
+  //     if (
+  //       folderName ===
+  //       (REQUIREMENT_TYPE_FOLDER_MAP as Record<string, string>)[
+  //         requirementTypeToRead
+  //       ]
+  //     ) {
+  //       this.documentList = documents;
+  //     }
+  //   });
+  // }
 
   private getUserConfirmation(dialogConfig: {
     title: string;

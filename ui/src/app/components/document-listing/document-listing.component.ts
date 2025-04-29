@@ -54,6 +54,7 @@ import { Store } from '@ngxs/store';
 export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
   @Input() documents: Document[] = [];
   @Input() selectedType: string = '';
+  @Input() solutionId!: number;
 
   documentTypes = DocumentTypeMappingEnum;
   @ViewChild(SearchInputComponent) searchInput!: SearchInputComponent;
@@ -84,7 +85,6 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngOnInit() {
-    // ensure initial build
     this.buildList();
   }
 
@@ -109,13 +109,6 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   private buildList() {
-    // debug: inspect inputs
-    console.debug('DocumentListing buildList', {
-      selectedType: this.selectedType,
-      totalDocs: this.documents.length,
-    });
-
-    // 1) filter by matching type (case-insensitive) and non-deleted
     const docsOfType = this.documents.filter(
       d =>
         d.documentTypeId?.toLowerCase() === this.selectedType?.toLowerCase() &&
@@ -124,7 +117,6 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
 
     console.debug(`Found ${docsOfType.length} docs for type`, this.selectedType);
 
-    // 2) map to IList + formattedRequirement
     const items = docsOfType.map(d => {
       const base: IList = {
         fileName: String(d.id),
@@ -145,7 +137,6 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       };
     });
 
-    // 3) plug into search pipe. initial term is '', so all items should show
     this.filteredDocumentList$ = this.searchService.filterItems(
       of(items),
       this.searchTerm$,
@@ -186,13 +177,14 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   navigateToAdd() {
+    console.log("Navigate to Add clicked")
     if (this.selectedType === DocumentTypeMappingEnum.BP) {
       this.router.navigate(['/bp-add'], {
         state: { folderName: this.selectedType },
       });
     }
     else {
-      this.router.navigate(['/add'], {
+      this.router.navigate(['/add', this.selectedType, this.solutionId], {
         state: { folderName: this.selectedType },
       });
     }

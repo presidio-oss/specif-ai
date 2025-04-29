@@ -86,7 +86,7 @@ const routes: Routes = [
     canDeactivate: [CanDeactivateGuard],
   },
   {
-    path: 'add',
+    path: 'add/:documentTypeId/:solutionId',
     component: EditSolutionComponent,
     canActivate: [UserGuard],
     canDeactivate: [CanDeactivateGuard],
