@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { solutionIdSchema, businessProcessIdSchema } from "./solution.schema";
-import { OPERATIONS } from "../helper/constants";
 
 export enum DocumentType {
   BRD = "BRD",
@@ -17,9 +16,6 @@ export const documentsArraySchema = z.object({
 export type DocumentsArray = z.infer<typeof documentsArraySchema>;
 
 const baseBPSchema = z.object({
-  contentType: z.string(),
-  id: z.string(),
-  title: z.string().optional(),
   name: z.string(),
   description: z.string(),
   ...documentsArraySchema.shape,
@@ -27,15 +23,10 @@ const baseBPSchema = z.object({
 
 export const addBusinessProcessSchema = solutionIdSchema.extend({
   ...baseBPSchema.shape,
-  reqt: z.string().optional(),
-  addReqtType: z.string(),
 });
 
 export const updateBusinessProcessSchema = businessProcessIdSchema.extend({
   ...baseBPSchema.shape,
-  updatedReqt: z.string().optional(),
-  reqId: z.string(),
-  reqDesc: z.string(),
 });
 
 export const flowchartSchema = businessProcessIdSchema.extend({

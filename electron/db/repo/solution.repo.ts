@@ -1,4 +1,4 @@
-import { inArray, eq, or, like, and } from "drizzle-orm";
+import { inArray, eq, or, like, and, count } from "drizzle-orm";
 import * as solutionSchema from "../schema/solution";
 import { SolutionDB } from "../solution.factory";
 import {
@@ -29,6 +29,7 @@ import {
   businessProcessDocuments
 } from "../schema/solution";
 import { documentTypeData } from "../seeds/document-type-data";
+import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 
 export class SolutionRepository {
   constructor(private db: SolutionDB) {
@@ -144,8 +145,18 @@ export class SolutionRepository {
   async getDocumentTypesWithCount() {
     console.log("Entered <SolutionRepository.getDocumentTypesWithCount>");
     const documentCount = await this.db.select().from(documentCountByType);
+
+    const bpCount = await this.getBusinessProcessCount();
+    
+    // Update BP count in the array
+    const result = documentCount.map(entry =>
+      entry.documentTypeId === REQUIREMENT_TYPE.BP.toLowerCase()
+        ? { ...entry, count: bpCount }
+        : entry
+    );
+
     console.log("Exited <SolutionRepository.getDocumentTypesWithCount>");
-    return documentCount;
+    return result;
   }
 
   async getDocument(documentId: number) {
@@ -283,12 +294,12 @@ export class SolutionRepository {
   // Below are the functions related to Business Process table
   async getBusinessProcessCount() {
     console.log("Entered <SolutionRepository.getBusinessProcessCount>");
-    const count = await this.db
-      .select({ count: businessProcess.id })
+    const result = await this.db
+      .select({ count: count(businessProcess.id) })
       .from(businessProcess)
       .where(and(...this.defaultBusinessProcessQueryFilters));
     console.log("Exited <SolutionRepository.getBusinessProcessCount>");
-    return count[0]?.count || 0;
+    return result[0]?.count || 0;
   }
 
   async getAllBusinessProcesses(searchQuery?: string) {
