@@ -91,7 +91,7 @@ import { PillComponent } from '../../components/pill/pill.component';
 })
 export class EditSolutionComponent implements OnInit, OnDestroy {
   projectId: string = '';
-  folderName: string = '';
+  documentTypeId: string = '';
   fileName: string = '';
   name: string = '';
   description: string = '';
@@ -122,7 +122,6 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
     ProjectsState.getSelectedFileContents,
   );
   solutionId!: number;
-  documentTypeId!: string;
 
   constructor(
     private store: Store,
@@ -136,21 +135,12 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
     this.mode = url.includes('/add') ? 'add' : 'edit';
     const navigation = this.router.getCurrentNavigation();
     this.projectId = navigation?.extras?.state?.['id'];
-    this.folderName = navigation?.extras?.state?.['folderName'];
     this.initialData = navigation?.extras?.state?.['data'];
     this.selectedRequirement = navigation?.extras?.state?.['req'];
     this.store.dispatch(
       new AddBreadcrumb({
         url: `/apps/${this.projectId}`,
-        label: this.folderName,
-        state: {
-          data: this.initialData,
-          selectedFolder: {
-            title: this.folderName,
-            id: this.projectId,
-            metadata: this.initialData,
-          },
-        },
+        label: this.documentTypeId,
       }),
     );
     this.store.dispatch(
@@ -160,7 +150,7 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
     );
     if (this.mode === 'edit') {
       this.fileName = navigation?.extras?.state?.['fileName'];
-      this.absoluteFilePath = `${this.folderName}/${this.fileName}`;
+      this.absoluteFilePath = `${this.documentTypeId}/${this.fileName}`;
       this.name = this.initialData?.name;
       this.description = this.initialData?.description;
     }
@@ -286,7 +276,7 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
 
     const body: IUpdateRequirementRequest = {
       updatedReqt: formValue.title,
-      addReqtType: this.folderName,
+      addReqtType: this.documentTypeId,
       fileContent: this.uploadedFileContent,
       contentType: this.uploadedFileContent ? 'fileContent' : 'userContent',
       id: this.initialData.id,
@@ -324,7 +314,7 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
       }
       
       this.store.dispatch(
-        new ReadFile(`${this.folderName}/${this.fileName}`),
+        new ReadFile(`${this.documentTypeId}/${this.fileName}`),
       );
       
       this.selectedFileContent$.subscribe((res: any) => {
@@ -346,7 +336,7 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error updating requirement:', error);
       this.toastService.showError(
-        TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(this.folderName, body.reqId),
+        TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(this.documentTypeId, body.reqId),
       );
     }
   }
@@ -373,7 +363,7 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
       this.handlePRDBRDLinkUpdates(formValue);
     }
 
-    this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+    this.store.dispatch(new ReadFile(`${this.documentTypeId}/${this.fileName}`));
     this.selectedFileContent$.subscribe((res: any) => {
       this.oldContent = res.requirement;
       this.requirementForm.patchValue({
@@ -386,7 +376,7 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
     this.requirementForm.markAsPristine();
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
-        this.folderName,
+        this.documentTypeId,
         this.fileName.replace(/\-base.json$/, ''),
       ),
     );
@@ -439,7 +429,7 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
       state: {
         data,
         selectedFolder: {
-          title: this.folderName,
+          title: this.documentTypeId,
           id: this.projectId,
           metadata: data,
         },
@@ -451,7 +441,7 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
     const formValue = this.requirementForm.getRawValue();
     const body: IAddRequirementRequest = {
       reqt: formValue.content,
-      addReqtType: this.folderName,
+      addReqtType: this.documentTypeId,
       contentType: this.uploadedFileContent ? 'fileContent' : 'userContent',
       description: this.initialData.description,
       fileContent: this.uploadedFileContent,
@@ -480,17 +470,17 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
             fileData.linkedBRDIds = formValue.linkedBRDIds;
           }
 
-          this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
+          this.store.dispatch(new CreateFile(`${this.documentTypeId}`, fileData));
           this.allowForceRedirect = true;
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
-            TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
+            TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.documentTypeId),
           );
         },
         (error) => {
           console.error('Error updating requirement:', error); // Handle any errors
           this.toastService.showError(
-            TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.folderName),
+            TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.documentTypeId),
           );
         },
       );
@@ -505,11 +495,11 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
         fileData.linkedBRDIds = formValue.linkedBRDIds;
       }
 
-      this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
+      this.store.dispatch(new CreateFile(`${this.documentTypeId}`, fileData));
       this.allowForceRedirect = true;
       this.navigateBackToDocumentList(this.initialData);
       this.toastService.showSuccess(
-        TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
+        TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.documentTypeId),
       );
     }
 
@@ -525,19 +515,19 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
           fileData.linkedBRDIds = formValue.linkedBRDIds;
         }
 
-        this.store.dispatch(new CreateFile(`${this.folderName}`, fileData));
+        this.store.dispatch(new CreateFile(`${this.documentTypeId}`, fileData));
         this.requirementForm.markAsPristine();
         this.requirementForm.markAsUntouched();
 
         this.navigateBackToDocumentList(this.initialData);
         this.toastService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
+          TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.documentTypeId),
         );
       },
       (error) => {
         console.error('Error updating requirement:', error); // Handle any errors
         this.toastService.showError(
-          TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.folderName),
+          TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.documentTypeId),
         );
       },
     );
@@ -644,7 +634,7 @@ ${chat.assistant}`,
     this.requirementForm = new FormGroup(formFields);
 
     if (this.mode === 'edit') {
-      this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+      this.store.dispatch(new ReadFile(`${this.documentTypeId}/${this.fileName}`));
       this.selectedFileContent$.subscribe((res: any) => {
         this.oldContent = res.requirement;
         this.requirementForm.patchValue({
@@ -704,11 +694,11 @@ ${chat.assistant}`,
     }
 
     if (
-      this.folderName === RequirementTypeEnum.PRD ||
-      this.folderName === RequirementTypeEnum.BRD
+      this.documentTypeId === RequirementTypeEnum.PRD ||
+      this.documentTypeId === RequirementTypeEnum.BRD
     ) {
       this.store
-        .dispatch(new checkBPFileAssociations(this.folderName, this.fileName))
+        .dispatch(new checkBPFileAssociations(this.documentTypeId, this.fileName))
         .pipe(
           switchMap(() =>
             this.store
@@ -717,7 +707,7 @@ ${chat.assistant}`,
           ),
           catchError(() => {
             this.toastService.showError(
-              TOASTER_MESSAGES.ENTITY.DELETE.FAILURE(this.folderName, reqId),
+              TOASTER_MESSAGES.ENTITY.DELETE.FAILURE(this.documentTypeId, reqId),
             );
             return [];
           }),
@@ -755,7 +745,7 @@ ${chat.assistant}`,
           this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
           this.navigateBackToDocumentList(this.initialData);
           this.toastService.showSuccess(
-            TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(this.folderName, reqId),
+            TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(this.documentTypeId, reqId),
           );
         }
       });
@@ -809,11 +799,11 @@ ${chat.assistant}`,
   }
 
   isPRD = () => {
-    return this.folderName === FOLDER.PRD;
+    return this.documentTypeId === FOLDER.PRD;
   };
 
   isBRD = () => {
-    return this.folderName === FOLDER.BRD;
+    return this.documentTypeId === FOLDER.BRD;
   };
 
   private checkMappingChanges(): boolean {

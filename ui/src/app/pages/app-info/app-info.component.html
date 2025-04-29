@@ -75,10 +75,10 @@
                   selectedTab?.title !== metadata.typeName,
                 'cursor-pointer hover:bg-secondary-50': metadata.count > 0
               }"
-              (click)="metadata.count > 0 && selectTab(metadata.typeName)"
-              (keydown.enter)="metadata.count > 0 && selectTab(metadata.typeName)"
+              (click)="metadata.count > 0 && selectTab(metadata.documentTypeId)"
+              (keydown.enter)="metadata.count > 0 && selectTab(metadata.documentTypeId)"
               (keydown.space)="
-                metadata.count > 0 && selectTab(metadata.typeName); $event.preventDefault()
+                metadata.count > 0 && selectTab(metadata.documentTypeId); $event.preventDefault()
               "
               [attr.role]="metadata.count > 0 ? 'button' : null"
               [attr.tabindex]="metadata.count > 0 ? '0' : null"

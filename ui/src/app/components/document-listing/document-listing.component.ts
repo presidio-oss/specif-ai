@@ -12,7 +12,6 @@ import { Router } from '@angular/router';
 import { of, BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { SearchService } from '../../services/search/search.service';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
-import { IList } from '../../model/interfaces/IList';
 import { Document } from 'src/app/model/interfaces/projects.interface';
 import { DocumentTypeMappingEnum } from 'src/app/model/enum/requirement-type.enum';
 import { processPRDContentForView } from '../../utils/prd.utils';
@@ -30,6 +29,7 @@ import { NgIf, AsyncPipe, NgForOf, NgClass } from '@angular/common';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 import { ExportRequirementData } from 'src/app/store/projects/projects.actions';
 import { Store } from '@ngxs/store';
+import { BaseDocumentRequest } from 'src/app/interfaces/db.interface';
 
 @Component({
   selector: 'app-document-listing',
@@ -60,7 +60,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   @ViewChild(SearchInputComponent) searchInput!: SearchInputComponent;
   private scrollContainer: HTMLElement | null = null;
   private searchTerm$ = new BehaviorSubject<string>('');
-  filteredDocumentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
+  filteredDocumentList$!: Observable<(BaseDocumentRequest & { documentId: number; formattedRequirement?: string })[]>;
   private subs = new Subscription();
 
   // For Export Dropdown Options
@@ -111,38 +111,39 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   private buildList() {
     const docsOfType = this.documents.filter(
       d =>
-        d.documentTypeId?.toLowerCase() === this.selectedType?.toLowerCase() &&
+        d.documentTypeId?.toLowerCase() === this.selectedType &&
         !d.isDeleted
     );
-
+  
     console.debug(`Found ${docsOfType.length} docs for type`, this.selectedType);
-
-    const items = docsOfType.map(d => {
-      const base: IList = {
-        fileName: String(d.id),
-        folderName: d.documentTypeId,
-        content: {
-          requirement: d.description,
-          title: d.name,
-          epicTicketId: d.jiraId ?? undefined,
-        }
-      };
-      return {
-        ...base,
-        id: String(d.id),
-        formattedRequirement: this.formatRequirementForView(
-          base.content.requirement,
-          base.folderName
-        )
-      };
-    });
-
+  
+    const items = docsOfType.map(d => ({
+      documentId: d.id,
+      solutionId: this.solutionId,
+      documentData: {
+        name: d.name,
+        description: d.description,
+        jiraId: d.jiraId ?? undefined,
+        documentTypeId: d.documentTypeId,
+      },
+      formattedRequirement: this.formatRequirementForView(
+        d.description,
+        d.documentTypeId
+      )
+    }));
+  
     this.filteredDocumentList$ = this.searchService.filterItems(
       of(items),
       this.searchTerm$,
-      doc => [doc.fileName, doc.content.title, doc.content.epicTicketId ?? '']
+      doc => [
+        String(doc.documentId),
+        doc.documentData.name,
+        doc.documentData.jiraId ?? '',
+        doc.documentData.description
+      ]
     );
   }
+  
 
   private saveScrollPosition() {
     if (this.scrollContainer) {
@@ -184,9 +185,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       });
     }
     else {
-      this.router.navigate(['/add', this.selectedType, this.solutionId], {
-        state: { folderName: this.selectedType },
-      });
+      this.router.navigate(['/add', this.selectedType, this.solutionId]);
     }
   }
   
@@ -214,15 +213,12 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   private formatRequirementForView(
     requirement?: string,
     folderName?: string
-  ): string | null {
-    if (!requirement) return null;
+  ): string | undefined {
+    if (!requirement) return undefined;   
     if (folderName === DocumentTypeMappingEnum.PRD) {
       return processPRDContentForView(requirement, 150);
     }
-    return truncateMarkdown(requirement, {
-      maxChars: 180,
-      ellipsis: true,
-    });
+    return truncateMarkdown(requirement, { maxChars: 180, ellipsis: true });
   }
 
   exportDocumentList(folder: string, format: ExportFileFormat) {

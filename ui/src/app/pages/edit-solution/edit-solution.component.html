@@ -18,7 +18,7 @@
           {{
             mode === "edit"
               ? fileName.split("-")[0]
-              : getDescription(folderName)
+              : getDescription(documentTypeId)
           }}
         </h1>
         <div *ngIf="mode === 'edit'">

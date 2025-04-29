@@ -22,7 +22,7 @@
         <ng-container *ngIf="filteredDocumentList$ | async as documentList">
           <app-export-dropdown
             [disabled]="documentList.length === 0"
-            [options]="getExportOptions(documentList[0].folderName)"
+            [options]="getExportOptions(documentList[0].documentData.documentTypeId)"
           ></app-export-dropdown>
         </ng-container>
       </div>
@@ -52,16 +52,16 @@
             tabindex="0"
           >
             <a class="font-semibold text-secondary-500">
-              {{ item.folderName.toUpperCase() }}-{{ item.fileName }}
-              <span *ngIf="item.content.epicTicketId">
-                &bull; {{ item.content.epicTicketId }}
+              {{ item.documentData.documentTypeId.toUpperCase() }}-{{ item.documentId }}
+              <span *ngIf="item.documentData.jiraId">
+                &bull; {{ item.documentData.jiraId }}
               </span>
             </a>
             <div class="flex flex-col gap-1">
               <h1
                 class="doc-section__item-title text-base font-medium truncate pr-[80px]"
               >
-                {{ item.content.title }}
+                {{ item.documentData.name }}
               </h1>
               <app-rich-text-editor
                 *ngIf="item.formattedRequirement"
@@ -76,7 +76,7 @@
 
           <div class="absolute top-4 right-4 flex space-x-2">
             <app-button
-              *ngIf="item.folderName === documentTypes.PRD"
+              *ngIf="item.documentData.documentTypeId == documentTypes.PRD"
               (click)="navigateToUserStories(item)"
               buttonContent="Stories"
               theme="secondary_outline"
@@ -86,7 +86,7 @@
             </app-button>
 
             <div
-              *ngIf="item.folderName === documentTypes.BP"
+              *ngIf="item.documentData.documentTypeId === documentTypes.BP"
               (click)="navigateToBPFlow(item)"
               role="button"
               tabindex="0"
