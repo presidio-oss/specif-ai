@@ -160,7 +160,7 @@ export class SolutionRepository {
     return result;
   }
 
-  async updateDocument(documentData: Partial<IUpdateDocument>) {
+  async updateDocument(documentId: number, documentData: Partial<IUpdateDocument>) {
     console.log("Entered <SolutionRepository.updateDocument>");
     const parsedData = documentUpdateSchema.partial().safeParse(documentData);
     if (!parsedData.success) {
@@ -173,7 +173,7 @@ export class SolutionRepository {
     const response = await this.db
       .update(document)
       .set(parsedData.data)
-      .where(and(eq(document.id, documentData.id), ...this.defaultDocumentQueryFilters))
+      .where(and(eq(document.id, documentId), ...this.defaultDocumentQueryFilters))
       .returning();
     console.log("Exited <SolutionRepository.updateDocument>");
     return response && response.length ? response[0] : null;

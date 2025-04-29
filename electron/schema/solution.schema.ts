@@ -1,4 +1,3 @@
-import { DbDocumentType, PromptMode } from "../helper/constants";
 import { z } from "zod";
 
 export const solutionIdSchema = z.object({
@@ -13,14 +12,18 @@ export const searchQuerySchema = solutionIdSchema.extend({
     searchQuery: z.string().optional()
 });
 
-export const documentRequestSchema = solutionIdSchema.extend({
+export const baseDocumentRequestSchema = solutionIdSchema.extend({
     documentData: z.object({
         name: z.string(),
         description: z.string(),
         jiraId: z.string().optional(),
         documentTypeId: z.string().optional()
     }),
-    linkedDocumentIds: z.array(z.number()).default([])
+    linkedDocumentIds: z.array(z.number()).default([]), 
+});
+
+export const updateDocumentRequestSchema = baseDocumentRequestSchema.extend({
+    documentId: z.number(),
 });
 
 export const businessProcessIdSchema = solutionIdSchema.extend({

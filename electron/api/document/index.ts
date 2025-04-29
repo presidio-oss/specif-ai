@@ -1,8 +1,9 @@
 import { solutionFactory } from "../../db/solution.factory";
 import {
   documentIdSchema,
-  documentRequestSchema,
+  baseDocumentRequestSchema,
   solutionIdSchema,
+  updateDocumentRequestSchema,
 } from "../../schema/solution.schema";
 import { llmEnhanceSchema } from "../../schema/enhance.schema";
 import { IpcMainInvokeEvent } from "electron";
@@ -88,7 +89,7 @@ export class DocumentController {
 
   static async addDocument(_: IpcMainInvokeEvent, data: any) {
     console.log("Entered <DocumentController.addDocument>");
-    const parsedData = documentRequestSchema.safeParse(data);
+    const parsedData = baseDocumentRequestSchema.safeParse(data);
     if (!parsedData.success) {
       console.error(
         `Error occurred while validating incoming data, Error: ${parsedData.error}`
@@ -118,7 +119,7 @@ export class DocumentController {
 
   static async updateDocument(_: IpcMainInvokeEvent, data: any) {
     console.log("Entered <DocumentController.updateDocument>");
-    const parsedData = documentRequestSchema.safeParse(data);
+    const parsedData = updateDocumentRequestSchema.safeParse(data);
     if (!parsedData.success) {
       console.error(
         `Error occurred while validating incoming data, Error: ${parsedData.error}`
@@ -126,12 +127,12 @@ export class DocumentController {
       throw new Error("Schema validation failed");
     }
 
-    const { solutionId, documentData, linkedDocumentIds } = parsedData.data;
+    const { solutionId, documentData, linkedDocumentIds, documentId } = parsedData.data;
 
     await solutionFactory.runWithTransaction(
       solutionId,
       async (solutionRepository) => {
-        const updatedDocument = await solutionRepository.updateDocument(
+        const updatedDocument = await solutionRepository.updateDocument(documentId, 
           documentData
         );
 
