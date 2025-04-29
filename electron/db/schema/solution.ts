@@ -95,6 +95,7 @@ export const businessProcess = sqliteTable("businessProcess", {
   name: text({ mode: "text" }).notNull(),
   description: text({ mode: "text" }).notNull(),
   flowchart: text({ mode: "text" }),
+  documentTypeId: text().references(() => documentType.id),
   ...commonColumns,
 });
 

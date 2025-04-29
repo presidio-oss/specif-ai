@@ -30,6 +30,7 @@ import {
   IBusinessProcessEnhance,
   llmEnhanceSchema,
 } from "../../schema/enhance.schema";
+import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 
 export class BusinessProcessController {
   static async getBusinessProcessCount(_: IpcMainInvokeEvent, data: any) {
@@ -270,6 +271,7 @@ export class BusinessProcessController {
             await solutionRepository.createBusinessProcess({
               name,
               description,
+              documentTypeId: REQUIREMENT_TYPE.BP.toLowerCase(),
             });
           if (!businessProcess)
             throw new Error("Failed to create business process");

@@ -1,0 +1,1 @@
+ALTER TABLE `businessProcess` ADD `documentTypeId` text REFERENCES documentType(id);
