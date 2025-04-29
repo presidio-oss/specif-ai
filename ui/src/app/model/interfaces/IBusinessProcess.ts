@@ -86,3 +86,29 @@ export interface IUpdateProcessResponse {
   updatedReqt: string;
   useGenAI: boolean;
 }
+
+export interface IEnhanceBusinessProcessRequest {
+  documentData: {
+    name?: string;
+    description?: string;
+    documentTypeId: 'bp';
+  };
+  solutionName?: string;
+  solutionDescription?: string;
+  mode: 'add' | 'update';
+  newBpDescription?: string;
+  solutionId: number;
+  selectedBRDs: number[];
+  selectedPRDs: number[];
+}
+
+export interface IEnhanceBusinessProcessResponse {
+  updated?: {
+    title: string;
+    requirement: string;
+  };
+  LLMreqt?: {
+    title: string;
+    requirement: string;
+  };
+}

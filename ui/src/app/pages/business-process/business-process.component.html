@@ -73,11 +73,7 @@
             theme="secondary_outline"
             size="sm"
             rounded="lg"
-            (click)="
-              mode === 'add'
-                ? addBusinessProcess()
-                : updateBusinessProcess()
-            "
+            (click)="enhanceBusinessProcess()"
             [disabled]="checkFormValidity()"
           ></app-button>
           <app-button

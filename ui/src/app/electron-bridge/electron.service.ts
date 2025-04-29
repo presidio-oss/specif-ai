@@ -32,6 +32,8 @@ import {
   IUpdateProcessRequest,
   IGetBusinessProcessRequest,
   IGetBusinessProcessResponse,
+  IEnhanceBusinessProcessRequest,
+  IEnhanceBusinessProcessResponse,
 } from 'src/app/model/interfaces/IBusinessProcess';
 import {
   conversePayload,
@@ -189,6 +191,18 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: BUSINESS_PROCESS_CHANNELS.UPDATE_BUSINESS_PROCESS,
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async enhanceBusinessProcess(
+    request: IEnhanceBusinessProcessRequest
+  ): Promise<IEnhanceBusinessProcessResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: BUSINESS_PROCESS_CHANNELS.ENHANCE_BUSINESS_PROCESS,
         args: [request],
       });
     }

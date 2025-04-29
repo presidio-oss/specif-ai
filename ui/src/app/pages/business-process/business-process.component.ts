@@ -22,6 +22,8 @@ import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { Observable } from 'rxjs';
 import {
   IAddBusinessProcessRequest,
+  IEnhanceBusinessProcessRequest,
+  IEnhanceBusinessProcessResponse,
   IFlowChartRequest,
   IUpdateProcessRequest,
 } from '../../model/interfaces/IBusinessProcess';
@@ -193,6 +195,57 @@ export class BusinessProcessComponent implements OnInit {
       this.bpRequirementId = this.fileName.split('-')[0];
     }
     this.initializeBusinessProcessForm();
+  }
+
+  enhanceBusinessProcess() {
+    if (!this.businessProcessForm.valid) {
+      this.toastService.showError('Please fill in all required fields before enhancing');
+      return;
+    }
+
+    this.loadingService.setLoading(true);
+    const formValue = this.businessProcessForm.getRawValue();
+
+    const enhanceRequest: IEnhanceBusinessProcessRequest = {
+      documentData: {
+        documentTypeId: 'bp',
+        name: formValue.title,
+        description: this.oldContent
+      },
+      mode: this.mode === 'edit' ? 'update' : 'add',
+      solutionId: this.solutionId,
+      selectedBRDs: formValue.selectedBRDs,
+      selectedPRDs: formValue.selectedPRDs,
+      newBpDescription: formValue.content
+    };
+
+    this.electronService.enhanceBusinessProcess(enhanceRequest)
+      .then((response: IEnhanceBusinessProcessResponse) => {
+        const enhancedContent = this.mode === 'edit' 
+          ? response.updated?.requirement 
+          : response.LLMreqt?.requirement;
+        
+        const enhancedTitle = this.mode === 'edit'
+          ? response.updated?.title 
+          : response.LLMreqt?.title;
+          
+        if (enhancedContent) {
+          this.businessProcessForm.patchValue({
+            title: enhancedTitle,
+            content: enhancedContent
+          });
+          this.toastService.showSuccess('Business process enhanced successfully');
+        } else {
+          throw new Error('No enhanced content received from the service');
+        }
+      })
+      .catch((error) => {
+        this.loggerService.error('Error enhancing business process:', error);
+        this.toastService.showError(error.message || 'Failed to enhance business process');
+      })
+      .finally(() => {
+        this.loadingService.setLoading(false);
+      });
   }
 
 
