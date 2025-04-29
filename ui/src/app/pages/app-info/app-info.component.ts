@@ -426,11 +426,10 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   async getSolutionDetails(solutionId: number) {
-    // Show sidebar loading indicator
+    // For sidebar to show loader
     this.sidebarLoading = true;
     
     try {
-      // First, get all the data we need
       const [
         documentCount,
         getAllDocuments,
@@ -443,7 +442,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.electronService.getSolutionIntegrations({ solutionId })
       ]);
   
-      // Process the data
       const allowedTypes = Object.values(DocumentTypeMappingEnum);
       this.documentMetadata = documentCount
         .filter((metadata: DocumentMetadata) =>
@@ -453,22 +451,18 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           this.folderOrder.indexOf(a.documentTypeId) - this.folderOrder.indexOf(b.documentTypeId)
         );
   
-      // Assign other responses
       this.documents = getAllDocuments;
       this.solutionMetadata = solutionMetadata;
       this.integration = integrations && integrations[0] ? integrations[0] : {};
   
-      // Handle breadcrumbs
       if (solutionMetadata && solutionMetadata.length > 0) {
         this.appName = solutionMetadata[0].name;
-        // Wait for the breadcrumb dispatch to complete
         await this.store.dispatch(new AddBreadcrumbs([{ label: this.appName, url: '' }])).toPromise();
       }
     } catch (error) {
       console.error('Error loading solution details:', error);
-      // Optional: Show user error message
+      this.toast.showError('Error loading solution details');
     } finally {
-      // Hide sidebar loading indicator when done
       this.sidebarLoading = false;
     }
   }
