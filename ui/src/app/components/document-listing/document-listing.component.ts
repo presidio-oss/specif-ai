@@ -156,6 +156,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       item.folderName === DocumentTypeMappingEnum.BP ? '/bp-edit' : '/edit';
     this.router.navigate([url], {
       state: {
+        solutionId: this.solutionId,
         data: item,
         id: item.id,
         folderName: item.folderName,
@@ -181,7 +182,11 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     console.log("Navigate to Add clicked")
     if (this.selectedType === DocumentTypeMappingEnum.BP) {
       this.router.navigate(['/bp-add'], {
-        state: { folderName: this.selectedType },
+        state: {
+          id: this.solutionId,
+          solutionId: this.solutionId,
+          folderName: this.selectedType
+        },
       });
     }
     else {

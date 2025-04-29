@@ -1,3 +1,24 @@
+export interface IGetBusinessProcessRequest {
+  solutionId: number;
+  businessProcessId: number;
+}
+
+export interface IGetBusinessProcessResponse {
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
+  id: number;
+  name: string;
+  description: string;
+  flowchart: string | null;
+  documents: ({
+    id: number;
+    businessProcessId: number;
+    documentId: number;
+    docType: 'PRD' | 'BRD';
+  } | null)[];
+}
+
 export interface ILLMresponse {
   requirement: string;
   title: string;
@@ -12,8 +33,8 @@ export interface IFlowChartRequest {
   id: string;
   title: string;
   description: string;
-  selectedBRDs: string[];
-  selectedPRDs: string[];
+  selectedBRDs: number[];
+  selectedPRDs: number[];
 }
 
 export interface IFlowchartResponse {
@@ -21,30 +42,20 @@ export interface IFlowchartResponse {
 }
 
 export interface IUpdateProcessRequest {
-  updatedReqt: string;
-  contentType: string;
-  id: string;
-  title: string;
+  selectedBRDs: number[];
+  selectedPRDs: number[];
   name: string;
   description: string;
-  useGenAI: boolean;
-  selectedBRDs: string[];
-  selectedPRDs: string[];
-  reqId: string;
-  reqDesc: string;
+  solutionId: number;
+  businessProcessId: number;
 }
 
 export interface IAddBusinessProcessRequest {
-  reqt: string;
-  contentType: string;
-  id: string;
-  title: string;
-  addReqtType: string;
+  selectedBRDs: number[];
+  selectedPRDs: number[];
   name: string;
   description: string;
-  useGenAI: boolean;
-  selectedBRDs: string[];
-  selectedPRDs: string[];
+  solutionId: number;
 }
 
 export interface IAddBusinessProcessResponse {
@@ -56,8 +67,8 @@ export interface IAddBusinessProcessResponse {
   name: string;
   description: string;
   useGenAI: boolean;
-  selectedBRDs: string[];
-  selectedPRDs: string[];
+  selectedBRDs: number[];
+  selectedPRDs: number[];
   LLMreqt: ILLMresponse;
 }
 
@@ -68,8 +79,8 @@ export interface IUpdateProcessResponse {
   name: string;
   reqDesc: string;
   reqId: string;
-  selectedBRDs: string[];
-  selectedPRDs: any[];
+  selectedBRDs: number[];
+  selectedPRDs: number[];
   title: string;
   updated: ILLMresponse;
   updatedReqt: string;

@@ -30,6 +30,8 @@ import {
   IUpdateProcessResponse,
   IAddBusinessProcessResponse,
   IUpdateProcessRequest,
+  IGetBusinessProcessRequest,
+  IGetBusinessProcessResponse,
 } from 'src/app/model/interfaces/IBusinessProcess';
 import {
   conversePayload,
@@ -46,7 +48,7 @@ import {
 } from '../model/interfaces/IUserStory';
 import { AutoUpdateModalComponent } from '../components/auto-update-modal/auto-update-modal.component';
 import { htmlToMarkdown } from '../utils/html.utils';
-import { DOCUMENT_CHANNELS, SOLUTION_CHANNELS } from './channels.constants';
+import { DOCUMENT_CHANNELS, BUSINESS_PROCESS_CHANNELS, SOLUTION_CHANNELS } from './channels.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -145,12 +147,36 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async getAllBusinessProcesses(
+    request: { solutionId: number }
+  ) {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: BUSINESS_PROCESS_CHANNELS.GET_ALL_BUSINESS_PROCESSES,
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async getBusinessProcess(
+    request: IGetBusinessProcessRequest
+  ): Promise<IGetBusinessProcessResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: BUSINESS_PROCESS_CHANNELS.GET_BUSINESS_PROCESS,
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async addBusinessProcess(
     request: IAddBusinessProcessRequest,
   ): Promise<IAddBusinessProcessResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
-        channel: 'requirement:bp-add',
+        channel: BUSINESS_PROCESS_CHANNELS.ADD_BUSINESS_PROCESS,
         args: [request],
       });
     }
@@ -162,7 +188,7 @@ export class ElectronService {
   ): Promise<IUpdateProcessResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
-        channel: 'requirement:bp-update',
+        channel: BUSINESS_PROCESS_CHANNELS.UPDATE_BUSINESS_PROCESS,
         args: [request],
       });
     }

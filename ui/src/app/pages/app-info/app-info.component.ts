@@ -433,11 +433,13 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       const [
         documentCount,
         getAllDocuments,
+        businessProcesses,
         solutionMetadata,
         integrations
       ] = await Promise.all([
         this.electronService.getDocumentByCount({ solutionId }),
         this.electronService.getAllDocuments({ solutionId }),
+        this.electronService.getAllBusinessProcesses({ solutionId }),
         this.electronService.getSolutionMetadata({ solutionId }),
         this.electronService.getSolutionIntegrations({ solutionId })
       ]);
@@ -451,7 +453,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           this.folderOrder.indexOf(a.documentTypeId) - this.folderOrder.indexOf(b.documentTypeId)
         );
   
-      this.documents = getAllDocuments;
+      this.documents = [...getAllDocuments, ...businessProcesses];
       this.solutionMetadata = solutionMetadata;
       this.integration = integrations && integrations[0] ? integrations[0] : {};
   
@@ -519,6 +521,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       this.router
         .navigate(['/bp-add'], {
           state: {
+            solutionId: this.solutionId,
             data: this.appInfo,
             id: this.projectId,
             folderName: 'BP',

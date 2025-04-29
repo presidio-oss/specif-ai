@@ -16,7 +16,7 @@ import {
   standalone: true,
 })
 export class CheckboxCardComponent implements OnChanges {
-  @Input('value') value: string | undefined;
+  @Input('value') value: string | number | undefined;
   @Input('checked') checked: boolean = false;
   @Input('onChange') onChange: ((checked: boolean) => void) | undefined;
 

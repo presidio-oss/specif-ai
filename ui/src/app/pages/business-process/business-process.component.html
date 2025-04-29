@@ -11,7 +11,7 @@
           {{ folderName | expandDescription }}
         </h1>
         <h1 class="text-lg font-semibold" *ngIf="mode === 'edit'">
-          {{ bpRequirementId }}
+          {{ formatBusinessProcessId(businessProcessId) }}
         </h1>
         <div class="flex items-center">
           <app-button
@@ -75,8 +75,8 @@
             rounded="lg"
             (click)="
               mode === 'add'
-                ? addBusinessProcess(true)
-                : updateBusinessProcess(true)
+                ? addBusinessProcess()
+                : updateBusinessProcess()
             "
             [disabled]="checkFormValidity()"
           ></app-button>
@@ -106,7 +106,7 @@
           <div class="mt-2 flex flex-wrap gap-1.5">
             <div *ngFor="let brd of selectedBRDs">
               <app-pill (clear)="removeBRD(brd)" [showClear]="true" variant="secondary">
-                {{brd.fileName.split('-')[0]}}
+                BRD-{{ brd.toString().padStart(2, '0') }}
               </app-pill>
             </div>
             <button (click)="switchTab('includeFiles'); selectTab(requirementTypes.BRD)">
@@ -121,7 +121,7 @@
           <div class="mt-2 flex flex-wrap gap-1.5">
             <div *ngFor="let prd of selectedPRDs">
               <app-pill (clear)="removePRD(prd)" [showClear]="true" variant="secondary">
-                {{prd.fileName.split('-')[0]}}
+                PRD-{{ prd.toString().padStart(2, '0') }}
               </app-pill>
             </div>
             <button (click)="switchTab('includeFiles'); selectTab(requirementTypes.PRD)">
@@ -184,49 +184,37 @@
                 </ng-container>
               </div>
               <div class="pb-4">
-                <div class="" *ngIf="originalDocumentList$ | async as list">
+                <div>
                   <div
-                    *ngIf="!!list?.length; else noDocuments"
+                    *ngIf="!!originalDocumentList?.length; else noDocuments"
                     class="grow flex flex-col gap-4 w-full overflow-y-auto doc-section-height px-4"
                   >
-                    <div *ngFor="let item of list" class="flex w-full">
+                    <div *ngFor="let item of originalDocumentList" class="flex w-full">
                       <ng-container
                         *ngIf="
                           (selectedTab === requirementTypes.PRD &&
-                            item.folderName === requirementTypes.PRD) ||
+                            item.documentTypeId === requirementTypes.PRD) ||
                           (selectedTab === requirementTypes.BRD &&
-                            item.folderName === requirementTypes.BRD)
+                            item.documentTypeId === requirementTypes.BRD)
                         "
                       >
                         <app-checkbox-card 
-                          [checked]="isSelected(
-                            {
-                              requirement: item?.content?.requirement,
-                              fileName: item.fileName,
-                            },
-                            selectedTab
-                          )"
-                          [value]="JSON.stringify({
-                            requirement: item.content.requirement,
-                            fileName: item.fileName,
-                          })"
-                          (onCheckedChange)="toggleSelection($event, {
-                            requirement: item.content.requirement || '',
-                            fileName: item.fileName,
-                          }, selectedTab)"
+                          [checked]="isSelected(item.id, selectedTab)"
+                          [value]="item.id"
+                          (onCheckedChange)="toggleSelection($event, item.id, selectedTab)"
                           class="w-full"
                         >
                           <div class="text-sm flex flex-col gap-1">
                             <a class="font-semibold text-secondary-500">
-                              {{ (item.fileName || '').replace("-base.json", "") }}
+                              {{ (item.documentTypeId | uppercase) + '-' + item.id.toString().padStart(2, '0') }}
                             </a>
                             <h1 class="text-base font-medium line-clamp-1">
-                              {{ item.content.title }}
+                              {{ item.name }}
                             </h1>
                             <app-rich-text-editor 
                               editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs" 
                               mode="view"
-                              [content]="truncatePRDandBRDRequirement(item.content.requirement || '', item.folderName || '')" 
+                              [content]="truncatePRDandBRDRequirement(item.description || '', item.documentTypeId || '')" 
                               [editable]="false"
                             >
                             </app-rich-text-editor>

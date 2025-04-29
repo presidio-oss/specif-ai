@@ -25,14 +25,12 @@ import {
   IFlowChartRequest,
   IUpdateProcessRequest,
 } from '../../model/interfaces/IBusinessProcess';
-import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
-import { MatDialog } from '@angular/material/dialog';
+import { DocumentTypeMappingEnum, RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
 import { LoadingService } from '../../services/loading.service';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { AsyncPipe, NgClass, NgForOf, NgIf, CommonModule } from '@angular/common';
 import { PillComponent } from '../../components/pill/pill.component';
 import { CheckboxCardComponent } from '../../components/checkbox-card/checkbox-card.component';
@@ -53,6 +51,8 @@ import { RichTextEditorComponent } from 'src/app/components/core/rich-text-edito
 import { processPRDContentForView } from 'src/app/utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
+import { Document } from 'src/app/model/interfaces/projects.interface';
 
 @Component({
   selector: 'app-business-process',
@@ -89,8 +89,8 @@ export class BusinessProcessComponent implements OnInit {
   folderName: string = '';
   fileName: string = '';
   name: string = '';
-  originalSelectedPRDs: any[] = [];
-  originalSelectedBRDs: any[] = [];
+  originalSelectedPRDs: number[] = [];
+  originalSelectedBRDs: number[] = [];
   description: string = '';
   content: string = '';
   title: string = '';
@@ -102,46 +102,38 @@ export class BusinessProcessComponent implements OnInit {
   allowForceRedirect: boolean = false;
   existingFlowDiagram: string = '';
   public loading: boolean = false;
-  selectedBPFileContent$ = this.store.select(
-    ProjectsState.getSelectedFileContent,
-  );
   businessProcessForm!: FormGroup;
   response: IList = {} as IList;
-  selectedPRDs: any[] = [];
-  selectedBRDs: any[] = [];
-  selectedTab: string = RequirementTypeEnum.PRD;
+  selectedPRDs: number[] = [];
+  selectedBRDs: number[] = [];
+  selectedTab: string = DocumentTypeMappingEnum.PRD;
   editLabel: string = '';
   bpRequirementId: string = '';
-  requirementTypes: any = RequirementTypeEnum;
+  requirementTypes: any = DocumentTypeMappingEnum;
+  solutionId: number;
+  businessProcessId: number;
   readonly dialogService = inject(DialogService);
   activeTab: string = 'includeFiles';
   protected readonly JSON = JSON;
   toastService = inject(ToasterService);
+  electronService = inject(ElectronService);
 
-  originalDocumentList$: Observable<IList[]> = this.store.select(
-    ProjectsState.getSelectedFileContents,
-  );
+  originalDocumentList: Document[] = [];
 
   chatHistory: any = [];
 
-  removePRD(prd: { requirement: string; fileName: string }): void {
+  removePRD(documentId: number): void {
     this.selectedPRDs = this.selectedPRDs.filter(
-      (item) =>
-        !(
-          item.requirement === prd.requirement && item.fileName === prd.fileName
-        ),
+      (id) => id !== documentId
     );
     this.businessProcessForm.get('selectedPRDs')?.setValue(this.selectedPRDs);
     this.updateContentValidators();
     this.updateIncludePRDandBRDValidator();
   }
 
-  removeBRD(brd: { requirement: string; fileName: string }): void {
+  removeBRD(documentId: number): void {
     this.selectedBRDs = this.selectedBRDs.filter(
-      (item) =>
-        !(
-          item.requirement === brd.requirement && item.fileName === brd.fileName
-        ),
+      (id) => id !== documentId
     );
     this.businessProcessForm.get('selectedBRDs')?.setValue(this.selectedBRDs);
     this.updateContentValidators();
@@ -163,6 +155,8 @@ export class BusinessProcessComponent implements OnInit {
     this.fileName = navigation?.extras?.state?.['fileName'];
     this.data = navigation?.extras?.state?.['data'];
     this.selectedRequirement = navigation?.extras?.state?.['req'];
+    this.solutionId = navigation?.extras?.state?.['solutionId'];
+    this.businessProcessId = navigation?.extras?.state?.['id'];
     this.store.dispatch(
       new AddBreadcrumb({
         url: `/apps/${this.projectId}`,
@@ -201,92 +195,27 @@ export class BusinessProcessComponent implements OnInit {
     this.initializeBusinessProcessForm();
   }
 
-  private streamSelectedStoring(
-    dataRequirements: string[],
-    formRequirements: { requirement: any; fileName: any }[],
-  ): any[] {
-    return dataRequirements
-      .map((requirement: string) => {
-        const formItem = formRequirements.find(
-          (item: { requirement: any }) => item.requirement === requirement,
-        );
-        return formItem ? { requirement, fileName: formItem.fileName } : null;
-      })
-      .filter((item) => item !== null);
-  }
 
-  private handleBusinessProcessCreation(fileData: {
-    requirement: string;
-    title: string;
-    selectedBRDs: any[];
-    selectedPRDs: any[];
-  }) {
-    this.store.dispatch(
-      new CreateFile(`${this.folderName}`, {
-        requirement: fileData.requirement,
-        title: fileData.title,
-        selectedBRDs: fileData.selectedBRDs,
-        selectedPRDs: fileData.selectedPRDs,
-        flowChartDiagram: '',
-        chatHistory: this.chatHistory,
-      }),
-    );
-    this.allowForceRedirect = true;
-    this.navigateBackToDocumentList(this.data);
-    this.toastService.showSuccess(
-      TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
-    );
-  }
-
-  addBusinessProcess(useGenAI: boolean = false) {
+  addBusinessProcess() {
     const formValue = this.businessProcessForm.getRawValue();
 
-    // Handle locally without API call if AI expansion is not needed
-    if (!useGenAI) {
-      this.handleBusinessProcessCreation({
-        requirement: formValue.content,
-        title: formValue.title,
-        selectedBRDs: formValue.selectedBRDs,
-        selectedPRDs: formValue.selectedPRDs,
-      });
-      return;
-    }
-
     const body: IAddBusinessProcessRequest = {
-      reqt: formValue.content,
-      addReqtType: this.folderName,
-      contentType: 'userContent',
-      description: this.data.description,
-      id: this.data.id,
-      name: this.data.name,
-      title: formValue.title,
-      useGenAI: useGenAI,
-      selectedBRDs: formValue.selectedBRDs.map(
-        (item: { requirement: any; fileName: any }) => item.requirement,
-      ),
-      selectedPRDs: formValue.selectedPRDs.map(
-        (item: { requirement: any; fileName: any }) => item.requirement,
-      ),
+      solutionId: this.solutionId,
+      description: formValue.content,
+      name: formValue.title,
+      selectedBRDs: formValue.selectedBRDs,
+      selectedPRDs: formValue.selectedPRDs,
     };
 
-    this.featureService.addBusinessProcess(body).then((data) => {
-      const selectedBRDsWithId = this.streamSelectedStoring(
-        data.selectedBRDs,
-        formValue.selectedBRDs,
+    this.electronService.addBusinessProcess(body).then(() => {
+      this.allowForceRedirect = true;
+      this.navigateBackToDocumentList(this.data);
+      this.toastService.showSuccess(
+        TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
       );
-      const selectedPRDsWithId = this.streamSelectedStoring(
-        data.selectedPRDs,
-        formValue.selectedPRDs,
-      );
-      this.handleBusinessProcessCreation({
-        requirement: data.LLMreqt.requirement,
-        title: data.LLMreqt.title,
-        selectedBRDs: selectedBRDsWithId,
-        selectedPRDs: selectedPRDsWithId,
-      });
     })
     .catch((error) => {
-      this.loggerService.error('Error updating requirement:', error); // Handle any errors
+      this.loggerService.error('Error updating requirement:', error); 
       this.toastService.showError(
         TOASTER_MESSAGES.ENTITY.ADD.FAILURE(this.folderName),
       );
@@ -294,39 +223,21 @@ export class BusinessProcessComponent implements OnInit {
   }
 
   private async handleBusinessProcessUpdate(fileData: {
-    requirement: string;
-    title: string;
-    selectedBRDs: any[];
-    selectedPRDs: any[];
+    description: string;
+    name: string;
+    selectedBRDs: number[];
+    selectedPRDs: number[];
   }) {
-    // Get BRD and PRD requirements for diagram generation
-    const selectedBRDRequirements = fileData.selectedBRDs.map(
-      (item: { requirement: any }) => item.requirement,
-    );
-    const selectedPRDRequirements = fileData.selectedPRDs.map(
-      (item: { requirement: any }) => item.requirement,
-    );
-
     // Re-Generate flow chart diagram
     const updatedDiagram = await this.regenerateProcessFlowDiagram(
       this.bpRequirementId,
-      fileData.title,
-      fileData.requirement,
-      selectedBRDRequirements,
-      selectedPRDRequirements,
+      fileData.description,
+      fileData.name,
+      fileData.selectedBRDs,
+      fileData.selectedPRDs,
     );
 
-    // Update file with new data
-    this.store.dispatch(
-      new UpdateFile(this.absoluteFilePath, {
-        requirement: fileData.requirement,
-        title: fileData.title,
-        selectedBRDs: fileData.selectedBRDs,
-        selectedPRDs: fileData.selectedPRDs,
-        flowChartDiagram: updatedDiagram,
-        chatHistory: this.chatHistory,
-      }),
-    );
+    // Todo: Update the flow chart diagram in the database
 
     this.loadingService.setLoading(false);
     this.toastService.showSuccess(
@@ -337,63 +248,31 @@ export class BusinessProcessComponent implements OnInit {
     );
   }
 
-  async updateBusinessProcess(useGenAI: boolean = false) {
+  async updateBusinessProcess() {
     const formValue = this.businessProcessForm.getRawValue();
     this.loadingService.setLoading(true);
 
-    // Handle locally without API call if AI expansion is not needed
-    if (!useGenAI) {
+    const body: IUpdateProcessRequest = {
+      solutionId: Number(this.solutionId),
+      businessProcessId: Number(this.businessProcessId),
+      description: formValue.content,
+      name: formValue.title,
+      selectedBRDs: formValue.selectedBRDs,
+      selectedPRDs: formValue.selectedPRDs,
+    };
+
+    this.electronService.updateBusinessProcess(body).then(async (data) => {
+  
       await this.handleBusinessProcessUpdate({
-        requirement: formValue.content,
-        title: formValue.title,
+        description: formValue.content,
+        name: formValue.title,
         selectedBRDs: formValue.selectedBRDs,
         selectedPRDs: formValue.selectedPRDs,
       });
+
       // Update original values after successful save
-      this.originalSelectedPRDs = [...(formValue.selectedPRDs || [])];
-      this.originalSelectedBRDs = [...(formValue.selectedBRDs || [])];
-      this.businessProcessForm.markAsUntouched();
-      this.businessProcessForm.markAsPristine();
-      return;
-    }
-
-    const body: IUpdateProcessRequest = {
-      updatedReqt: formValue.content,
-      reqId: this.bpRequirementId,
-      reqDesc: this.oldContent,
-      contentType: 'userContent',
-      description: this.description,
-      id: this.data.id,
-      name: this.name,
-      title: formValue.title,
-      useGenAI: useGenAI,
-      selectedBRDs: formValue.selectedBRDs.map(
-        (item: { requirement: any; fileName: any }) => item.requirement,
-      ),
-      selectedPRDs: formValue.selectedPRDs.map(
-        (item: { requirement: any; fileName: any }) => item.requirement,
-      ),
-    };
-
-    this.featureService.updateBusinessProcess(body).then(async (data) => {
-      const selectedBRDsWithId = this.streamSelectedStoring(
-        data.selectedBRDs,
-        formValue.selectedBRDs,
-      );
-      const selectedPRDsWithId = this.streamSelectedStoring(
-        data.selectedPRDs,
-        formValue.selectedPRDs,
-      );
-  
-      await this.handleBusinessProcessUpdate({
-        requirement: data.updated.requirement,
-        title: data.updated.title,
-        selectedBRDs: selectedBRDsWithId,
-        selectedPRDs: selectedPRDsWithId,
-      });
-      // Update original values after successful save with AI
-      this.originalSelectedPRDs = [...selectedPRDsWithId];
-      this.originalSelectedBRDs = [...selectedBRDsWithId];
+      this.originalSelectedPRDs = [...formValue.selectedPRDs];
+      this.originalSelectedBRDs = [...formValue.selectedBRDs];
       this.businessProcessForm.markAsUntouched();
       this.businessProcessForm.markAsPristine();
     })
@@ -409,7 +288,7 @@ export class BusinessProcessComponent implements OnInit {
     });
   }
 
-  initializeBusinessProcessForm() {
+  async initializeBusinessProcessForm() {
     this.businessProcessForm = new FormGroup({
       title: new FormControl('', Validators.compose([Validators.required])),
       content: new FormControl('', Validators.compose([Validators.required])),
@@ -417,25 +296,43 @@ export class BusinessProcessComponent implements OnInit {
       selectedBRDs: new FormControl([]),
       selectedPRDs: new FormControl([]),
     });
+
+    
     if (this.mode === 'edit') {
-      this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
-      this.selectedBPFileContent$.subscribe((res: any) => {
-        this.oldContent = res.requirement;
-        this.selectedPRDs = res.selectedPRDs;
-        this.selectedBRDs = res.selectedBRDs;
-        // Store original selections
-        this.originalSelectedPRDs = [...(res.selectedPRDs || [])];
-        this.originalSelectedBRDs = [...(res.selectedBRDs || [])];
-        this.businessProcessForm.patchValue({
-          title: res.title,
-          content: res.requirement,
-          selectedBRDs: res.selectedBRDs,
-          selectedPRDs: res.selectedPRDs,
+      try {
+        const res = await this.electronService.getBusinessProcess({
+          solutionId: this.solutionId,
+          businessProcessId: Number(this.businessProcessId),
         });
-        this.existingFlowDiagram = res.flowChartDiagram;
-        this.chatHistory = res.chatHistory || [];
+
+        this.oldContent = res.description;
+        
+        // Filter PRDs and BRDs
+        const linkedPRDs = res.documents
+        .filter(doc => doc?.docType === RequirementTypeEnum.PRD)
+          .map(doc => doc!.documentId);
+        
+        const linkedBRDs = res.documents.filter(doc => 
+          doc?.docType === RequirementTypeEnum.BRD
+        ).map(doc => doc!.documentId);
+
+        this.selectedPRDs = linkedPRDs;
+        this.selectedBRDs = linkedBRDs;
+        this.originalSelectedPRDs = [...linkedPRDs];
+        this.originalSelectedBRDs = [...linkedBRDs];
+
+        this.businessProcessForm.patchValue({
+          title: res.name,
+          content: res.description,
+          selectedBRDs: linkedBRDs,
+          selectedPRDs: linkedPRDs,
+        });
+
         this.updateIncludePRDandBRDValidator();
-      });
+      } catch (error) {
+        this.loggerService.error('Error initializing form:', error);
+        this.toastService.showError('Failed to load business process data');
+      }
     }
   }
 
@@ -450,48 +347,47 @@ export class BusinessProcessComponent implements OnInit {
     this.getRequirementFiles(this.selectedTab);
   }
 
-  getRequirementFiles(title: string) {
-    return this.store.dispatch(new BulkReadFiles(title));
-  }
-
-  isSelected(
-    item: { fileName: string; requirement: string | undefined },
-    type: string,
-  ): boolean {
-    const selectedItems: any =
-      type === this.requirementTypes.PRD
-        ? this.selectedPRDs
-        : this.selectedBRDs;
-    return selectedItems.some(
-      (selectedItem: { requirement: string; fileName: string }) =>
-        selectedItem.requirement === item.requirement &&
-        selectedItem.fileName === item.fileName,
-    );
-  }
-
-  toggleSelection(checked: boolean, item: { requirement: string; fileName: string }, type: string): void {
-    if (type === this.requirementTypes.PRD) {
-      this.updateSelection(this.selectedPRDs, item, checked, 'selectedPRDs');
-    } else if (type === this.requirementTypes.BRD) {
-      this.updateSelection(this.selectedBRDs, item, checked, 'selectedBRDs');
+  async getRequirementFiles(type: string) {
+    this.loading = true;
+    try {
+      const response: Document[] = await this.electronService.getAllDocuments({
+        solutionId: this.solutionId,
+      });
+      this.originalDocumentList = response.filter(doc => 
+        (type === this.requirementTypes.PRD && doc.documentTypeId === DocumentTypeMappingEnum.PRD) ||
+        (type === this.requirementTypes.BRD && doc.documentTypeId === DocumentTypeMappingEnum.BRD)
+      );
+    } catch (error) {
+      this.loggerService.error('Error fetching documents:', error);
+      this.toastService.showError('Failed to fetch documents');
+    } finally {
+      this.loading = false;
     }
   }
 
-  updateSelection(
-    array: any[],
-    item: { requirement: string; fileName: string },
-    checked: boolean,
-    controlName: string,
-  ): void {
-    const newArray = [...array];
-    const index = newArray.findIndex(
-      (x) => x.requirement === item.requirement && x.fileName === item.fileName,
-    );
+  isSelected(itemId: number, type: string): boolean {
+    const selectedItems = type === this.requirementTypes.PRD ? this.selectedPRDs : this.selectedBRDs;
+    return selectedItems.includes(itemId);
+  }
+
+  toggleSelection(checked: boolean, itemId: number, type: string): void {
+    if (type === this.requirementTypes.PRD) {
+      this.updateSelection(this.selectedPRDs, itemId, checked, 'selectedPRDs');
+    } else if (type === this.requirementTypes.BRD) {
+      this.updateSelection(this.selectedBRDs, itemId, checked, 'selectedBRDs');
+    }
+  }
+
+  updateSelection(array: number[], itemId: number, checked: boolean, controlName: string): void {
+    let newArray = [...array];
+    const index = newArray.indexOf(itemId);
+    
     if (checked && index === -1) {
-      newArray.push(item);
+      newArray.push(itemId);
     } else if (!checked && index > -1) {
       newArray.splice(index, 1);
     }
+    
     this.businessProcessForm.get(controlName)?.setValue(newArray);
 
     if (controlName === 'selectedPRDs') {
@@ -499,6 +395,7 @@ export class BusinessProcessComponent implements OnInit {
     } else if (controlName === 'selectedBRDs') {
       this.selectedBRDs = newArray;
     }
+    
     this.updateContentValidators();
     this.updateIncludePRDandBRDValidator();
   }
@@ -556,7 +453,7 @@ export class BusinessProcessComponent implements OnInit {
           chatHistory: newArray,
         }),
       );
-      this.updateBusinessProcess(true);
+      this.updateBusinessProcess();
     }
   }
 
@@ -564,8 +461,8 @@ export class BusinessProcessComponent implements OnInit {
     id: string,
     title: string,
     requirement: string,
-    selectedBRDs: string[],
-    selectedPRDs: string[],
+    selectedBRDs: number[],
+    selectedPRDs: number[],
   ): Promise<string> {
     const request: IFlowChartRequest = {
       id: id,
@@ -602,8 +499,8 @@ export class BusinessProcessComponent implements OnInit {
             id: this.bpRequirementId,
             title: this.businessProcessForm.get('title')?.value,
             requirement: this.businessProcessForm.get('content')?.value,
-            selectedBRDs: this.selectedBRDs.map((brd) => brd.requirement),
-            selectedPRDs: this.selectedPRDs.map((prd) => prd.requirement),
+            selectedBRDs: this.selectedBRDs,
+            selectedPRDs: this.selectedPRDs,
           },
           selectedFolder: {
             title: this.folderName,
@@ -652,6 +549,10 @@ export class BusinessProcessComponent implements OnInit {
     }
   }
 
+  formatBusinessProcessId(id: number): string {
+    return `BP-${id.toString().padStart(2, '0')}`;
+  }
+  
   truncatePRDandBRDRequirement(requirement: string | undefined, folderName: string): string {
     if (!requirement) return '';
     
@@ -663,21 +564,9 @@ export class BusinessProcessComponent implements OnInit {
     return truncateMarkdown(requirement, {maxChars: 180});
   }
 
-  private areSelectionsEqual(original: any[], current: any[]): boolean {
+  private areSelectionsEqual(original: number[], current: number[]): boolean {
     if (original.length !== current.length) return false;
-    
-    // Create a Map to store current items for O(1) lookup
-    const currentMap = new Map(
-      current.map(item => [
-        `${item.requirement}-${item.fileName}`, 
-        item
-      ])
-    );
-    
-    // Single pass through original array with O(1) lookups
-    return original.every(orig => 
-      currentMap.has(`${orig.requirement}-${orig.fileName}`)
-    );
+    return original.every(id => current.includes(id));
   }
 
   canDeactivate(): boolean {
