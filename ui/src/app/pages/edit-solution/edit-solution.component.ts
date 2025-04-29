@@ -137,17 +137,6 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
     this.projectId = navigation?.extras?.state?.['id'];
     this.initialData = navigation?.extras?.state?.['data'];
     this.selectedRequirement = navigation?.extras?.state?.['req'];
-    this.store.dispatch(
-      new AddBreadcrumb({
-        url: `/apps/${this.projectId}`,
-        label: this.documentTypeId,
-      }),
-    );
-    this.store.dispatch(
-      new AddBreadcrumb({
-        label: this.mode === 'edit' ? 'Edit' : 'Add',
-      }),
-    );
     if (this.mode === 'edit') {
       this.fileName = navigation?.extras?.state?.['fileName'];
       this.absoluteFilePath = `${this.documentTypeId}/${this.fileName}`;
@@ -165,6 +154,18 @@ export class EditSolutionComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.solutionId = Number(this.route.snapshot.paramMap.get('solutionId'));
     this.documentTypeId = this.route.snapshot.paramMap.get('documentTypeId')!;  
+
+    this.store.dispatch(
+      new AddBreadcrumb({
+        url: `/apps/${this.solutionId}`,
+        label: this.documentTypeId.toUpperCase(),
+      }),
+    );
+    this.store.dispatch(
+      new AddBreadcrumb({
+        label: this.mode === 'edit' ? 'Edit' : 'Add',
+      }),
+    );
     console.log("Solution ID and Doc Type Id from params", this.solutionId, this.documentTypeId);
   }
 

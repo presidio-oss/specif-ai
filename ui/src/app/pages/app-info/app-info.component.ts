@@ -459,7 +459,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   
       if (solutionMetadata && solutionMetadata.length > 0) {
         this.appName = solutionMetadata[0].name;
-        await this.store.dispatch(new AddBreadcrumbs([{ label: this.appName, url: '' }])).toPromise();
+        this.store.dispatch(new AddBreadcrumbs([{ label: this.appName, url: `/apps/${this.solutionId}` }]));
       }
     } catch (error) {
       console.error('Error loading solution details:', error);

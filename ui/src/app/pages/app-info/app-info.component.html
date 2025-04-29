@@ -70,9 +70,9 @@
               class="flex items-center justify-between p-2.5 rounded-lg border-[0.5px]"
               [ngClass]="{
                 'bg-secondary-50 border-secondary-300':
-                  selectedTab?.title === metadata.typeName,
+                  selectedTab?.title === metadata.documentTypeId,
                 'bg-white border-transparent':
-                  selectedTab?.title !== metadata.typeName,
+                  selectedTab?.title !== metadata.documentTypeId,
                 'cursor-pointer hover:bg-secondary-50': metadata.count > 0
               }"
               (click)="metadata.count > 0 && selectTab(metadata.documentTypeId)"
@@ -88,9 +88,9 @@
                   class="w-5 h-5 text-xl mr-2"
                   [ngClass]="{
                     'text-primary-600':
-                      selectedTab?.title === metadata.typeName,
+                      selectedTab?.title === metadata.documentTypeId,
                     'text-secondary-500':
-                      selectedTab?.title !== metadata.typeName,
+                      selectedTab?.title !== metadata.documentTypeId,
                   }"
                   [name]="getIconPairing(metadata.documentTypeId)"
                 ></ng-icon>
@@ -98,12 +98,12 @@
                   class="text-sm font-medium"
                   [ngClass]="{
                     'text-primary-600':
-                      selectedTab?.title === metadata.typeName,
+                      selectedTab?.title === metadata.documentTypeId,
                     'text-secondary-500':
-                      selectedTab?.title !== metadata.typeName,
+                      selectedTab?.title !== metadata.documentTypeId,
                   }"
                 >
-                  {{ getDescription(metadata.typeName) }}
+                  {{ getDescription(metadata.documentTypeId) }}
                 </h4>
               </div>
               <app-badge
