@@ -498,42 +498,36 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   navigateToBPAdd(): void {
-    // Check if any non-archived PRD or BRD exists
-    this.directories$.pipe(first()).subscribe(directories => {
-      const prdDir = directories.find(dir => dir.name === 'PRD');
-      const brdDir = directories.find(dir => dir.name === 'BRD');
-      
-      // For PRD, only check base files that aren't archived
-      const hasPRD = prdDir && prdDir.children
-        .filter(child => child.includes('-base.json'))
-        .some(child => !child.includes('-archived'));
+    const hasPRD = this.documents.some(
+      (doc) => doc.documentTypeId === DocumentTypeMappingEnum.PRD,
+    );
 
-      // For BRD, only check base files that aren't archived
-      const hasBRD = brdDir && brdDir.children
-        .filter(child => child.includes('-base.json'))
-        .some(child => !child.includes('-archived'));
+    const hasBRD = this.documents.some(
+      (doc) => doc.documentTypeId === DocumentTypeMappingEnum.BRD,
+    );
 
-      if (!hasPRD && !hasBRD) {
-        this.toast.showWarning(APP_INFO_COMPONENT_ERROR_MESSAGES.REQUIRES_PRD_OR_BRD);
-        return;
-      }
+    if (!hasPRD && !hasBRD) {
+      this.toast.showWarning(
+        APP_INFO_COMPONENT_ERROR_MESSAGES.REQUIRES_PRD_OR_BRD,
+      );
+      return;
+    }
 
-      this.router
-        .navigate(['/bp-add'], {
-          state: {
-            solutionId: this.solutionId,
-            data: this.appInfo,
-            id: this.projectId,
-            folderName: 'BP',
-            breadcrumb: {
-              name: 'Add Document',
-              link: this.router.url,
-              icon: 'add',
-            },
+    this.router
+      .navigate(['/bp-add'], {
+        state: {
+          solutionId: this.solutionId,
+          data: this.appInfo,
+          id: this.projectId,
+          folderName: 'BP',
+          breadcrumb: {
+            name: 'Add Document',
+            link: this.router.url,
+            icon: 'add',
           },
-        })
-        .then();
-    });
+        },
+      })
+      .then();
   }
 
   navigateToAdd(folderName: string) {
