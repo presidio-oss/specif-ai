@@ -9,7 +9,13 @@
           <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
         </div>
         <hr class="my-4" />
-        <ul role="list" class="min-h space-y-3">
+        <app-component-loader 
+          [isLoading]="sidebarLoading" 
+          size="md" 
+          padding="py-8"
+          color="primary-600">
+        </app-component-loader>
+        <ul role="list" class="min-h space-y-3" *ngIf="!sidebarLoading">
           <li
             class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
             (click)="selectTab('solution')"

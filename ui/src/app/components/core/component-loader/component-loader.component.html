@@ -1,0 +1,13 @@
+<div *ngIf="isLoading" [ngClass]="{'flex justify-center items-center': center}" [class]="padding">
+  <div class="animate-spin rounded-full border-b-2" 
+       [ngClass]="{
+         'h-4 w-4': size === 'sm',
+         'h-8 w-8': size === 'md',
+         'h-12 w-12': size === 'lg',
+         'border-primary-600': color === 'primary-600',
+         'border-secondary-600': color === 'secondary-600',
+         'border-gray-600': color === 'gray-600'
+       }"
+       [ngStyle]="{'border-color': color.includes('-') ? '' : color}">
+  </div>
+</div>

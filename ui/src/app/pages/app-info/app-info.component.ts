@@ -36,6 +36,7 @@ import { AccordionComponent } from '../../components/accordion/accordion.compone
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { NGXLogger } from 'ngx-logger';
 import { FileTypeEnum, IconPairingEnum } from '../../model/enum/file-type.enum';
+import { ComponentLoaderComponent } from '../../components/core/component-loader/component-loader.component';
 import { SetChatSettings } from 'src/app/store/chat-settings/chat-settings.action';
 import { ChatSettings } from 'src/app/model/interfaces/ChatSettings';
 import { ChatSettingsState } from 'src/app/store/chat-settings/chat-settings.state';
@@ -51,7 +52,6 @@ import { FeatureService } from '../../services/feature/feature.service';
 import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import {
-  AppInfoResponse,
   DocumentMetadata,
   Document,
   SolutionMetadata,
@@ -74,6 +74,7 @@ import {
     NgIconComponent,
     DocumentListingComponent,
     NgForOf,
+    ComponentLoaderComponent
   ],
 })
 export class AppInfoComponent implements OnInit, OnDestroy {
@@ -96,6 +97,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
   currentLLMConfig!: LLMConfigModel;
   public loading: boolean = false;
+  public sidebarLoading: boolean = false;
   appName: string = '';
   jiraForm!: FormGroup;
   bedrockForm!: FormGroup;
@@ -273,7 +275,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     );
   }
 
-  handleJiraAuthentication(): void {
+  handleJiraAuthentication(): void {    
     const { jiraProjectKey, clientId, clientSecret, redirectUrl } =
       this.jiraForm.getRawValue();
 
@@ -311,12 +313,17 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
     this.store
       .dispatch(new UpdateMetadata(this.appInfo.id, updatedMetadata))
-      .subscribe(() => {
-        this.logger.debug('Jira metadata updated successfully');
-        this.jiraForm.disable();
-        this.isJiraConnected =
-          tokenInfo.projectKey === jiraProjectKey && !!tokenInfo.token;
-        this.editButtonDisabled = true;
+      .subscribe({
+        next: () => {
+          this.logger.debug('Jira metadata updated successfully');
+          this.jiraForm.disable();
+          this.isJiraConnected =
+            tokenInfo.projectKey === jiraProjectKey && !!tokenInfo.token;
+          this.editButtonDisabled = true;
+        },
+        error: (error) => {
+          console.error('Error updating Jira metadata:', error);
+        }
       });
   }
 
@@ -328,7 +335,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.toast.showSuccess(APP_INTEGRATIONS.JIRA.DISCONNECT);
   }
 
-  saveBedrockData() {
+  saveBedrockData() {    
     const { kbId, accessKey, secretKey, region, sessionKey } =
       this.bedrockForm.getRawValue();
     const config = { kbId, accessKey, secretKey, region, sessionKey };
@@ -362,12 +369,18 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
           this.store
             .dispatch(new UpdateMetadata(this.appInfo.id, updatedMetadata))
-            .subscribe(() => {
-              this.logger.debug('Bedrock metadata updated successfully');
-              this.bedrockForm.disable();
-              this.bedrockEditButtonDisabled = true;
-              this.isBedrockConnected = true;
-              this.toast.showSuccess(APP_INTEGRATIONS.BEDROCK.SUCCESS);
+            .subscribe({
+              next: () => {
+                this.logger.debug('Bedrock metadata updated successfully');
+                this.bedrockForm.disable();
+                this.bedrockEditButtonDisabled = true;
+                this.isBedrockConnected = true;
+                this.toast.showSuccess(APP_INTEGRATIONS.BEDROCK.SUCCESS);
+              },
+              error: (error) => {
+                console.error('Error updating Bedrock metadata:', error);
+                this.toast.showError(APP_INTEGRATIONS.BEDROCK.ERROR);
+              }
             });
         } else {
           this.toast.showError(APP_INTEGRATIONS.BEDROCK.INVALID);
@@ -398,16 +411,26 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
     this.store
       .dispatch(new UpdateMetadata(this.appInfo.id, updatedMetadata))
-      .subscribe(() => {
-        this.bedrockForm.enable();
-        this.bedrockEditButtonDisabled = false;
-        this.isBedrockConnected = false;
-        this.toast.showSuccess(APP_INTEGRATIONS.BEDROCK.DISCONNECT);
+      .subscribe({
+        next: () => {
+          this.bedrockForm.enable();
+          this.bedrockEditButtonDisabled = false;
+          this.isBedrockConnected = false;
+          this.toast.showSuccess(APP_INTEGRATIONS.BEDROCK.DISCONNECT);
+        },
+        error: (error) => {
+          console.error('Error disconnecting Bedrock:', error);
+          this.toast.showError(APP_INTEGRATIONS.BEDROCK.ERROR);
+        }
       });
   }
 
   async getSolutionDetails(solutionId: number) {
+    // Show sidebar loading indicator
+    this.sidebarLoading = true;
+    
     try {
+      // First, get all the data we need
       const [
         documentCount,
         getAllDocuments,
@@ -420,7 +443,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.electronService.getSolutionIntegrations({ solutionId })
       ]);
   
-      // Handle document metadata
+      // Process the data
       const allowedTypes = Object.values(DocumentTypeMappingEnum);
       this.documentMetadata = documentCount
         .filter((metadata: DocumentMetadata) =>
@@ -438,11 +461,15 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       // Handle breadcrumbs
       if (solutionMetadata && solutionMetadata.length > 0) {
         this.appName = solutionMetadata[0].name;
-        this.store.dispatch(new AddBreadcrumbs([{ label: this.appName, url: '' }]));
+        // Wait for the breadcrumb dispatch to complete
+        await this.store.dispatch(new AddBreadcrumbs([{ label: this.appName, url: '' }])).toPromise();
       }
     } catch (error) {
       console.error('Error loading solution details:', error);
       // Optional: Show user error message
+    } finally {
+      // Hide sidebar loading indicator when done
+      this.sidebarLoading = false;
     }
   }
   
@@ -512,10 +539,23 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     });
   }
 
-  navigateToAdd(documentTypeId: string) {
-    this.router.navigate(['/add', documentTypeId, this.solutionId]).then();
+  navigateToAdd(folderName: string) {
+    this.router
+      .navigate(['/add'], {
+        state: {
+          data: this.appInfo,
+          id: this.projectId,
+          folderName: folderName,
+          breadcrumb: {
+            name: 'Add Document',
+            link: this.router.url,
+            icon: 'add',
+          },
+        },
+      })
+      .then();
   }
-  
+
   navigateToBPFlow(item: any) {
     this.router.navigate(['/bp-flow/view', item.id], {
       state: {

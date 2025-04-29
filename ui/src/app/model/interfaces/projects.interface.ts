@@ -76,13 +76,6 @@ export interface IBreadcrumb {
   tooltipLabel?: string;
 }
 
-export interface AppInfoResponse {
-  solutionMetadata: SolutionMetadata[];
-  documentMetadata: DocumentMetadata[];
-  documents: Document[];
-  integrations: any[]; 
-}
-
 export interface SolutionMetadata {
   id: number;
   name: string;
