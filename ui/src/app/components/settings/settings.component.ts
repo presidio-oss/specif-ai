@@ -4,7 +4,6 @@ import {
   OnDestroy,
   ChangeDetectorRef,
   inject,
-  HostListener,
 } from '@angular/core';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
@@ -38,7 +37,6 @@ import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface
 import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/utils/analytics.utils';
 import { CoreService } from 'src/app/services/core/core.service';
 import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
-import { McpServersListComponent } from '../mcp/mcp-servers-list/mcp-servers-list.component';
 
 @Component({
   selector: 'app-settings',
@@ -52,7 +50,6 @@ import { McpServersListComponent } from '../mcp/mcp-servers-list/mcp-servers-lis
     NgIf,
     ButtonComponent,
     AppSelectComponent,
-    McpServersListComponent
   ],
   providers: [
     provideIcons({ 
@@ -61,12 +58,10 @@ import { McpServersListComponent } from '../mcp/mcp-servers-list/mcp-servers-lis
   ]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
-  activeTab: 'general' | 'mcp' = 'general';
+  activeTab: 'general' | 'about' = 'general';
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
     LLMConfigState.getConfig,
   );
-  mcpServers: any[] = [];
-  isLoadingMCPServers: boolean = false;
   currentLLMConfig!: LLMConfigModel;
   availableProviders = [...AvailableProviders].sort((a, b) => 
     a.displayName.localeCompare(b.displayName)
@@ -94,8 +89,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   logger = inject(NGXLogger);
   router = inject(Router);
   dialogService = inject(DialogService);
-  version: string = environment.APP_VERSION;
-  currentYear = new Date().getFullYear();
   analyticsWarning: string = '';
 
   constructor(
@@ -109,6 +102,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ) {
     this.workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
     this.initForm();
+  }
+
+  private getAboutInfo() {
+    return {
+      version: environment.APP_VERSION,
+      currentYear: new Date().getFullYear()
+    };
   }
 
   private initForm() {
@@ -166,9 +166,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
         }
       )
     );
-
-    // Load MCP servers
-    this.loadMCPServers();
 
     this.electronService.getStoreValue('APP_CONFIG').then((value) => {
       const { isAutoUpdate = true } = value || {};
@@ -465,27 +462,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  private async loadMCPServers() {
-    try {
-      this.isLoadingMCPServers = true;
-      this.mcpServers = await this.electronService.listMCPServers({
-        _hai_mcp_source_type: 'global',
-      })
-      this.cdr.detectChanges();
-    } catch (error) {
-      console.error('Error loading MCP servers:', error);
-      this.toasterService.showError('Failed to load MCP servers');
-    } finally {
-      this.isLoadingMCPServers = false;
-      this.cdr.detectChanges();
-    }
+  onTabChange(tab: 'general'| 'about') {
+    this.activeTab = tab;
   }
 
-  // Refresh MCP servers when switching to MCP tab
-  onTabChange(tab: 'general' | 'mcp') {
-    this.activeTab = tab;
-    if (tab === 'mcp') {
-      void this.loadMCPServers();
-    }
+  getAboutContent() {
+    const { version, currentYear } = this.getAboutInfo();
+
+    return {
+      version,
+      currentYear,
+      appName: this.appName
+    };
   }
 }

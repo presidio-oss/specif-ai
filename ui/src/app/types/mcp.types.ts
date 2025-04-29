@@ -28,3 +28,30 @@ export type MCPServerDetails = MCPServerOptions & {
 };
 
 export type ValidateMCPServersResponse = MCPServerDetails[];
+
+// mcp integration
+
+export type FormField = (
+  | { type: 'text'; default?: string }
+  | { type: 'textarea'; default?: string }
+) & {
+  label: string;
+  helpText: string;
+  name: string;
+  id: string;
+  required: boolean;
+};
+
+export type PredefinedMCPIntegration<FormFieldsType extends Array<FormField>> =
+  {
+    id: string;
+    title: string;
+    description: string;
+    iconPath: string;
+    readmeUrl?: string;
+    formFields: FormFieldsType;
+    buildFormDataFromConfig: (
+      options: MCPServerOptions,
+    ) => Record<string, string | number>;
+    buildConfig: (formData: any) => MCPServerOptions;
+  };

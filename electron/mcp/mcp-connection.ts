@@ -16,7 +16,7 @@ import {
   MCPTool,
 } from "./types";
 
-const DEFAULT_MCP_TIMEOUT = 20_000; // 10 seconds
+const DEFAULT_MCP_TIMEOUT = 20_000; // 20 seconds
 
 export class MCPConnection {
   public client: Client;
@@ -225,7 +225,7 @@ export class MCPConnection {
         const timeoutController = new AbortController();
         const connectionTimeout = setTimeout(
           () => timeoutController.abort(),
-          this.options.timeout ?? DEFAULT_MCP_TIMEOUT
+          DEFAULT_MCP_TIMEOUT
         );
 
         try {

@@ -23,7 +23,6 @@ import { CustomAccordionComponent } from '../../custom-accordion/custom-accordio
     NgTemplateOutlet,
     NgSwitch,
     NgSwitchCase,
-    NgIconComponent,
     CustomAccordionComponent,
   ],
   viewProviders: [provideIcons({ heroChevronDown })],

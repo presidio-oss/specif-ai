@@ -101,6 +101,22 @@ export class MCPHub {
     await this.connectionManager.refreshConnections(force);
   }
 
+  async readProjectMCPSettings(projectId: string | null): Promise<MCPSettings> {
+    return this.settingsManager.readProjectMCPSettings(projectId);
+  }
+
+  async writeProjectMCPSettings(projectId: string, mcpSettings: MCPSettings): Promise<void> {
+    await this.settingsManager.writeProjectMCPSettings(projectId, mcpSettings);
+
+    if (this.projectId === projectId) {
+        console.log(`Project settings changed for current project (${projectId}), re-initializing MCP servers...`);
+        this.initializingMCPServersPromise = this.initializeMCPServers();
+        await this.waitForMCPServersInitialization();
+    } else {
+        console.log(`Project settings changed for project ${projectId}, but not the current project (${this.projectId}). No immediate re-initialization needed by the hub.`);
+    }
+  }
+
   // --- Initialization and Server Listing ---
 
   private async initializeMCPServers(): Promise<void> {

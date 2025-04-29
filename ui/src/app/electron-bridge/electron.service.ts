@@ -509,6 +509,28 @@ export class ElectronService {
     });
   }
 
+  async updateProjectMCPSettings(projectId: string, settings: MCPSettings): Promise<{ success: boolean; error?: string }> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+    return this.ipc.request({
+      channel: 'mcp:updateProjectSettings',
+      args: [projectId, settings],
+      skipLoading: true
+    });
+  }
+
+  async getProjectMCPSettings(projectId: string): Promise<{ success: boolean; settings?: MCPSettings; error?: string }> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+    return this.ipc.request({
+      channel: 'mcp:getProjectSettings',
+      args: [projectId],
+      skipLoading: true
+    });
+  }
+
   async setMCPProjectId(projectId: string): Promise<void> {
     if (!this.electronAPI) {
       throw new Error('Electron is not available');

@@ -1,8 +1,29 @@
 import { ipcMain } from "electron";
 import { MCPHub } from "../mcp/mcp-hub";
 import { MCPSettings } from "../mcp/types";
-
 export function setupMcpHandlers() {
+  ipcMain.handle("mcp:updateProjectSettings", async (_event, projectId: string, settings: MCPSettings) => {
+    try {
+      const mcpHub = MCPHub.getInstance();
+      await mcpHub.writeProjectMCPSettings(projectId, settings);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error updating MCP settings:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("mcp:getProjectSettings", async (_event, projectId: string) => {
+    try {
+      const mcpHub = MCPHub.getInstance();
+      const settings = await mcpHub.readProjectMCPSettings(projectId);
+      return { success: true, settings };
+    } catch (error: any) {
+      console.error("Error getting MCP settings:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
   ipcMain.handle("mcp:setProjectId", async (_event, projectId: string) => {
     try {
       console.log("setting mcp projectId", projectId);
