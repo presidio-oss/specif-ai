@@ -15,11 +15,13 @@ import { IResponseFormatInput, ReactAgentConfig } from "./types";
 export interface MessageSummaryConfig {
   maxMessages: number; // Number of messages before triggering summarization
   retainLastN: number; // Number of messages to keep after summarization
+  preserveStartN: number; // Number of messages to preserve at the start
 }
 
 const DEFAULT_SUMMARY_CONFIG: MessageSummaryConfig = {
   maxMessages: 10,
   retainLastN: 8,
+  preserveStartN: 0, // By default, don't preserve any messages at start
 };
 
 // Node for handling message summarization
@@ -75,33 +77,49 @@ export const buildSummarizeNode = (
           : JSON.stringify(response.content);
 
       // Calculate which messages to keep
-      let keepStartIndex = messages.length - config.retainLastN;
-
+      const messagesLength = messages.length;
+      const keepLastStartIndex = Math.max(0, messagesLength - config.retainLastN);
+      
       let systemPromptOffset = 0;
-
       // Always keep system prompt if present
       if (messages.length > 0 && isSystemMessage(messages[0])) {
         systemPromptOffset = 1;
-        keepStartIndex = Math.max(1, keepStartIndex);
       }
 
-      // If first message to be kept is a tool message, find and keep the preceding AI message with tool_calls
-      if (keepStartIndex > systemPromptOffset) {
-        const firstKeptMessage = messages[keepStartIndex];
-        if (isToolMessage(firstKeptMessage)) {
-          // Look backwards to find the AI message with tool_calls
-          for (let i = keepStartIndex - 1; i >= systemPromptOffset; i--) {
-            if (isAIMessage(messages[i])) {
-              keepStartIndex = i;
-              break;
-            }
+      // Calculate preserved start messages range
+      const preserveStartEndIndex = Math.min(
+        systemPromptOffset + config.preserveStartN,
+        keepLastStartIndex
+      );
+
+      // Calculate middle section to be deleted (between preserved start and retained last messages)
+      let deleteStartIndex = preserveStartEndIndex;
+      let deleteEndIndex = keepLastStartIndex;
+
+      // If first message to be deleted would be a tool message, find and keep its preceding AI message
+      if (deleteStartIndex < deleteEndIndex && isToolMessage(messages[deleteStartIndex])) {
+        for (let i = deleteStartIndex - 1; i >= systemPromptOffset; i--) {
+          if (isAIMessage(messages[i])) {
+            deleteStartIndex = i;
+            break;
+          }
+        }
+      }
+
+      // If first message to be kept in the last section is a tool message, 
+      // find and keep its preceding AI message
+      if (deleteEndIndex > deleteStartIndex && isToolMessage(messages[deleteEndIndex])) {
+        for (let i = deleteEndIndex - 1; i >= deleteStartIndex; i--) {
+          if (isAIMessage(messages[i])) {
+            deleteEndIndex = i;
+            break;
           }
         }
       }
 
       // Create list of messages to delete
       const deleteMessages = messages
-        .slice(systemPromptOffset, keepStartIndex)
+        .slice(deleteStartIndex, deleteEndIndex)
         .map((m) => new RemoveMessage({ id: m.id! }));
 
       generation?.end({

@@ -1,218 +1,286 @@
-<div class="w-full px-4 sm:px-6 md:max-w-4xl md:mx-auto">
+<div class="w-full px-4 sm:px-6 md:max-w-6xl md:mx-auto">
   <div class="divide-y divide-secondary-200 overflow-hidden rounded-lg bg-white shadow">
     <div class="px-4 py-5">
       <h1 class="text-xl font-medium leading-tight tracking-tight text-secondary-900">
         Settings
       </h1>
     </div>
-    <div class="px-4 py-5 sm:p-6">
-      <!-- Error Message -->
-      <div
-        *ngIf="errorMessage && hasChanges"
-        class="mb-6 p-2 text-danger-600 font-medium bg-danger-50 rounded"
-      >
-        {{ errorMessage }}
+    <div class="flex doc-section-height grid grid-cols-[minmax(0,1fr)_minmax(0,3fr)]">
+      <!-- Left-side tabs navigation -->
+      <div class="border-r border-secondary-200 px-4 overflow-auto h-full">
+        <h2 id="settings-tabs" class="sr-only">Settings sections</h2>
+        <div role="tablist" aria-labelledby="settings-tabs" class="space-y-1 py-4">
+          <button
+            id="tab-general"
+            role="tab"
+            (click)="onTabChange('general')"
+            [attr.aria-selected]="activeTab === 'general'"
+            [attr.tabindex]="activeTab === 'general' ? null : -1"
+            aria-controls="panel-general"
+            [class]="activeTab === 'general' ? 'bg-primary-50 text-primary-600 border-primary-500' : 'border-transparent text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'"
+            class="w-full px-3 py-2 text-sm font-medium text-left focus:outline-none border-l-2"
+          >
+            General
+          </button>
+          <button
+            id="tab-about"
+            role="tab"
+            (click)="onTabChange('about')"
+            [attr.aria-selected]="activeTab === 'about'"
+            [attr.tabindex]="activeTab === 'about' ? null : -1"
+            aria-controls="panel-about"
+            [class]="activeTab === 'about' ? 'bg-primary-50 text-primary-600 border-primary-500' : 'border-transparent text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'"
+            class="w-full px-3 py-2 text-sm font-medium text-left focus:outline-none border-l-2"
+          >
+            About
+          </button>
+        </div>
       </div>
 
-      <form [formGroup]="configForm" class="space-y-8 divide-y divide-secondary-200">
-        <!-- LLM Configuration -->
-        <div class="space-y-4">
-          <div>
-            <h2 class="text-base font-medium leading-7 text-secondary-900">LLM Configuration</h2>
-            <p class="text-sm leading-6 text-secondary-500">
-              Configure your Language Model provider settings
-            </p>
-          </div>
+      <!-- Right-side content area -->
+      <div class="px-6 py-5 h-full overflow-auto">
+        <!-- Error Message -->
+        <div
+          *ngIf="errorMessage && hasChanges"
+          class="mb-6 p-2 text-danger-600 font-medium bg-danger-50 rounded"
+        >
+          {{ errorMessage }}
+        </div>
 
-          <!-- Providers Dropdown (Full Width) -->
-          <div class="space-y-2">
-            <label for="providerSelect" class="block text-sm font-medium text-secondary-900">
-              LLM Provider
-            </label>
-            <div class="relative">
-              <app-select
-                id="providerSelect"
-                formControlName="provider"
-                [options]="providerOptions"
-                [searchable]="false"
-                [required]="true"
-                [clearable]="true"
-                placeholder="Select LLM Provider"
-              ></app-select>
+        <!-- General Tab Content -->
+        <div 
+          id="panel-general"
+          role="tabpanel"
+          [attr.aria-labelledby]="'tab-general'"
+          *ngIf="activeTab == 'general'"
+        >
+          <form [formGroup]="configForm" class="space-y-8 divide-y divide-secondary-200">
+            <!-- LLM Configuration -->
+            <div class="space-y-4">
+              <div>
+                <h2 class="text-base font-medium leading-7 text-secondary-900">LLM Configuration</h2>
+                <p class="text-sm leading-6 text-secondary-500">
+                  Configure your Language Model provider settings
+                </p>
+              </div>
+
+              <!-- Providers Dropdown -->
+              <div class="space-y-2">
+                <label for="providerSelect" class="block text-sm font-medium text-secondary-900">
+                  LLM Provider
+                </label>
+                <div class="relative">
+                  <app-select
+                    id="providerSelect"
+                    formControlName="provider"
+                    [options]="providerOptions"
+                    [searchable]="false"
+                    [required]="true"
+                    [clearable]="true"
+                    placeholder="Select LLM Provider"
+                  ></app-select>
+                </div>
+              </div>
+
+              <!-- Provider-specific Configuration -->
+              <div formGroupName="config" class="mt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <ng-container *ngFor="let field of currentProviderFields">
+                    <div *ngIf="field.type !== 'checkbox' && field.type !== 'select'" class="space-y-2">
+                      <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
+                        {{ field.label }}
+                        <span *ngIf="field.required" class="text-danger-500">*</span>
+                      </label>
+                      <input
+                        [type]="field.type"
+                        [id]="field.name"
+                        [formControlName]="field.name"
+                        [placeholder]="field.placeholder || ''"
+                        class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
+                        [required]="field.required || false"
+                      />
+                    </div>
+
+                    <!-- Select Input -->
+                    <div *ngIf="field.type === 'select'" class="space-y-2">
+                      <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
+                        {{ field.label }}
+                        <span *ngIf="field.required" class="text-danger-500">*</span>
+                      </label>
+                      <div class="relative">
+                        <app-select
+                          [id]="field.name"
+                          [formControlName]="field.name"
+                          [options]="field.options || []"
+                          [searchable]="field.useAutocomplete || false"
+                          [required]="field.required || false"
+                          [placeholder]="'Select ' + field.label"
+                        ></app-select>
+                      </div>
+                    </div>
+
+                    <!-- Checkbox Input -->
+                    <div *ngIf="field.type === 'checkbox'" class="col-span-1 sm:col-span-2 gap-3 flex items-center">
+                      <input
+                        type="checkbox"
+                        [id]="field.name"
+                        [formControlName]="field.name"
+                        class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                      />
+                      <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
+                        {{ field.label }}
+                      </label>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Provider-specific Configuration (2-column Grid Layout) -->
-          <div formGroupName="config" class="mt-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <ng-container *ngFor="let field of currentProviderFields">
-                <div *ngIf="field.type !== 'checkbox' && field.type !== 'select'" class="space-y-2">
-                  <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
-                    {{ field.label }}
-                    <span *ngIf="field.required" class="text-danger-500">*</span>
-                  </label>
-                  <input
-                    [type]="field.type"
-                    [id]="field.name"
-                    [formControlName]="field.name"
-                    [placeholder]="field.placeholder || ''"
-                    class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
-                    [required]="field.required || false"
-                  />
-                </div>
+            <!-- Analytics Settings -->
+            <div class="space-y-4 pt-6">
+              <div>
+                <h2 class="text-base font-medium leading-7 text-secondary-900">Analytics Settings</h2>
+                <p class="text-sm leading-6 text-secondary-500">
+                  Configure analytics and data collection preferences
+                </p>
+              </div>
 
-                <!-- Select Input with Optional Autocomplete -->
-                <div *ngIf="field.type === 'select'" class="space-y-2">
-                  <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
-                    {{ field.label }}
-                    <span *ngIf="field.required" class="text-danger-500">*</span>
-                  </label>
-                  <div class="relative">
-                    <app-select
-                      [id]="field.name"
-                      [formControlName]="field.name"
-                      [options]="field.options || []"
-                      [searchable]="field.useAutocomplete || false"
-                      [required]="field.required || false"
-                      [placeholder]="'Select ' + field.label"
-                    ></app-select>
-                  </div>
-                </div>
-
-                <!-- Checkbox Input (Full Width) -->
-                <div *ngIf="field.type === 'checkbox'" class="col-span-1 sm:col-span-2 gap-3 flex items-center">
+              <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
+                <div class="px-4 py-3 flex items-center justify-between">
+                  <span class="text-sm text-secondary-900">Enable Analytics Tracking</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      [id]="field.name"
-                      [formControlName]="field.name"
-                      class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                      id="analyticsToggle"
+                      [formControl]="analyticsEnabled"
+                      class="sr-only peer"
                     />
-                    <label [for]="field.name" class="block text-sm font-medium text-secondary-900">
-                      {{ field.label }}
-                    </label>
+                    <div class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                  </label>
                 </div>
-              </ng-container>
+              </div>
+              <div *ngIf="analyticsWarning">
+                <p class="text-warning-600 text-xs flex items-center gap-1">
+                  <ng-icon name="heroExclamationTriangle" class="text-md"></ng-icon>
+                  {{ analyticsWarning }}
+                </p>
+              </div>
             </div>
+
+            <!-- Destination Settings -->
+            <div class="space-y-4 pt-6">
+              <div>
+                <h2 class="text-base font-medium leading-7 text-secondary-900">Destination Settings</h2>
+                <p class="text-sm leading-6 text-secondary-500">
+                  Configure where your generated requirements will be stored
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <label for="workingDir" class="block text-sm font-medium text-secondary-900">
+                  Storage Location
+                </label>
+                <div class="flex w-full">
+                  <input
+                    type="text"
+                    [value]="workingDir"
+                    placeholder="Choose Destination Folder"
+                    disabled
+                    id="workingDir"
+                    class="bg-secondary-100 border border-secondary-300 text-secondary-400 text-sm rounded-l-lg block w-full p-2"
+                  />
+                  <app-button
+                    [buttonContent]="'Browse'"
+                    [theme]="'primary'"
+                    [rounded]="'none'"
+                    [roundedRight]="'lg'"
+                    (click)="openFolderSelector()"
+                  ></app-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Update Settings -->
+            <div class="space-y-4 pt-6">
+              <div>
+                <h2 class="text-base font-medium leading-7 text-secondary-900">Update Settings</h2>
+                <p class="text-sm leading-6 text-secondary-500">
+                  Configure automatic updates and version management
+                </p>
+              </div>
+
+              <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
+                <div class="px-4 py-3 flex items-center justify-between">
+                  <span class="text-sm text-secondary-900">Automatic Updates</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="autoUpdatesToggle"
+                      [formControl]="autoUpdateEnabled"
+                      class="sr-only peer"
+                    />
+                    <div class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                  </label>
+                </div>
+                <button
+                  class="w-full px-4 py-3 text-sm text-secondary-900 flex items-center justify-between hover:bg-secondary-50"
+                  role="button"
+                  tabindex="0"
+                  (click)="checkForUpdates()"
+                  (keydown.enter)="checkForUpdates()"
+                  (keydown.space)="checkForUpdates(); $event.preventDefault()"
+                >
+                  <span>Check for Updates</span>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="text-secondary-400"
+                  >
+                    <path
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+          </form>
+
+          <!-- Action Buttons -->
+          <div class="mt-8 flex items-center justify-end gap-x-2">
+            <app-button
+              *ngIf="hasChanges"
+              buttonContent="Discard"
+              theme="secondary_outline"
+              size="sm"
+              (click)="navigateToHome()"
+            />
+            <app-button
+              *ngIf="hasChanges"
+              buttonContent="Save"
+              theme="primary"
+              size="sm"
+              (click)="onSave()"
+              [disabled]="!configForm.valid"
+            />
           </div>
         </div>
 
-        <!-- Analytics Settings -->
-        <div class="space-y-4 pt-6">
-          <div>
-            <h2 class="text-base font-medium leading-7 text-secondary-900">Analytics Settings</h2>
-            <p class="text-sm leading-6 text-secondary-500">
-              Configure analytics and data collection preferences
-            </p>
-          </div>
-
-          <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
-            <div class="px-4 py-3 flex items-center justify-between">
-              <span class="text-sm text-secondary-900">Enable Analytics Tracking</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  id="analyticsToggle"
-                  [formControl]="analyticsEnabled"
-                  class="sr-only peer"
-                />
-                <div class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-              </label>
-            </div>
-          </div>
-          <div *ngIf="analyticsWarning">
-            <p class="text-warning-600 text-xs flex items-center gap-1">
-              <ng-icon name="heroExclamationTriangle" class="text-md"></ng-icon>
-              {{ analyticsWarning }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Destination Settings -->
-        <div class="space-y-4 pt-6">
-          <div>
-            <h2 class="text-base font-medium leading-7 text-secondary-900">Destination Settings</h2>
-            <p class="text-sm leading-6 text-secondary-500">
-              Configure where your generated requirements will be stored
-            </p>
-          </div>
-
-          <div class="space-y-2">
-            <label for="workingDir" class="block text-sm font-medium text-secondary-900">
-              Storage Location
-            </label>
-            <div class="flex w-full">
-              <input
-                type="text"
-                [value]="workingDir"
-                placeholder="Choose Destination Folder"
-                disabled
-                id="workingDir"
-                class="bg-secondary-100 border border-secondary-300 text-secondary-400 text-sm rounded-l-lg block w-full p-2"
-              />
-              <app-button
-                [buttonContent]="'Browse'"
-                [theme]="'primary'"
-                [rounded]="'none'"
-                [roundedRight]="'lg'"
-                (click)="openFolderSelector()"
-              ></app-button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Update Settings -->
-        <div class="space-y-4 pt-6">
-          <div>
-            <h2 class="text-base font-medium leading-7 text-secondary-900">Update Settings</h2>
-            <p class="text-sm leading-6 text-secondary-500">
-              Configure automatic updates and version management
-            </p>
-          </div>
-
-          <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
-            <div class="px-4 py-3 flex items-center justify-between">
-              <span class="text-sm text-secondary-900">Automatic Updates</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  id="autoUpdatesToggle"
-                  [formControl]="autoUpdateEnabled"
-                  class="sr-only peer"
-                />
-                <div class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-              </label>
-            </div>
-            <button
-              class="w-full px-4 py-3 text-sm text-secondary-900 flex items-center justify-between hover:bg-secondary-50"
-              role="button"
-              tabindex="0"
-              (click)="checkForUpdates()"
-              (keydown.enter)="checkForUpdates()"
-              (keydown.space)="checkForUpdates(); $event.preventDefault()"
-            >
-              <span>Check for Updates</span>
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                class="text-secondary-400"
-              >
-                <path
-                  d="M7.5 15L12.5 10L7.5 5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Company Info -->
-        <div class="space-y-4 pt-6">
+        <!-- About Tab Content -->
+        <div 
+          id="panel-about"
+          role="tabpanel"
+          [attr.aria-labelledby]="'tab-about'"
+          *ngIf="activeTab === 'about'"
+          class="space-y-4"
+        >
           <div class="rounded-lg border border-secondary-200 divide-y divide-secondary-200">
             <div class="px-4 py-3 flex items-center justify-between">
               <span class="text-sm text-secondary-900">Accelerate SDLC process with</span>
@@ -225,7 +293,7 @@
             </div>
             <div class="px-4 py-3 flex items-center justify-between">
               <span class="text-sm text-secondary-900">Version</span>
-              <span class="text-sm text-secondary-600">{{ version }}</span>
+              <span class="text-sm text-secondary-600">{{ getAboutContent().version }}</span>
             </div>
             <button
               class="w-full px-4 py-3 text-sm text-danger-600 flex items-center justify-between hover:bg-danger-50"
@@ -255,25 +323,6 @@
             </button>
           </div>
         </div>
-      </form>
-
-      <!-- Action Buttons -->
-      <div class="mt-8 flex items-center justify-end gap-x-2">
-        <app-button
-          *ngIf="hasChanges"
-          buttonContent="Discard"
-          theme="secondary_outline"
-          size="sm"
-          (click)="navigateToHome()"
-        />
-        <app-button
-          *ngIf="hasChanges"
-          buttonContent="Save"
-          theme="primary"
-          size="sm"
-          (click)="onSave()"
-          [disabled]="!configForm.valid"
-        />
       </div>
     </div>
   </div>

@@ -3,7 +3,7 @@ import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators,
+  Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
@@ -30,6 +30,10 @@ import { InputFieldComponent } from '../../components/core/input-field/input-fie
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ToggleComponent } from '../../components/toggle/toggle.component';
 import { SettingsComponent } from 'src/app/components/settings/settings.component';
+import { provideIcons } from '@ng-icons/core';
+import { heroChevronDown } from '@ng-icons/heroicons/outline';
+import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
+import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
 
 @Component({
   selector: 'app-create-solution',
@@ -46,13 +50,16 @@ import { SettingsComponent } from 'src/app/components/settings/settings.componen
     TextareaFieldComponent,
     ToggleComponent,
     AppSliderComponent,
+    CustomAccordionComponent,
+    McpIntegrationConfiguratorComponent
   ],
+  viewProviders: [provideIcons({ heroChevronDown })],
 })
 export class CreateSolutionComponent implements OnInit {
   solutionForm!: FormGroup;
   loading: boolean = false;
   addOrUpdate: boolean = false;
-
+  
   logger = inject(NGXLogger);
   appSystemService = inject(AppSystemService);
   electronService = inject(ElectronService);
@@ -73,6 +80,10 @@ export class CreateSolutionComponent implements OnInit {
     );
   }
 
+  showGenerationPreferencesTab(): boolean {
+    return !this.solutionForm.get('cleanSolution')?.value;
+  }
+
   private initRequirementGroup(enabled: boolean = true, maxCount: number = REQUIREMENT_COUNT.DEFAULT) {
     return {
       enabled: new FormControl(enabled),
@@ -88,7 +99,8 @@ export class CreateSolutionComponent implements OnInit {
   }
 
   createSolutionForm() {
-    return new FormGroup({
+    const solutionFormGroup = new FormGroup({
+      id: new FormControl(uuid()),
       name: new FormControl('', [
         Validators.required,
         Validators.pattern(/\S/),
@@ -101,14 +113,17 @@ export class CreateSolutionComponent implements OnInit {
         Validators.required,
         Validators.pattern(/\S/),
       ]),
-      id: new FormControl(uuid()),
+      createReqt: new FormControl(true),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
       BRD: new FormGroup(this.initRequirementGroup()),
       PRD: new FormGroup(this.initRequirementGroup()),
       UIR: new FormGroup(this.initRequirementGroup()),
       NFR: new FormGroup(this.initRequirementGroup()),
+      mcpSettings: new FormControl({ mcpServers: {} }, [Validators.required]),
     });
+
+    return solutionFormGroup;
   }
 
   onRequirementToggle(type: RootRequirementType, enabled: boolean) {
@@ -150,8 +165,13 @@ export class CreateSolutionComponent implements OnInit {
       this.addOrUpdate = true;
       const data = this.solutionForm.getRawValue();
       data.createReqt = !data.cleanSolution;
+
       this.store.dispatch(new CreateProject(data.name, data));
     }
+  }
+
+  get isCreateSolutionDisabled(): boolean {
+    return this.loading || this.solutionForm.invalid;
   }
 
   openSelectRootDirectoryModal() {
@@ -197,4 +217,17 @@ export class CreateSolutionComponent implements OnInit {
   }
 
   protected readonly FormControl = FormControl;
+
+  get isMcpSettingsInvalid(): boolean {
+    const field = this.solutionForm?.get('mcpSettings');
+    return !!field?.invalid && (!!field?.dirty || !!field?.touched);
+  }
+
+  get isMcpSettingsJsonInvalid(): boolean {
+    return this.solutionForm?.get('mcpSettings')?.hasError('jsonInvalid') ?? false;
+  }
+
+  get isMcpSettingsSchemaInvalid(): boolean {
+    return this.solutionForm?.get('mcpSettings')?.hasError('invalidMcpSettings') ?? false;
+  }
 }

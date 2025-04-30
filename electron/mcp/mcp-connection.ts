@@ -11,13 +11,12 @@ import { z } from "zod";
 import { processSchema } from "./schema.utils";
 import {
   MCPConnectionStatus,
-  MCPOptions,
   MCPResource,
-  MCPServerStatus,
+  MCPServerOptions,
   MCPTool,
 } from "./types";
 
-const DEFAULT_MCP_TIMEOUT = 20_000; // 10 seconds
+const DEFAULT_MCP_TIMEOUT = 20_000; // 20 seconds
 
 export class MCPConnection {
   public client: Client;
@@ -32,7 +31,13 @@ export class MCPConnection {
   public tools: MCPTool[] = [];
   public resources: MCPResource[] = [];
 
-  constructor(private readonly options: MCPOptions) {
+  private _metadata: Record<string, any>;
+
+  constructor(
+    private readonly id: string,
+    private readonly options: MCPServerOptions,
+    metadata: Record<string, any> = {}
+  ) {
     this.transport = this.constructTransport(options);
 
     this.client = new Client({
@@ -41,39 +46,42 @@ export class MCPConnection {
     });
 
     this.abortController = new AbortController();
+    this._metadata = metadata;
   }
 
-  private constructTransport(options: MCPOptions): Transport {
-    switch (options.transport.type) {
+  private constructTransport(options: MCPServerOptions): Transport {
+    switch (options.transportType) {
       case "stdio":
-        const env: Record<string, string> = options.transport.env || {};
+        const env: Record<string, string> = options.env || {};
         if (process.env.PATH !== undefined) {
           env.PATH = process.env.PATH;
         }
         return new StdioClientTransport({
-          command: options.transport.command,
-          args: options.transport.args,
+          command: options.command,
+          args: options.args,
           env,
         });
       case "websocket":
-        return new WebSocketClientTransport(new URL(options.transport.url));
+        return new WebSocketClientTransport(new URL(options.url));
       case "sse":
-        return new SSEClientTransport(new URL(options.transport.url));
+        return new SSEClientTransport(new URL(options.url));
       default:
         throw new Error(
-          `Unsupported transport type: ${(options.transport as any).type}`
+          `Unsupported transport type: ${(options as any).transportType}`
         );
     }
   }
 
-  getStatus(): MCPServerStatus {
-    return {
-      ...this.options,
-      errors: this.errors,
-      resources: this.resources,
-      tools: this.tools,
-      status: this.status,
-    };
+  get metadata() {
+    return this._metadata;
+  }
+
+  setMetadata(metadata: Record<string, string> = {}) {
+    this._metadata = metadata;
+  }
+
+  get disabled() {
+    return this.options.disabled;
   }
 
   /**
@@ -123,8 +131,6 @@ export class MCPConnection {
         inputSchema = processSchema(mcpTool.inputSchema);
       }
 
-      console.log(inputSchema, "inputSchema")
-
       return new DynamicStructuredTool({
         name: `mcp_${mcpTool.name}`,
         description: mcpTool.description || "",
@@ -171,6 +177,12 @@ export class MCPConnection {
 
           return [result.contents[0].text, []];
         },
+        metadata: {
+          resource: {
+            name: resource.name,
+            uri: resource.uri,
+          },
+        },
       });
     });
   }
@@ -213,7 +225,7 @@ export class MCPConnection {
         const timeoutController = new AbortController();
         const connectionTimeout = setTimeout(
           () => timeoutController.abort(),
-          this.options.timeout ?? DEFAULT_MCP_TIMEOUT
+          DEFAULT_MCP_TIMEOUT
         );
 
         try {
@@ -283,12 +295,12 @@ export class MCPConnection {
           ]);
         } catch (error) {
           // Otherwise it's a connection error
-          let errorMessage = `Failed to connect to MCP server ${this.options.name}`;
+          let errorMessage = `Failed to connect to MCP server ${this.id}`;
           if (error instanceof Error) {
             const msg = error.message.toLowerCase();
             if (msg.includes("spawn") && msg.includes("enoent")) {
               const command = msg.split(" ")[1];
-              errorMessage += `command "${command}" not found. To use this MCP server, install the ${command} CLI.`;
+              errorMessage += ` command "${command}" not found. To use this MCP server, install the ${command} CLI.`;
             } else {
               errorMessage += ": " + error.message;
             }
@@ -304,5 +316,21 @@ export class MCPConnection {
     ]);
 
     await this.connectionPromise;
+  }
+
+  getDetails() {
+    return {
+      ...this.options,
+      id: this.id,
+      name: this.options.name,
+      status: this.status,
+      resources: this.resources,
+      tools: this.tools,
+      errors: this.errors,
+    };
+  }
+
+  hasOptionsChanged(newOptions: MCPServerOptions): boolean {
+    return JSON.stringify(this.options) !== JSON.stringify(newOptions);
   }
 }

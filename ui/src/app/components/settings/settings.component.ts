@@ -4,7 +4,6 @@ import {
   OnDestroy,
   ChangeDetectorRef,
   inject,
-  HostListener,
 } from '@angular/core';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
@@ -59,6 +58,7 @@ import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
   ]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
+  activeTab: 'general' | 'about' = 'general';
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
     LLMConfigState.getConfig,
   );
@@ -89,8 +89,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   logger = inject(NGXLogger);
   router = inject(Router);
   dialogService = inject(DialogService);
-  version: string = environment.APP_VERSION;
-  currentYear = new Date().getFullYear();
   analyticsWarning: string = '';
 
   constructor(
@@ -104,6 +102,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ) {
     this.workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
     this.initForm();
+  }
+
+  private getAboutInfo() {
+    return {
+      version: environment.APP_VERSION,
+      currentYear: new Date().getFullYear()
+    };
   }
 
   private initForm() {
@@ -455,5 +460,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  onTabChange(tab: 'general'| 'about') {
+    this.activeTab = tab;
+  }
+
+  getAboutContent() {
+    const { version, currentYear } = this.getAboutInfo();
+
+    return {
+      version,
+      currentYear,
+      appName: this.appName
+    };
   }
 }

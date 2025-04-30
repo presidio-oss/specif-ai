@@ -1,18 +1,10 @@
 import { z } from "zod";
 import {
-  McpOptionsSchema,
+  McpServerOptionsSchema,
   McpSettingsSchema,
-  SseOptionsSchema,
-  StdioOptionsSchema,
-  TransportOptionsSchema,
-  WebSocketOptionsSchema,
 } from "./schema";
 
-export type StdioOptions = z.infer<typeof StdioOptionsSchema>;
-export type WebSocketOptions = z.infer<typeof WebSocketOptionsSchema>;
-export type SSEOptions = z.infer<typeof SseOptionsSchema>;
-export type TransportOptions = z.infer<typeof TransportOptionsSchema>;
-export type MCPOptions = z.infer<typeof McpOptionsSchema>;
+export type MCPServerOptions = z.infer<typeof McpServerOptionsSchema>;
 export type MCPSettings = z.infer<typeof McpSettingsSchema>;
 
 export type MCPConnectionStatus =
@@ -37,9 +29,10 @@ export interface MCPTool {
   };
 }
 
-export interface MCPServerStatus extends MCPOptions {
+export type MCPServerDetails = MCPServerOptions & {
+  id: string;
   status: MCPConnectionStatus;
   errors: string[];
   tools: MCPTool[];
   resources: MCPResource[];
-}
+};

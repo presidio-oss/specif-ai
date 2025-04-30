@@ -36,6 +36,7 @@ export interface IProjectMetadata {
 }
 
 export interface ICreateSolutionRequest {
+  id: string;
   name: string;
   description: string;
   createReqt: boolean;
@@ -44,6 +45,7 @@ export interface ICreateSolutionRequest {
   prdPreferences: IGenerationRange;
   uirPreferences: IGenerationRange;
   nfrPreferences: IGenerationRange;
+  mcpSettings?: string;
 }
 
 export interface ISolutionResponseRequirementItem {

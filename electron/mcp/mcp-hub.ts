@@ -1,219 +1,190 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-
-import fs from "node:fs/promises";
-import path from "node:path";
-import { FILE_NAME } from "../constants/app.constants";
-import { arePathsEqual } from "../utils/file";
+import { MCPConnectionManager } from "./mcp-connection-manager";
+import { MCPSettingsManager } from "./mcp-settings-manager";
+import { MCPFileWatcher } from "./mcp-file-watcher";
+import { MCPServerDetails, MCPServerOptions, MCPSettings } from "./types";
 import { MCPConnection } from "./mcp-connection";
-import { McpSettingsSchema } from "./schema";
-import { MCPOptions, MCPServerStatus, MCPSettings } from "./types";
-
-type GetSettingDirectoryPath = () => Promise<string>;
 
 export class MCPHub {
   private static instance: MCPHub;
+  
+  private projectId: string | null = null;
+  private initializingMCPServersPromise: Promise<void> | null = null;
+  
+  private connectionManager: MCPConnectionManager;
+  private settingsManager: MCPSettingsManager;
+  private fileWatcher: MCPFileWatcher;
 
-  // events
-  public onConnectionsRefreshed?: () => void;
-
-  // private variables
-  private connections: Map<string, MCPConnection> = new Map();
-
-  private getSettingsDirectoryPath: GetSettingDirectoryPath;
-  private initializingMCPServersPromise: Promise<void> | null;
-
-  private abortController: AbortController = new AbortController();
-
-  private constructor(getSettingsDirectoryPath: GetSettingDirectoryPath) {
-    this.getSettingsDirectoryPath = getSettingsDirectoryPath;
-    this.watchGlobalMCPConfigFileForChanges();
+  private constructor() {
+    this.connectionManager = new MCPConnectionManager();
+    this.settingsManager = MCPSettingsManager.getInstance();
+    this.fileWatcher = new MCPFileWatcher(this.handleConfigChange.bind(this));
     this.initializingMCPServersPromise = this.initializeMCPServers();
+    this.waitForMCPServersInitialization();
+
+    // Start watching immediately for global changes
+    this.fileWatcher.watchMCPConfigFiles(this.projectId);
   }
 
-  public static getInstance(
-    getSettingsDirectoryPath: GetSettingDirectoryPath
-  ): MCPHub {
+  // singleton pattern
+  public static getInstance(): MCPHub {
     if (!MCPHub.instance) {
-      MCPHub.instance = new MCPHub(getSettingsDirectoryPath);
+      MCPHub.instance = new MCPHub();
     }
+
     return MCPHub.instance;
+  }
+
+  // Handles configuration file changes detected by the watcher
+  private async handleConfigChange(payload: {type: "global"} | {type: "project", projectId: string}) {
+    console.log(`Configuration change detected: ${payload.type}`);
+    // Re-initialize servers on any config change
+    this.initializingMCPServersPromise = this.initializeMCPServers();
+    await this.waitForMCPServersInitialization();
+  }
+
+  async setProjectId(id: string | null) {
+    if (this.projectId !== id) {
+        // Stop the current watcher
+        await this.fileWatcher.stopWatcher();
+
+        this.projectId = id;
+        
+        // Re-initialize servers when project ID changes
+        this.initializingMCPServersPromise = this.initializeMCPServers();
+        await this.waitForMCPServersInitialization();
+        
+        // Start a new watcher with the new project ID
+        await this.fileWatcher.watchMCPConfigFiles(id);
+        console.log(`Project ID set to ${id}, watcher restarted with new context.`);
+    }
   }
 
   async waitForMCPServersInitialization() {
     if (this.initializingMCPServersPromise) {
+      console.log("Waiting for MCP server initialization...");
       try {
         await this.initializingMCPServersPromise;
-        this.initializingMCPServersPromise = null;
+        console.log("MCP server initialization complete.");
+        this.initializingMCPServersPromise = null; // Clear the promise once resolved
       } catch (error) {
-        console.error("Error initializing mcp servers", error);
-        this.initializingMCPServersPromise = null;
+        console.error("Error during MCP server initialization:", error);
+        this.initializingMCPServersPromise = null; // Clear promise even on error
+        throw error; // Re-throw error for upstream handling if necessary
       }
     }
   }
+
+  // --- Connection Management Delegation ---
 
   async listConnections() {
     await this.waitForMCPServersInitialization();
-    return this.connections.entries();
+    return this.connectionManager.listConnections().entries();
   }
 
-  createConnection(id: string, options: MCPOptions): MCPConnection {
-    if (!this.connections.has(id)) {
-      const connection = new MCPConnection(options);
-      this.connections.set(id, connection);
-      return connection;
-    } else {
-      return this.connections.get(id)!;
-    }
+  async createConnection(id: string, options: MCPServerOptions): Promise<MCPConnection> {
+    await this.waitForMCPServersInitialization();
+    return this.connectionManager.createConnection(id, options);
   }
 
-  getConnection(id: string) {
-    return this.connections.get(id);
-  }
-
-  async removeConnection(id: string) {
-    const connection = this.connections.get(id);
-    if (connection) {
-      await connection.client.close();
-    }
-
-    this.connections.delete(id);
-  }
-
-  async setConnections(servers: MCPOptions[], forceRefresh: boolean) {
-    let refresh = true;
-
-    // Remove any connections that are no longer in config
-    Array.from(this.connections.entries()).forEach(([id, connection]) => {
-      if (!servers.find((s) => s.id === id)) {
-        refresh = true;
-        connection.abortController.abort();
-        void connection.client.close();
-        this.connections.delete(id);
-      }
-    });
-
-    // Add any connections that are not yet in manager
-    servers.forEach((server) => {
-      if (!this.connections.has(server.id)) {
-        refresh = true;
-        this.connections.set(server.id, new MCPConnection(server));
-      }
-    });
-
-    // NOTE the id is made by stringifying the options
-    if (refresh) {
-      await this.refreshConnections(forceRefresh);
-    }
+  async getConnection(id: string): Promise<MCPConnection | undefined> {
+    await this.waitForMCPServersInitialization();
+    return this.connectionManager.getConnection(id);
   }
 
   async refreshConnection(serverId: string) {
-    const connection = this.connections.get(serverId);
-    if (!connection) {
-      throw new Error(`MCP Connection ${serverId} not found`);
-    }
-    await connection.connectClient(true, this.abortController.signal);
-    if (this.onConnectionsRefreshed) {
-      this.onConnectionsRefreshed();
-    }
+    await this.waitForMCPServersInitialization();
+    await this.connectionManager.refreshConnection(serverId);
   }
 
   async refreshConnections(force: boolean) {
-    this.abortController.abort();
-    this.abortController = new AbortController();
-    await Promise.race([
-      new Promise((resolve) => {
-        this.abortController.signal.addEventListener("abort", () => {
-          resolve(undefined);
-        });
-      }),
-      (async () => {
-        await Promise.all(
-          Array.from(this.connections.values()).map(async (connection) => {
-            await connection.connectClient(force, this.abortController.signal);
-          })
-        );
-        if (this.onConnectionsRefreshed) {
-          this.onConnectionsRefreshed();
-        }
-      })(),
-    ]);
+    await this.waitForMCPServersInitialization();
+    await this.connectionManager.refreshConnections(force);
   }
 
-  getStatuses(): (MCPServerStatus & { client: Client })[] {
-    return Array.from(this.connections.values()).map((connection) => ({
-      ...connection.getStatus(),
-      client: connection.client,
-    }));
+  async readProjectMCPSettings(projectId: string | null): Promise<MCPSettings> {
+    return this.settingsManager.readProjectMCPSettings(projectId);
   }
 
-  // mcp settings helpers
+  async writeProjectMCPSettings(projectId: string, mcpSettings: MCPSettings): Promise<void> {
+    await this.settingsManager.writeProjectMCPSettings(projectId, mcpSettings);
 
-  getMCPSettingsFilePath = async (settingsPath: string): Promise<string> => {
-    const mcpSettingsFilePath = path.join(
-      settingsPath,
-      FILE_NAME.GLOBAL_MCP_SETTINGS
-    );
-    return mcpSettingsFilePath;
-  };
-
-  watchGlobalMCPConfigFileForChanges = async () => {
-    const settingsFolderPath = await this.getSettingsDirectoryPath();
-
-    // watch the settings folder for changes
-    for await (const event of fs.watch(settingsFolderPath)) {
-      console.debug(`Received event from watcher - ${event}`);
-      if (
-        event.filename &&
-        arePathsEqual(event.filename, FILE_NAME.GLOBAL_MCP_SETTINGS)
-      ) {
-        console.debug(`Global mcp settings file changed, will read again`);
-        const latestGlobalMCPSettings = await this.readGlobalMCPSettings();
-        console.debug(`read - ${JSON.stringify(latestGlobalMCPSettings)}`);
-
-        if (latestGlobalMCPSettings) {
-          this.setConnections(latestGlobalMCPSettings.servers, true);
-        }
-      }
+    if (this.projectId === projectId) {
+        console.log(`Project settings changed for current project (${projectId}), re-initializing MCP servers...`);
+        this.initializingMCPServersPromise = this.initializeMCPServers();
+        await this.waitForMCPServersInitialization();
+    } else {
+        console.log(`Project settings changed for project ${projectId}, but not the current project (${this.projectId}). No immediate re-initialization needed by the hub.`);
     }
-  };
+  }
+
+  // --- Initialization and Server Listing ---
 
   private async initializeMCPServers(): Promise<void> {
-    const settings = await this.readGlobalMCPSettings();
-
-    if (settings) {
-      await this.setConnections(settings.servers, true);
+    // if initialization already in progress, wait for it to continue and return
+    if(this.initializingMCPServersPromise){
+      console.log("skipping initializing mcp servers since it is already in progress")
+      return await this.waitForMCPServersInitialization();
     }
+
+    console.log("Initializing MCP servers...");
+    const globalSettings = await this.settingsManager.readGlobalMCPSettings();
+    const projectSettings = await this.settingsManager.readProjectMCPSettings(this.projectId);
+
+    const combinedServers: Record<string, MCPServerOptions> = {};
+
+    // Add global servers first
+    for (const [id, serverOptions] of Object.entries(globalSettings?.mcpServers ?? {})) {
+      combinedServers[id] = this._addServerMetadata(serverOptions, {
+        _hai_mcp_source_type: "global",
+      });
+    }
+
+    // Add project servers, potentially overriding global ones with the same ID
+    for (const [id, serverOptions] of Object.entries(projectSettings?.mcpServers ?? {})) {
+      combinedServers[id] = this._addServerMetadata(serverOptions, {
+        _hai_mcp_source_type: "project",
+        _hai_mcp_source_id: this.projectId,
+      });
+    }
+
+    console.log("Combined MCP Servers for initialization:", Object.keys(combinedServers));
+
+    await this.connectionManager.updateConnectionsFromSettings({
+      "mcpServers": combinedServers
+    });
+
+    console.log("MCP server initialization process finished.");
   }
 
-  readGlobalMCPSettings = async (): Promise<MCPSettings | undefined> => {
-    const settingsFolderPath = await this.getSettingsDirectoryPath();
-    const globalMCPSettingsPath = await this.getMCPSettingsFilePath(
-      settingsFolderPath
-    );
+  private _addServerMetadata(
+    server: MCPServerOptions,
+    metadata: Record<string, any>
+  ): MCPServerOptions {
+    return {
+      ...server,
+      metadata: { ...(server.metadata ?? {}), ...metadata },
+    };
+  }
 
-    try {
-      const mcpSettingsStringified = await fs.readFile(
-        globalMCPSettingsPath,
-        "utf-8"
-      );
-      const mcpSettings = McpSettingsSchema.parse(
-        JSON.parse(mcpSettingsStringified)
-      );
-      return mcpSettings;
-    } catch (error) {
-      console.warn(`Error reading global mcp settings file ${error}`);
+  async listMCPServerDetails(filters?: Record<string, any>): Promise<MCPServerDetails[]> {
+    await this.waitForMCPServersInitialization();
+    const allConnections = Array.from(this.connectionManager.listConnections().values());
 
-      if (error instanceof Error) {
-        const code = (error as NodeJS.ErrnoException).code;
+    const detailedServers = allConnections.map(conn => conn.getDetails());
 
-        if (code === "ENOENT") {
-          console.log(
-            `Global mcp settings file not found, so removing all mcp servers`
-          );
-          // File is removed so we want to clear all the servers at this point
-          return { servers: [] };
-        }
-      }
+    if (!filters || Object.keys(filters).length === 0) {
+      return detailedServers;
     }
-  };
+
+    // Apply filtering based on metadata
+    return detailedServers.filter(details => {
+        const metadata = details.metadata ?? {};
+        return Object.entries(filters).every(([key, value]) => metadata[key] === value);
+    });
+  }
+
+  async validateMCPSettings(mcpSettings: MCPSettings): Promise<MCPServerDetails[]> {
+     // Delegate validation to the connection manager
+     return this.connectionManager.validateMCPSettings(mcpSettings.mcpServers);
+  }
 }

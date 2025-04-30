@@ -450,6 +450,54 @@
               </app-button>
             </div>
           </app-accordion>
+
+          <app-accordion
+            [withConnectionStatus]="false"
+            title="MCP Servers"
+            dynamicClass="text-sm font-medium text-secondary-950 ml-3"
+            iconImage="./assets/img/logo/mcp_logo.svg"
+            [isOpen]="accordionState['mcp']"
+            (toggleAccordion)="toggleAccordion('mcp')"
+          >
+            <ng-container *ngIf="!isEditingMcpSettings; else mcpSettingsForm">
+              <app-mcp-servers
+                [mcpServers]="mcpServers"
+                [isLoading]="mcpServersLoading"
+                [showHeading]="false"
+              ></app-mcp-servers>
+              <div class="mt-6 flex justify-end">
+                <app-button
+                  buttonContent="Edit MCP Settings"
+                  theme="primary"
+                  size="sm"
+                  (click)="toggleMcpSettingsEdit()"
+                ></app-button>
+              </div>
+            </ng-container>
+            <ng-template #mcpSettingsForm>
+              <form [formGroup]="mcpForm" (ngSubmit)="saveMcpSettings()">
+                <app-mcp-integration-configurator
+                  formControlName="mcpSettings"
+                ></app-mcp-integration-configurator>
+                <div class="mt-6 flex justify-end space-x-4">
+                  <app-button
+                    buttonContent="Cancel"
+                    theme="secondary"
+                    size="sm"
+                    type="button"
+                    (click)="toggleMcpSettingsEdit()"
+                  ></app-button>
+                  <app-button
+                    [buttonContent]="isSavingMcpSettings ? 'Saving...' : 'Save'"
+                    theme="primary"
+                    size="sm"
+                    type="submit"
+                    [disabled]="mcpForm.pristine || isSavingMcpSettings"
+                  ></app-button>
+                </div>
+              </form>
+            </ng-template>
+          </app-accordion>
         </div>
       </div>
     </section>
