@@ -1,17 +1,19 @@
 import { IpcMainInvokeEvent } from 'electron';
 import { createTaskSchema, CreateTaskRequest, CreateTaskResponse } from '../../../schema/feature/task/create.schema';
-import { createTaskPrompt } from '../../../prompts/feature/task/create';
-import { LLMUtils } from '../../../services/llm/llm-utils';
-import { buildLLMHandler } from '../../../services/llm';
 import { store } from '../../../services/store';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
-import { repairJSON } from '../../../utils/custom-json-parser';
-import { traceBuilder } from '../../../utils/trace-builder';
-import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { createTaskWorkflow } from '../../../agentic/task-workflow';
+import { randomUUID } from "node:crypto";
+import { MemorySaver } from "@langchain/langgraph";
+import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain';
+import { ObservabilityManager } from '../../../services/observability/observability.manager';
 
 export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<CreateTaskResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace('create-task');
+
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
@@ -19,35 +21,47 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
     console.log('[create-task] Using LLM config:', llmConfig);
     const validatedData = createTaskSchema.parse(data) as CreateTaskRequest;
 
-    // Generate prompt
-    const prompt = createTaskPrompt({
-      name: validatedData.name,
-      userstories: validatedData.description,
-      technologies: validatedData.technicalDetails,
-      extraContext: validatedData.extraContext
+    const memoryCheckpointer = new MemorySaver();
+    
+    const taskWorkflow = createTaskWorkflow({
+      model: buildLangchainModelProvider(
+        llmConfig.activeProvider,
+        llmConfig.providerConfigs[llmConfig.activeProvider].config
+      ),
+      checkpointer: memoryCheckpointer
     });
-
-    // Prepare messages for LLM
-    const messages = await LLMUtils.prepareMessages(prompt);
-
-    const handler = buildLLMHandler(
-      llmConfig.activeProvider,
-      llmConfig.providerConfigs[llmConfig.activeProvider].config
-    );
-
-    const traceName = traceBuilder(COMPONENT.TASK, OPERATIONS.CREATE);
-    const response = await handler.invoke(messages, null, traceName);
-    console.log('[create-task] LLM Response:', response);
-
-    let result;
-    try {
-      let cleanedResponse = repairJSON(response.trim());
-      const parsed = JSON.parse(cleanedResponse);
-      if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
-        throw new Error('Invalid response structure');
+    
+    const initialState = {
+      name: validatedData.name,
+      userStory: validatedData.description,
+      technicalDetails: validatedData.technicalDetails || "",
+      extraContext: validatedData.extraContext || ""
+    };
+    
+    const config = {
+      "configurable": {
+        "thread_id": `${randomUUID()}_create_tasks`,
+        "trace": trace
       }
+    };
+    
+    const stream = taskWorkflow.streamEvents(initialState, {
+      version: "v2",
+      streamMode: "messages",
+      ...config,
+    });
+    
+    for await (const event of stream) {
+    }
+    
+    const response = await taskWorkflow.getState({
+      ...config
+    });
+    
+    const tasks = response.values.tasks;
 
-      const transformedTasks = parsed.tasks.map((task: { id: any; name: string; acceptance: string; }) => {
+    try {
+      const transformedTasks = tasks.map((task: any) => {
         if (!task.id || !task.name || !task.acceptance) {
           throw new Error(`Invalid task structure: missing required fields in ${JSON.stringify(task)}`);
         }
@@ -56,23 +70,19 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
           id: task.id
         };
         
-        transformedTask[task.name] = task.acceptance;        
+        transformedTask[task.name] = task.acceptance;
         return transformedTask;
       });
-
-      result = {
-        tasks: transformedTasks
+      
+      return {
+        ...validatedData,
+        tasks: transformedTasks,
+        reqDesc: validatedData.description
       };
     } catch (error) {
-      console.error('[create-task] Error parsing LLM response:', error);
-      throw new Error('Failed to parse LLM response as JSON');
+      console.error('[create-task] Error processing response:', error);
+      throw new Error('Failed to process workflow response');
     }
-
-    return {
-      ...validatedData,
-      tasks: result.tasks,
-      reqDesc: validatedData.description
-    };
   } catch (error) {
     console.error('Error in createTask:', error);
     throw error;
