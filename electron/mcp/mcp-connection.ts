@@ -52,6 +52,7 @@ export class MCPConnection {
       case "stdio":
         const env: Record<string, string> = options.env || {};
         // @ts-expect-error shell-path has no type definitions
+        // https://github.com/sindresorhus/file-type/issues/535#issuecomment-1065952695
         const { shellPath } = await (eval('import("shell-path")') as Promise<typeof import('shell-path')>);
         const defaultShellPath = await shellPath();
         // https://github.com/electron/electron/issues/5626
