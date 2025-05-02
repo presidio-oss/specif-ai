@@ -20,7 +20,7 @@ const DEFAULT_MCP_TIMEOUT = 20_000; // 20 seconds
 
 export class MCPConnection {
   public client: Client;
-  private transport!: Transport;
+  private transport: Transport | null = null;
 
   private connectionPromise: Promise<unknown> | null = null;
   public abortController: AbortController;
