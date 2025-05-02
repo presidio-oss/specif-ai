@@ -20,7 +20,7 @@ const DEFAULT_MCP_TIMEOUT = 20_000; // 20 seconds
 
 export class MCPConnection {
   public client: Client;
-  private transport: Transport;
+  private transport!: Transport;
 
   private connectionPromise: Promise<unknown> | null = null;
   public abortController: AbortController;
@@ -38,8 +38,6 @@ export class MCPConnection {
     private readonly options: MCPServerOptions,
     metadata: Record<string, any> = {}
   ) {
-    this.transport = this.constructTransport(options);
-
     this.client = new Client({
       name: "specifai-client",
       version: "0.1",
@@ -49,12 +47,17 @@ export class MCPConnection {
     this._metadata = metadata;
   }
 
-  private constructTransport(options: MCPServerOptions): Transport {
+  private async constructTransport(options: MCPServerOptions): Promise<Transport> {
     switch (options.transportType) {
       case "stdio":
         const env: Record<string, string> = options.env || {};
-        if (process.env.PATH !== undefined) {
-          env.PATH = process.env.PATH;
+        // @ts-expect-error shell-path has no type definitions
+        const { shellPath } = await (eval('import("shell-path")') as Promise<typeof import('shell-path')>);
+        const defaultShellPath = await shellPath();
+        // https://github.com/electron/electron/issues/5626
+        // > This is unfortunately a behavior of OS X, every app started from Finder does not get the environment variables from terminal
+        if (defaultShellPath !== undefined) {
+          env.PATH = defaultShellPath;
         }
         return new StdioClientTransport({
           command: options.command,
@@ -236,7 +239,7 @@ export class MCPConnection {
               });
             }),
             (async () => {
-              this.transport = this.constructTransport(this.options);
+              this.transport = await this.constructTransport(this.options);
               try {
                 await this.client.connect(this.transport);
               } catch (error) {

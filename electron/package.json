@@ -67,6 +67,7 @@
     "langchain": "^0.3.19",
     "langfuse": "^3.37.0",
     "openai": "^4.87.4",
+    "shell-path": "^3.0.0",
     "zod": "^3.24.2"
   },
   "build": {
