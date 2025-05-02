@@ -10,6 +10,8 @@ import { setupFeatureHandlers } from "./handlers/feature-handler";
 import { setupSolutionHandlers } from "./handlers/solution-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
+import { setupMcpHandlers } from "./handlers/mcp-handler";
+import { MCPHub } from "./mcp/mcp-hub";
 
 // ========================
 // CONFIGURATION
@@ -196,5 +198,9 @@ app.whenReady().then(async () => {
     setupVisualizationHandlers();
     setupFeatureHandlers();
     setupSolutionHandlers();
+    setupMcpHandlers();
+
+    // start mcp servers in the background
+    MCPHub.getInstance()
   }
 });

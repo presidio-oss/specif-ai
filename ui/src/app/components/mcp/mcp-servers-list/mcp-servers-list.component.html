@@ -1,0 +1,24 @@
+<div class="flex flex-col gap-4">
+  <div *ngIf="showHeading">
+    <h3 class="text-lg font-medium text-secondary-900">{{heading}}</h3>
+    <p class="mt-2 text-sm text-secondary-500">
+      {{subHeading}}
+    </p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-8">
+    <p class="text-secondary-500">Loading MCP servers...</p>
+  </div>
+
+  <!-- MCP Servers List -->
+  <div *ngIf="!isLoading" class="flex flex-col gap-1">
+    <app-mcp-servers-item *ngFor="let server of mcpServers" [server]="server">
+    </app-mcp-servers-item>
+
+    <!-- No Servers Message -->
+    <div *ngIf="mcpServers.length === 0" class="text-center py-8">
+      <p class="text-secondary-500">No MCP servers connected</p>
+    </div>
+  </div>
+</div>

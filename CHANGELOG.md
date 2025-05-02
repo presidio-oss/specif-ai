@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.2]
+
+### Fixes
+
+- Removed HAI Chat integration from requirements document add flow.
+- Enhanced Business Process navigation with improved guards to prevent data loss and eliminate redundant popups.
+
 ## [2.2.1]
 
 ### Fixes
