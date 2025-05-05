@@ -7,8 +7,10 @@ import { MemorySaver } from "@langchain/langgraph";
 import { createUserStoryWorkflow } from '../../../agentic/user-story-workflow';
 import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain';
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
+import { getMCPTools } from '../../../mcp';
+import { MCPHub } from '../../../mcp/mcp-hub';
 
-export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
+export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
     const o11y = ObservabilityManager.getInstance();
@@ -22,6 +24,7 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
     const validatedData = createStorySchema.parse(data);
 
     const {
+      appId,
       reqDesc,
       extraContext,
       technicalDetails
@@ -29,11 +32,21 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
 
     const memoryCheckpointer = new MemorySaver();
     
+    let mcpTools = [];
+    try {
+      const mcpHub = MCPHub.getInstance();
+      await mcpHub.setProjectId(appId);
+      mcpTools = await getMCPTools();
+    } catch (error) {
+      console.warn("Error getting mcp tools", error);
+    }
+
     const userStoryWorkflow = createUserStoryWorkflow({
       model: buildLangchainModelProvider(
         llmConfig.activeProvider,
         llmConfig.providerConfigs[llmConfig.activeProvider].config
       ),
+      tools: [...mcpTools],
       checkpointer: memoryCheckpointer
     });
     

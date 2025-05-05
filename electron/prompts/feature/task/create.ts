@@ -5,6 +5,7 @@ export interface CreateTaskPromptParams {
   userstories: string;
   technologies?: string;
   extraContext?: string;
+  referenceInformation?: string;
 }
 
 export function createTaskPrompt(params: CreateTaskPromptParams): string {
@@ -18,6 +19,7 @@ ${params.userstories}
 
 ${params.technologies ? `Technical Details:\n${params.technologies}\n` : ''}
 ${params.extraContext ? `Extra Context:\n${params.extraContext}\n` : ''}
+${params.referenceInformation ? `### Additional Context:\n${params.referenceInformation}`:''}
 
 REQUIREMENTS FOR TASK GENERATION:
 

@@ -7,6 +7,8 @@ import { randomUUID } from "node:crypto";
 import { MemorySaver } from "@langchain/langgraph";
 import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain';
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
+import { getMCPTools } from '../../../mcp';
+import { MCPHub } from '../../../mcp/mcp-hub';
 
 export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<CreateTaskResponse> {
   try {
@@ -23,11 +25,21 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
 
     const memoryCheckpointer = new MemorySaver();
     
+    let mcpTools = [];
+    try {
+      const mcpHub = MCPHub.getInstance();
+      await mcpHub.setProjectId(validatedData.appId);
+      mcpTools = await getMCPTools();
+    } catch (error) {
+      console.warn("Error getting mcp tools", error);
+    }
+
     const taskWorkflow = createTaskWorkflow({
       model: buildLangchainModelProvider(
         llmConfig.activeProvider,
         llmConfig.providerConfigs[llmConfig.activeProvider].config
       ),
+      tools: [...mcpTools],
       checkpointer: memoryCheckpointer
     });
     

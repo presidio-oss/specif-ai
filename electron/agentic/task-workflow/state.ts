@@ -24,6 +24,7 @@ export const TaskWorkflowStateAnnotation = Annotation.Root({
     reducer: (_, val) => val,
     default: () => "",
   }),
+  referenceInformation: Annotation<string>,
   evaluation: Annotation<string>({
     reducer: (_, val) => val,
     default: () => "",

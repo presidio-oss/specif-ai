@@ -4,6 +4,7 @@ interface RefinePromptParams {
   features?: string;
   evaluation?: string;
   extraContext?: string;
+  referenceInformation?: string;
 }
 
 export function refinePrompt({
@@ -11,7 +12,8 @@ export function refinePrompt({
   technologies,
   features,
   evaluation,
-  extraContext
+  extraContext,
+  referenceInformation,
 }: RefinePromptParams): string {
   return `# REQUIREMENTS
 ${requirements}
@@ -20,6 +22,7 @@ ${technologies ? `# Technical Details\n${technologies}\n` : ''}
 ${features ? `# FEATURES\n${features}\n` : ''}
 ${evaluation ? `# EVALUATION\n${evaluation}\n` : ''}
 ${extraContext ? `# extraContext\n${extraContext}\n` : ''}
+${referenceInformation ? `### Additional Context:\n${referenceInformation}`:''}
 
 # GUIDELINES
 1. Review the current features split and the previous evaluation.

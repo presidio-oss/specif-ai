@@ -1,10 +1,99 @@
 import { HumanMessage } from "@langchain/core/messages";
+import { BaseCheckpointSaver } from "@langchain/langgraph-checkpoint";
+import { z } from "zod";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
+import { ITool } from "../common/types";
+import { buildReactAgent } from "../react-agent";
 import { refinePrompt } from "../../prompts/feature/evaluation/refine";
 import { evaluatePrompt } from "../../prompts/feature/evaluation/evaluate";
 import { repairJSON } from "../../utils/custom-json-parser";
 import { IUserStoryWorkflowStateAnnotation } from "./state";
 import { UserStoryWorkflowRunnableConfig } from "./types";
+import { createUserStoryResearchInformationPrompt } from "./prompts/research-information";
+import { createSummarizeUserStoryResearchPrompt } from "./prompts/summarize-research";
+
+type BuildResearchNodeParams = {
+  model: LangChainModelProvider;
+  tools: Array<ITool>;
+  checkpointer?: BaseCheckpointSaver | false | undefined;
+};
+
+export const buildResearchNode = ({
+  model,
+  tools,
+  checkpointer,
+}: BuildResearchNodeParams) => {
+  return async (
+    state: IUserStoryWorkflowStateAnnotation["State"],
+    runnableConfig: UserStoryWorkflowRunnableConfig
+  ) => {
+    const trace = runnableConfig.configurable?.trace;
+    const span = trace?.span({
+      name: "research",
+    });
+
+    if (tools.length === 0) {
+      const message = "No tools are passed so skipping research phase";
+      span?.end({
+        statusMessage: message,
+      });
+
+      return {
+        referenceInformation: "",
+      };
+    }
+
+    const agent = buildReactAgent({
+      model: model,
+      tools: tools,
+      responseFormat: {
+        prompt: createSummarizeUserStoryResearchPrompt({
+          requirements: state.requirements,
+          technicalDetails: state.technicalDetails,
+          extraContext: state.extraContext,
+        }),
+        schema: z.object({
+          referenceInformation: z.string(),
+        }),
+      },
+      checkpointer: checkpointer,
+    });
+
+    // max(min(64, each tool called twice (for each tool call - llm node + tool node + trim messages node) so 3) + 1 (for structured output)), 128)
+    const recursionLimit = Math.min(
+      Math.max(64, tools.length * 2 * 3 + 1),
+      128
+    );
+
+    const response = await agent.invoke(
+      {
+        messages: [
+          createUserStoryResearchInformationPrompt({
+            requirements: state.requirements,
+            technicalDetails: state.technicalDetails,
+            extraContext: state.extraContext,
+            recursionLimit: recursionLimit,
+          }),
+        ],
+      },
+      {
+        recursionLimit: recursionLimit,
+        configurable: {
+          trace: span,
+          thread_id: runnableConfig.configurable?.thread_id,
+        },
+      }
+    );
+
+    span?.end({
+      statusMessage: "Research completed successfully!",
+    });
+
+    return {
+      referenceInformation: response.structuredResponse.referenceInformation,
+    };
+  };
+};
 
 // Generate Initial Stories Node
 export const buildGenerateStoriesNode = (
@@ -24,6 +113,7 @@ export const buildGenerateStoriesNode = (
       const prompt = refinePrompt({
         requirements: state.requirements,
         extraContext: state.extraContext,
+        referenceInformation: state.referenceInformation,
         technologies: state.technicalDetails,
         features:
           state.stories.length > 0
