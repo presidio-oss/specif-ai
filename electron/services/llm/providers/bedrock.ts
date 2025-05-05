@@ -14,6 +14,7 @@ interface BedrockConfig extends LLMConfig {
   secretAccessKey: string;
   sessionToken?: string;
   model: string;
+  useCrossRegionInference?: boolean;
 }
 
 export class BedrockHandler extends LLMHandler {
@@ -64,6 +65,7 @@ export class BedrockHandler extends LLMHandler {
       secretAccessKey: config.secretAccessKey,
       sessionToken: config.sessionToken,
       model: config.model,
+      useCrossRegionInference: config.useCrossRegionInference,
     };
   }
 
@@ -99,8 +101,9 @@ export class BedrockHandler extends LLMHandler {
       };
     }
 
+    const modelId = this.getModelId();
     const command = new InvokeModelCommand({
-      modelId: this.configData.model,
+      modelId,
       body: JSON.stringify(requestBody),
     });
 
@@ -112,7 +115,8 @@ export class BedrockHandler extends LLMHandler {
 
     const traceName = `${TRACES.CHAT_BEDROCK_CONVERSE}:${this.configData.model}`;
     const trace = this.observabilityManager.createTrace(traceName);
-    
+
+    // test trace pricing
     trace.generation({
       name: operation,
       model: this.configData.model,
@@ -141,6 +145,28 @@ export class BedrockHandler extends LLMHandler {
       }
       return responseBody.choices[0].message.content;
     }
+  }
+
+  /**
+   * Gets the appropriate model ID, accounting for cross-region inference if enabled
+   */
+  private getModelId(): string {
+    if (this.configData.useCrossRegionInference) {
+      const regionPrefix = this.configData.region.slice(0, 3);
+
+      switch (regionPrefix) {
+        case "us-":
+          return `us.${this.getModel().id}`;
+        case "eu-":
+          return `eu.${this.getModel().id}`;
+        case "ap-":
+          return `apac.${this.getModel().id}`;
+        default:
+          // cross region inference is not supported in this region, falling back to default model
+          return this.getModel().id;
+      }
+    }
+    return this.getModel().id;
   }
 
   getModel(): ModelInfo {
