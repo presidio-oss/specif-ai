@@ -2,6 +2,8 @@ import { toolUseContext } from "../../../agentic/create-solution-workflow/prompt
 import { getTaskPerspectives, TaskResearchPreferences } from "./utils";
 
 export const createTaskResearchInformationPrompt = ({
+  appName,
+  appDescription,
   name,
   userStory,
   technicalDetails,
@@ -13,10 +15,14 @@ export const createTaskResearchInformationPrompt = ({
   return `
   You are a lead technical analyst. As part of your role you gather comprehensive and relevant information to support the downstream breakdown of development tasks into smaller, actionable subtasks.
 
+  ## App Context:
+    App Name: ${appName}
+    App Description: ${appDescription}
+    App Technical Details: ${technicalDetails}
+
   ## Task Context:
     Task Name: ${name}
     User Story: ${userStory}
-    Technical Details: ${technicalDetails || ""}
     Additional Context: ${extraContext || ""}
   
   ## Objective

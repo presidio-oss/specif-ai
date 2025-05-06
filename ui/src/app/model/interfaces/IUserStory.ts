@@ -25,6 +25,8 @@ interface IFeatureResponse {
 
 export interface IUserStoriesRequest {
     appId: string;
+    appName: string;
+    appDescription: string;
     reqId: string;
     reqDesc: string;
     regenerate: boolean;

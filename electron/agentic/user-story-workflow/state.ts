@@ -13,9 +13,14 @@ export const UserStoryWorkflowStateAnnotation = Annotation.Root({
   requirements: Annotation<string>({
     reducer: (_, val) => val,
   }),
+  appName: Annotation<string>({
+    reducer: (_, val) => val,
+  }),
+  appDescription: Annotation<string>({
+    reducer: (_, val) => val,
+  }),
   technicalDetails: Annotation<string>({
     reducer: (_, val) => val,
-    default: () => "",
   }),
   extraContext: Annotation<string>({
     reducer: (_, val) => val,

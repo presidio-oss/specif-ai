@@ -1,6 +1,8 @@
 import { getTaskPerspectives, TaskResearchPreferences } from "./utils";
 
 export function createSummarizeTaskResearchPrompt({
+  appName,
+  appDescription,
   name,
   userStory,
   technicalDetails,
@@ -10,10 +12,14 @@ export function createSummarizeTaskResearchPrompt({
 
   return `You are a lead technical analyst. As part of your role you synthesize information gathered to support the downstream breakdown of development tasks into smaller, actionable subtasks.
 
+  ## App Context:
+    App Name: ${appName}
+    App Description: ${appDescription}
+    App Technical Details: ${technicalDetails}
+
   ## Task Context:
     Task Name: ${name}
     User Story: ${userStory}
-    Technical Details: ${technicalDetails || ""}
     Additional Context: ${extraContext || ""}
 
   ## Objective

@@ -5,6 +5,8 @@ import {
 } from "./utils";
 
 export const createUserStoryResearchInformationPrompt = ({
+  appName,
+  appDescription,
   requirements,
   technicalDetails,
   extraContext,
@@ -15,9 +17,13 @@ export const createUserStoryResearchInformationPrompt = ({
   return `
   You are a lead technical analyst. As part of your role you gather comprehensive and relevant information to support the downstream generation of user stories.
 
-  ## Context:
+  ## App Context:
+    App Name: ${appName}
+    App Description: ${appDescription}
+    App Technical Details: ${technicalDetails}
+
+  ## User Story Context:
     Requirements: ${requirements}
-    Technical Details: ${technicalDetails || ""}
     Additional Context: ${extraContext || ""}
   
   ## Objective

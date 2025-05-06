@@ -187,6 +187,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
   refineUserStoryIntoTasks(regenerate: boolean = false, extraContext: string) {
     let request: ITaskRequest = {
       appId: this.config.projectId,
+      appName: this.metadata.name,
+      appDescription: this.metadata.description,
       reqId: this.config.newFileName.split('-')[0],
       featureId: this.selectedUserStory.id,
       name: this.selectedUserStory.name,

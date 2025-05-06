@@ -47,6 +47,8 @@ export const buildResearchNode = ({
       tools: tools,
       responseFormat: {
         prompt: createSummarizeTaskResearchPrompt({
+          appName: state.appName,
+          appDescription: state.appDescription,
           name: state.name,
           userStory: state.userStory,
           technicalDetails: state.technicalDetails,
@@ -69,6 +71,8 @@ export const buildResearchNode = ({
       {
         messages: [
           createTaskResearchInformationPrompt({
+            appName: state.appName,
+            appDescription: state.appDescription,
             name: state.name,
             userStory: state.userStory,
             technicalDetails: state.technicalDetails,

@@ -24,6 +24,8 @@ export interface ITaskResponse {
 
 export interface ITaskRequest {
     appId: string;
+    appName: string;
+    appDescription: string;
     reqId: string;
     featureId: string;
     name: string;
