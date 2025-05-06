@@ -278,6 +278,7 @@ export class UserStoriesComponent implements OnInit {
       appName: this.metadata.name,
       appDescription: this.metadata.description,
       reqId: this.newFileName.split('-')[0],
+      reqName: this.navigation.selectedRequirement.title,
       reqDesc: this.navigation.selectedRequirement.requirement,
       regenerate: regenerate,
       technicalDetails: this.metadata.technicalDetails || '',

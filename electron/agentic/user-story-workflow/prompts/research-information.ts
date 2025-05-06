@@ -7,7 +7,8 @@ import {
 export const createUserStoryResearchInformationPrompt = ({
   appName,
   appDescription,
-  requirements,
+  reqName,
+  reqDesc,
   technicalDetails,
   extraContext,
   recursionLimit,
@@ -15,7 +16,7 @@ export const createUserStoryResearchInformationPrompt = ({
   const perspectives = getUserStoryPerspectives();
 
   return `
-  You are a lead technical analyst. As part of your role you gather comprehensive and relevant information to support the downstream generation of user stories.
+  You are a lead technical analyst. As part of your role you gather comprehensive and relevant information to support the downstream generation of user stories, beginning with a thorough analysis of the PRD requirement as the cornerstone of your research.
 
   ## App Context:
     App Name: ${appName}
@@ -23,7 +24,9 @@ export const createUserStoryResearchInformationPrompt = ({
     App Technical Details: ${technicalDetails}
 
   ## User Story Context:
-    Requirements: ${requirements}
+    PRD REQUIREMENT:
+    **Name:** ${reqName}
+    **Description:** ${reqDesc}
     Additional Context: ${extraContext || ""}
   
   ## Objective
@@ -33,6 +36,7 @@ export const createUserStoryResearchInformationPrompt = ({
   ## Process
     1. Comprehensive Research and Information Gathering:
       - Your primary focus is to conduct thorough research using available tools to gather a wide range of information relevant to the requirements.
+      - Begin by deeply analyzing the PRD requirement provided above. This is your core source of truth and should guide all further exploration.
       - You will continue this phase until you have a comprehensive understanding from user, business, technical, and testing perspectives.
 
     2. Synthesis:

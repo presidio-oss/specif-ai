@@ -2,7 +2,7 @@ export interface TaskResearchPreferences {
   appName: string;
   appDescription: string;
   name: string;
-  userStory: string;
+  description: string;
   technicalDetails?: string;
   extraContext?: string;
 }

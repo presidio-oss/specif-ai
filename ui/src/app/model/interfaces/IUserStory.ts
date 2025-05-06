@@ -28,6 +28,7 @@ export interface IUserStoriesRequest {
     appName: string;
     appDescription: string;
     reqId: string;
+    reqName: string;
     reqDesc: string;
     regenerate: boolean;
     technicalDetails: string;

@@ -1,5 +1,6 @@
 interface RefinePromptParams {
-  requirements: string;
+  reqName: string;
+  reqDesc: string;
   technologies?: string;
   features?: string;
   evaluation?: string;
@@ -8,16 +9,19 @@ interface RefinePromptParams {
 }
 
 export function refinePrompt({
-  requirements,
+  reqName,
+  reqDesc,
   technologies,
   features,
   evaluation,
   extraContext,
   referenceInformation,
 }: RefinePromptParams): string {
-  return `# REQUIREMENTS
-${requirements}
-
+  return `
+  # REQUIREMENTS
+  **Name:** ${reqName}
+  **Description:** ${reqDesc}
+  
 ${technologies ? `# Technical Details\n${technologies}\n` : ''}
 ${features ? `# FEATURES\n${features}\n` : ''}
 ${evaluation ? `# EVALUATION\n${evaluation}\n` : ''}

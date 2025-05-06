@@ -27,6 +27,7 @@ export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promi
       appId,
       appName,
       appDescription,
+      reqName,
       reqDesc,
       extraContext,
       technicalDetails
@@ -55,7 +56,8 @@ export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promi
     const initialState = {
       appName,
       appDescription,
-      requirements: reqDesc,
+      reqName,
+      reqDesc,
       extraContext: extraContext || "",
       technicalDetails: technicalDetails || ""
     };

@@ -6,7 +6,8 @@ import {
 export function createSummarizeUserStoryResearchPrompt({
   appName,
   appDescription,
-  requirements,
+  reqName,
+  reqDesc,
   technicalDetails,
   extraContext,
 }: UserStoryResearchPreferences): string {
@@ -20,7 +21,9 @@ export function createSummarizeUserStoryResearchPrompt({
     App Technical Details: ${technicalDetails}
 
   ## User Story Context:
-    Requirements: ${requirements}
+    PRD REQUIREMENT:
+    **Name:** ${reqName}
+    **Description:** ${reqDesc}
     Additional Context: ${extraContext || ""}
 
   ## Objective

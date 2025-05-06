@@ -1,7 +1,8 @@
 export interface UserStoryResearchPreferences {
   appName: string;
   appDescription: string;
-  requirements: string;
+  reqName: string;
+  reqDesc: string;
   technicalDetails?: string;
   extraContext?: string;
 }

@@ -13,7 +13,7 @@ export const TaskWorkflowStateAnnotation = Annotation.Root({
   name: Annotation<string>({
     reducer: (_, val) => val,
   }),
-  userStory: Annotation<string>({
+  description: Annotation<string>({
     reducer: (_, val) => val,
   }),
   appName: Annotation<string>({

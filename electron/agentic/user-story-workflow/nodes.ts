@@ -50,7 +50,8 @@ export const buildResearchNode = ({
         prompt: createSummarizeUserStoryResearchPrompt({
           appName: state.appName,
           appDescription: state.appDescription,
-          requirements: state.requirements,
+          reqName: state.reqName,
+          reqDesc: state.reqDesc,
           technicalDetails: state.technicalDetails,
           extraContext: state.extraContext,
         }),
@@ -73,7 +74,8 @@ export const buildResearchNode = ({
           createUserStoryResearchInformationPrompt({
             appName: state.appName,
             appDescription: state.appDescription,
-            requirements: state.requirements,
+            reqName: state.reqName,
+            reqDesc: state.reqDesc,
             technicalDetails: state.technicalDetails,
             extraContext: state.extraContext,
             recursionLimit: recursionLimit,
@@ -115,7 +117,8 @@ export const buildGenerateStoriesNode = (
     try {
       // Use existing refinePrompt logic
       const prompt = refinePrompt({
-        requirements: state.requirements,
+        reqName: state.reqName,
+        reqDesc: state.reqDesc,
         extraContext: state.extraContext,
         referenceInformation: state.referenceInformation,
         technologies: state.technicalDetails,
@@ -204,7 +207,8 @@ export const buildEvaluateStoriesNode = (
 
       // Use existing evaluatePrompt
       const prompt = evaluatePrompt({
-        requirements: state.requirements,
+        reqName: state.reqName,
+        reqDesc: state.reqDesc,
         features: JSON.stringify(state.stories),
       });
 

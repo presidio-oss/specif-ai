@@ -50,7 +50,7 @@ export const buildResearchNode = ({
           appName: state.appName,
           appDescription: state.appDescription,
           name: state.name,
-          userStory: state.userStory,
+          description: state.description,
           technicalDetails: state.technicalDetails,
           extraContext: state.extraContext,
         }),
@@ -74,7 +74,7 @@ export const buildResearchNode = ({
             appName: state.appName,
             appDescription: state.appDescription,
             name: state.name,
-            userStory: state.userStory,
+            description: state.description,
             technicalDetails: state.technicalDetails,
             extraContext: state.extraContext,
             recursionLimit: recursionLimit,
@@ -117,7 +117,7 @@ export const buildGenerateTasksNode = (
       // Use existing createTaskPrompt
       const prompt = createTaskPrompt({
         name: state.name,
-        userstories: state.userStory,
+        description: state.description,
         technologies: state.technicalDetails,
         extraContext: state.extraContext,
         referenceInformation: state.referenceInformation,
