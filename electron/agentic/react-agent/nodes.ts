@@ -184,6 +184,7 @@ export const buildLLMNode = (
         }
       }
 
+      console.log("messages", messages);
       const response = await modelWithTools.invoke(messages);
 
       // FIX for bedrock - duplicate tool_use calls issue - to test for other ones as well

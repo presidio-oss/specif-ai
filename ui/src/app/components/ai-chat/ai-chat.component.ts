@@ -1,5 +1,4 @@
 import {
-  assertInInjectionContext,
   Component,
   EventEmitter,
   Input,
@@ -8,8 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {
-  ChatUpdateRequirementResponse,
-  conversePayload,
+  ChatWithAIPayload,
   suggestionPayload,
 } from '../../model/interfaces/chat.interface';
 import { ChatService } from '../../services/chat/chat.service';
@@ -29,7 +27,8 @@ import {
   heroXMark,
   heroDocumentText,
   heroHandThumbUp,
-  heroHandThumbDown
+  heroHandThumbDown,
+  heroWrench
 } from '@ng-icons/heroicons/outline';
 import { heroHandThumbDownSolid, heroHandThumbUpSolid, heroSparklesSolid } from '@ng-icons/heroicons/solid'
 import { environment } from '../../../environments/environment';
@@ -43,6 +42,11 @@ import { ElectronService } from '../../electron-bridge/electron.service';
 import { AnalyticsEvents, AnalyticsEventSource, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 import { analyticsEnabledSubject } from 'src/app/services/analytics/utils/analytics.utils';
+import { v4 as uuid4 } from 'uuid';
+import { RichTextEditorComponent } from "../core/rich-text-editor/rich-text-editor.component";
+import { CustomAccordionComponent } from "../custom-accordion/custom-accordion.component";
+import {JsonPipe} from "@angular/common";
+
 @Component({
   selector: 'app-chat',
   templateUrl: './ai-chat.component.html',
@@ -56,7 +60,10 @@ import { analyticsEnabledSubject } from 'src/app/services/analytics/utils/analyt
     ToggleComponent,
     MatTooltipModule,
     NgClass,
-  ],
+    CustomAccordionComponent,
+    RichTextEditorComponent,
+    JsonPipe
+],
   providers: [
     provideIcons({ 
       heroDocumentPlus,
@@ -69,7 +76,8 @@ import { analyticsEnabledSubject } from 'src/app/services/analytics/utils/analyt
       heroHandThumbDown,
       heroDocumentText,
       heroHandThumbUpSolid,
-      heroHandThumbDownSolid
+      heroHandThumbDownSolid,
+      heroWrench
     })
   ]
 })
@@ -260,64 +268,209 @@ export class AiChatComponent implements OnInit {
       });
   }
 
-  finalCall(message: string) {
-    const additionalPRDContext =
-        this.requirementAbbrivation === REQUIREMENT_TYPE.PRD
-          ? {
-              brds: this.brds,
-            }
-          : {};
+  finalCall() {
+    // Format chat history according to the schema
+    const formattedChatHistory = this.chatHistory
+      .map((item: any) => {
+        if (item.user) {
+          return {
+            id: item.id,
+            type: 'user',
+            content: [
+              ...(item.user ? [{ type: 'text', text: item.user }] : []),
+              ...(item.files || []).map((file: any) => ({
+                type: 'text',
+                text: file.name,
+              })),
+            ],
+          };
+        } else if (item.assistant) {
+          return {
+            id: item.id,
+            type: 'assistant',
+            content: [{
+              type: 'text',
+              text: item.assistant
+            }],
+            toolCalls: (item.toolCalls || []).map((call: any) => ({
+              id: call.id,
+              name: call.name,
+              args: call.args || {}
+            }))
+          };
+        } else if (item.tool) {
+          return {
+            id: item.id,
+            type: 'tool',
+            name: item.name,
+            content: item.tool,
+            tool_call_id: item.tool_call_id,
+          };
+        }
+        return null;
+      })
+      .filter((item:any) => item !== null);
 
-    let payload: conversePayload = {
-      ...this.basePayload,
-      chatHistory: this.chatHistory
-        .map((item: any) => {
-          if (item.user) return { user: item.user };
-          else return { assistant: item.assistant };
-        })
-        .slice(0, -1),
-      userMessage: message,
-      knowledgeBase: this.kb,
-      ...additionalPRDContext
+    console.log('formattedChatHistory:', formattedChatHistory);
+
+    const requestId = uuid4();
+
+    // Prepare payload according to ChatWithAIPayload interface
+    const payload: ChatWithAIPayload = {
+      requestId: requestId,
+      project: {
+        name: this.name,
+        description: this.description
+      },
+      chatHistory: formattedChatHistory,
+      requirementAbbr: this.requirementAbbrivation,
+      requirement: {
+        title: '',
+        description: this.baseContent
+      }
     };
 
-    // Add Bedrock config if knowledge base is active
-    if (this.isKbActive && this.kb) {
-      payload = {
-        ...payload,
-        bedrockConfig: {
-          region: this.region,
-          accessKey: this.accessKey,
-          secretKey: this.secretKey,
-          sessionKey: this.sessionKey // Always include sessionKey, it's optional in the interface
-        }
-      };
+    // Add requirement-specific context
+    switch (this.requirementAbbrivation) {
+      case REQUIREMENT_TYPE.PRD:
+        payload.brds = this.brds;
+        break;
+      case REQUIREMENT_TYPE.US:
+        payload.prd = this.prd;
+        break;
+      case REQUIREMENT_TYPE.TASK:
+        payload.prd = this.prd;
+        payload.userStory = this.userStory;
+        break;
     }
 
-    if (this.chatType === CHAT_TYPES.REQUIREMENT)
-      payload = { ...payload, requirementAbbr: this.requirementAbbrivation };
-    else payload = { ...payload, prd: this.prd, us: this.userStory };
-    this.chatService
-      .chatWithLLM(this.chatType, payload)
-      .then((result: ChatUpdateRequirementResponse) => {
+    // Set up streaming response handler
+    const streamHandler = (_: any, event: any) => {
+      switch(event.event){
+        // when the chat model in llm node starts create a new message
+        case "on_chat_model_start":{
+          console.log('xxx','on_chat_model_start:');
+          if(event["metadata"]["langgraph_node"] === "llm"){
+            // this.updateLastAIMessage('', [])
+            this.chatHistory.push({ assistant: '' });
+          }
+          break;
+        }
+        // when the chat model in llm node streams a chunk of data
+        // update the last message with the chunk
+        case 'on_chat_model_stream': {
+          console.log('xxx','on_chat_model_stream:');
+          console.log('chunk:', event.data.chunk);
+
+          if(event["metadata"]["langgraph_node"] === "llm"){
+            const chunk = event.data.chunk;
+            this.updateLastAIMessage(chunk.content, []);
+          }
+          break;
+        }
+        // when the chat model in llm node ends
+        // update the last message with the tool calls
+        case 'on_chat_model_end': {
+          console.log('xxx','on_chat_model_end:');
+          if(event.metadata.langgraph_node === "llm"){
+            console.log('tool event', event)
+            console.log('Tool calls event:', event.data.output);
+            const toolCalls = event.data.output.tool_calls;
+            console.log('Tool calls:', toolCalls);
+            this.updateLastAIMessage('', toolCalls);
+            // this.chatHistory.push({ assistant: '' });
+          }
+          break;
+        }
+        // when the chain ends
+        // handle completion, remove listener after completion
+        case 'on_chain_end': {
+          console.log('xxx','on_chain_end:');
+
+          // workflow end event
+          if (event.name === 'LangGraph') {
+            console.log('Chain end:', event.data.output.content);
+            // Handle completion
+            this.generateLoader = false;
+            this.returnChatHistory();
+            this.getSuggestion();
+            this.analyticsTracker.trackResponseTime(AnalyticsEventSource.AI_CHAT);
+            // Remove listener after completion
+            this.electronService.removeChatListener(requestId, streamHandler);
+          }
+
+          // tool node end event
+          if((event.name as string).toLocaleLowerCase() === "tools"){
+            console.log('xxx', 'on_chain_end', 'tools', event)
+
+            const toolMessages = event.data.output.messages;
+            console.log('Tool messages:', toolMessages);
+            this.chatHistory.push(...toolMessages.map((tm: any)=>{
+              const aiMessageWithToolCall = this.chatHistory.find((item: any) => {
+                if (item.toolCalls && item.toolCalls.length > 0) {
+                  return item.toolCalls.some((call: any) => call.id === tm.tool_call_id);
+                }
+
+                return false;
+              });
+
+              const toolCall = aiMessageWithToolCall.toolCalls.find((call: any)=>(call.id === tm.tool_call_id));
+
+              return {
+                tool: tm.content,
+                name: tm.name,
+                tool_call_id: tm.tool_call_id,
+                args: toolCall.args,
+              }
+            }))
+            this.returnChatHistory();
+          }
+          break;
+        }
+      }
+    };
+
+    // Register stream handler
+    this.electronService.listenChatEvents(requestId, streamHandler);
+
+    // Initiate chat
+    this.electronService.chatWithAI(payload)
+      .catch((error) => {
+        console.error('Chat error:', error);
+        this.toastService.showError('Chat failed. Please try again.');
+      })
+      .finally(()=>{
         this.generateLoader = false;
-        this.chatHistory = [...this.chatHistory, { assistant: result.response }];
-        this.returnChatHistory();
-        this.getSuggestion();
-        this.analyticsTracker.trackResponseTime(AnalyticsEventSource.AI_CHAT)
+        this.electronService.removeChatListener(requestId, streamHandler);
       });
   }
 
   codeLLMCall(fileList: any, content: string) {
     this.generateLoader = true;
-    this.chatHistory = [...this.chatHistory, { user: 'Files', list: fileList }];
+    this.chatHistory = [
+      ...this.chatHistory,
+      {
+        type: 'user',
+        content: [
+          {
+            type: 'text',
+            content: 'Code Files Content:',
+          },
+          {
+            type: 'text',
+            content:
+              fileList.map((f: any) => f.name).join(', ') + '\n' + content,
+          },
+        ],
+      },
+    ];
     const message = `
       Code Snippet:
       ${content}
       -------------
       Improve the requirement context according to the code snippet attached
       -------------`;
-    this.finalCall(message);
+    this.finalCall();
   }
 
   update(chat: any) {
@@ -329,7 +482,57 @@ export class AiChatComponent implements OnInit {
     this.getSuggestion();
   }
 
+  updateLastAIMessage(content?: string, toolCalls?: any[]) {
+    const lastMessage = this.chatHistory[this.chatHistory.length - 1];
+    
+    if (lastMessage?.assistant !== undefined) {
+      // Update existing assistant message
+      if (content) {
+        lastMessage.assistant += content;
+      }
+
+      if (toolCalls && toolCalls.length > 0) {
+        // Initialize toolCalls array if it doesn't exist
+        if (!lastMessage.toolCalls) {
+          lastMessage.toolCalls = [];
+        }
+
+        // Add new tool calls, avoiding duplicates
+        toolCalls.forEach((call) => {
+          const existingCall = lastMessage.toolCalls.find(
+            (tc: any) => tc.id === call.id,
+          );
+
+          if (!existingCall) {
+            lastMessage.toolCalls.push({
+              id: call.id,
+              name: call.name,
+              args: call.args || {},
+            });
+          }
+        });
+      }
+
+      this.chatHistory[this.chatHistory.length - 1] = { ...lastMessage };
+    } else if (content || (toolCalls && toolCalls.length > 0)) {
+      // Create new assistant message
+      this.chatHistory.push({
+        assistant: content || '',
+        toolCalls: toolCalls
+          ? toolCalls.map((call) => ({
+              id: call.id,
+              name: call.name,
+              args: call.args || {},
+            }))
+          : [],
+      });
+    }
+
+    this.returnChatHistory();
+  }
+
   returnChatHistory() {
+    console.log('Chat history updated:', this.chatHistory);
     this.updateChatHistory.emit(this.chatHistory);
   }
 
@@ -445,7 +648,7 @@ export class AiChatComponent implements OnInit {
           user: message,
           files: this.selectedFiles.map(f => ({
             name: f.name,
-            size: this.formatFileSize(f.size)
+            size: this.formatFileSize(f.size),
           }))
         }];
       } else if (this.selectedFiles.length > 0) {
@@ -471,7 +674,8 @@ export class AiChatComponent implements OnInit {
         apiMessage += this.selectedFilesContent;
       }
       
-      this.finalCall(apiMessage);
+      // this.finalCall(apiMessage);
+      this.finalCall();
 
       // Clear message and files after sending
       this.message = '';
