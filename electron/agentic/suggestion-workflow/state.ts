@@ -33,6 +33,7 @@ export const SuggestionWorkflowStateAnnotation = Annotation.Root({
   knowledgeBase: Annotation<string>({
     reducer: (_, val) => val,
   }),
+  referenceInformation: Annotation<string>,
   bedrockConfig: Annotation<BedrockConfig>({
     reducer: (_, val) => val,
   }),

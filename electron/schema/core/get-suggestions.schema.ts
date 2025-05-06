@@ -9,6 +9,7 @@ export const brdSchema = z.object({
 
 export const getSuggestionsSchema = z
   .object({
+    appId: z.string(),
     name: z.string(),
     description: z.string().optional(),
     type: z.string(),

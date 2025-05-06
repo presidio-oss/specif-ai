@@ -7,6 +7,8 @@ import { randomUUID } from "node:crypto";
 import { MemorySaver } from "@langchain/langgraph";
 import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
 import { ObservabilityManager } from '../../services/observability/observability.manager';
+import { getMCPTools } from '../../mcp';
+import { MCPHub } from '../../mcp/mcp-hub';
 
 export async function getSuggestions(_: IpcMainInvokeEvent, data: unknown): Promise<string[]> {
   try {
@@ -23,11 +25,21 @@ export async function getSuggestions(_: IpcMainInvokeEvent, data: unknown): Prom
 
     const memoryCheckpointer = new MemorySaver();
     
+    let mcpTools = [];
+    try {
+      const mcpHub = MCPHub.getInstance();
+      await mcpHub.setProjectId(validatedData.appId);
+      mcpTools = await getMCPTools();
+    } catch (error) {
+      console.warn("Error getting mcp tools", error);
+    }
+
     const suggestionWorkflow = createSuggestionWorkflow({
       model: buildLangchainModelProvider(
         llmConfig.activeProvider,
         llmConfig.providerConfigs[llmConfig.activeProvider].config
       ),
+      tools: [...mcpTools],
       checkpointer: memoryCheckpointer
     });
     
