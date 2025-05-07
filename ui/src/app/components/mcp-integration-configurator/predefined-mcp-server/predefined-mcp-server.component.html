@@ -35,9 +35,9 @@
     </div>
     
     <div class="flex gap-1 justify-end items-center">
+      <app-button buttonContent="Cancel" size="sm" (click)="onCancel()" theme="secondary_outline"></app-button>
       <app-button buttonContent="Validate" size="sm" [disabled]="form.invalid || isValidating" (click)="onValidate()" theme="primary"></app-button>
       <app-button buttonContent="Submit" size="sm" [disabled]="form.invalid || !isValidated || validatedServerStatus?.status === 'error'" (click)="onSubmit()" theme="primary"></app-button>
-      <app-button buttonContent="Cancel" size="sm" (click)="onCancel()" theme="secondary"></app-button>
     </div>
   </form>
 
