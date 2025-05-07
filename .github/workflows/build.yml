@@ -23,9 +23,13 @@ on:
         required: true
       APPLE_APP_SPECIFIC_PASSWORD:
         required: true
+      ENABLE_POSTHOG:
+        required: true
       POSTHOG_HOST:
         required: true
       POSTHOG_KEY:
+        required: true
+      ENABLE_LANGFUSE:
         required: true
       LANGFUSE_SECRET_KEY:
         required: true
@@ -117,8 +121,10 @@ jobs:
           cd electron
 
           # Append to .env file with PostHog configuration
+          Add-Content -Path .env -Value "ENABLE_POSTHOG=$env:ENABLE_POSTHOG"
           Add-Content -Path .env -Value "POSTHOG_HOST=$env:POSTHOG_HOST"
           Add-Content -Path .env -Value "POSTHOG_KEY=$env:POSTHOG_KEY"
+          Add-Content -Path .env -Value "ENABLE_LANGFUSE=$env:ENABLE_LANGFUSE"
           Add-Content -Path .env -Value "LANGFUSE_SECRET_KEY=$env:LANGFUSE_SECRET_KEY"
           Add-Content -Path .env -Value "LANGFUSE_PUBLIC_KEY=$env:LANGFUSE_PUBLIC_KEY"
           Add-Content -Path .env -Value "LANGFUSE_BASE_URL=$env:LANGFUSE_BASE_URL"
@@ -133,8 +139,10 @@ jobs:
           Write-Host "`nListing dist contents:"
           Get-ChildItem -Recurse dist | Format-List
         env:
+          ENABLE_POSTHOG: ${{ secrets.ENABLE_POSTHOG }}
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          ENABLE_LANGFUSE: ${{ secrets.ENABLE_LANGFUSE }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
@@ -231,8 +239,10 @@ jobs:
           cd electron
 
           # Create .env file with PostHog configuration
+          echo "ENABLE_POSTHOG=$ENABLE_POSTHOG" >> .env
           echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
           echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+          echo "ENABLE_LANGFUSE=$ENABLE_LANGFUSE" >> .env
           echo "LANGFUSE_SECRET_KEY=$LANGFUSE_SECRET_KEY" >> .env
           echo "LANGFUSE_PUBLIC_KEY=$LANGFUSE_PUBLIC_KEY" >> .env
           echo "LANGFUSE_BASE_URL=$LANGFUSE_BASE_URL" >> .env
@@ -243,8 +253,10 @@ jobs:
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          ENABLE_POSTHOG: ${{ secrets.ENABLE_POSTHOG }}
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          ENABLE_LANGFUSE: ${{ secrets.ENABLE_LANGFUSE }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}

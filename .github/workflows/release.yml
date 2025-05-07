@@ -68,8 +68,10 @@ jobs:
       APPLE_CSC_SECRET_NAME: ${{ secrets.APPLE_CSC_SECRET_NAME }}
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      ENABLE_POSTHOG: ${{ secrets.ENABLE_POSTHOG }}
       POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
       POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+      ENABLE_LANGFUSE: ${{ secrets.ENABLE_LANGFUSE }}
       LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
       LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
       LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}

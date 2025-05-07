@@ -9,9 +9,10 @@ export class ObservabilityManager {
   private userName: string;
 
   private constructor() {
-    this.tracingEnabled = store.get<boolean>("analyticsEnabled") || false;
+    const analyticsEnabled = store.get<boolean>("analyticsEnabled") || false;
     const APP_CONFIG = store.get<AppConfig>("APP_CONFIG");
     this.userName = APP_CONFIG?.username || "anonymous";
+    this.tracingEnabled = analyticsEnabled && (process.env.ENABLE_LANGFUSE === 'true' || false);
 
     if (this.tracingEnabled) {
       this.langfuse = new Langfuse({

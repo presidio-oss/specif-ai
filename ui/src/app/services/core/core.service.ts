@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { ElectronService } from '../../electron-bridge/electron.service';
 
-interface AppConfig {
+export interface AppConfig {
   key: string;
   host: string;
+  enabled: boolean;
+  observabilityEnabled: boolean;
 }
 
 @Injectable({

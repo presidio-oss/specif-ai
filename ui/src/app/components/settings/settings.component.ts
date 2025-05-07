@@ -35,7 +35,7 @@ import { getLLMProviderConfig, ProviderField } from '../../constants/llm-provide
 import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/utils/analytics.utils';
-import { CoreService } from 'src/app/services/core/core.service';
+import { CoreService, AppConfig } from 'src/app/services/core/core.service';
 import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -174,13 +174,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
 
     this.core.getAppConfig()
-      .then((config: any) => {
-        if (!this.analyticsTracker.isConfigValid(config)) {
+      .then((config: AppConfig) => {
+        const postHogEnabled = this.analyticsTracker.isEnabled() && this.analyticsTracker.isConfigValid(config);
+        const observabilityEnabled = config.observabilityEnabled;
+
+        if (!postHogEnabled && !observabilityEnabled) {
           this.analyticsEnabled.setValue(false);
           this.analyticsEnabled.disable({ onlySelf: true });
           this.updateAnalyticsState(false);
           this.hasChanges = false;
-          this.analyticsWarning = 'Analytics configuration is missing. Please update the settings.';
+          this.analyticsWarning = 'Analytics and observability configuration is missing or disabled. Please update the settings.';
         } else {
           this.analyticsEnabled.enable({ onlySelf: true });
           this.analyticsWarning = '';
