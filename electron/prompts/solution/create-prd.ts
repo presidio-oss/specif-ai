@@ -52,7 +52,7 @@ Special Instructions:
      The relationship is not strictly hierarchical.
 
 Please ensure the requirements are descriptive and also clear, concise. Output must be valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.
-Generate **at least ${minCount}** Product Requirements. You may generate more if needed for clarity or completeness, but not fewer.
+Generate **${minCount}** Product Requirements. You may generate more if needed for clarity, completeness, or BRD coverage, but you MUST NOT generate fewer than ${minCount} requirements.
 Sort all requirements based on business impact (High to Medium to Low).`;
 }
 

@@ -36,6 +36,6 @@ Special Instructions:
   ${MARKDOWN_RULES}
 
 Please ensure the requirements are clear, concise, and comprehensive. Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.
-Generate **at least ${minCount}** Non-Functional Requirements. You may generate more if needed for clarity or completeness, but not fewer.
+Generate **${minCount}** Non-Functional Requirements. You may generate more if needed for clarity or completeness, but not fewer.
 Sort all requirements based on business impact (High to Medium to Low).`;
 }
