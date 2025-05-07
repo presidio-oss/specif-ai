@@ -2,7 +2,7 @@ import { REQUIREMENT_TYPE, REQUIREMENT_DISPLAY_NAME_PLURAL_MAP } from '../../../
 
 export interface RequirementPreference {
   isEnabled: boolean;
-  maxCount: number;
+  minCount: number;
 }
 
 export type RequirementPreferences = {

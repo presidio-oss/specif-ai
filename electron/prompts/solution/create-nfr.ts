@@ -4,11 +4,11 @@ import { MARKDOWN_RULES } from '../context/markdown-rules';
 interface CreateNFRParams {
   name: string;
   description: string;
-  maxCount: number;
+  minCount: number;
   referenceInformation?: string;
 }
 
-export function createNFRPrompt({ name, description, maxCount, referenceInformation }: CreateNFRParams): string {
+export function createNFRPrompt({ name, description, minCount, referenceInformation }: CreateNFRParams): string {
   return `You are a requirements analyst tasked with extracting detailed Non-Functional Requirements from the provided app description. Below is the description of the app:
 
 App Name: ${name}
@@ -36,5 +36,6 @@ Special Instructions:
   ${MARKDOWN_RULES}
 
 Please ensure the requirements are clear, concise, and comprehensive. Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.
-Generate Non-Functional Requirements with a maximum count of ${maxCount}. Sort all requirements based on business impact (High to Medium to Low).`;
+Generate **at least ${minCount}** Non-Functional Requirements. You may generate more if needed for clarity or completeness, but not fewer.
+Sort all requirements based on business impact (High to Medium to Low).`;
 }

@@ -84,10 +84,10 @@ export class CreateSolutionComponent implements OnInit {
     return !this.solutionForm.get('cleanSolution')?.value;
   }
 
-  private initRequirementGroup(enabled: boolean = true, maxCount: number = REQUIREMENT_COUNT.DEFAULT) {
+  private initRequirementGroup(enabled: boolean = true, minCount: number = REQUIREMENT_COUNT.DEFAULT) {
     return {
       enabled: new FormControl(enabled),
-      maxCount: new FormControl(maxCount, {
+      minCount: new FormControl(minCount, {
         validators: [
           Validators.required,
           Validators.min(0),
@@ -130,15 +130,15 @@ export class CreateSolutionComponent implements OnInit {
     const requirementGroup = this.solutionForm.get(type);
     if (!requirementGroup) return;
     
-    // Always set a valid maxCount value whether enabled or disabled
-    const maxCount = enabled ? REQUIREMENT_COUNT.DEFAULT : 0;
+    // Always set a valid minCount value whether enabled or disabled
+    const minCount = enabled ? REQUIREMENT_COUNT.DEFAULT : 0;
     requirementGroup.patchValue({
       enabled,
-      maxCount
+      minCount
     });
     
     // Ensure the control is marked as touched to trigger validation
-    requirementGroup.get('maxCount')?.markAsTouched();
+    requirementGroup.get('minCount')?.markAsTouched();
     requirementGroup.get('enabled')?.markAsTouched();
     requirementGroup.updateValueAndValidity();
   }

@@ -6,13 +6,13 @@ export interface IProject {
 }
 
 export interface IGenerationRange {
-  maxCount: number;
+  minCount: number;
   isEnabled: boolean;
 }
 
 export interface IRequirementConfig {
   enabled?: boolean;
-  maxCount?: number;
+  minCount?: number;
   count: number;
 }
 

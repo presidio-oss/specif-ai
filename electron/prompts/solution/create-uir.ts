@@ -4,14 +4,14 @@ import { UIR_CONTEXT } from "../context/uir";
 interface CreateUIRParams {
   name: string;
   description: string;
-  maxCount: number;
+  minCount: number;
   referenceInformation?: string;
 }
 
 export function createUIRPrompt({
   name,
   description,
-  maxCount,
+  minCount,
   referenceInformation,
 }: CreateUIRParams): string {
   return `You are a requirements analyst tasked with extracting User Interface Requirements from the provided app description. Below is the description of the app:
@@ -43,5 +43,6 @@ Special Instructions:
   ${MARKDOWN_RULES}
 
 Please ensure the requirements are clear, concise, and comprehensive. Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.
-Generate User Interface Requirements with a maximum count of ${maxCount}. Sort all requirements based on business impact (High to Medium to Low).`;
+Generate **at least ${minCount}** User Interface Requirements. You may generate more if needed for clarity or completeness, but not fewer.
+Sort all requirements based on business impact (High to Medium to Low).`;
 }
