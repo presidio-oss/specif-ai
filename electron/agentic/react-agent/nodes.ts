@@ -9,6 +9,7 @@ import {
 import { MessagesAnnotation } from "@langchain/langgraph";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { ITool } from "../common/types";
+import { summarizeConversation } from "./prompts/summary";
 import { IResponseFormatInput, ReactAgentConfig } from "./types";
 
 // Configuration for message summarization
@@ -20,16 +21,17 @@ export interface MessageSummaryConfig {
 
 const DEFAULT_SUMMARY_CONFIG: MessageSummaryConfig = {
   maxMessages: 10,
-  retainLastN: 8,
+  retainLastN: 6,
   preserveStartN: 0, // By default, don't preserve any messages at start
 };
 
 // Node for handling message summarization
 export const buildSummarizeNode = (
   modelProvider: LangChainModelProvider,
+  tools: Array<ITool>,
   config: MessageSummaryConfig = DEFAULT_SUMMARY_CONFIG
 ) => {
-  const model = modelProvider.getModel();
+  const modelWithTools = modelProvider.getChatModel().bindTools!(tools);
 
   return async (
     state: (typeof MessagesAnnotation)["State"] & {
@@ -37,10 +39,9 @@ export const buildSummarizeNode = (
     },
     runnableConfig?: ReactAgentConfig
   ) => {
-    const trace = runnableConfig?.configurable?.trace;
-    const generation = trace?.generation({
+    const { trace, sendMessagesInTelemetry = false } = runnableConfig?.configurable ?? {};
+    const summarizeSpan = trace?.span({
       name: "summarize",
-      model: modelProvider.getModelInfo().id
     });
 
     try {
@@ -48,39 +49,53 @@ export const buildSummarizeNode = (
 
       // If we don't have enough messages, return state as is
       if (!messages || messages.length <= config.maxMessages) {
-        generation?.end({
-          statusMessage: "Not enough messages for summarization"
+        summarizeSpan?.end({
+          statusMessage: "Not enough messages for summarization",
         });
         return {};
       }
 
-      const currentSummary = state.conversationSummary || "";
-
-      // Create summarization prompt based on whether we already have a summary
-      const summaryPrompt = currentSummary
-        ? `This is the summary of the conversation to date: ${currentSummary}\n\nExtend the summary by taking into account the new messages above:`
-        : "Create a summary of the conversation above:";
+      const currentSummary = state.conversationSummary;
 
       // Add summarization request as a human message
       const allMessages = [
         ...messages,
         new HumanMessage({
-          content: summaryPrompt,
+          content: summarizeConversation(currentSummary),
         }),
       ];
 
+      const generation = summarizeSpan?.generation({
+        name: "summarize",
+        model: modelProvider.getModel().id,
+        input: sendMessagesInTelemetry ? allMessages : undefined,
+      });
+
       // Generate new summary
-      const response = await model.invoke(allMessages);
+      const response = await modelWithTools.invoke(allMessages);
       const newSummary =
         typeof response.content === "string"
           ? response.content
           : JSON.stringify(response.content);
 
+      generation?.end({
+        output: sendMessagesInTelemetry ? response : undefined,
+        usage: {
+          input: response.usage_metadata?.input_tokens,
+          output: response.usage_metadata?.output_tokens,
+          total: response.usage_metadata?.total_tokens,
+        },
+      });
+
       // Calculate which messages to keep
       const messagesLength = messages.length;
-      const keepLastStartIndex = Math.max(0, messagesLength - config.retainLastN);
-      
+      const keepLastStartIndex = Math.max(
+        0,
+        messagesLength - config.retainLastN
+      );
+
       let systemPromptOffset = 0;
+
       // Always keep system prompt if present
       if (messages.length > 0 && isSystemMessage(messages[0])) {
         systemPromptOffset = 1;
@@ -97,7 +112,10 @@ export const buildSummarizeNode = (
       let deleteEndIndex = keepLastStartIndex;
 
       // If first message to be deleted would be a tool message, find and keep its preceding AI message
-      if (deleteStartIndex < deleteEndIndex && isToolMessage(messages[deleteStartIndex])) {
+      if (
+        deleteStartIndex < deleteEndIndex &&
+        isToolMessage(messages[deleteStartIndex])
+      ) {
         for (let i = deleteStartIndex - 1; i >= systemPromptOffset; i--) {
           if (isAIMessage(messages[i])) {
             deleteStartIndex = i;
@@ -106,9 +124,12 @@ export const buildSummarizeNode = (
         }
       }
 
-      // If first message to be kept in the last section is a tool message, 
+      // If first message to be kept in the last section is a tool message,
       // find and keep its preceding AI message
-      if (deleteEndIndex > deleteStartIndex && isToolMessage(messages[deleteEndIndex])) {
+      if (
+        deleteEndIndex > deleteStartIndex &&
+        isToolMessage(messages[deleteEndIndex])
+      ) {
         for (let i = deleteEndIndex - 1; i >= deleteStartIndex; i--) {
           if (isAIMessage(messages[i])) {
             deleteEndIndex = i;
@@ -122,13 +143,7 @@ export const buildSummarizeNode = (
         .slice(deleteStartIndex, deleteEndIndex)
         .map((m) => new RemoveMessage({ id: m.id! }));
 
-      generation?.end({
-        usage: {
-          input: response.usage_metadata?.input_tokens,
-          output: response.usage_metadata?.output_tokens,
-          total: response.usage_metadata?.total_tokens
-        },
-      });
+      summarizeSpan?.end();
 
       return {
         conversationSummary: newSummary,
@@ -136,8 +151,8 @@ export const buildSummarizeNode = (
       };
     } catch (error) {
       console.error("[react-agent] Error in summarize node:", error);
-      generation?.end({
-        level: "ERROR"
+      summarizeSpan?.end({
+        level: "ERROR",
       });
       throw error;
     }
@@ -149,7 +164,7 @@ export const buildLLMNode = (
   modelProvider: LangChainModelProvider,
   tools: Array<ITool>
 ) => {
-  const modelWithTools = modelProvider.getModel().bindTools!(tools);
+  const modelWithTools = modelProvider.getChatModel().bindTools!(tools);
 
   return async (
     state: (typeof MessagesAnnotation)["State"] & {
@@ -157,10 +172,11 @@ export const buildLLMNode = (
     },
     runnableConfig?: ReactAgentConfig
   ) => {
-    const trace = runnableConfig?.configurable?.trace;
-    const generation = trace?.generation({
+    const { trace, sendMessagesInTelemetry } =
+      runnableConfig?.configurable ?? {};
+
+    const llmSpan = trace?.span({
       name: "llm",
-      model: modelProvider.getModelInfo().id
     });
 
     try {
@@ -184,7 +200,12 @@ export const buildLLMNode = (
         }
       }
 
-      console.log("messages", messages);
+      const generation = llmSpan?.generation({
+        name: "llm",
+        model: modelProvider.getModel().id,
+        input: sendMessagesInTelemetry ? messages : undefined,
+      });
+
       const response = await modelWithTools.invoke(messages);
 
       // FIX for bedrock - duplicate tool_use calls issue - to test for other ones as well
@@ -195,19 +216,22 @@ export const buildLLMNode = (
       }
 
       generation?.end({
+        output: sendMessagesInTelemetry ? response : undefined,
         usage: {
           input: response.usage_metadata?.input_tokens,
           output: response.usage_metadata?.output_tokens,
-          total: response.usage_metadata?.total_tokens
-        }
+          total: response.usage_metadata?.total_tokens,
+        },
       });
+
+      llmSpan?.end();
 
       return {
         messages: [response],
       };
     } catch (error) {
       console.error("[react-agent] Error in LLM node:", error);
-      generation?.end({
+      llmSpan?.end({
         level: "ERROR",
       });
       throw error;
@@ -220,22 +244,23 @@ export const buildGenerateStructuredResponseNode = (
   modelProvider: LangChainModelProvider,
   responseFormat: IResponseFormatInput
 ) => {
-  const model = modelProvider.getModel();
+  const model = modelProvider.getChatModel();
 
   return async (
     state: (typeof MessagesAnnotation)["State"],
     runnableConfig?: ReactAgentConfig
   ) => {
-    const trace = runnableConfig?.configurable?.trace;
-    const generation = trace?.generation({
-      name: "generate-structured-response",
-      model: modelProvider.getModelInfo().id
+    const { trace, sendMessagesInTelemetry } =
+      runnableConfig?.configurable ?? {};
+
+    const structuredResponseSpan = trace?.span({
+      name: "Structured Response",
     });
 
     try {
       if (responseFormat == null) {
-        generation?.end({
-          statusMessage: "No response format provided"
+        structuredResponseSpan?.end({
+          statusMessage: "No response format provided",
         });
         return {};
       }
@@ -256,15 +281,22 @@ export const buildGenerateStructuredResponseNode = (
         modelWithStructuredOutput = model.withStructuredOutput(responseFormat);
       }
 
+      const generation = structuredResponseSpan?.generation({
+        input: sendMessagesInTelemetry ? messages : undefined,
+        model: modelProvider.getModel().provider,
+      });
+
       const response = await modelWithStructuredOutput.invoke(messages);
 
       generation?.end({
         usage: {
           input: response.usage_metadata?.input_tokens,
           output: response.usage_metadata?.output_tokens,
-          total: response.usage_metadata?.total_tokens
-        }
+          total: response.usage_metadata?.total_tokens,
+        },
       });
+
+      structuredResponseSpan?.end();
 
       return { structuredResponse: response };
     } catch (error) {
@@ -272,8 +304,8 @@ export const buildGenerateStructuredResponseNode = (
         "[react-agent] Error in generate structured response node:",
         error
       );
-      generation?.end({
-        level: "ERROR"
+      structuredResponseSpan?.end({
+        level: "ERROR",
       });
       throw error;
     }

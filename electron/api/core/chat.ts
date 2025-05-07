@@ -1,4 +1,9 @@
-import { AIMessage, HumanMessage, ToolMessage } from "@langchain/core/messages";
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+  ToolMessage,
+} from "@langchain/core/messages";
 import { tool } from "@langchain/core/tools";
 import { MemorySaver } from "@langchain/langgraph-checkpoint";
 import { IpcMainInvokeEvent } from "electron/main";
@@ -50,13 +55,18 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
         thread_id: `${validatedData.requestId}_create_solution`,
         trace: trace,
         requestId: validatedData.requestId,
+        sendMessagesInTelemetry: true,
       },
     };
 
     const messages = transformToLangchainMessages(validatedData.chatHistory);
+
     const stream = agent.streamEvents(
       {
-        messages: [chatWithAIPrompt(validatedData), ...messages],
+        messages: [
+          new SystemMessage(chatWithAIPrompt(validatedData)),
+          ...messages,
+        ],
       },
       {
         version: "v2",

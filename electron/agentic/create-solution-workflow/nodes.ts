@@ -83,6 +83,7 @@ export const buildResearchNode = ({
         configurable: {
           trace: span,
           thread_id: runnableConfig.configurable?.thread_id,
+          sendMessagesInTelemetry: false
         },
       }
     );

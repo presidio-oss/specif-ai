@@ -6,7 +6,7 @@ import { IRequirementGenWorkflowStateAnnotation } from "./state";
 import { getSchemaForGeneratedRequirements } from "./utils";
 
 export const buildLLMNode = (modelProvider: LangChainModelProvider) => {
-  const model = modelProvider.getModel();
+  const model = modelProvider.getChatModel();
 
   return async (
     state: IRequirementGenWorkflowStateAnnotation["State"],
@@ -15,7 +15,7 @@ export const buildLLMNode = (modelProvider: LangChainModelProvider) => {
     const trace = runnableConfig?.configurable?.trace;
     const generation = trace?.generation({
       name: "llm",
-      model: modelProvider.getModelInfo().id,
+      model: modelProvider.getModel().id,
     });
 
     try {

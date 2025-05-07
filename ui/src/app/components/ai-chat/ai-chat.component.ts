@@ -45,7 +45,8 @@ import { analyticsEnabledSubject } from 'src/app/services/analytics/utils/analyt
 import { v4 as uuid4 } from 'uuid';
 import { RichTextEditorComponent } from "../core/rich-text-editor/rich-text-editor.component";
 import { CustomAccordionComponent } from "../custom-accordion/custom-accordion.component";
-import {JsonPipe} from "@angular/common";
+import { JsonPipe } from "@angular/common";
+import { ThreeBounceLoaderComponent } from "../three-bounce-loader/three-bounce-loader.component";
 
 @Component({
   selector: 'app-chat',
@@ -62,7 +63,8 @@ import {JsonPipe} from "@angular/common";
     NgClass,
     CustomAccordionComponent,
     RichTextEditorComponent,
-    JsonPipe
+    JsonPipe,
+    ThreeBounceLoaderComponent
 ],
   providers: [
     provideIcons({ 
@@ -268,9 +270,35 @@ export class AiChatComponent implements OnInit {
       });
   }
 
+  getSlicedChatHistory() {
+    // this method will get the last 15 messages from the chat history
+    // if the message at the starting index is a tool message
+    // we will move to the next index and continue until we find a user/ ai message
+    // this is to avoid sending tool messages to the AI without ai message which would cause error
+    // this is a temporary fix to limit the chat history to the last 20 messages so we won't exceed the context limit (for summarization)
+    // In the future, we may need to implement a more sophisticated approach
+
+    const slicedChatHistory = this.chatHistory
+      .slice(-15);
+
+    let startIndex = Math.max(0, slicedChatHistory.length - 15);
+    let endIndex = slicedChatHistory.length;
+
+    while (startIndex < endIndex) {
+      const item = slicedChatHistory[startIndex];
+      if (item.tool) {
+        startIndex++;
+      } else {
+        break;
+      }
+    }
+
+    return slicedChatHistory.slice(startIndex, endIndex);
+  }
+
   finalCall() {
     // Format chat history according to the schema
-    const formattedChatHistory = this.chatHistory
+    const formattedChatHistory = this.getSlicedChatHistory()
       .map((item: any) => {
         if (item.user) {
           return {
@@ -278,25 +306,27 @@ export class AiChatComponent implements OnInit {
             type: 'user',
             content: [
               ...(item.user ? [{ type: 'text', text: item.user }] : []),
-              ...(item.files || []).map((file: any) => ({
-                type: 'text',
-                text: file.name,
-              })),
             ],
           };
-        } else if (item.assistant) {
+        } else if (item.assistant || item.toolCalls) {
           return {
             id: item.id,
             type: 'assistant',
-            content: [{
-              type: 'text',
-              text: item.assistant
-            }],
+            content: [
+              ...(item.assistant
+                ? [
+                    {
+                      type: 'text',
+                      text: item.assistant,
+                    },
+                  ]
+                : []),
+            ],
             toolCalls: (item.toolCalls || []).map((call: any) => ({
               id: call.id,
               name: call.name,
-              args: call.args || {}
-            }))
+              args: call.args || {},
+            })),
           };
         } else if (item.tool) {
           return {
@@ -311,8 +341,6 @@ export class AiChatComponent implements OnInit {
       })
       .filter((item:any) => item !== null);
 
-    console.log('formattedChatHistory:', formattedChatHistory);
-
     const requestId = uuid4();
 
     // Prepare payload according to ChatWithAIPayload interface
@@ -325,7 +353,6 @@ export class AiChatComponent implements OnInit {
       chatHistory: formattedChatHistory,
       requirementAbbr: this.requirementAbbrivation,
       requirement: {
-        title: '',
         description: this.baseContent
       }
     };
@@ -349,9 +376,7 @@ export class AiChatComponent implements OnInit {
       switch(event.event){
         // when the chat model in llm node starts create a new message
         case "on_chat_model_start":{
-          console.log('xxx','on_chat_model_start:');
           if(event["metadata"]["langgraph_node"] === "llm"){
-            // this.updateLastAIMessage('', [])
             this.chatHistory.push({ assistant: '' });
           }
           break;
@@ -359,9 +384,6 @@ export class AiChatComponent implements OnInit {
         // when the chat model in llm node streams a chunk of data
         // update the last message with the chunk
         case 'on_chat_model_stream': {
-          console.log('xxx','on_chat_model_stream:');
-          console.log('chunk:', event.data.chunk);
-
           if(event["metadata"]["langgraph_node"] === "llm"){
             const chunk = event.data.chunk;
             this.updateLastAIMessage(chunk.content, []);
@@ -371,40 +393,25 @@ export class AiChatComponent implements OnInit {
         // when the chat model in llm node ends
         // update the last message with the tool calls
         case 'on_chat_model_end': {
-          console.log('xxx','on_chat_model_end:');
           if(event.metadata.langgraph_node === "llm"){
-            console.log('tool event', event)
-            console.log('Tool calls event:', event.data.output);
             const toolCalls = event.data.output.tool_calls;
-            console.log('Tool calls:', toolCalls);
             this.updateLastAIMessage('', toolCalls);
-            // this.chatHistory.push({ assistant: '' });
           }
           break;
         }
         // when the chain ends
         // handle completion, remove listener after completion
         case 'on_chain_end': {
-          console.log('xxx','on_chain_end:');
-
           // workflow end event
           if (event.name === 'LangGraph') {
-            console.log('Chain end:', event.data.output.content);
             // Handle completion
             this.generateLoader = false;
             this.returnChatHistory();
-            this.getSuggestion();
-            this.analyticsTracker.trackResponseTime(AnalyticsEventSource.AI_CHAT);
-            // Remove listener after completion
-            this.electronService.removeChatListener(requestId, streamHandler);
           }
 
           // tool node end event
           if((event.name as string).toLocaleLowerCase() === "tools"){
-            console.log('xxx', 'on_chain_end', 'tools', event)
-
             const toolMessages = event.data.output.messages;
-            console.log('Tool messages:', toolMessages);
             this.chatHistory.push(...toolMessages.map((tm: any)=>{
               const aiMessageWithToolCall = this.chatHistory.find((item: any) => {
                 if (item.toolCalls && item.toolCalls.length > 0) {
@@ -443,34 +450,6 @@ export class AiChatComponent implements OnInit {
         this.generateLoader = false;
         this.electronService.removeChatListener(requestId, streamHandler);
       });
-  }
-
-  codeLLMCall(fileList: any, content: string) {
-    this.generateLoader = true;
-    this.chatHistory = [
-      ...this.chatHistory,
-      {
-        type: 'user',
-        content: [
-          {
-            type: 'text',
-            content: 'Code Files Content:',
-          },
-          {
-            type: 'text',
-            content:
-              fileList.map((f: any) => f.name).join(', ') + '\n' + content,
-          },
-        ],
-      },
-    ];
-    const message = `
-      Code Snippet:
-      ${content}
-      -------------
-      Improve the requirement context according to the code snippet attached
-      -------------`;
-    this.finalCall();
   }
 
   update(chat: any) {
@@ -638,6 +617,7 @@ export class AiChatComponent implements OnInit {
     this.responseStatus = true;
     this.selectedSuggestion = message;
     this.chatSuggestions = []; 
+
     if (message || this.selectedFiles.length > 0) {
       this.generateLoader = true;
       
@@ -649,7 +629,8 @@ export class AiChatComponent implements OnInit {
           files: this.selectedFiles.map(f => ({
             name: f.name,
             size: this.formatFileSize(f.size),
-          }))
+          })),
+          selectedFilesContent: this.selectedFilesContent
         }];
       } else if (this.selectedFiles.length > 0) {
         // Only files
@@ -657,24 +638,14 @@ export class AiChatComponent implements OnInit {
           files: this.selectedFiles.map(f => ({
             name: f.name,
             size: this.formatFileSize(f.size)
-          }))
+          })),
+          selectedFilesContent: this.selectedFilesContent
         }];
       } else {
         // Only message
         this.chatHistory = [...this.chatHistory, { user: message }];
       }
-
-      // Construct API message
-      let apiMessage = '';
-      if (message) {
-        apiMessage += message + '\n\n';
-      }
-      if (this.selectedFiles.length > 0) {
-        apiMessage += 'Code Snippets:\n';
-        apiMessage += this.selectedFilesContent;
-      }
       
-      // this.finalCall(apiMessage);
       this.finalCall();
 
       // Clear message and files after sending
@@ -700,5 +671,12 @@ export class AiChatComponent implements OnInit {
     };
 
     this.getSuggestion();    
+  }
+
+  onChatInputKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey && !this.isSendDisabled) {
+      event.preventDefault(); // Prevent new line
+      this.converse(this.message);
+    }
   }
 }

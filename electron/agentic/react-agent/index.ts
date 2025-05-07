@@ -35,12 +35,12 @@ export const buildReactAgent = <
   const builder = new StateGraph(
     createReactAgentAnnotation<TStructuredResponse>()
   )
-    // .addNode("summarize", buildSummarizeNode(model, summaryConfig))
+    .addNode("summarize", buildSummarizeNode(model, tools, summaryConfig))
     .addNode("llm", buildLLMNode(model, tools))
     .addNode("tools", new ToolNode(tools))
-    .addEdge(START, "llm")
-    // .addEdge("summarize", "llm")
-    .addEdge("tools", "llm");
+    .addEdge(START, "summarize")
+    .addEdge("summarize", "llm")
+    .addEdge("tools", "summarize");
 
   if (responseFormat) {
     builder
