@@ -27,9 +27,10 @@ const DEFAULT_SUMMARY_CONFIG: MessageSummaryConfig = {
 // Node for handling message summarization
 export const buildSummarizeNode = (
   modelProvider: LangChainModelProvider,
+  tools: Array<ITool>,
   config: MessageSummaryConfig = DEFAULT_SUMMARY_CONFIG
 ) => {
-  const model = modelProvider.getModel();
+  const modelWithTools = modelProvider.getModel().bindTools!(tools);
 
   return async (
     state: (typeof MessagesAnnotation)["State"] & {
@@ -70,7 +71,7 @@ export const buildSummarizeNode = (
       ];
 
       // Generate new summary
-      const response = await model.invoke(allMessages);
+      const response = await modelWithTools.invoke(allMessages);
       const newSummary =
         typeof response.content === "string"
           ? response.content
