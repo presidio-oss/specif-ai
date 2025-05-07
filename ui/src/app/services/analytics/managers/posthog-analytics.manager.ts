@@ -50,7 +50,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
   }
 
   isConfigValid(config: AppConfig): boolean {
-    return !!config.key && !!config.host;
+    return !!config.posthogKey && !!config.posthogHost;
   }
 
   isEnabled(): boolean {
@@ -127,7 +127,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
     this.core
       .getAppConfig()
       .then((config: AppConfig) => {
-        this.postHogConfig = { key: config.key, host: config.host, enabled: config.enabled }; ;
+        this.postHogConfig = { key: config.posthogKey, host: config.posthogHost, enabled: config.posthogEnabled }; ;
         if (!this.postHogConfig.enabled) {
           console.log('PostHog tracking is disabled in the configuration.');
           this.isPostHogInitialized = false;
@@ -135,7 +135,7 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
           console.error('Invalid PostHog configuration received.');
           this.isPostHogInitialized = false;
         } else {
-          this.initPostHog(config.key, config.host, username, userId);
+          this.initPostHog(config.posthogKey, config.posthogHost, username, userId);
           this.isPostHogInitialized = true;
         }
       })

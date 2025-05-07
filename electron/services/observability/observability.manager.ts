@@ -5,15 +5,23 @@ import { store } from "../store";
 export class ObservabilityManager {
   private static instance: ObservabilityManager;
   private langfuse: Langfuse | null = null;
-  private tracingEnabled: boolean;
-  private userName: string;
+  private tracingEnabled: boolean = false;
+  private userName: string = "";
+  private lastAnalyticsUserConsentState: boolean = false;
 
   private constructor() {
-    const analyticsEnabled = store.get<boolean>("analyticsEnabled") || false;
+    this.initializeTracing();
+    this.lastAnalyticsUserConsentState = store.get<boolean>("analyticsEnabled") || false;
+  }
+  /**
+   * Initializes the tracing configuration based on the environment variables and app config.
+   * It sets up the Langfuse instance if tracing is enabled.
+   */
+  private initializeTracing(): void {
     const APP_CONFIG = store.get<AppConfig>("APP_CONFIG");
     this.userName = APP_CONFIG?.username || "anonymous";
-    this.tracingEnabled = analyticsEnabled && (process.env.ENABLE_LANGFUSE === 'true' || false);
-
+    const analyticsUserConsentEnabled = store.get<boolean>("analyticsEnabled") || false;
+    this.tracingEnabled = analyticsUserConsentEnabled && (process.env.ENABLE_LANGFUSE === 'true' || false);
     if (this.tracingEnabled) {
       this.langfuse = new Langfuse({
         secretKey: process.env.LANGFUSE_SECRET_KEY,
@@ -31,7 +39,19 @@ export class ObservabilityManager {
     return ObservabilityManager.instance;
   }
 
+  private checkAndUpdateTracing(): void {
+    const currentAnalyticsUserConsentState = store.get<boolean>("analyticsEnabled") || false;
+    if (currentAnalyticsUserConsentState !== this.lastAnalyticsUserConsentState) {
+      this.initializeTracing();
+      this.lastAnalyticsUserConsentState = currentAnalyticsUserConsentState;
+    }
+  }
+
   public createTrace(name: string) {
+    // Only reinitialize if analytics state has changed
+    this.checkAndUpdateTracing();
+    
+    // Check if tracing is enabled based on current configuration
     if (!this.tracingEnabled || !this.langfuse) {
       return this.getMockTrace();
     }

@@ -176,9 +176,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.core.getAppConfig()
       .then((config: AppConfig) => {
         const postHogEnabled = this.analyticsTracker.isEnabled() && this.analyticsTracker.isConfigValid(config);
-        const observabilityEnabled = config.observabilityEnabled;
-
-        if (!postHogEnabled && !observabilityEnabled) {
+        const langfuseEnabled = config.langfuseEnabled;
+        if (!postHogEnabled && !langfuseEnabled) {
           this.analyticsEnabled.setValue(false);
           this.analyticsEnabled.disable({ onlySelf: true });
           this.updateAnalyticsState(false);
