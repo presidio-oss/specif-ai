@@ -55,7 +55,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
         thread_id: `${validatedData.requestId}_create_solution`,
         trace: trace,
         requestId: validatedData.requestId,
-        sendMessagesInTelemetry: true,
+        sendMessagesInTelemetry: false,
       },
     };
 

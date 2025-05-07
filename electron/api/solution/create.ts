@@ -180,11 +180,12 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       };
 
       const config = {
-        "configurable":{
-          "thread_id": `${randomUUID()}_create_solution`,
-          "trace": trace
-        }
-      }
+        configurable: {
+          thread_id: `${randomUUID()}_create_solution`,
+          trace: trace,
+          sendMessagesInTelemetry: false,
+        },
+      };
 
       const stream = createSolutionWorkflow.streamEvents(initialState, {
         version: "v2",

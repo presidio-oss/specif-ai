@@ -12,10 +12,12 @@ export const buildLLMNode = (modelProvider: LangChainModelProvider) => {
     state: IRequirementGenWorkflowStateAnnotation["State"],
     runnableConfig?: RequirementGenRunnableConfig
   ) => {
-    const trace = runnableConfig?.configurable?.trace;
+    const { trace, sendMessagesInTelemetry = false } = runnableConfig?.configurable ?? {};
+    
     const generation = trace?.generation({
       name: "llm",
       model: modelProvider.getModel().id,
+      input: sendMessagesInTelemetry ? state.messages : undefined,
     });
 
     try {
@@ -28,6 +30,7 @@ export const buildLLMNode = (modelProvider: LangChainModelProvider) => {
           output: response.usage_metadata?.output_tokens,
           total: response.usage_metadata?.total_tokens,
         },
+        output: sendMessagesInTelemetry ? response : undefined,
       });
 
       return {

@@ -33,7 +33,7 @@ export const buildResearchNode = ({
     state: ICreateSolutionWorkflowStateAnnotation["State"],
     runnableConfig: CreateSolutionWorkflowRunnableConfig
   ) => {
-    const trace = runnableConfig.configurable?.trace;
+    const { trace, sendMessagesInTelemetry = false } = runnableConfig.configurable ?? {};
     const span = trace?.span({
       name: "research",
     });
@@ -83,7 +83,7 @@ export const buildResearchNode = ({
         configurable: {
           trace: span,
           thread_id: runnableConfig.configurable?.thread_id,
-          sendMessagesInTelemetry: false
+          sendMessagesInTelemetry: sendMessagesInTelemetry
         },
       }
     );
@@ -111,7 +111,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
     state: ICreateSolutionWorkflowStateAnnotation["State"],
     runnableConfig: CreateSolutionWorkflowRunnableConfig
   ) => {
-    const trace = runnableConfig.configurable?.trace;
+    const { trace, sendMessagesInTelemetry = false } = runnableConfig.configurable ?? {};
     const span = trace?.span({
       name: `generate-${type.toLowerCase()}`,
     });
@@ -163,6 +163,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
         configurable: {
           trace: span,
           thread_id: runnableConfig.configurable?.thread_id,
+          sendMessagesInTelemetry: sendMessagesInTelemetry
         },
       });
 
