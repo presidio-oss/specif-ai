@@ -9,9 +9,10 @@ export interface SuggestionResearchPreferences {
 
 export const getSuggestionPerspectives = (): string[] => {
   return [
-    "- Domain Perspective: Key domain-specific concepts, best practices, and industry standards relevant to this requirement.",
-    "- Technical Perspective: Important technical approaches, implementation strategies, frameworks, and architectures that could be applied.",
-    "- Business Perspective: Key business goals, objectives, stakeholder considerations, and value proposition alignment.",
-    "- Integration Perspective: Important integration points, dependencies, APIs, and system interactions to consider.",
+    "- Clarity Enhancement Perspective: Research to identify ways to make the requirement more specific, understandable, and well-defined - what details could be clarified or better specified?",
+    "- Practical Implementation Perspective: Research about feasibility, technical approaches, and practical solutions - how can this be implemented effectively?",
+    "- Innovation Opportunities Perspective: Research to discover creative approaches, modern solutions, and innovative alternatives - what new ideas could enhance this requirement?",
+    "- Requirement Context Perspective: Research about requirement type-specific considerations (PRD, BRD, etc.) and related business requirements - how does this fit into the broader context?",
+    "- Concise Expression Perspective: Research to find precise, impactful ways to express improvements in 5 words or less - how can we suggest enhancements concisely?",
   ];
 };
