@@ -275,7 +275,10 @@ export class UserStoriesComponent implements OnInit {
   generateUserStories(regenerate: boolean = false, extraContext: string = '') {
     let request: IUserStoriesRequest = {
       appId: this.navigation.projectId,
+      appName: this.metadata.name,
+      appDescription: this.metadata.description,
       reqId: this.newFileName.split('-')[0],
+      reqName: this.navigation.selectedRequirement.title,
       reqDesc: this.navigation.selectedRequirement.requirement,
       regenerate: regenerate,
       technicalDetails: this.metadata.technicalDetails || '',
@@ -302,6 +305,8 @@ export class UserStoriesComponent implements OnInit {
     const requests = this.userStories.map(async (userStory: IUserStory) => {
       let request: ITaskRequest = {
         appId: this.navigation.projectId,
+        appName: this.metadata.name,
+        appDescription: this.metadata.description,
         reqId: this.navigation.fileName.split('-')[0],
         featureId: userStory.id,
         name: userStory.name,

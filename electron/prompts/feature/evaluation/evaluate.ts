@@ -1,10 +1,12 @@
 interface EvaluatePromptParams {
-  requirements: string;
+  reqName: string;
+  reqDesc: string;
   features: string;
 }
 
 export function evaluatePrompt({
-  requirements,
+  reqName,
+  reqDesc,
   features
 }: EvaluatePromptParams): string {
   return `# INSTRUCTIONS
@@ -22,7 +24,8 @@ Remember feature is not a small task but a business functionality
 ${features}
 
 # REQUIREMENTS
-${requirements}
+**Name:** ${reqName}
+**Description:** ${reqDesc}
 
 # RESPONSE FORMAT
 

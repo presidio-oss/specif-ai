@@ -2,9 +2,10 @@ import { MARKDOWN_RULES } from '../../context/markdown-rules';
 
 export interface CreateTaskPromptParams {
   name: string;
-  userstories: string;
+  description: string;
   technologies?: string;
   extraContext?: string;
+  referenceInformation?: string;
 }
 
 export function createTaskPrompt(params: CreateTaskPromptParams): string {
@@ -14,10 +15,11 @@ Module Name:
 ${params.name}
 
 User Story:
-${params.userstories} 
+${params.description} 
 
 ${params.technologies ? `Technical Details:\n${params.technologies}\n` : ''}
 ${params.extraContext ? `Extra Context:\n${params.extraContext}\n` : ''}
+${params.referenceInformation ? `### Additional Context:\n${params.referenceInformation}`:''}
 
 REQUIREMENTS FOR TASK GENERATION:
 

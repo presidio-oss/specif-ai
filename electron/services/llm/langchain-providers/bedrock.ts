@@ -8,6 +8,7 @@ interface BedrockConfig extends LLMConfig {
   secretAccessKey: string;
   sessionToken?: string;
   model: string;
+  useCrossRegionInference?: boolean;
 }
 
 export class BedrockLangChainProvider implements LangChainModelProvider {
@@ -17,7 +18,7 @@ export class BedrockLangChainProvider implements LangChainModelProvider {
   constructor(config: Partial<BedrockConfig>) {
     this.configData = this.getConfig(config);
     this.model = new ChatBedrockConverse({
-      model: this.configData.model,
+      model: this.transformModelId(),
       region: this.configData.region,
       credentials: {
         accessKeyId: this.configData.accessKeyId,
@@ -48,7 +49,28 @@ export class BedrockLangChainProvider implements LangChainModelProvider {
       secretAccessKey: config.secretAccessKey,
       sessionToken: config.sessionToken,
       model: config.model,
+      useCrossRegionInference: config.useCrossRegionInference || false,
     };
+  }
+
+  private transformModelId(): string {
+    if (this.configData.useCrossRegionInference) {
+      const regionPrefix = this.configData.region.slice(0, 3);
+
+      switch (regionPrefix) {
+        case "us-":
+          return `us.${this.getModelInfo().id}`;
+        case "eu-":
+          return `eu.${this.getModelInfo().id}`;
+        case "ap-":
+          return `apac.${this.getModelInfo().id}`;
+        default:
+          // cross region inference is not supported in this region, falling back to default model
+          return this.getModelInfo().id;
+      }
+    }
+
+    return this.getModelInfo().id;
   }
 
   getModel(): ChatBedrockConverse {

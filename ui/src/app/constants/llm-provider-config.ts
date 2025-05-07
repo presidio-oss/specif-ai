@@ -167,7 +167,7 @@ export async function getLLMProviderConfig(provider: string) {
           useAutocomplete: true,
         },
         {
-          name: 'crossRegion',
+          name: 'useCrossRegionInference',
           type: 'checkbox',
           label: 'Enable Cross Region',
           defaultValue: false,

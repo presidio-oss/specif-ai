@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const createTaskSchema = z.object({
   appId: z.string(),
+  appName: z.string(),
+  appDescription: z.string(),
   reqId: z.string(),
   featureId: z.string(),
   name: z.string(),
