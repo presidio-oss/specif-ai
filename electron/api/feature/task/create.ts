@@ -44,8 +44,10 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
     });
     
     const initialState = {
+      appName: validatedData.appName,
+      appDescription: validatedData.appDescription,
       name: validatedData.name,
-      userStory: validatedData.description,
+      description: validatedData.description,
       technicalDetails: validatedData.technicalDetails || "",
       extraContext: validatedData.extraContext || ""
     };

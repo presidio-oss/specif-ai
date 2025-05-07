@@ -4,7 +4,10 @@ import {
 } from "./utils";
 
 export function createSummarizeUserStoryResearchPrompt({
-  requirements,
+  appName,
+  appDescription,
+  reqName,
+  reqDesc,
   technicalDetails,
   extraContext,
 }: UserStoryResearchPreferences): string {
@@ -12,9 +15,15 @@ export function createSummarizeUserStoryResearchPrompt({
 
   return `You are a lead technical analyst. As part of your role you synthesize information gathered to support the downstream generation of user stories.
 
-  ## Context:
-    Requirements: ${requirements}
-    Technical Details: ${technicalDetails || ""}
+   ## App Context:
+    App Name: ${appName}
+    App Description: ${appDescription}
+    App Technical Details: ${technicalDetails}
+
+  ## User Story Context:
+    PRD REQUIREMENT:
+    **Name:** ${reqName}
+    **Description:** ${reqDesc}
     Additional Context: ${extraContext || ""}
 
   ## Objective

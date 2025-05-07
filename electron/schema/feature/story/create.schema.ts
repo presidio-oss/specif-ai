@@ -2,6 +2,9 @@ import { z } from 'zod';
 
 export const createStorySchema = z.object({
   appId: z.string(),
+  appName: z.string(),
+  appDescription: z.string(),
+  reqName: z.string(),
   reqDesc: z.string(),
   extraContext: z.string().optional(),
   technicalDetails: z.string().optional()
