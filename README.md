@@ -171,109 +171,40 @@ The enterprise knowledge base is integrated with AI-powered chat to enhance sugg
 ## 🧠 Model Context Protocol (MCP) Integration
 
 <div align="center">
-  <em>Plug in powerful tools and knowledge bases into your project using the flexible Model Context Protocol (MCP).</em>
+  <em>Supercharge your development workflow with powerful tools and knowledge bases through the flexible Model Context Protocol (MCP)</em>
 </div>
 
----
-
-### ✨ What is MCP?
-
-The **Model Context Protocol (MCP)** is a lightweight, extensible protocol for connecting your application to external tools, models, or knowledge bases. MCP standardizes how these integrations communicate with your project—whether locally or over the network.
-
-It enables:
-- 🔌 **Plug-and-play integrations** like retrieval-augmented generation tools, search engines, and more
-- ⚡ **Real-time context injection** into LLM workflows
-- ⚙️ **Custom toolchains** per project with minimal config
-
----
-
-### 🔧 Project-Level MCP Configuration
-
-**Specifai** supports per-project MCP integration. Each project can define its own toolchain using two supported transport types:
-
-#### 📤 1. Standard I/O (`stdio`)
-- CLI-based communication
-- Configured via environment variables
-- Ideal for local or containerized tools (e.g., AWS Bedrock KB)
-
-#### 🌐 2. Server-Sent Events (`sse`)
-- HTTP-based streaming
-- Real-time, push-style data updates
-- Suitable for hosted services or long-lived context feeds
+The Model Context Protocol (MCP) is a powerful integration framework that enables Specifai to connect with external tools, services, and knowledge bases. This extensible architecture allows you to enhance your development workflow with custom capabilities while maintaining a seamless user experience.
 
 ---
 
 ### 📚 Built-in Integration: AWS Bedrock Knowledge Base
 
-Specifai includes built-in support for **AWS Bedrock Knowledge Base (KB)**. It's easy to enable and configure via the UI:
+Specifai includes native support for **AWS Bedrock Knowledge Base (KB)**. Configuration is available directly in the UI.
 
 <div align="center">
   <img src="assets/img/mcp/aws-bedrock-kb-config.png" alt="AWS Bedrock KB Configuration" width="800">
   <em>AWS Bedrock KB visual configuration</em>
 </div>
 
-#### 🔧 Example Configuration (STDIO)
-
-```json
-{
-  "command": "uvx",
-  "args": [
-    "awslabs.bedrock-kb-retrieval-mcp-server@latest"
-  ],
-  "env": {
-    "AWS_PROFILE": "your-profile-name",
-    "AWS_REGION": "us-east-1",
-    "FASTMCP_LOG_LEVEL": "ERROR",
-    "KB_INCLUSION_TAG_KEY": "optional-tag-key-to-filter-kbs"
-  },
-  "disabled": false,
-  "name": "AWS Bedrock Knowledge Base",
-  "transportType": "stdio"
-}
-```
-
 ---
 
 ### 🛠 Add Custom MCP Servers
 
-You can add your own MCP-compatible tools and services using either `stdio` or `sse`.
+Specifai also supports integration with custom MCP-compatible tools and services. For example, you can connect a file system MCP server, which will automatically surface its tools and resources in the UI.
 
 <div align="center">
   <img src="assets/img/mcp/custom-mcp-config.png" alt="Custom MCP Server Configuration" width="800">
   <em>UI for managing custom MCP server integrations</em>
 </div>
 
-#### 🔧 Example Configuration (SSE)
-
-```json
-{
-  "name": "Sample SSE Server",
-  "disabled": false,
-  "url": "https://sample-domain.com/sse",
-  "transportType": "sse"
-}
-```
-
 ---
 
-## 🧩 MCP Configuration & Management Interface
-
-The integrated UI offers full control over MCP integrations:
-
-### 🚀 Prebuilt Integrations
-- One-click setup (e.g., AWS Bedrock KB)
-- Easy form-based editing
-- Environment and input validation
-
-### 🛠 Custom Server Configuration
-- Add/update/remove integrations
-- Edit raw JSON config in-place
-- Use built-in validation with real-time feedback
-
+All MCP integrations can be managed from the **Integrations** page, where you can easily add, configure, enable, or remove both built-in and custom servers.
 
 <div align="center">
   <img src="assets/img/mcp/custom-server-management.png" alt="Custom Server Management Interface" width="800">
-  <em>Custom Server Management Interface</em>
+  <em>Manage all MCP integrations from a single place</em>
 </div>
 
 ## 🏗 Architecture
