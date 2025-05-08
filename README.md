@@ -174,7 +174,7 @@ The enterprise knowledge base is integrated with AI-powered chat to enhance sugg
   <em>Supercharge your development workflow with powerful tools and knowledge bases through the flexible Model Context Protocol (MCP)</em>
 </div>
 
-The Model Context Protocol (MCP) is a powerful integration framework that enables Specifai to connect with external tools, services, and knowledge bases. This extensible architecture allows you to enhance your requirement generation with custom capabilities while maintaining a seamless user experience.
+The Model Context Protocol (MCP) is a powerful integration framework that enables Specifai to connect with external tools, services, and knowledge bases. This extensible architecture allows you to enhance your requirement generation workflow with custom capabilities while maintaining a seamless user experience.
 
 ---
 
