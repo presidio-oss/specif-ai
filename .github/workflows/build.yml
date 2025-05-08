@@ -120,8 +120,8 @@ jobs:
         run: |
           cd electron
 
-          # Set NODE_ENV
-          $env:NODE_ENV = "${{ inputs.environment }}"
+          # Set APP_ENVIRONMENT
+          $env:APP_ENVIRONMENT = "${{ inputs.environment }}"
 
           # Append to .env file with PostHog configuration
           Add-Content -Path .env -Value "ENABLE_POSTHOG=$env:ENABLE_POSTHOG"
@@ -241,8 +241,8 @@ jobs:
         run: |
           cd electron
 
-          # Set NODE_ENV
-          export NODE_ENV="${{ inputs.environment }}"
+          # Set APP_ENVIRONMENT
+          export APP_ENVIRONMENT="${{ inputs.environment }}"
 
           # Create .env file with PostHog configuration
           echo "ENABLE_POSTHOG=$ENABLE_POSTHOG" >> .env
