@@ -63,8 +63,6 @@ function createWindow(indexPath: string, themeConfiguration: any) {
     icon: path.join(__dirname, getIconPath(themeConfiguration)),
   });
 
-  console.debug('Backend APP_ENVIRONMENT:', process.env?.APP_ENVIRONMENT);
-
   if (!app.isPackaged) {
     mainWindow.loadURL(process.env.DEV_ELECTRON_RENDERER_URL as string);
   } else {

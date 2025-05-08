@@ -120,9 +120,9 @@ jobs:
         run: |
           cd electron
 
-          # Set APP_ENVIRONMENT
-          $env:APP_ENVIRONMENT = "${{ inputs.environment }}"
-
+          # Append APP_ENVIRONMENT configuration to .env file
+          Add-Content -Path .env -Value "APP_ENVIRONMENT=${{ inputs.environment }}"
+          
           # Append to .env file with PostHog configuration
           Add-Content -Path .env -Value "ENABLE_POSTHOG=$env:ENABLE_POSTHOG"
           Add-Content -Path .env -Value "POSTHOG_HOST=$env:POSTHOG_HOST"
@@ -241,9 +241,9 @@ jobs:
         run: |
           cd electron
 
-          # Set APP_ENVIRONMENT
-          export APP_ENVIRONMENT="${{ inputs.environment }}"
-
+          # Create .env file with APP_ENVIRONMENT configuration
+          echo "APP_ENVIRONMENT=${{ inputs.environment }}" >> .env
+          
           # Create .env file with PostHog configuration
           echo "ENABLE_POSTHOG=$ENABLE_POSTHOG" >> .env
           echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
