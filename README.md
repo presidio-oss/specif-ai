@@ -200,7 +200,7 @@ Specifai also supports integration with custom MCP-compatible tools and services
 
 ---
 
-All MCP integrations can be managed from the **Integrations** page, where you can easily add, configure, enable, or remove both built-in and custom servers.
+All MCP integrations can be managed from the **Integrations** page, where you can easily add, configure, or remove both built-in and custom servers.
 
 <div align="center">
   <img src="assets/img/mcp/custom-server-management.png" alt="Custom Server Management Interface" width="800">
