@@ -85,7 +85,8 @@
                 class="inline-block rounded-2xl text-sm relative w-full"
               >
                 <!-- Tool response -->
-                <div *ngIf="chat.tool">
+                <div *ngIf="chat.tool" class="flex flex-col gap-2.5">
+                  <!-- Tool Call Details Accordion -->
                   <app-custom-accordion [id]="chat.name" [isOpen]="false" [triggerClassName]="'px-3 py-2'" [bodyClassName]="'!px-3 !py-0'">
                     <div accordion-trigger class="flex flex-col gap-1">
                       <span class="text-xs font-medium text-secondary-700">{{ chat.name }}</span>
@@ -101,6 +102,47 @@
                       </div>
                     </div>
                   </app-custom-accordion>
+
+                  <!-- Add to Description Section (Outside Accordion) -->
+                  <div *ngIf="chat.name === 'add_to_requirement_description'" class="flex flex-col gap-3">
+                    <!-- Intent Message -->
+                    <div class="text-xs text-secondary-600">
+                      <span>SpecifAI suggested adding the following content to your description:</span>
+                    </div>
+                    
+                    <!-- Content Preview -->
+                    <div class="bg-secondary-50 border border-secondary-200 rounded-lg px-3 py-2">
+                      <app-rich-text-editor 
+                        editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs" 
+                        mode="view"
+                        [content]="chat.args.contentToAdd" 
+                        [editable]="false" 
+                        [editorClass]="'!rounded-none'">
+                      </app-rich-text-editor>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-2">
+                      <button
+                        *ngIf="!chat.isAdded"
+                        class="text-sm bg-white text-success-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-200"
+                        (click)="update({ contentToAdd: chat.args.contentToAdd, tool_name: chat.name, tool_call_id: chat.tool_call_id })"
+                      >
+                        <ng-icon
+                          name="heroDocumentPlus"
+                          class="text-lg"
+                        ></ng-icon>
+                        Add to Description
+                      </button>
+                      <div
+                        *ngIf="chat.isAdded"
+                        class="text-sm bg-success-600 text-white flex items-center py-1 px-3 gap-1 rounded-lg"
+                      >
+                        <ng-icon name="heroCheck" class="text-lg text-white"></ng-icon>
+                        Added Successfully
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -132,30 +174,6 @@
                     [content]="chat.assistant" [editable]="false" [editorClass]="'!rounded-none'">
                   </app-rich-text-editor>
                 </div>
-
-                  <!-- <div class="mt-3 flex items-start">
-                    <button
-                      *ngIf="!chat.isAdded"
-                      class="text-sm bg-white text-success-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-200"
-                      (click)="update(chat)"
-                    >
-                      <ng-icon
-                        name="heroDocumentPlus"
-                        class="text-lg"
-                      ></ng-icon>
-                      Add to Description
-                    </button>
-                    <div
-                      *ngIf="chat.isAdded"
-                      class="text-sm bg-success-600 text-white flex items-center py-1 px-3 gap-1 rounded-full"
-                    >
-                      <ng-icon
-                        name="heroCheck"
-                        class="text-lg text-white"
-                      ></ng-icon>
-                      Added
-                    </div>
-                  </div> -->
 
                   <!-- Unified feedback badge with two buttons -->
                   <div

@@ -172,7 +172,7 @@ export const buildLLMNode = (
     },
     runnableConfig?: ReactAgentConfig
   ) => {
-    const { trace, sendMessagesInTelemetry } =
+    const { trace, sendMessagesInTelemetry = false } =
       runnableConfig?.configurable ?? {};
 
     const llmSpan = trace?.span({
@@ -250,7 +250,7 @@ export const buildGenerateStructuredResponseNode = (
     state: (typeof MessagesAnnotation)["State"],
     runnableConfig?: ReactAgentConfig
   ) => {
-    const { trace, sendMessagesInTelemetry } =
+    const { trace, sendMessagesInTelemetry = false } =
       runnableConfig?.configurable ?? {};
 
     const structuredResponseSpan = trace?.span({

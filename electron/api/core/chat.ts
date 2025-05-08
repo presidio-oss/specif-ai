@@ -18,6 +18,7 @@ import { buildLangchainModelProvider } from "../../services/llm/llm-langchain";
 import { LLMConfigModel } from "../../services/llm/llm-types";
 import { ObservabilityManager } from "../../services/observability/observability.manager";
 import { store } from "../../services/store";
+import { z } from "zod";
 
 export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
   try {
@@ -109,7 +110,20 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     }
   );
 
-  const tools = [getCurrentRequirementContent];
+  const addToRequirementDescription = tool(
+    ({ }: { contentToAdd: string }): string => {
+      return "Tool called successfully, The user is notified that you've suggested adding content to the description";
+    },
+    {
+      name: "add_to_requirement_description",
+      description: "Suggest adding content to the current requirement description",
+      schema: z.object({
+        contentToAdd: z.string()
+      })
+    }
+  );
+
+  const tools = [getCurrentRequirementContent, addToRequirementDescription];
 
   switch (data.requirementAbbr) {
     case "BP": {

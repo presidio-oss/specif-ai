@@ -272,9 +272,8 @@ export class AiChatComponent implements OnInit {
 
   getSlicedChatHistory() {
     // this method will get the last 15 messages from the chat history
-    // if the message at the starting index is a tool message
-    // we will move to the next index and continue until we find a user/ ai message
-    // this is to avoid sending tool messages to the AI without ai message which would cause error
+    // if the message at the starting index is not a human message
+    // we will move to the next index and continue until we find a user message
     // this is a temporary fix to limit the chat history to the last 20 messages so we won't exceed the context limit (for summarization)
     // In the future, we may need to implement a more sophisticated approach
 
@@ -286,7 +285,7 @@ export class AiChatComponent implements OnInit {
 
     while (startIndex < endIndex) {
       const item = slicedChatHistory[startIndex];
-      if (item.tool) {
+      if (!item.user) {
         startIndex++;
       } else {
         break;
