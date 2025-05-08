@@ -149,7 +149,7 @@
           </div>
 
           <!-- Assistant Message -->
-          <div *ngIf="chat.assistant || (generateLoader && chat === chatHistory[chatHistory.length - 1])" class="flex items-start">
+          <div *ngIf="chat.assistant" class="flex items-start">
             <div class="flex items-start gap-3 w-full">
               <div
                 class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10"
@@ -164,10 +164,6 @@
                 <div
                   class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative"
                 >
-                <!-- Assistant loading -->
-                <div *ngIf="generateLoader && !chat.assistant" class="[--dot-color:#312e81] [--dot-size:0.25rem]">
-                  <app-three-bounce-loader></app-three-bounce-loader>
-                </div>
                 <!-- Assistant content -->
                 <div *ngIf="chat.assistant">
                   <app-rich-text-editor editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs" mode="view"
@@ -178,7 +174,7 @@
                   <!-- Unified feedback badge with two buttons -->
                   <div
                     class="absolute -bottom-3 right-2 flex items-center bg-white rounded-full shadow-sm border border-secondary-200 p-0.5 z-10"
-                    *ngIf="showFeedbackBadge && !(generateLoader && chat === chatHistory[chatHistory.length - 1])"
+                    *ngIf="showFeedbackBadge"
                   >
                     <button
                       class="text-xs text-success-600 p-1.5 rounded-full flex items-center transition-colors duration-200 hover:bg-secondary-50"
@@ -227,22 +223,18 @@
         </div>
       </div>
 
-      <!-- Thinking State -->
-      <!-- <div class="flex items-start" *ngIf="generateLoader">
-        <div class="flex items-start gap-3 w-full">
-          <div
-            class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10"
-          >
-            <img
-              src="assets/img/logo/haibuild_onlylogo.svg"
-              alt="AI"
-              class="w-6 h-6"
-            />
-          </div>
-          <div class="text-sm text-secondary-600 mt-2">Thinking...</div>
+      <!-- Assistant loading -->
+      <div class="flex flex-row gap-3" *ngIf="generateLoader">
+        <div class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10">
+          <img src="assets/img/logo/haibuild_onlylogo.svg" alt="AI" class="w-6 h-6" />
         </div>
-      </div> -->
-
+        <div class="flex-1 flex max-w-[75%] relative h-10 items-center">
+          <div
+            class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative [--dot-color:#312e81] [--dot-size:0.25rem]">
+            <app-three-bounce-loader></app-three-bounce-loader>
+          </div>
+        </div>
+      </div>
       <div #scrollToBottom></div>
     </div>
   </div>

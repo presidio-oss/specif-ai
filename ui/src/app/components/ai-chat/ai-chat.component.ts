@@ -376,6 +376,7 @@ export class AiChatComponent implements OnInit {
         // when the chat model in llm node starts create a new message
         case "on_chat_model_start":{
           if(event["metadata"]["langgraph_node"] === "llm"){
+            this.generateLoader = true;
             this.chatHistory.push({ assistant: '' });
           }
           break;
@@ -385,6 +386,11 @@ export class AiChatComponent implements OnInit {
         case 'on_chat_model_stream': {
           if(event["metadata"]["langgraph_node"] === "llm"){
             const chunk = event.data.chunk;
+
+            if(chunk.content){
+              this.generateLoader = false;
+            }
+
             this.updateLastAIMessage(chunk.content, []);
           }
           break;
@@ -393,6 +399,7 @@ export class AiChatComponent implements OnInit {
         // update the last message with the tool calls
         case 'on_chat_model_end': {
           if(event.metadata.langgraph_node === "llm"){
+            this.generateLoader = false;
             const toolCalls = event.data.output.tool_calls;
             this.updateLastAIMessage('', toolCalls);
           }
