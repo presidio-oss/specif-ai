@@ -6,7 +6,7 @@ import { toolUseContext } from "./tool-use.context";
 
 interface RequirementPreference {
   isEnabled: boolean;
-  maxCount: number;
+  minCount: number;
 }
 
 interface GatherInfoParams {

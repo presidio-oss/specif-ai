@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { ElectronService } from '../../electron-bridge/electron.service';
 
-interface AppConfig {
-  key: string;
-  host: string;
+export interface AppConfig {
+  posthogKey: string;
+  posthogHost: string;
+  posthogEnabled: boolean;
+  langfuseEnabled: boolean;
 }
 
 @Injectable({

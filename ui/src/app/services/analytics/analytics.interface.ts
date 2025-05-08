@@ -75,5 +75,16 @@ export abstract class AnalyticsTracker {
    * @returns A boolean indicating whether the configuration is valid.
    */
   abstract isConfigValid(config: any): boolean;
+
+  // Function to check if analytics is enabled
+  /**
+   * Checks if the analytics tracking is enabled.
+   * @returns A boolean indicating whether analytics tracking is enabled.
+   * @example
+   * if (analyticsManager.isEnabled()) {
+   *   // Perform analytics tracking
+   * }
+   */
+  abstract isEnabled(): boolean;
 }
 

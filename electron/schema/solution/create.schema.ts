@@ -2,7 +2,7 @@ import { McpSettingsSchema } from '../../mcp/schema';
 import { z } from 'zod';
 
 export const generationRangeSchema = z.object({
-  maxCount: z.number(),
+  minCount: z.number(),
   isEnabled: z.boolean()
 });
 

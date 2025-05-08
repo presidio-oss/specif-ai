@@ -8,6 +8,6 @@ export type ITool = StructuredToolInterface | DynamicTool | RunnableToolLike;
 
 export type IRequirementItemGenerationPref = {
     isEnabled: boolean;
-    maxCount: number;
+    minCount: number;
     additionalContext?: string;
 }

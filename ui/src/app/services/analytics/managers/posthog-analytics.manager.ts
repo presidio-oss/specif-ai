@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AnalyticsTracker } from '../analytics.interface';
 import { getAnalyticsToggleState } from 'src/app/services/analytics/utils/analytics.utils';
 import posthog from 'posthog-js';
+import { AppConfig } from '../../core/core.service';
 import {
   AnalyticsEvents,
   AnalyticsEventSource,
@@ -24,6 +25,15 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
     LLMConfigState.getConfig,
   );
+  private postHogConfig: {
+    key: string;
+    host: string;
+    enabled: boolean;
+  } = {
+    key: '',
+    host: '',
+    enabled: false,
+  };
 
   constructor(
     private store: Store,
@@ -39,12 +49,16 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
     });
   }
 
-  isConfigValid(config: { key?: string; host?: string }): boolean {
-    return !!config.key && !!config.host;
+  isConfigValid(config: AppConfig): boolean {
+    return !!config.posthogKey && !!config.posthogHost;
+  }
+
+  isEnabled(): boolean {
+    return this.postHogConfig.enabled;
   }
 
   private isAnalyticsEnabled(): boolean {
-    return getAnalyticsToggleState();
+    return this.postHogConfig.enabled && getAnalyticsToggleState();
   }
 
   captureException(error: Error, properties: Record<string, any> = {}): void {
@@ -112,13 +126,17 @@ export class PostHogAnalyticsManager implements AnalyticsTracker {
 
     this.core
       .getAppConfig()
-      .then((config) => {
-        if (config.key && config.host) {
-          this.initPostHog(config.key, config.host, username, userId);
-          this.isPostHogInitialized = true;
-        } else {
+      .then((config: AppConfig) => {
+        this.postHogConfig = { key: config.posthogKey, host: config.posthogHost, enabled: config.posthogEnabled }; ;
+        if (!this.postHogConfig.enabled) {
+          console.log('PostHog tracking is disabled in the configuration.');
+          this.isPostHogInitialized = false;
+        } else if (!this.isConfigValid(config)) {
           console.error('Invalid PostHog configuration received.');
           this.isPostHogInitialized = false;
+        } else {
+          this.initPostHog(config.posthogKey, config.posthogHost, username, userId);
+          this.isPostHogInitialized = true;
         }
       })
       .catch((error) => {
