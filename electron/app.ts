@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow } from "electron";
+import { app, ipcMain, BrowserWindow, shell } from "electron";
 import path from "path";
 import dotenv from "dotenv";
 import { setupFileSystemHandlers } from "./handlers/fs-handler";
@@ -127,6 +127,14 @@ function setupUIHandlers(indexPath: string, themeConfiguration: any) {
   
   ipcMain.handle("get-style-url", () => {
     return path.join(process.resourcesPath, "tailwind.output.css");
+  });
+
+  ipcMain.handle("open-external-url", async (_event, url: string) => {
+    if (isValidUrl(url)) {
+      await shell.openExternal(url);
+      return true;
+    }
+    return false;
   });
   
   ipcMain.handle("show-error-message", async (_event, errorMessage: string) => {

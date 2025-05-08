@@ -544,4 +544,11 @@ export class ElectronService {
       skipLoading: true
     });
   }
+
+  async openExternalUrl(url: string): Promise<boolean> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+    return this.electronAPI.invoke('open-external-url', url);
+  }
 }
