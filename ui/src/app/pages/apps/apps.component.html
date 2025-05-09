@@ -1,9 +1,9 @@
 <div
-  class="mb-4 bg-white rounded-lg border h-full relative min-h-full"
+  class="mb-4 bg-white rounded-lg border h-full relative min-h-full overflow-hidden"
   *ngIf="projectList$ | async as apps"
 >
   <div
-    class="flex items-center justify-between p-6 sticky top-0 bg-white rounded-t-lg"
+    class="flex items-center justify-between px-6 py-4 sticky top-0 bg-white rounded-t-lg"
   >
     <h1 class="text-xl font-semibold leading-6 text-secondary-900">
       Solutions
@@ -28,11 +28,12 @@
 
     <ul
       role="list"
-      class="divide-y divide-secondary-100 h-full overflow-hidden"
+      class="divide-y divide-secondary-200 h-full overflow-hidden border-t"
     >
       <li
-        class="flex items-center justify-between gap-x-6 px-6 py-3 hover:bg-secondary-50"
+        class="flex items-center justify-between gap-x-6 px-6 py-3 hover:bg-secondary-50 cursor-pointer"
         *ngFor="let app of apps; index as i"
+        (click)="navigateToApp(app?.metadata)"
       >
         <div class="min-w-0">
           <div class="flex items-start gap-x-3">
@@ -48,7 +49,7 @@
               </p> -->
           </div>
           <div
-            class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-secondary-500"
+            class="mt-0.5 flex items-center gap-x-2 text-xs leading-5 text-secondary-500"
           >
             <p class="whitespace-nowrap">
               Created
@@ -56,15 +57,12 @@
             </p>
           </div>
         </div>
-        <div class="flex flex-none items-center gap-x-4">
-          <app-button
-            buttonContent="View Solution"
-            theme="secondary_outline"
-            size="sm"
-            rounded="lg"
-            (click)="navigateToApp(app?.metadata)"
-          />
-        </div>
+        <app-button
+          buttonContent="View Solution"
+          theme="secondary_outline"
+          size="sm"
+          rounded="lg"
+        />
       </li>
     </ul>
   </main>

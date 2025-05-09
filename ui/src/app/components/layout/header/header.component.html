@@ -1,8 +1,8 @@
 <ng-container *ngIf="(startupService.isLoggedIn$ | async) === true">
   <header class="bg-secondary-950">
-    <div class="flex items-center justify-between max-w-6xl mx-auto px-4 py-3">
+    <div class="flex items-center justify-between max-w-6xl mx-auto px-4 py-2">
       <app-breadcrumbs />
-      <div class="flex items-center gap-x-4">
+      <div class="flex items-center gap-x-3">
         <div>
           <ng-container
             *ngIf="themeConfiguration.appLogo.length > 0; else showAppName"
@@ -10,7 +10,7 @@
             <span class="sr-only">{{ themeConfiguration.appName }}</span>
             <img
               [src]="themeConfiguration.appLogo"
-              class="mx-auto h-6"
+              class="mx-auto h-5"
               [alt]="themeConfiguration.appName"
             />
           </ng-container>

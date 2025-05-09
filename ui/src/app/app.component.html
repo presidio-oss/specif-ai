@@ -1,7 +1,11 @@
-<app-header />
-<main class="h-screen w-screen relative max-w-6xl mx-auto px-4 py-4">
-  <app-alert />
-  <app-loading />
-  <router-outlet />
-</main>
+<div class="flex flex-col h-screen w-screen overflow-hidden">
+  <app-header />
+  <main class="w-full overflow-y-auto">
+    <div class="flex flex-col w-full max-w-6xl mx-auto px-4 py-5">
+      <app-alert />
+      <app-loading />
+      <router-outlet />
+    </div>
+  </main>
+</div>
 <app-toaster />
