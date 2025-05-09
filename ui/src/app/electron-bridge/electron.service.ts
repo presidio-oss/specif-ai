@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { DialogService } from '../services/dialog/dialog.service';
 import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
-import { BedrockValidationPayload, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
+import { BedrockValidationPayload, ChatWithAIResponse, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import {
   ICreateSolutionRequest,
   ISolutionResponse,
@@ -33,6 +33,7 @@ import {
 import {
   conversePayload,
   ChatUpdateRequirementResponse,
+  ChatWithAIPayload,
 } from 'src/app/model/interfaces/chat.interface';
 import {
   IFlowChartRequest,
@@ -259,6 +260,17 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'story:chat',
+        args: [request],
+        skipLoading: true
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async chatWithAI(request: ChatWithAIPayload): Promise<ChatWithAIResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'core:chat',
         args: [request],
         skipLoading: true
       });
@@ -545,6 +557,22 @@ export class ElectronService {
     });
   }
 
+  listenChatEvents(id: string, callback: (event: IpcRendererEvent, response: any) => void): void {
+    if (this.electronAPI) {
+      this.electronAPI.on(this.buildChatStreamChannel(id), callback);
+    }
+  }
+
+  removeChatListener(id: string, callback: (event: IpcRendererEvent, response: any) => void): void {
+    if (this.electronAPI) {
+      this.electronAPI.removeListener(this.buildChatStreamChannel(id), callback);
+    }
+  }
+
+  private buildChatStreamChannel(id:string){
+    return `core:${id}-chatStream`;
+  }
+  
   async openExternalUrl(url: string): Promise<boolean> {
     if (!this.electronAPI) {
       throw new Error('Electron is not available');

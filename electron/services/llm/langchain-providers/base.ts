@@ -1,8 +1,12 @@
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import { ModelInfo } from "../llm-types";
+import { ModelInfoV1 } from "../llm-types";
 
 export interface LangChainModelProvider {
-  getModel(): BaseChatModel;
-  getModelInfo(): ModelInfo;
+  getChatModel(): BaseChatModel;
+  getModel(): {
+    id: string;
+    provider: string;
+    info: ModelInfoV1;
+  };
   isValid(): boolean | Promise<boolean>;
 }

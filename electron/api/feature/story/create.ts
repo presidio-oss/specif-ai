@@ -7,7 +7,7 @@ import { MemorySaver } from "@langchain/langgraph";
 import { createUserStoryWorkflow } from '../../../agentic/user-story-workflow';
 import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain';
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
-import { getMCPTools } from '../../../mcp';
+import { getMcpToolsForActiveProvider } from '../../../mcp';
 import { MCPHub } from '../../../mcp/mcp-hub';
 
 export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
@@ -39,7 +39,7 @@ export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promi
     try {
       const mcpHub = MCPHub.getInstance();
       await mcpHub.setProjectId(appId);
-      mcpTools = await getMCPTools();
+      mcpTools = await getMcpToolsForActiveProvider();
     } catch (error) {
       console.warn("Error getting mcp tools", error);
     }

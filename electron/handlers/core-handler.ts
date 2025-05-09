@@ -1,7 +1,8 @@
 import { verifyConfig } from "../api/core/verify-config";
 import { getSuggestions } from "../api/core/get-suggestions";
 import { getAppConfig } from "../api/core/get-app-config";
-import { ipcMain } from "electron";
+import { chatWithAI } from "../api/core/chat";
+import { ipcMain, IpcMainInvokeEvent } from "electron";
 
 export function setupCoreHandlers() {
   ipcMain.handle('core:getSuggestions', async (_event, data: any) => {
@@ -30,6 +31,16 @@ export function setupCoreHandlers() {
       return result;
     } catch (error: any) {
       console.error('Error handling core:getAppConfig:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('core:chat', async (_event: IpcMainInvokeEvent, data: any) => {
+    try {
+      const result = await chatWithAI(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling core:chat:', error.message);
       throw error;
     }
   });

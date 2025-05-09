@@ -124,7 +124,7 @@ export const buildGenerateTasksNode = (
       });
 
       // LLM Call
-      const model = modelProvider.getModel();
+      const model = modelProvider.getChatModel();
       const response = await model.invoke(prompt);
 
       let parsedTasks;

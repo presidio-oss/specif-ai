@@ -15,7 +15,7 @@ import { buildCreateSolutionWorkflow } from '../../agentic/create-solution-workf
 import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
 import { ICreateSolutionWorkflowStateAnnotation } from '../../agentic/create-solution-workflow/state';
 import { REQUIREMENT_TYPE } from '../../constants/requirement.constants';
-import { getMCPTools } from '../../mcp';
+import { getMcpToolsForActiveProvider } from '../../mcp';
 import { MemorySaver } from "@langchain/langgraph";
 import { randomUUID } from "node:crypto";
 import { ObservabilityManager } from '../../services/observability/observability.manager';
@@ -150,7 +150,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       try {
         const mcpHub = MCPHub.getInstance();
         await mcpHub.setProjectId(validatedData.id);
-        mcpTools = await getMCPTools();
+        mcpTools = await getMcpToolsForActiveProvider();
       } catch (error) {
         console.warn("Error getting mcp tools", error);
       }
@@ -180,11 +180,12 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       };
 
       const config = {
-        "configurable":{
-          "thread_id": `${randomUUID()}_create_solution`,
-          "trace": trace
-        }
-      }
+        configurable: {
+          thread_id: `${randomUUID()}_create_solution`,
+          trace: trace,
+          sendMessagesInTelemetry: false,
+        },
+      };
 
       const stream = createSolutionWorkflow.streamEvents(initialState, {
         version: "v2",

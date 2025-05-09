@@ -130,7 +130,7 @@ export const buildGenerateStoriesNode = (
       });
 
       // LLM Call
-      const model = modelProvider.getModel();
+      const model = modelProvider.getChatModel();
       const response = await model.invoke(prompt);
 
       let parsedStories;
@@ -212,7 +212,7 @@ export const buildEvaluateStoriesNode = (
         features: JSON.stringify(state.stories),
       });
 
-      const model = modelProvider.getModel();
+      const model = modelProvider.getChatModel();
       const response = await model.invoke(prompt);
 
       // Check if approved

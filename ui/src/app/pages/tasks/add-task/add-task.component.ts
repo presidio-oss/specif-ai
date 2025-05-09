@@ -288,19 +288,14 @@ export class AddTaskComponent implements OnDestroy {
 
   updateTaskFromChat(data: any) {
     let { chat, chatHistory } = data;
-    if (chat.assistant) {
+    if (chat.contentToAdd) {
       this.taskForm.patchValue({
         acceptance: `${this.taskForm.getRawValue().acceptance}
-${chat.assistant}`,
+${chat.contentToAdd}`,
         subTaskTicketId: this.existingTask.subTaskTicketId,
       });
-      console.log(
-        this.existingTask.subTaskTicketId,
-        this.taskForm.getRawValue().subTaskTicketId,
-        'subTaskTicketId',
-      );
       let newArray = chatHistory.map((item: any) => {
-        if (item.assistant == chat.assistant) return { ...item, isAdded: true };
+        if (item.name == chat.tool_name && item.tool_call_id == chat.tool_call_id) return { ...item, isAdded: true };
         else return item;
       });
       this.chatHistory = newArray;

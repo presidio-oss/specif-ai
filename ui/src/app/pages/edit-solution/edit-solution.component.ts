@@ -515,13 +515,13 @@ export class EditSolutionComponent {
     if (!shouldProceed) return;
 
     let { chat, chatHistory } = data;
-    if (chat.assistant) {
+    if (chat.contentToAdd) {
       this.requirementForm.patchValue({
         content: `${this.requirementForm.get('content')?.value}
-${chat.assistant}`,
+${chat.contentToAdd}`,
       });
       let newArray = chatHistory.map((item: any) => {
-        if (item.assistant == chat.assistant) return { ...item, isAdded: true };
+        if (item.name == chat.tool_name && item.tool_call_id == chat.tool_call_id) return { ...item, isAdded: true };
         else return item;
       });
       this.chatHistory = newArray;

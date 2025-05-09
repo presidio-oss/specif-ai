@@ -1,4 +1,4 @@
-export const UIR_CONTEXT = `User Interface Requirements (UIR):
+export const UIR_DEFINITION_CONTEXT = `User Interface Requirements (UIR):
 - Task: Generate user interface requirements for the following application description.
 - Output Format: Each requirement is articulated in a sentence format and avoid using bullet points, numbering and section titles.
 - Instructions for Generating UI Requirements:
@@ -28,7 +28,9 @@ export const UIR_CONTEXT = `User Interface Requirements (UIR):
     Include details on how iterative improvements based on user testing will be managed.
   Documentation and Guidelines:
     List the documentation that should accompany the UI, such as style guides, design system specifications, and user guides.
-    Specify how UI guidelines will be communicated and maintained.
+    Specify how UI guidelines will be communicated and maintained.`;
+
+export const UIR_CONTEXT = `${UIR_DEFINITION_CONTEXT}
 
 Instructions:
 - Generate an apt title for all the following requirements. Title should be a one-liner not more than 5 words.`;

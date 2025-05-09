@@ -12,6 +12,8 @@ import { CommonModule, NgClass } from '@angular/common';
 export class CustomAccordionComponent {
   @Input() id!: string;
   @Input() isOpen = false;
+  @Input() triggerClassName = '';
+  @Input() bodyClassName = '';
 
   toggle() {
     this.isOpen = !this.isOpen;

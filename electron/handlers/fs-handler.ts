@@ -51,7 +51,7 @@ export function setupFileSystemHandlers() {
 
   ipcMain.handle("invokeCustomFunction", async (_event, message: { functionName: string; params: any; }) => {
     console.debug("message on invokeCustomFunction.");
-    console.debug("map: ", utilityFunctionMap);
+    // console.debug("map: ", utilityFunctionMap);
     const fn = utilityFunctionMap[message.functionName as keyof typeof utilityFunctionMap];
     return fn(message.params);
   });

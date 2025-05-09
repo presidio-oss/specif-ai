@@ -38,7 +38,7 @@
           >
             <!-- User text message -->
             <div
-              class="px-5 py-3 bg-primary-600 text-white rounded-2xl w-fit max-w-[75%] text-sm"
+              class="px-4 py-3 bg-primary-600 text-white rounded-2xl w-fit max-w-[75%] text-sm"
               *ngIf="chat.user"
             >
               {{ chat.user }}
@@ -70,6 +70,84 @@
             </div>
           </div>
 
+          <!-- Tool Response -->
+          <div *ngIf="chat.tool" class="flex flex-row gap-3">
+            <div class="size-10 flex items-start justify-center">
+              <div class="size-8 flex items-center justify-center border border-secondary-200 rounded-full">
+                <ng-icon
+                  name="heroWrench"
+                  class="text-base text-secondary-700">
+                </ng-icon>
+              </div>
+            </div>
+            <div class="flex-1 max-w-[75%] relative">
+              <div
+                class="inline-block rounded-2xl text-sm relative w-full"
+              >
+                <!-- Tool response -->
+                <div *ngIf="chat.tool" class="flex flex-col gap-2.5">
+                  <!-- Tool Call Details Accordion -->
+                  <app-custom-accordion [id]="chat.name" [isOpen]="false" [triggerClassName]="'px-3 py-2'" [bodyClassName]="'!px-3 !py-0'">
+                    <div accordion-trigger class="flex flex-col gap-1">
+                      <span class="text-xs font-medium text-secondary-700">{{ chat.name }}</span>
+                    </div>
+                    <div accordion-body class="flex flex-col gap-2 pb-2">
+                      <div *ngIf="chat.args" class="text-sm text-secondary-700 flex flex-col gap-2 p-2 rounded-md bg-secondary-100">
+                        <span class="text-xs">Input</span>
+                        <span class="text-sm">{{ chat.args | json }}</span>
+                      </div>
+                      <div class="text-sm text-secondary-700 flex flex-col gap-2 p-2 rounded-md bg-secondary-100">
+                        <span class="text-xs">Response</span>
+                        <span class="text-sm">{{ chat.tool }}</span>
+                      </div>
+                    </div>
+                  </app-custom-accordion>
+
+                  <!-- Add to Description Section (Outside Accordion) -->
+                  <div *ngIf="chat.name === 'add_to_requirement_description'" class="flex flex-col gap-3">
+                    <!-- Intent Message -->
+                    <div class="text-xs text-secondary-600">
+                      <span>SpecifAI suggested adding the following content to your description:</span>
+                    </div>
+                    
+                    <!-- Content Preview -->
+                    <div class="bg-secondary-50 border border-secondary-200 rounded-lg px-3 py-2">
+                      <app-rich-text-editor 
+                        editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs" 
+                        mode="view"
+                        [content]="chat.args.contentToAdd" 
+                        [editable]="false" 
+                        [editorClass]="'!rounded-none'">
+                      </app-rich-text-editor>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-2">
+                      <button
+                        *ngIf="!chat.isAdded"
+                        class="text-sm bg-white text-success-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-200"
+                        (click)="update({ contentToAdd: chat.args.contentToAdd, tool_name: chat.name, tool_call_id: chat.tool_call_id })"
+                      >
+                        <ng-icon
+                          name="heroDocumentPlus"
+                          class="text-lg"
+                        ></ng-icon>
+                        Add to Description
+                      </button>
+                      <div
+                        *ngIf="chat.isAdded"
+                        class="text-sm bg-success-600 text-white flex items-center py-1 px-3 gap-1 rounded-lg"
+                      >
+                        <ng-icon name="heroCheck" class="text-lg text-white"></ng-icon>
+                        Added Successfully
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Assistant Message -->
           <div *ngIf="chat.assistant" class="flex items-start">
             <div class="flex items-start gap-3 w-full">
@@ -82,34 +160,16 @@
                   class="w-6 h-6"
                 />
               </div>
-              <div class="flex-1 max-w-[75%] relative">
+              <div class="flex-1 flex max-w-[75%] relative min-h-10 items-center">
                 <div
                   class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative"
                 >
-                  {{ chat.assistant }}
-                  <div class="mt-3 flex items-start">
-                    <button
-                      *ngIf="!chat.isAdded"
-                      class="text-sm bg-white text-success-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-200"
-                      (click)="update(chat)"
-                    >
-                      <ng-icon
-                        name="heroDocumentPlus"
-                        class="text-lg"
-                      ></ng-icon>
-                      Add to Description
-                    </button>
-                    <div
-                      *ngIf="chat.isAdded"
-                      class="text-sm bg-success-600 text-white flex items-center py-1 px-3 gap-1 rounded-full"
-                    >
-                      <ng-icon
-                        name="heroCheck"
-                        class="text-lg text-white"
-                      ></ng-icon>
-                      Added
-                    </div>
-                  </div>
+                <!-- Assistant content -->
+                <div *ngIf="chat.assistant">
+                  <app-rich-text-editor editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs" mode="view"
+                    [content]="chat.assistant" [editable]="false" [editorClass]="'!rounded-none'">
+                  </app-rich-text-editor>
+                </div>
 
                   <!-- Unified feedback badge with two buttons -->
                   <div
@@ -163,22 +223,18 @@
         </div>
       </div>
 
-      <!-- Thinking State -->
-      <div class="flex items-start" *ngIf="generateLoader">
-        <div class="flex items-start gap-3 w-full">
+      <!-- Assistant loading -->
+      <div class="flex flex-row gap-3" *ngIf="generateLoader">
+        <div class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10">
+          <img src="assets/img/logo/haibuild_onlylogo.svg" alt="AI" class="w-6 h-6" />
+        </div>
+        <div class="flex-1 flex max-w-[75%] relative h-10 items-center">
           <div
-            class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10"
-          >
-            <img
-              src="assets/img/logo/haibuild_onlylogo.svg"
-              alt="AI"
-              class="w-6 h-6"
-            />
+            class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative [--dot-color:#312e81] [--dot-size:0.25rem]">
+            <app-three-bounce-loader></app-three-bounce-loader>
           </div>
-          <div class="text-sm text-secondary-600 mt-2">Thinking...</div>
         </div>
       </div>
-
       <div #scrollToBottom></div>
     </div>
   </div>
@@ -305,8 +361,9 @@
         </div>
       </div>
 
-      <div
+      <form
         class="h-content border-t border-secondary-200 px-4 py-3 transition-all duration-300 ease-in-out"
+        (ngSubmit)="converse(message)"
       >
         <div class="relative flex flex-col h-full">
           <div class="flex-grow h-16">
@@ -314,6 +371,8 @@
               placeholder="Chat to add or modify your requirement"
               [disabled]="generateLoader"
               [(ngModel)]="message"
+              name="message"
+              (keydown)="onChatInputKeyDown($event)"
               class="w-full h-14 text-sm bg-transparent text-secondary-950 focus:outline-none placeholder:text-secondary-500 focus:right-0 resize-none overflow-x-hidden overflow-y-auto transition-all duration-300 ease-in-out"
             ></textarea>
           </div>
@@ -331,6 +390,7 @@
                 class="hidden"
               />
               <button
+                type="button"
                 (click)="fileInput.click()"
                 class="flex items-center justify-center w-8 h-8 hover:bg-secondary-100 rounded-full transition-colors duration-200"
                 matTooltip="{{ TOOLTIP_CONTENT.IMPORT_FROM_CODE_BUTTON }}"
@@ -344,15 +404,15 @@
             </div>
 
             <button
+              type="submit"
               [disabled]="isSendDisabled"
               class="bg-primary-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              (click)="converse(message)"
             >
               Send
             </button>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 </div>
