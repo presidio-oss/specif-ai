@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.3.0]
+
+### Added
+- Added Model Context Protocol (MCP) server configurations to Create Solution Flow, featuring predefined AWS Bedrock integration and support for multiple custom MCP servers, all manageable through Solution's Integrations section.
+- Agentic workflow implementation for task and user story generation.
+ 
+### Enhancements
+- Switched to minimum threshold for preferred count in requirement generation.
+- Refactored analytics settings toggle to depend on both PostHog and Langfuse configurations.
+- Improved Home Screen UI for empty solutions handling.
+ 
+### Fixed
+- Resolved AWS Bedrock cross-region reference model connection issues.
+- Fixed Solution Integrations page scrolling.
+- Fixed login flow to require working directory selection.
+- Upgraded spreadsheet export from xlsx to exceljs library.
+
 ## [2.2.2]
 
 ### Fixes
