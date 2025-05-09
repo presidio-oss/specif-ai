@@ -1,12 +1,9 @@
-<div
-  class="mx-auto max-w-3xl px-4 py-1 sm:px-6 lg:max-w-7xl lg:px-8 h-full"
-  *ngIf="directories$ | async as directories"
->
+<div *ngIf="directories$ | async as directories">
   <!-- Main 3 column grid -->
   <div class="grid items-start gap-4 grid-cols-3 h-full">
     <section aria-labelledby="section-2-title" class="h-full">
       <div
-        class="overflow-hidden rounded-lg bg-white shadow flex flex-col py-4 px-6 space-y-4"
+        class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4"
       >
         <div class="">
           <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
@@ -18,7 +15,8 @@
             [ngClass]="{
               'bg-secondary-50 border-secondary-300':
                 selectedFolder?.title === 'solution',
-              'bg-white border-transparent': selectedFolder?.title !== 'solution',
+              'bg-white border-transparent':
+                selectedFolder?.title !== 'solution',
             }"
             (click)="selectFolder({ name: 'solution', children: [] })"
             (keydown.enter)="selectFolder({ name: 'solution', children: [] })"
@@ -74,7 +72,8 @@
               [ngClass]="{
                 'bg-secondary-50 border-secondary-300':
                   selectedFolder?.title === folder.name,
-                'bg-white border-transparent': selectedFolder?.title !== folder.name,
+                'bg-white border-transparent':
+                  selectedFolder?.title !== folder.name,
               }"
               (click)="selectFolder(folder)"
               (keydown.enter)="selectFolder(folder)"
@@ -184,7 +183,8 @@
             [ngClass]="{
               'bg-secondary-50 border-secondary-300':
                 selectedFolder?.title === 'app-integrations',
-              'bg-white border-transparent': selectedFolder?.title !== 'app-integrations',
+              'bg-white border-transparent':
+                selectedFolder?.title !== 'app-integrations',
             }"
             class="flex cursor-pointer items-center justify-between p-2.5 rounded-lg bg-white hover:bg-secondary-50 border-[0.5px]"
           >
@@ -217,7 +217,7 @@
     </section>
     <!-- Left column -->
     <section aria-labelledby="section-1-title" class="col-span-2 h-full">
-      <div class="overflow-hidden rounded-lg bg-white shadow h-full">
+      <div class="overflow-hidden rounded-lg bg-white border h-full">
         <div
           *ngIf="
             selectedFolder?.title !== 'solution' &&
@@ -374,7 +374,10 @@
                 [disabled]="isBedrockConnected"
                 class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <label for="useBedrockConfig" class="ml-2 text-sm font-medium text-secondary-700">
+              <label
+                for="useBedrockConfig"
+                class="ml-2 text-sm font-medium text-secondary-700"
+              >
                 Use existing Bedrock configuration from LLM settings
               </label>
             </div>

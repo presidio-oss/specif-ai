@@ -1,19 +1,29 @@
-<div class="container mx-auto px-4 py-2">
+<div class="max-w-6xl mx-auto px-4 py-2">
   <div
     class="grid grid-cols-12 gap-4"
     *ngIf="selectedUserStory$ | async as selectedUserStory"
   >
-    <div class="col-span-4 p-4 bg-white rounded-lg shadow flex flex-col gap-6">
+    <div class="col-span-4 p-4 bg-white rounded-lg border flex flex-col gap-6">
       <h1 class="text-lg font-semibold">
         {{ selectedUserStory.id }}:
         {{ selectedUserStory?.name }}
       </h1>
-      <ng-container *ngIf="formatUserStoryDescriptionForView(selectedUserStory?.description) as formattedStoryDescription">
-        <app-rich-text-editor [content]="formattedStoryDescription" [editable]="false" mode="view"
-          editorClass="prose-secondary-edit text-wrap"></app-rich-text-editor>
+      <ng-container
+        *ngIf="
+          formatUserStoryDescriptionForView(
+            selectedUserStory?.description
+          ) as formattedStoryDescription
+        "
+      >
+        <app-rich-text-editor
+          [content]="formattedStoryDescription"
+          [editable]="false"
+          mode="view"
+          editorClass="prose-secondary-edit text-wrap"
+        ></app-rich-text-editor>
       </ng-container>
     </div>
-    <div class="col-span-8 p-4 bg-white rounded-lg shadow">
+    <div class="col-span-8 p-4 bg-white rounded-lg border">
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-center">
           <h2 class="text-md font-semibold text-secondary-600">Tasks</h2>
