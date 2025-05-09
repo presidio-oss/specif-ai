@@ -10,7 +10,7 @@ export const UserGuard: CanActivateFn = (route, state) => {
 
   if (!userState.isWorkingDirSet()) {
     userState.logout(
-      'Your workspace settings need to be updated. Please log in to continue.',
+      'Please select a destination folder and proceed with login.',
     );
     return false;
   }
