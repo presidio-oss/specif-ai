@@ -10,7 +10,7 @@ export type BaseRequirementGenerationContext = {
     name: string;
     description: string;
   };
-  maxCount: number;
+  minCount: number;
   referenceInformation?: string;
 };
 
@@ -35,7 +35,7 @@ export const buildPromptForRequirement = (
   const { type, generationContext } = params;
   const {
     app: { name, description },
-    maxCount,
+    minCount,
     referenceInformation,
   } = generationContext;
 
@@ -44,28 +44,28 @@ export const buildPromptForRequirement = (
       return createBRDPrompt({
         name,
         description,
-        maxCount,
+        minCount,
         referenceInformation,
       });
     case "NFR":
       return createNFRPrompt({
         name,
         description,
-        maxCount,
+        minCount,
         referenceInformation,
       });
     case "UIR":
       return createUIRPrompt({
         name,
         description,
-        maxCount,
+        minCount,
         referenceInformation,
       });
     case "PRD":
       return createPRDPrompt({
         name,
         description,
-        maxCount,
+        minCount,
         brds: generationContext.brds,
         referenceInformation,
       });

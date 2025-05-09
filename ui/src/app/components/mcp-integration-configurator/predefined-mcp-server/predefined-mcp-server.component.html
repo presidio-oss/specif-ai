@@ -5,7 +5,7 @@
       {{ data.integration.description }}
       <ng-container *ngIf="data.integration.readmeUrl">
         Visit
-        <a [href]="data.integration.readmeUrl" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">README</a>
+        <a (click)="openExternalUrl(data.integration.readmeUrl)" class="text-primary-600 hover:underline cursor-pointer">README</a>
         for more information.
       </ng-container>
     </p>

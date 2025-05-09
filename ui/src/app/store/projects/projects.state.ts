@@ -171,19 +171,19 @@ export class ProjectsState {
         description: metadata.description,
         cleanSolution: metadata.cleanSolution,
         brdPreferences: {
-          maxCount: metadata.BRD.maxCount,
+          minCount: metadata.BRD.minCount,
           isEnabled: metadata.BRD.enabled,
         },
         prdPreferences: {
-          maxCount: metadata.PRD.maxCount,
+          minCount: metadata.PRD.minCount,
           isEnabled: metadata.PRD.enabled,
         },
         uirPreferences: {
-          maxCount: metadata.UIR.maxCount,
+          minCount: metadata.UIR.minCount,
           isEnabled: metadata.UIR.enabled,
         },
         nfrPreferences: {
-          maxCount: metadata.NFR.maxCount,
+          minCount: metadata.NFR.minCount,
           isEnabled: metadata.NFR.enabled,
         },
         mcpSettings: metadata.mcpSettings

@@ -26,7 +26,7 @@ import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
 
 type RequirementTypeMeta = {
   key: keyof Pick<SolutionResponse, 'brd' | 'prd' | 'uir' | 'nfr'>;
-  generatePrompt: (params: { name: string; description: string; maxCount: number; brds?: any[] }) => string;
+  generatePrompt: (params: { name: string; description: string; minCount: number; brds?: any[] }) => string;
   preferencesKey: keyof Pick<CreateSolutionRequest, 'brdPreferences' | 'prdPreferences' | 'uirPreferences' | 'nfrPreferences'>;
 };
 
@@ -58,7 +58,7 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
   const prompt = generatePrompt({
     name: data.name,
     description: data.description,
-    maxCount: preferences.maxCount,
+    minCount: preferences.minCount,
     brds
   });
   

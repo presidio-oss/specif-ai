@@ -105,12 +105,12 @@
                         " (toggleChange)="onRequirementToggle('BRD', $event)" isPlainToggle="true"></app-toggle>
                       </div>
                       <p class="text-xs leading-6 text-secondary-600 ml-4">
-                        Enable to set maximum number of Business Requirements
+                        Enable to set minimum number of Business Requirements
                       </p>
                     </div>
                     <div class="mt-4" *ngIf="solutionForm.get('BRD')?.get('enabled')?.value">
                       <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="BRD">
-                        <app-slider formControlName="maxCount"></app-slider>
+                        <app-slider formControlName="minCount"></app-slider>
                       </div>
                     </div>
                   </div>
@@ -130,12 +130,12 @@
                         " (toggleChange)="onRequirementToggle('PRD', $event)" isPlainToggle="true"></app-toggle>
                       </div>
                       <p class="text-xs leading-6 text-secondary-600 ml-4">
-                        Enable to set maximum number of Product Requirements
+                        Enable to set minimum number of Product Requirements
                       </p>
                     </div>
                     <div class="mt-4" *ngIf="solutionForm.get('PRD')?.get('enabled')?.value">
                       <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="PRD">
-                        <app-slider formControlName="maxCount"></app-slider>
+                        <app-slider formControlName="minCount"></app-slider>
                       </div>
                     </div>
                   </div>
@@ -155,12 +155,12 @@
                         " (toggleChange)="onRequirementToggle('UIR', $event)" isPlainToggle="true"></app-toggle>
                       </div>
                       <p class="text-xs leading-6 text-secondary-600 ml-4">
-                        Enable to set maximum number of UI Requirements
+                        Enable to set minimum number of UI Requirements
                       </p>
                     </div>
                     <div class="mt-4" *ngIf="solutionForm.get('UIR')?.get('enabled')?.value">
                       <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="UIR">
-                        <app-slider formControlName="maxCount"></app-slider>
+                        <app-slider formControlName="minCount"></app-slider>
                       </div>
                     </div>
                   </div>
@@ -180,13 +180,13 @@
                         " (toggleChange)="onRequirementToggle('NFR', $event)" isPlainToggle="true"></app-toggle>
                       </div>
                       <p class="text-xs leading-6 text-secondary-600 ml-4">
-                        Enable to set maximum number of Non-Functional
+                        Enable to set minimum number of Non-Functional
                         Requirements
                       </p>
                     </div>
                     <div class="mt-4" *ngIf="solutionForm.get('NFR')?.get('enabled')?.value">
                       <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="NFR">
-                        <app-slider formControlName="maxCount"></app-slider>
+                        <app-slider formControlName="minCount"></app-slider>
                       </div>
                     </div>
                   </div>
