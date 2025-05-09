@@ -22,4 +22,6 @@ export type ChatUpdateRequirementRequest = z.infer<typeof chatUpdateRequirementS
 
 export interface ChatUpdateRequirementResponse {
   response: string;
+  blocked?: boolean;
+  blockedReason?: string;
 }

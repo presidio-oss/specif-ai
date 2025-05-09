@@ -1,6 +1,8 @@
 import { ChatBedrockConverse } from "@langchain/aws";
 import { LLMConfig, LLMError, ModelInfo } from "../llm-types";
 import { LangChainModelProvider } from "./base";
+import { LangChainChatGuardrails } from "@presidio-dev/hai-guardrails"
+import { guardrailsEngine } from "../../../guardrails";
 
 interface BedrockConfig extends LLMConfig {
   region: string;
@@ -17,16 +19,19 @@ export class BedrockLangChainProvider implements LangChainModelProvider {
 
   constructor(config: Partial<BedrockConfig>) {
     this.configData = this.getConfig(config);
-    this.model = new ChatBedrockConverse({
-      model: this.transformModelId(),
-      region: this.configData.region,
-      credentials: {
-        accessKeyId: this.configData.accessKeyId,
-        secretAccessKey: this.configData.secretAccessKey,
-        sessionToken: this.configData.sessionToken,
-      },
-      maxTokens: 4096,
-    });
+    this.model = LangChainChatGuardrails(
+      new ChatBedrockConverse({
+        model: this.transformModelId(),
+        region: this.configData.region,
+        credentials: {
+          accessKeyId: this.configData.accessKeyId,
+          secretAccessKey: this.configData.secretAccessKey,
+          sessionToken: this.configData.sessionToken,
+        },
+        maxTokens: 4096,
+      }),
+      guardrailsEngine
+    );
   }
 
   getConfig(config: Partial<BedrockConfig>): BedrockConfig {
