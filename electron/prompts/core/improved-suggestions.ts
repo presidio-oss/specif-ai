@@ -7,6 +7,7 @@ type ImprovedSuggestionsParams = {
   suggestions: string[];
   selectedSuggestion?: string;
   knowledgeBase?: string;
+  referenceInformation?: string;
   brds?: Array<{
     id: string;
     title: string;
@@ -26,6 +27,8 @@ Application Details:
 - Abstract Requirement: ${requirement}
 
 ${buildContextForRequirementType(params)}
+
+${params.referenceInformation ? `### Additional Context:\n${params.referenceInformation}`:''}
 
 Your suggestions should be broad, versatile, and aimed at enhancing:
 1. Clarity - making the requirement more specific and understandable

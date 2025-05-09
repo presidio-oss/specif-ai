@@ -6,3 +6,5 @@ export const bedrockConfigSchema = z.object({
   secretKey: z.string(),
   sessionKey: z.string().optional()
 });
+
+export type BedrockConfig = z.infer<typeof bedrockConfigSchema>;
