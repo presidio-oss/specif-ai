@@ -8,6 +8,13 @@ export const UserGuard: CanActivateFn = (route, state) => {
   const userState = inject(UserStateService);
   const dialogService = inject(DialogService);
 
+  if (!userState.isWorkingDirSet()) {
+    userState.logout(
+      'Your workspace settings need to be updated. Please log in to continue.',
+    );
+    return false;
+  }
+
   if (!userState.isUsernameSet()) {
     dialogService
       .createBuilder()
