@@ -1,8 +1,9 @@
 <ng-container *ngIf="(startupService.isLoggedIn$ | async) === true">
-  <div class="relative bg-secondary-950">
-    <div class="flex items-center justify-between pt-3 pb-4 px-8">
-      <div class="hidden lg:flex lg:items-center lg:pr-0.5">
-        <a routerLink="/apps">
+  <header class="bg-secondary-950">
+    <div class="flex items-center justify-between max-w-6xl mx-auto px-4 py-3">
+      <app-breadcrumbs />
+      <div class="flex items-center gap-x-4">
+        <div>
           <ng-container
             *ngIf="themeConfiguration.appLogo.length > 0; else showAppName"
           >
@@ -18,21 +19,17 @@
               {{ themeConfiguration.appName }}
             </h1>
           </ng-template>
-        </a>
+        </div>
+        <button
+          (click)="navigateToSettings()"
+          (keydown.enter)="navigateToSettings()"
+          (keydown.space)="navigateToSettings(); $event.preventDefault()"
+          class="flex items-center justify-center font-medium opacity-100 transition-colors duration-300 px-3 py-2 gap-2 text-xs rounded-lg border border-secondary-700 bg-transparent text-white hover:bg-secondary-900"
+        >
+          <ng-icon name="heroCog8Tooth" strokeWidth="2" size="16" />
+          <span class="sr-only">Settings</span>
+        </button>
       </div>
-
-      <button
-        (click)="navigateToSettings()"
-        (keydown.enter)="navigateToSettings()"
-        (keydown.space)="navigateToSettings(); $event.preventDefault()"
-        class="flex items-center justify-center font-medium opacity-100 transition-colors duration-300 px-3 py-2 gap-2 text-xs rounded-lg border border-secondary-700 bg-transparent text-white hover:bg-secondary-900"
-      >
-        <ng-icon name="heroCog8Tooth" strokeWidth="2" size="16" />
-        Settings
-      </button>
     </div>
-  </div>
-  <div class="w-full px-8 pb-4 flex items-center justify-start">
-    <app-breadcrumbs />
-  </div>
+  </header>
 </ng-container>
