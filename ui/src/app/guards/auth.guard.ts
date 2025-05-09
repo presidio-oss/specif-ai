@@ -8,6 +8,13 @@ export const UserGuard: CanActivateFn = (route, state) => {
   const userState = inject(UserStateService);
   const dialogService = inject(DialogService);
 
+  if (!userState.isWorkingDirSet()) {
+    userState.logout(
+      'Please select a destination folder and proceed with login.',
+    );
+    return false;
+  }
+
   if (!userState.isUsernameSet()) {
     dialogService
       .createBuilder()
