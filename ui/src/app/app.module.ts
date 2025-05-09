@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, NgModule, ErrorHandler } from '@angular/core';
+import { APP_INITIALIZER, ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
@@ -50,6 +50,7 @@ import { StartupService } from './services/auth/startup.service';
 import { UserStateService } from './services/auth/user-state.service';
 import { PostHogAnalyticsManager } from './services/analytics/managers/posthog-analytics.manager';
 import { AnalyticsTracker } from './services/analytics/analytics.interface';
+import { EmptyStateComponent } from './components/empty-state/empty-state.component';
 
 @NgModule({
   declarations: [AppComponent],
@@ -103,6 +104,7 @@ import { AnalyticsTracker } from './services/analytics/analytics.interface';
     MatSnackBarModule,
     InputFieldComponent,
     ButtonComponent,
+    EmptyStateComponent,
   ],
   providers: [
     {

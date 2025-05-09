@@ -1,0 +1,32 @@
+<div
+  class="flex flex-col items-center justify-center max-w-md mx-auto px-6 py-12 text-center"
+>
+  <img
+    *ngIf="imageSrc"
+    [src]="imageSrc"
+    alt="Empty state illustration"
+    class="mx-auto max-h-40 w-auto select-none pointer-events-none"
+  />
+
+  <h3
+    *ngIf="heading"
+    class="text-sm font-semibold leading-6 text-secondary-900 mb-1"
+  >
+    {{ heading }}
+  </h3>
+
+  <p
+    *ngIf="description"
+    class="text-sm text-secondary-500 max-w-md mx-auto mb-4"
+  >
+    {{ description }}
+  </p>
+
+  <app-button
+    *ngIf="buttonText"
+    [buttonContent]="buttonText"
+    [theme]="'secondary_outline'"
+    [size]="'sm'"
+    (click)="onButtonClick()"
+  ></app-button>
+</div>

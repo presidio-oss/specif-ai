@@ -28,6 +28,11 @@ export class UserStateService {
     return !!username;
   }
 
+  public isWorkingDirSet(): boolean {
+    const workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
+    return !!workingDir;
+  }
+
   setIsLoggedIn(isLoggedIn: boolean) {
     this.loggedInSubject.next(isLoggedIn);
   }
