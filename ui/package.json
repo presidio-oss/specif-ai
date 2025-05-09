@@ -66,6 +66,7 @@
     "@tiptap/extension-text": "^2.11.5",
     "@tiptap/pm": "^2.11.5",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
     "markdown-it": "^14.1.0",
@@ -87,7 +88,6 @@
     "tslib": "^2.3.0",
     "unified": "^11.0.5",
     "uuid": "^10.0.0",
-    "xlsx": "^0.18.5",
     "zod": "^3.24.3",
     "zone.js": "~0.13.0"
   },

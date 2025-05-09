@@ -168,6 +168,45 @@ The enterprise knowledge base is integrated with AI-powered chat to enhance sugg
 - Context-aware requirement generation.
 - Historical data integration.
 
+## 🧠 Model Context Protocol (MCP) Integration
+
+<div align="center">
+  <em>Supercharge your development workflow with powerful tools and knowledge bases through the flexible Model Context Protocol (MCP)</em>
+</div>
+
+The Model Context Protocol (MCP) is a powerful integration framework that enables Specifai to connect with external tools, services, and knowledge bases. This extensible architecture allows you to enhance your requirement generation workflow with custom capabilities while maintaining a seamless user experience.
+
+---
+
+### 📚 Built-in Integration: AWS Bedrock Knowledge Base
+
+Specifai includes native support for **AWS Bedrock Knowledge Base (KB)**. Configuration is available directly in the UI.
+
+<div align="center">
+  <img src="assets/img/mcp/aws-bedrock-kb-config.png" alt="AWS Bedrock KB Configuration" width="800">
+  <em>AWS Bedrock KB visual configuration</em>
+</div>
+
+---
+
+### 🛠 Add Custom MCP Servers
+
+Specifai also supports integration with custom MCP-compatible tools and services. For example, you can connect a file system MCP server, which will automatically surface its tools and resources in the UI.
+
+<div align="center">
+  <img src="assets/img/mcp/custom-mcp-config.png" alt="Custom MCP Server Configuration" width="800">
+  <em>UI for managing custom MCP server integrations</em>
+</div>
+
+---
+
+All MCP integrations can be managed from the **Integrations** page, where you can easily add, configure, or remove both built-in and custom servers.
+
+<div align="center">
+  <img src="assets/img/mcp/custom-server-management.png" alt="Custom Server Management Interface" width="800">
+  <em>Manage all MCP integrations from a single place</em>
+</div>
+
 ## 🏗 Architecture
 
 Specifai follows a modern, scalable architecture designed for optimal performance and maintainability.

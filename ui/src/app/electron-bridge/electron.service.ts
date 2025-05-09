@@ -572,4 +572,11 @@ export class ElectronService {
   private buildChatStreamChannel(id:string){
     return `core:${id}-chatStream`;
   }
+  
+  async openExternalUrl(url: string): Promise<boolean> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+    return this.electronAPI.invoke('open-external-url', url);
+  }
 }

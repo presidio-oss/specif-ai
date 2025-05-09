@@ -118,6 +118,14 @@ export class PredefinedMcpServerComponent implements OnInit {
     this.dialogRef.close(null);
   }
 
+  async openExternalUrl(url: string) {
+    try {
+      await this.electronService.openExternalUrl(url);
+    } catch (error) {
+      this.toasterService.showError('Failed to open external URL');
+    }
+  }
+
   getFieldErrorMessage(fieldName: string): string {
     const field = this.form.get(fieldName);
     if (field?.hasError('required')) {
