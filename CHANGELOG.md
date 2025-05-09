@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.3.0]
+
+### Added
+- Migrated the logic for generating tasks and user stories to an agentic workflow
+- Added EmptyStateComponent and integrated it into AppsComponent for improved user experience
+- Enhanced research perspectives and added app context in workflow prompts for story and task
+
+### Enhancements
+- Switched from using `maxRequirementCount` to `minRequirementCount` in requirement generation logic
+- Refactored analytics toggle to support both PostHog and Langfuse
+
+### Fixed
+- Resolved a scrolling issue on the App Integrations page
+- Fixed a login bug where users could proceed without setting a working directory
+
 ## [2.2.2]
 
 ### Fixes
