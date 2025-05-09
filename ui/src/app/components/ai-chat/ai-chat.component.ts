@@ -399,7 +399,7 @@ export class AiChatComponent implements OnInit {
         // update the last message with the tool calls
         case 'on_chat_model_end': {
           if(event.metadata.langgraph_node === "llm"){
-            this.generateLoader = false;
+            // this.generateLoader = false;
             const toolCalls = event.data.output.tool_calls;
             this.updateLastAIMessage('', toolCalls);
           }
