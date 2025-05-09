@@ -3,17 +3,19 @@
 ## [2.3.0]
 
 ### Added
-- Migrated the logic for generating tasks and user stories to an agentic workflow
-- Added EmptyStateComponent and integrated it into AppsComponent for improved user experience
-- Enhanced research perspectives and added app context in workflow prompts for story and task
-
+- Added Model Context Protocol (MCP) server configurations to Create Solution Flow, featuring predefined AWS Bedrock integration and support for multiple custom MCP servers, all manageable through Solution's Integrations section.
+- Agentic workflow implementation for task and user story generation.
+ 
 ### Enhancements
-- Switched from using `maxRequirementCount` to `minRequirementCount` in requirement generation logic
-- Refactored analytics toggle to support both PostHog and Langfuse
-
+- Switched to minimum threshold for preferred count in requirement generation.
+- Refactored analytics settings toggle to depend on both PostHog and Langfuse configurations.
+- Improved Home Screen UI for empty solutions handling.
+ 
 ### Fixed
-- Resolved a scrolling issue on the App Integrations page
-- Fixed a login bug where users could proceed without setting a working directory
+- Resolved AWS Bedrock cross-region reference model connection issues.
+- Fixed Solution Integrations page scrolling.
+- Fixed login flow to require working directory selection.
+- Upgraded spreadsheet export from xlsx to exceljs library.
 
 ## [2.2.2]
 
