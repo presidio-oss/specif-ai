@@ -4,15 +4,10 @@
   *ngIf="breadcrumbs$ | async as breadcrumbs"
 >
   <!--Back button-->
-  <div class="flex mr-3">
+  <div class="flex mr-3" *ngIf="breadcrumbs.length > 0">
     <button
-      [disabled]="breadcrumbs.length < 1"
       (click)="navigateToPreviousPage()"
-      class="inline-flex items-center text-xs font-normal text-secondary-300"
-      [ngClass]="{
-        'hover:text-white': breadcrumbs.length > 0,
-        'text-secondary-500': breadcrumbs.length < 1,
-      }"
+      class="inline-flex items-center text-xs font-normal text-secondary-300 hover:text-white"
     >
       <ng-icon class="text-lg" name="heroArrowLeft" strokeWidth="2"></ng-icon>
     </button>
