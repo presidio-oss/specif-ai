@@ -125,7 +125,8 @@ export class AiChatComponent implements OnInit {
     type: '',
     description: '',
     requirement: '',
-    requirementAbbr: ''
+    requirementAbbr: '',
+    appId: ''
   };
   type: string = '';
   requirementAbbrivation: string = '';
@@ -221,7 +222,8 @@ export class AiChatComponent implements OnInit {
         type: this.type,
         requirement: this.baseContent,
         knowledgeBase: this.kb,
-        requirementAbbr: this.requirementAbbrivation
+        requirementAbbr: this.requirementAbbrivation,
+        appId: this.metadata.id
       };
       this.getSuggestion();
     }, 1000);
@@ -241,6 +243,7 @@ export class AiChatComponent implements OnInit {
       requirement: this.baseContent,
       suggestions: this.localSuggestions,
       selectedSuggestion: this.selectedSuggestion,
+      appId: this.metadata.id,
       ...additionalPRDContext
     };
 

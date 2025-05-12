@@ -15,6 +15,7 @@ export interface BRD {
 }
 
 export interface suggestionPayload {
+  appId: string;
   name: string;
   description: string;
   type: string;
