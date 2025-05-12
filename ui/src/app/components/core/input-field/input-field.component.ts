@@ -23,6 +23,7 @@ export class InputFieldComponent implements ControlValueAccessor {
   @Input() required?: boolean = false;
   @Input() elementType: string = 'text';
   @Input() showLabel: boolean = true;
+  @Input() customClass: string = '';
 
   @Output() enterPressed = new EventEmitter<void>();
 
