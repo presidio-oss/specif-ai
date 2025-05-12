@@ -51,6 +51,8 @@ import { UserStateService } from './services/auth/user-state.service';
 import { PostHogAnalyticsManager } from './services/analytics/managers/posthog-analytics.manager';
 import { AnalyticsTracker } from './services/analytics/analytics.interface';
 import { EmptyStateComponent } from './components/empty-state/empty-state.component';
+import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout.component';
+import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 
 @NgModule({
   declarations: [AppComponent],
@@ -105,6 +107,8 @@ import { EmptyStateComponent } from './components/empty-state/empty-state.compon
     InputFieldComponent,
     ButtonComponent,
     EmptyStateComponent,
+    AuthLayoutComponent,
+    MainLayoutComponent,
   ],
   providers: [
     {
