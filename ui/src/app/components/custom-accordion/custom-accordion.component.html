@@ -1,20 +1,38 @@
-<div class="accordion-section border-[0.03125rem] border-secondary-300 rounded-lg">
+<div class="accordion-section border border-secondary-200 bg-white rounded-lg">
   <h3>
-    <button type="button"
-      [ngClass]="['w-full p-4 flex gap-1 items-center justify-between text-left bg-secondary-50/50 transition-colors', isOpen ? 'rounded-t-lg': 'rounded-lg', triggerClassName]"
+    <button
+      type="button"
+      [ngClass]="[
+        'w-full p-4 flex gap-1 items-center justify-between text-left transition-colors',
+        isOpen ? 'rounded-t-lg' : 'rounded-lg',
+        triggerClassName,
+      ]"
       [attr.aria-expanded]="isOpen"
       [attr.aria-controls]="'section-' + id"
       [id]="'accordion-' + id"
-      (click)="toggle()">
+      (click)="toggle()"
+    >
       <ng-content select="[accordion-trigger]"></ng-content>
-      <span class="transform transition-transform duration-200 flex items-center" [class.rotate-180]="isOpen">
-        <ng-icon name="heroChevronDown" class="h-5 w-5 text-secondary-500" strokeWidth="2"></ng-icon>
+      <span
+        class="transform transition-transform duration-200 flex items-center"
+        [class.rotate-180]="isOpen"
+      >
+        <ng-icon
+          name="heroChevronDown"
+          class="h-5 w-5 text-secondary-500"
+          strokeWidth="2"
+        ></ng-icon>
       </span>
     </button>
   </h3>
-  <div [id]="'section-' + id" role="region" [attr.aria-labelledby]="'accordion-' + id"
-    [ngClass]="isOpen ? 'block' : 'hidden'" class="overflow-hidden">
-    <div [ngClass]="['px-4 py-2 bg-secondary-50/50', bodyClassName]">
+  <div
+    [id]="'section-' + id"
+    role="region"
+    [attr.aria-labelledby]="'accordion-' + id"
+    [ngClass]="isOpen ? 'block' : 'hidden'"
+    class="overflow-hidden"
+  >
+    <div [ngClass]="['px-4 pb-4', bodyClassName]">
       <ng-content select="[accordion-body]"></ng-content>
     </div>
   </div>

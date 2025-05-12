@@ -6,7 +6,11 @@ export const APP_CONSTANTS = {
   USER_NAME: 'USER_NAME',
   USER_ID: 'USER_ID',
 };
-export const FILTER_STRINGS = { BASE: 'base', FEATURE: 'feature', ARCHIVED: 'archived' };
+export const FILTER_STRINGS = {
+  BASE: 'base',
+  FEATURE: 'feature',
+  ARCHIVED: 'archived',
+};
 export const CHAT_TYPES = {
   REQUIREMENT: 'requirement',
   USERSTORY: 'userstory',
@@ -30,7 +34,7 @@ export const SOLUTION_CREATION_TOGGLE_MESSAGES = {
   BROWNFIELD_SOLUTION:
     'Enabling this toggle will not generate any business or solution requirements for the given solution.',
   GREENFIELD_SOLUTION:
-    'You can create requirements based on the solution context!',
+    'You can create requirements based on the solution context',
 };
 
 export const CONFIRMATION_DIALOG = {
@@ -98,7 +102,8 @@ export const CONFIRMATION_DIALOG = {
   },
   CONFIRM_PRD_UPDATE: {
     TITLE: 'Confirm Update PRD',
-    DESCRIPTION: 'Please note that content added to this PRD from previously linked BRDs will remain. Any necessary updates will require manual review.\n\nDo you want to proceed?',
+    DESCRIPTION:
+      'Please note that content added to this PRD from previously linked BRDs will remain. Any necessary updates will require manual review.\n\nDo you want to proceed?',
     CANCEL_BUTTON_TEXT: 'Cancel',
     PROCEED_BUTTON_TEXT: 'Confirm',
   },
@@ -253,7 +258,6 @@ export const FOLDER_REQUIREMENT_TYPE_MAP = {
   [FOLDER.UIR]: REQUIREMENT_TYPE.UIR,
   [FOLDER.BP]: REQUIREMENT_TYPE.BP,
 } as const;
-
 
 // types
 
