@@ -20,6 +20,11 @@ export interface ModelInfo {
   maxTokens?: number;
 }
 
+export interface ModelInfoV1 {
+  maxTokens?: number;
+  contextWindow?: number;
+}
+
 export interface LLMConfig {
   [key: string]: any;
 }

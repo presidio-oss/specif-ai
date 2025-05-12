@@ -1,8 +1,10 @@
-export const BRD_CONTEXT = `A business requirement is a detailed description of the needs and objectives that a business aims to achieve through the project. These requirements guide the project's direction,
+export const BRD_DEFINITION_CONTEXT = `A business requirement is a detailed description of the needs and objectives that a business aims to achieve through the project. These requirements guide the project's direction,
 ensure alignment with strategic goals, manage expectations, and define metrics for success, thus providing a clear roadmap for project execution and stakeholder engagement.
 - Identify the high-level business needs and objectives of the application for solving the business problem.
 - Consider the business context and target audience/ users of the application.
-- Focus on the strategic outcomes and benefits for the business objectives.
+- Focus on the strategic outcomes and benefits for the business objectives.`;
+
+export const BRD_CONTEXT = `${BRD_DEFINITION_CONTEXT}
 
 Instructions:
 - Generate an apt title for all the following requirements. The title should be a one-liner not more than 5 words.

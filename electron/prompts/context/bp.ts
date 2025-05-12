@@ -1,4 +1,4 @@
-export const BP_CONTEXT = `A business process flow document outlines the sequential steps, interactions, and decision points needed to achieve specific business objectives. It provides a clear roadmap for implementing operational workflows and organizational procedures.
+export const BP_DEFINITION_CONTEXT = `A business process flow document outlines the sequential steps, interactions, and decision points needed to achieve specific business objectives. It provides a clear roadmap for implementing operational workflows and organizational procedures.
 Key Components:
 - The Business Process Flow must identify all stakeholders and their roles in the process
 - Include clear sequential steps showing how tasks flow from initiation to completion
@@ -26,8 +26,9 @@ Process Elements:
 4. Decision Framework:
   - Identify key decision points
   - Document decision criteria
-  - Outline alternative paths
+  - Outline alternative paths`;
 
+export const BP_CONTEXT = `${BP_DEFINITION_CONTEXT}
 
 STRICT:
 - (!) The examples below are for formatting purposes only and should not be replicated verbatim in actual documents.
