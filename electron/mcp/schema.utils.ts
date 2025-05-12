@@ -42,8 +42,31 @@ function isValidFormat(type: Type, format?: string): boolean {
 }
 
 export function processSchema(schema: any): ProcessedSchema | null {
-  if (!schema || typeof schema !== "object") {
+  if (!schema) {
     return null;
+  }
+
+  if (Array.isArray(schema.anyOf)) {
+    const processedAnyOf = schema.anyOf.map((subSchema: any) =>
+      processSchema(subSchema)
+    );
+    const filteredAnyOf = processedAnyOf.filter(
+      (s: ProcessedSchema | null) => s !== null
+    );
+
+    // Handle the case where there are only two items in anyOf with one being null
+    if (filteredAnyOf.length === 2 && filteredAnyOf.some((s: ProcessedSchema) => s.type === Type.NULL)) {
+      const nonNullSchema = filteredAnyOf.find((s: ProcessedSchema) => s.type !== Type.NULL);
+      const nullSchema = filteredAnyOf.find((s: ProcessedSchema) => s.type === Type.NULL);
+      if (nonNullSchema) {
+        nonNullSchema.title = nonNullSchema.title || schema.title;
+        nonNullSchema.description = nonNullSchema.description || schema.description;
+      }
+      // @ts-expect-error
+      return { anyOf: [nonNullSchema, nullSchema] };
+    }
+    // @ts-expect-error
+    return { anyOf: filteredAnyOf };
   }
 
   // Regular schema processing
@@ -108,17 +131,6 @@ export function processSchema(schema: any): ProcessedSchema | null {
   if (schema.type === Type.NUMBER || schema.type === Type.INTEGER) {
     if (typeof schema.minimum === "number") processed.minimum = schema.minimum;
     if (typeof schema.maximum === "number") processed.maximum = schema.maximum;
-  }
-
-  // Process anyOf field
-  if (Array.isArray(schema.anyOf)) {
-    const processedAnyOf = schema.anyOf.map((subSchema: any) =>
-      processSchema(subSchema)
-    );
-    const filteredAnyOf = processedAnyOf.filter(
-      (s: ProcessedSchema | null) => s !== null
-    );
-    processed.anyOf = filteredAnyOf;
   }
 
   return processed;

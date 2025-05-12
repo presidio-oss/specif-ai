@@ -24,13 +24,16 @@ export class StartupService {
   }
 
   private initializeApp(): void {
-    if (this.userState.isUsernameSet()) {
+    if (this.userState.isUsernameSet() && this.userState.isWorkingDirSet()) {
+      this.setIsLoggedIn(true);
       this.initializeLLMConfig().subscribe({
         next: () => {
           this.router.navigateByUrl('/apps');
         },
         error: () => {
-          this.userState.logout('Error initializing LLM config. Please try again.');
+          this.userState.logout(
+            'Error initializing LLM config. Please try again.',
+          );
         },
       });
     }
@@ -38,18 +41,27 @@ export class StartupService {
 
   public initializeLLMConfig(): Observable<any> {
     return this.store.selectOnce(LLMConfigState.getConfig).pipe(
-      switchMap(config => {
-        if (config && config.activeProvider && config.providerConfigs[config.activeProvider]) {
+      switchMap((config) => {
+        if (
+          config &&
+          config.activeProvider &&
+          config.providerConfigs[config.activeProvider]
+        ) {
           return this.store.dispatch(new VerifyLLMConfig());
         } else {
-          this.toasterService.showError("Settings required: Please add your AI configuration in settings to continue.");
+          this.toasterService.showError(
+            'Settings required: Please add your AI configuration in settings to continue.',
+          );
           return of(null);
         }
-      })
+      }),
     );
   }
 
-  public verifyProviderConfig(provider: string, model: string): Observable<any> {
+  public verifyProviderConfig(
+    provider: string,
+    model: string,
+  ): Observable<any> {
     return this.http.post('model/config-verification', { provider, model });
   }
 

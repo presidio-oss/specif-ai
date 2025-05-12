@@ -1,5 +1,5 @@
 import { ChatOllama } from "@langchain/ollama";
-import { LLMConfig, LLMError, ModelInfo } from "../llm-types";
+import { LLMConfig, LLMError } from "../llm-types";
 import { LangChainModelProvider } from "./base";
 import { LangChainChatGuardrails } from "@presidio-dev/hai-guardrails"
 import { guardrailsEngine } from "../../../guardrails";
@@ -36,14 +36,15 @@ export class OllamaLangChainProvider implements LangChainModelProvider {
     };
   }
 
-  getModel(): ChatOllama {
+  getChatModel(): ChatOllama {
     return this.model;
   }
 
-  getModelInfo(): ModelInfo {
+  getModel() {
     return {
       id: this.configData.model,
       provider: "ollama",
+      info: {},
     };
   }
 

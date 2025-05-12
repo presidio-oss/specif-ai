@@ -1,223 +1,369 @@
-<ngx-loading [show]="loading" [config]="{ backdropBorderRadius: '3px' }"></ngx-loading>
-<div class="w-full px-8">
-  <div class="divide-y divide-secondary-200 overflow-hidden rounded-lg bg-white shadow">
-    <div class="px-4 py-5">
-      <h1 class="text-xl font-medium leading-tight tracking-tight text-secondary-900">
-        Create Solution
-      </h1>
-    </div>
-    <div class="px-4 py-5 edit-container-height">
-      <form [formGroup]="solutionForm">
-        <div class="flex flex-col gap-3">
-          <!-- Basic Information Section -->
-          <app-custom-accordion [id]="'basic-info'" [isOpen]="true">
-            <ng-container accordion-trigger>
-              <div class="flex flex-col text-sm gap-0.5">
-                <span class="font-semibold text-foreground">Basic Information</span>
-                <span class="font-normal text-muted-foreground">Give little bit information about the app which you are planning to build.</span>
+<ngx-loading
+  [show]="loading"
+  [config]="{ backdropBorderRadius: '3px' }"
+></ngx-loading>
+<div
+  class="divide-y divide-secondary-200 rounded-lg bg-white border h-[calc(100vh-12rem)] overflow-auto"
+>
+  <div class="px-4 py-5">
+    <h1
+      class="text-xl font-medium leading-tight tracking-tight text-secondary-900"
+    >
+      Create Solution
+    </h1>
+  </div>
+  <div class="px-4 py-5">
+    <form [formGroup]="solutionForm">
+      <div class="flex flex-col gap-3">
+        <!-- Basic Information Section -->
+        <app-custom-accordion [id]="'basic-info'" [isOpen]="true">
+          <ng-container accordion-trigger>
+            <div class="flex flex-col text-sm gap-0.5">
+              <span class="font-semibold text-foreground"
+                >Basic Information</span
+              >
+              <span class="font-normal text-muted-foreground"
+                >Give little bit information about the app which you are
+                planning to build.</span
+              >
+            </div>
+          </ng-container>
+          <ng-container accordion-body>
+            <div class="py-4 sm:px-2">
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5"
+                  >Solution Name<span class="text-danger-500 text-xs">
+                    *</span
+                  ></label
+                >
+
+                <app-input-field
+                  formControlName="name"
+                  elementId="solution-name"
+                  elementName="Solution Name"
+                  elementPlaceHolder="Solution Name"
+                  [showLabel]="false"
+                  [required]="true"
+                />
+                <app-error-message [errorControl]="solutionForm.get('name')" />
               </div>
-            </ng-container>
-            <ng-container accordion-body>
-              <div class="py-4 sm:px-2">
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100">
-                  <label class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5">Solution Name<span
-                      class="text-danger-500 text-xs">
-                      *</span></label>
 
-                  <app-input-field formControlName="name" elementId="solution-name" elementName="Solution Name"
-                    elementPlaceHolder="Solution Name" [showLabel]="false" [required]="true" />
-                  <app-error-message [errorControl]="solutionForm.get('name')" />
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5"
+                  >Solution Description<span class="text-danger-500 text-xs">
+                    *</span
+                  ></label
+                >
+                <div class="mt-2 sm:col-span-2 sm:mt-0">
+                  <app-textarea-field
+                    formControlName="description"
+                    elementId="solution-description"
+                    elementName="Solution Description"
+                    elementPlaceHolder="Solution Description"
+                    [showLabel]="false"
+                    [rows]="4"
+                    [required]="true"
+                  />
+                  <app-error-message
+                    [errorControl]="solutionForm.get('description')"
+                  />
+                  <p class="text-xs leading-6 text-secondary-600">
+                    Write a few sentences about your idea
+                  </p>
                 </div>
+              </div>
 
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100">
-                  <label class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5">Solution
-                    Description<span class="text-danger-500 text-xs">
-                      *</span></label>
-                  <div class="mt-2 sm:col-span-2 sm:mt-0">
-                    <app-textarea-field formControlName="description" elementId="solution-description"
-                      elementName="Solution Description" elementPlaceHolder="Solution Description" [showLabel]="false"
-                      [rows]="4" [required]="true" />
-                    <app-error-message [errorControl]="solutionForm.get('description')" />
-                    <p class="text-xs leading-6 text-secondary-600">
-                      Write a few sentences about your idea
-                    </p>
-                  </div>
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5"
+                  >Technical Details<span class="text-danger-500 text-xs">
+                    *</span
+                  ></label
+                >
+                <div class="mt-2 sm:col-span-2 sm:mt-0">
+                  <app-textarea-field
+                    formControlName="technicalDetails"
+                    elementId="technical-details"
+                    elementName="Technical Details"
+                    elementPlaceHolder="Technical Details"
+                    [showLabel]="false"
+                    [rows]="4"
+                    [required]="true"
+                  />
+                  <app-error-message
+                    [errorControl]="solutionForm.get('technicalDetails')"
+                  />
+                  <p class="text-xs leading-6 text-secondary-600">
+                    Write a few sentences about the technical stack of your
+                    application
+                  </p>
                 </div>
+              </div>
 
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6 sm:px-2 border-b border-secondary-100">
-                  <label class="block text-sm font-medium leading-6 text-secondary-900 sm:pt-1.5">Technical Details<span
-                      class="text-danger-500 text-xs">
-                      *</span></label>
-                  <div class="mt-2 sm:col-span-2 sm:mt-0">
-                    <app-textarea-field formControlName="technicalDetails" elementId="technical-details"
-                      elementName="Technical Details" elementPlaceHolder="Technical Details" [showLabel]="false"
-                      [rows]="4" [required]="true" />
-                    <app-error-message [errorControl]="solutionForm.get('technicalDetails')" />
-                    <p class="text-xs leading-6 text-secondary-600">
-                      Write a few sentences about the technical stack of your
-                      application
-                    </p>
-                  </div>
-                </div>
-
-                <div class="sm:grid sm:grid-cols-3 sm:items-center sm:gap-4 sm:py-6 sm:px-2">
-                  <label class="block text-sm font-medium leading-6 text-secondary-900">Is solution built already?<span
-                      class="text-danger-500 text-xs">
-                      *</span></label>
-                  <div class="col-span-2 flex items-center">
-                    <div class="mt-1.5">
-                      <app-toggle [isActive]="solutionForm.get('cleanSolution')?.value" (toggleChange)="
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-center sm:gap-4 sm:py-6 sm:px-2"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900"
+                  >Is solution built already?<span
+                    class="text-danger-500 text-xs"
+                  >
+                    *</span
+                  ></label
+                >
+                <div class="col-span-2 flex items-center">
+                  <div class="mt-1.5">
+                    <app-toggle
+                      [isActive]="solutionForm.get('cleanSolution')?.value"
+                      (toggleChange)="
                         solutionForm.get('cleanSolution')?.setValue($event)
-                      " isPlainToggle="true"></app-toggle>
+                      "
+                      isPlainToggle="true"
+                    ></app-toggle>
+                  </div>
+                  <p class="text-xs leading-6 text-secondary-600 ml-4">
+                    {{ getSolutionToggleDescription() }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- App Information content ends here -->
+            </div>
+          </ng-container>
+        </app-custom-accordion>
+
+        <!-- Preferences Section -->
+        <app-custom-accordion
+          [id]="'preferences'"
+          *ngIf="showGenerationPreferencesTab()"
+          [isOpen]="false"
+        >
+          <ng-container accordion-trigger>
+            <div class="flex flex-col text-sm gap-0.5">
+              <span class="font-semibold text-foreground">Preferences</span>
+              <span class="font-normal text-muted-foreground"
+                >Take the time to carefully adjust and refine the settings of
+                your project.</span
+              >
+            </div>
+          </ng-container>
+          <ng-container accordion-body>
+            <div class="p-4">
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900"
+                >
+                  Business Requirements (BRD)<span
+                    class="text-danger-500 text-xs"
+                  >
+                    *</span
+                  >
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="
+                          solutionForm.get('BRD')?.get('enabled')?.value
+                        "
+                        (toggleChange)="onRequirementToggle('BRD', $event)"
+                        isPlainToggle="true"
+                      ></app-toggle>
                     </div>
                     <p class="text-xs leading-6 text-secondary-600 ml-4">
-                      {{ getSolutionToggleDescription() }}
+                      Enable to set minimum number of Business Requirements
                     </p>
                   </div>
-                </div>
-
-                <!-- App Information content ends here -->
-              </div>
-            </ng-container>
-          </app-custom-accordion>
-
-          <!-- Preferences Section -->
-          <app-custom-accordion [id]="'preferences'" *ngIf="showGenerationPreferencesTab()" [isOpen]="false">
-            <ng-container accordion-trigger>
-              <div class="flex flex-col text-sm gap-0.5">
-                <span class="font-semibold text-foreground">Preferences</span>
-                <span class="font-normal text-muted-foreground">Take the time to carefully adjust and refine the settings of your project.</span>
-              </div>
-            </ng-container>
-            <ng-container accordion-body>
-              <div class="p-4">
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
-                  *ngIf="!solutionForm.get('cleanSolution')?.value">
-                  <label class="block text-sm font-medium leading-6 text-secondary-900">
-                    Business Requirements (BRD)<span class="text-danger-500 text-xs">
-                      *</span>
-                  </label>
-                  <div class="col-span-2">
-                    <div class="flex items-center">
-                      <div class="mt-1.5">
-                        <app-toggle [isActive]="
-                          solutionForm.get('BRD')?.get('enabled')?.value
-                        " (toggleChange)="onRequirementToggle('BRD', $event)" isPlainToggle="true"></app-toggle>
-                      </div>
-                      <p class="text-xs leading-6 text-secondary-600 ml-4">
-                        Enable to set minimum number of Business Requirements
-                      </p>
-                    </div>
-                    <div class="mt-4" *ngIf="solutionForm.get('BRD')?.get('enabled')?.value">
-                      <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="BRD">
-                        <app-slider formControlName="minCount"></app-slider>
-                      </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('BRD')?.get('enabled')?.value"
+                  >
+                    <div
+                      class="border rounded-lg p-4 max-w-[28rem]"
+                      formGroupName="BRD"
+                    >
+                      <app-slider formControlName="minCount"></app-slider>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
-                  *ngIf="!solutionForm.get('cleanSolution')?.value">
-                  <label class="block text-sm font-medium leading-6 text-secondary-900">
-                    Product Requirements (PRD)<span class="text-danger-500 text-xs">
-                      *</span>
-                  </label>
-                  <div class="col-span-2">
-                    <div class="flex items-center">
-                      <div class="mt-1.5">
-                        <app-toggle [isActive]="
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900"
+                >
+                  Product Requirements (PRD)<span
+                    class="text-danger-500 text-xs"
+                  >
+                    *</span
+                  >
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="
                           solutionForm.get('PRD')?.get('enabled')?.value
-                        " (toggleChange)="onRequirementToggle('PRD', $event)" isPlainToggle="true"></app-toggle>
-                      </div>
-                      <p class="text-xs leading-6 text-secondary-600 ml-4">
-                        Enable to set minimum number of Product Requirements
-                      </p>
+                        "
+                        (toggleChange)="onRequirementToggle('PRD', $event)"
+                        isPlainToggle="true"
+                      ></app-toggle>
                     </div>
-                    <div class="mt-4" *ngIf="solutionForm.get('PRD')?.get('enabled')?.value">
-                      <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="PRD">
-                        <app-slider formControlName="minCount"></app-slider>
-                      </div>
+                    <p class="text-xs leading-6 text-secondary-600 ml-4">
+                      Enable to set minimum number of Product Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('PRD')?.get('enabled')?.value"
+                  >
+                    <div
+                      class="border rounded-lg p-4 max-w-[28rem]"
+                      formGroupName="PRD"
+                    >
+                      <app-slider formControlName="minCount"></app-slider>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
-                  *ngIf="!solutionForm.get('cleanSolution')?.value">
-                  <label class="block text-sm font-medium leading-6 text-secondary-900">
-                    UI Requirements (UIR)<span class="text-danger-500 text-xs">
-                      *</span>
-                  </label>
-                  <div class="col-span-2">
-                    <div class="flex items-center">
-                      <div class="mt-1.5">
-                        <app-toggle [isActive]="
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900"
+                >
+                  UI Requirements (UIR)<span class="text-danger-500 text-xs">
+                    *</span
+                  >
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="
                           solutionForm.get('UIR')?.get('enabled')?.value
-                        " (toggleChange)="onRequirementToggle('UIR', $event)" isPlainToggle="true"></app-toggle>
-                      </div>
-                      <p class="text-xs leading-6 text-secondary-600 ml-4">
-                        Enable to set minimum number of UI Requirements
-                      </p>
+                        "
+                        (toggleChange)="onRequirementToggle('UIR', $event)"
+                        isPlainToggle="true"
+                      ></app-toggle>
                     </div>
-                    <div class="mt-4" *ngIf="solutionForm.get('UIR')?.get('enabled')?.value">
-                      <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="UIR">
-                        <app-slider formControlName="minCount"></app-slider>
-                      </div>
+                    <p class="text-xs leading-6 text-secondary-600 ml-4">
+                      Enable to set minimum number of UI Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('UIR')?.get('enabled')?.value"
+                  >
+                    <div
+                      class="border rounded-lg p-4 max-w-[28rem]"
+                      formGroupName="UIR"
+                    >
+                      <app-slider formControlName="minCount"></app-slider>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
-                  *ngIf="!solutionForm.get('cleanSolution')?.value">
-                  <label class="block text-sm font-medium leading-6 text-secondary-900">
-                    Non-Functional Requirements (NFR)<span class="text-danger-500 text-xs">
-                      *</span>
-                  </label>
-                  <div class="col-span-2">
-                    <div class="flex items-center">
-                      <div class="mt-1.5">
-                        <app-toggle [isActive]="
+              <div
+                class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6"
+                *ngIf="!solutionForm.get('cleanSolution')?.value"
+              >
+                <label
+                  class="block text-sm font-medium leading-6 text-secondary-900"
+                >
+                  Non-Functional Requirements (NFR)<span
+                    class="text-danger-500 text-xs"
+                  >
+                    *</span
+                  >
+                </label>
+                <div class="col-span-2">
+                  <div class="flex items-center">
+                    <div class="mt-1.5">
+                      <app-toggle
+                        [isActive]="
                           solutionForm.get('NFR')?.get('enabled')?.value
-                        " (toggleChange)="onRequirementToggle('NFR', $event)" isPlainToggle="true"></app-toggle>
-                      </div>
-                      <p class="text-xs leading-6 text-secondary-600 ml-4">
-                        Enable to set minimum number of Non-Functional
-                        Requirements
-                      </p>
+                        "
+                        (toggleChange)="onRequirementToggle('NFR', $event)"
+                        isPlainToggle="true"
+                      ></app-toggle>
                     </div>
-                    <div class="mt-4" *ngIf="solutionForm.get('NFR')?.get('enabled')?.value">
-                      <div class="border rounded-lg p-4 max-w-[28rem]" formGroupName="NFR">
-                        <app-slider formControlName="minCount"></app-slider>
-                      </div>
+                    <p class="text-xs leading-6 text-secondary-600 ml-4">
+                      Enable to set minimum number of Non-Functional
+                      Requirements
+                    </p>
+                  </div>
+                  <div
+                    class="mt-4"
+                    *ngIf="solutionForm.get('NFR')?.get('enabled')?.value"
+                  >
+                    <div
+                      class="border rounded-lg p-4 max-w-[28rem]"
+                      formGroupName="NFR"
+                    >
+                      <app-slider formControlName="minCount"></app-slider>
                     </div>
                   </div>
                 </div>
               </div>
-            </ng-container>
-          </app-custom-accordion>
+            </div>
+          </ng-container>
+        </app-custom-accordion>
 
-          <!-- MCP Integrations Section -->
-          <app-custom-accordion [id]="'integrations'" [isOpen]="true">
-            <ng-container accordion-trigger>
-              <div class="flex flex-col text-sm gap-0.5">
-                <span class="font-semibold text-foreground">MCP Integrations</span>
-                <span class="font-normal text-muted-foreground">Add MCP Servers to your project.</span>
-              </div>
-            </ng-container>
-            <ng-container accordion-body>
-              <div class=" flex flex-col gap-4 w-full">
-                <app-mcp-integration-configurator formControlName="mcpSettings"></app-mcp-integration-configurator>
-              </div>
-            </ng-container>
-          </app-custom-accordion>
-        </div>
+        <!-- MCP Integrations Section -->
+        <app-custom-accordion [id]="'integrations'" [isOpen]="true">
+          <ng-container accordion-trigger>
+            <div class="flex flex-col text-sm gap-0.5">
+              <span class="font-semibold text-foreground"
+                >MCP Integrations</span
+              >
+              <span class="font-normal text-muted-foreground"
+                >Add MCP Servers to your project.</span
+              >
+            </div>
+          </ng-container>
+          <ng-container accordion-body>
+            <div class="flex flex-col gap-4 w-full">
+              <app-mcp-integration-configurator
+                formControlName="mcpSettings"
+              ></app-mcp-integration-configurator>
+            </div>
+          </ng-container>
+        </app-custom-accordion>
+      </div>
 
-        <div class="mt-6 flex items-center justify-end gap-x-2">
-          <app-button buttonContent="Cancel" [disabled]="loading" size="sm" theme="secondary"
-            (click)="navigateToDashboard()"></app-button>
-          <app-button buttonContent="Create Solution" [disabled]="isCreateSolutionDisabled" size="sm"
-            (click)="createSolution()"></app-button>
-        </div>
-      </form>
-    </div>
+      <div class="mt-6 flex items-center justify-end gap-x-2">
+        <app-button
+          buttonContent="Cancel"
+          [disabled]="loading"
+          size="sm"
+          theme="secondary"
+          (click)="navigateToDashboard()"
+        ></app-button>
+        <app-button
+          buttonContent="Create Solution"
+          [disabled]="isCreateSolutionDisabled"
+          size="sm"
+          (click)="createSolution()"
+        ></app-button>
+      </div>
+    </form>
   </div>
 </div>

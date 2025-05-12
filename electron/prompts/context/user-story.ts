@@ -1,4 +1,4 @@
-export const USER_STORY = `
+export const USER_STORY_DEFINITION_CONTEXT = `
 User Story(US):
 User story should ideally describe the feature on a high level. Develop a detailed and well-structured user story for feature that effectively addresses both the client's requests and the provided file content. Ensure that the feature is clear, concise, and comprehensive.
 
@@ -17,9 +17,9 @@ Acceptance Criteria
 - Define core actions the user can take.
 - Include specific constraints (e.g., time ranges, available options).
 - Outline how the system should respond to user actions (e.g., confirmation notifications).
-- Specify error handling and validation for incorrect or conflicting actions (e.g., error notifications)
+- Specify error handling and validation for incorrect or conflicting actions (e.g., error notifications)`;
 
-
+export const USER_STORY = `${USER_STORY_DEFINITION_CONTEXT}
 
 Consider this as an example -
 
