@@ -8,6 +8,7 @@ import { chatUpdateRequirementPrompt } from '../../prompts/requirement/chat';
 import { repairJSON } from '../../utils/custom-json-parser';
 import { OPERATIONS } from '../../helper/constants';
 import { traceBuilder } from '../../utils/trace-builder';
+import { LLMHandlerGuardrails, GuardrailsShouldBlock } from "../../guardrails";
 
 export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<ChatUpdateRequirementResponse> {
   try {
@@ -18,7 +19,7 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
 
     console.log('[chat-update-requirement] Using LLM config:', llmConfig);
     const validatedData = chatUpdateRequirementSchema.parse(data);
-
+    
     const {
       name,
       description,
@@ -59,9 +60,11 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
     // Prepare messages for LLM
     const messages = await LLMUtils.prepareMessages(basePrompt, chatHistory);
 
-    const handler = buildLLMHandler(
-      llmConfig.activeProvider,
-      llmConfig.providerConfigs[llmConfig.activeProvider].config
+    const handler = LLMHandlerGuardrails(
+      buildLLMHandler(
+        llmConfig.activeProvider,
+        llmConfig.providerConfigs[llmConfig.activeProvider].config
+      )
     );
 
     const traceName = traceBuilder(requirementAbbr, OPERATIONS.CHAT)
@@ -86,6 +89,15 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
     };
   } catch (error) {
     console.error('Error in chatUpdateRequirement:', error);
+    if (error instanceof GuardrailsShouldBlock) {
+      console.log("[chat-update-requirement] Injection or Leaking detected");
+      return {
+        response: "Request not processed",
+        blocked: true,
+        blockedReason:
+          "Prompt contains malicious content, that violates our security policies.",
+      };
+    }
     throw error;
   }
 }

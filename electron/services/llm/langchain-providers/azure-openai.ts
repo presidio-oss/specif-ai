@@ -1,7 +1,8 @@
 import { AzureChatOpenAI } from "@langchain/openai";
 import { LLMConfig, LLMError, ModelInfo } from "../llm-types";
 import { LangChainModelProvider } from "./base";
-
+import { LangChainChatGuardrails } from "@presidio-dev/hai-guardrails"
+import { guardrailsEngine } from "../../../guardrails";
 interface AzureOpenAIConfig extends LLMConfig {
   apiKey: string;
   endpoint: string;
@@ -21,13 +22,16 @@ export class AzureOpenAILangChainProvider implements LangChainModelProvider {
 
   constructor(config: Partial<AzureOpenAIConfig>) {
     this.configData = this.getConfig(config);
-    this.model = new AzureChatOpenAI({
-      azureOpenAIApiKey: this.configData.apiKey,
-      azureOpenAIEndpoint: this.configData.endpoint,
-      azureOpenAIApiDeploymentName: this.configData.deployment,
-      azureOpenAIApiVersion:
-        this.configData.apiVersion || "2024-09-01-preview",
-    });
+    this.model = LangChainChatGuardrails(
+      new AzureChatOpenAI({
+        azureOpenAIApiKey: this.configData.apiKey,
+        azureOpenAIEndpoint: this.configData.endpoint,
+        azureOpenAIApiDeploymentName: this.configData.deployment,
+        azureOpenAIApiVersion:
+          this.configData.apiVersion || "2024-09-01-preview",
+      }),
+      guardrailsEngine
+    );
   }
 
   getConfig(config: Partial<AzureOpenAIConfig>): AzureOpenAIConfig {

@@ -84,12 +84,15 @@
               </div>
               <div class="flex-1 max-w-[75%] relative">
                 <div
-                  class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative"
+                  [ngClass]="{
+                    'inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative': !chat.blocked,
+                    'inline-block bg-danger-100 px-4 py-3 rounded-2xl text-sm border border-danger-200 relative': chat.blocked
+                  }"
                 >
-                  {{ chat.assistant }}
+                  {{ chat.blocked && chat.blockedReason ? chat.assistant + ', ' + chat.blockedReason : chat.assistant }}
                   <div class="mt-3 flex items-start">
                     <button
-                      *ngIf="!chat.isAdded"
+                      *ngIf="!chat.isAdded && !chat.blocked"
                       class="text-sm bg-white text-success-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-200"
                       (click)="update(chat)"
                     >
@@ -100,7 +103,7 @@
                       Add to Description
                     </button>
                     <div
-                      *ngIf="chat.isAdded"
+                      *ngIf="chat.isAdded || !chat.blocked"
                       class="text-sm bg-success-600 text-white flex items-center py-1 px-3 gap-1 rounded-full"
                     >
                       <ng-icon

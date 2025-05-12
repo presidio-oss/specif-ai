@@ -301,7 +301,7 @@ export class AiChatComponent implements OnInit {
       .chatWithLLM(this.chatType, payload)
       .then((result: ChatUpdateRequirementResponse) => {
         this.generateLoader = false;
-        this.chatHistory = [...this.chatHistory, { assistant: result.response }];
+        this.chatHistory = [...this.chatHistory, { assistant: result.response, blocked: result.blocked, blockedReason: result.blockedReason }];
         this.returnChatHistory();
         this.getSuggestion();
         this.analyticsTracker.trackResponseTime(AnalyticsEventSource.AI_CHAT)
