@@ -1,5 +1,5 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { LLMConfig, LLMError, ModelInfo } from "../llm-types";
+import { LLMConfig, LLMError } from "../llm-types";
 import { LangChainModelProvider } from "./base";
 
 interface OpenRouterConfig extends LLMConfig {
@@ -39,14 +39,15 @@ export class OpenRouterLangChainProvider implements LangChainModelProvider {
     };
   }
 
-  getModel(): ChatOpenAI {
+  getChatModel(): ChatOpenAI {
     return this.model;
   }
 
-  getModelInfo(): ModelInfo {
+  getModel() {
     return {
       id: this.configData.model,
       provider: "openrouter",
+      info: {},
     };
   }
 

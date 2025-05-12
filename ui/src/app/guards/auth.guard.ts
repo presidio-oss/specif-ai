@@ -25,3 +25,15 @@ export const UserGuard: CanActivateFn = (route, state) => {
   }
   return true;
 };
+
+export const AuthRedirectGuard: CanActivateFn = (route, state) => {
+  const userState = inject(UserStateService);
+  const router = inject(Router);
+
+  if (userState.isUsernameSet() && userState.isWorkingDirSet()) {
+    router.navigate(['/apps']);
+    return false;
+  }
+
+  return true;
+};

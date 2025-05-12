@@ -26,12 +26,12 @@ const awsBedrockKbFormFields: FormField[] = [
   },
   {
     type: 'text',
-    label: 'KB Inclusion Tag Key (Optional)',
+    label: 'KB Inclusion Tag Key',
     name: 'kbInclusionTagKey',
     id: 'kb-inclusion-tag-key',
     helpText:
-      'Optional: Specify a tag key to filter which Knowledge Bases are exposed.',
-    required: false,
+      'Specify a tag key to filter which Knowledge Bases are exposed.',
+    required: true,
     default: 'specif-mcp-rag-kb',
   },
 ];

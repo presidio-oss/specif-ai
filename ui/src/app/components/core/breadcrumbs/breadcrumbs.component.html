@@ -4,7 +4,7 @@
   *ngIf="breadcrumbs$ | async as breadcrumbs"
 >
   <!--Back button-->
-  <div class="flex mr-3">
+  <!-- <div class="flex mr-3">
     <button
       [disabled]="breadcrumbs.length < 1"
       (click)="navigateToPreviousPage()"
@@ -14,11 +14,15 @@
         'text-secondary-500': breadcrumbs.length < 1,
       }"
     >
-      <ng-icon class="text-lg" name="heroArrowLeft" strokeWidth="2"></ng-icon>
+      <ng-icon
+        class="text-base"
+        name="heroArrowLeft"
+        strokeWidth="2.5"
+      ></ng-icon>
     </button>
-  </div>
+  </div> -->
   <!--Solutions Breadcrumbs-->
-  <ol class="inline-flex items-center space-x-1 md:space-x-2">
+  <ol class="inline-flex items-center space-x-1">
     <li class="inline-flex items-center">
       <a
         routerLink="/apps"
@@ -27,7 +31,7 @@
         [class.text-white]="breadcrumbs.length == 0"
         [class.font-semibold]="breadcrumbs.length == 0"
       >
-        <ng-icon class="text-sm mr-1" name="heroHome"></ng-icon>
+        <ng-icon class="text-sm mr-1" name="heroHome" strokeWidth="2"></ng-icon>
         Solutions
       </a>
     </li>
@@ -43,7 +47,7 @@
           [class.text-white]="last"
           [class.font-semibold]="last"
           [class.cursor-pointer]="breadcrumb.url"
-          class="ml-1 text-sm text-secondary-300 hover:text-white md:ml-2 cursor-pointer"
+          class="ml-1 text-sm text-secondary-300 hover:text-white cursor-pointer"
           [matTooltip]="breadcrumb.tooltipLabel || ''"
           >{{ breadcrumb.label }}</span
         >
