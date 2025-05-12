@@ -19,6 +19,7 @@ import { LLMConfigModel } from "../../services/llm/llm-types";
 import { ObservabilityManager } from "../../services/observability/observability.manager";
 import { store } from "../../services/store";
 import { z } from "zod";
+import { isDevEnv } from "../../utils/env";
 
 export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
   try {
@@ -56,7 +57,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
         thread_id: `${validatedData.requestId}_create_solution`,
         trace: trace,
         requestId: validatedData.requestId,
-        sendMessagesInTelemetry: false,
+        sendMessagesInTelemetry: isDevEnv(),
       },
     };
 
