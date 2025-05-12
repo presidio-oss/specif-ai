@@ -34,10 +34,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class LoginComponent implements OnInit {
   loginForm = new FormGroup({
     username: new FormControl('', Validators.required),
-    directoryPath: new FormControl(
-      { value: '', disabled: true },
-      Validators.required,
-    ),
+    directoryPath: new FormControl('', Validators.required),
   });
 
   themeConfiguration = environment.ThemeConfiguration;
@@ -64,7 +61,8 @@ export class LoginComponent implements OnInit {
 
     if (this.loginForm.valid) {
       // Auto-login if values are present in localStorage
-      if (localStorage.getItem(APP_CONSTANTS.USER_NAME)) {
+      if (localStorage.getItem(APP_CONSTANTS.USER_NAME) && 
+          localStorage.getItem(APP_CONSTANTS.WORKING_DIR)) {
         await this.login();
       }
     }
