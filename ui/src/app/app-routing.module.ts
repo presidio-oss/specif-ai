@@ -9,7 +9,7 @@ import { AddTaskComponent } from './pages/tasks/add-task/add-task.component';
 import { EditUserStoriesComponent } from './pages/edit-user-stories/edit-user-stories.component';
 import { TaskListComponent } from './pages/tasks/task-list/task-list.component';
 import { BusinessProcessComponent } from './pages/business-process/business-process.component';
-import { UserGuard } from './guards/auth.guard';
+import { UserGuard, AuthRedirectGuard } from './guards/auth.guard';
 import { BusinessProcessFlowComponent } from './pages/business-process-flow/business-process-flow.component';
 import { CanDeactivateGuard } from './guards/can-deactivate.guard';
 import { LoginComponent } from './pages/login/login.component';
@@ -21,17 +21,18 @@ const routes: Routes = [
   {
     path: '',
     component: AuthLayoutComponent,
+    canActivate: [AuthRedirectGuard],
     children: [
       {
         path: 'login',
         component: LoginComponent,
       },
-      { 
-        path: '', 
-        redirectTo: '/login', 
-        pathMatch: 'full' 
+      {
+        path: '',
+        redirectTo: '/login',
+        pathMatch: 'full',
       },
-    ]
+    ],
   },
   {
     path: '',
@@ -61,10 +62,10 @@ const routes: Routes = [
           },
         },
       },
-      { 
-        path: 'apps', 
-        component: AppsComponent, 
-        canActivate: [UserGuard] 
+      {
+        path: 'apps',
+        component: AppsComponent,
+        canActivate: [UserGuard],
       },
       {
         path: 'user-stories/:prdId',
@@ -140,9 +141,9 @@ const routes: Routes = [
             icon: 'settings',
           },
         },
-      }
-    ]
-  }
+      },
+    ],
+  },
 ];
 
 @NgModule({

@@ -7,6 +7,6 @@ import { ToasterComponent } from '../../components/toaster/toaster.component';
   templateUrl: './auth-layout.component.html',
   styleUrls: ['./auth-layout.component.scss'],
   standalone: true,
-  imports: [RouterOutlet, ToasterComponent]
+  imports: [RouterOutlet, ToasterComponent],
 })
 export class AuthLayoutComponent {}

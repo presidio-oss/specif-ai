@@ -10,6 +10,12 @@ import { LoadingComponent } from '../../components/core/loading/loading.componen
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, ToasterComponent, AlertComponent, LoadingComponent]
+  imports: [
+    RouterOutlet,
+    HeaderComponent,
+    ToasterComponent,
+    AlertComponent,
+    LoadingComponent,
+  ],
 })
 export class MainLayoutComponent {}
