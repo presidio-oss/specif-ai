@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { MemorySaver } from "@langchain/langgraph";
 import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
 import { ObservabilityManager } from '../../services/observability/observability.manager';
-import { getMCPTools } from '../../mcp';
+import { getMcpToolsForActiveProvider } from '../../mcp';
 import { MCPHub } from '../../mcp/mcp-hub';
 
 export async function getSuggestions(_: IpcMainInvokeEvent, data: unknown): Promise<string[]> {
@@ -29,7 +29,7 @@ export async function getSuggestions(_: IpcMainInvokeEvent, data: unknown): Prom
     try {
       const mcpHub = MCPHub.getInstance();
       await mcpHub.setProjectId(validatedData.appId);
-      mcpTools = await getMCPTools();
+      mcpTools = await getMcpToolsForActiveProvider();
     } catch (error) {
       console.warn("Error getting mcp tools", error);
     }
