@@ -4,7 +4,7 @@
     class="block text-sm font-medium text-secondary-700 mb-2"
     >{{ label }}</label
   >
-  <div class="flex items-center gap-4 w-full">
+  <div class="flex items-center gap-2 w-full">
     <mat-slider
       class="flex-1"
       [min]="min"
@@ -19,7 +19,7 @@
         (input)="onSliderChange($event)"
       />
     </mat-slider>
-    <span class="text-sm text-primary-600 font-semibold whitespace-nowrap">{{
+    <span class="text-sm font-medium text-muted-foreground whitespace-nowrap">{{
       value
     }}</span>
   </div>
