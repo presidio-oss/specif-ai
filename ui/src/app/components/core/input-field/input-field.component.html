@@ -14,7 +14,9 @@
     (keydown.enter)="onKeyDown()"
     [value]="value"
     [disabled]="isDisabled"
-    class="block w-full p-2.5 border border-secondary-200 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
+    class="block w-full p-2.5 border border-secondary-200 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none {{
+      customClass
+    }}"
     [placeholder]="elementPlaceHolder"
   />
 </div>
