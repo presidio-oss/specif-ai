@@ -103,3 +103,14 @@ export class ExportRequirementData {
     public options: ExportRequirementDataOptions,
   ) {}
 }
+
+export class BulkUpdateFiles {
+  static readonly type = '[Projects] Bulk Update Files';
+  
+  constructor(
+    public updates: Array<{
+      path: string;
+      content: any;
+    }>,
+  ) {}
+}

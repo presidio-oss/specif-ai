@@ -6,6 +6,7 @@ import BedrockHandler from './providers/bedrock';
 import GeminiHandler from './providers/gemini';
 import OllamaHandler from './providers/ollama';
 import OpenAIHandler from './providers/openai';
+import OpenRouterHandler from './providers/openrouter';
 
 // Export base types and interfaces
 export {
@@ -26,6 +27,7 @@ export { default as AnthropicHandler } from './providers/anthropic';
 export { default as BedrockHandler } from './providers/bedrock';
 export { default as OllamaHandler } from './providers/ollama';
 export { default as GeminiHandler } from './providers/gemini';
+export { default as OpenRouterHandler } from './providers/openrouter';
 
 /**
  * Creates an instance of the appropriate LLM handler based on the specified provider.
@@ -49,6 +51,8 @@ export function buildLLMHandler(provider: LLMProvider | string, config: Record<s
       return new GeminiHandler(config);
     case LLMProvider.OPENAI:
       return new AzureOpenAIHandler(config);
+    case LLMProvider.OPENROUTER:
+      return new OpenRouterHandler(config);
     default:
       throw new LLMError(
         `Invalid provider: ${provider}. Must be one of: ${Object.values(LLMProvider).join(', ')}`,

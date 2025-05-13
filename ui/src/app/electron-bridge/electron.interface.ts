@@ -54,6 +54,7 @@ export interface ElectronAPI {
   removeListener: (channel: string, listener: (...args: any[]) => void) => void;
   getStyleUrl: () => string;
   reloadApp: () => void;
+  openExternalUrl: (url: string) => Promise<boolean>;
   getSuggestions(payload: suggestionPayload): Promise<void>;
   getAppConfig(): Promise<{ key: string; host: string }>;
   verifyLLMConfig(

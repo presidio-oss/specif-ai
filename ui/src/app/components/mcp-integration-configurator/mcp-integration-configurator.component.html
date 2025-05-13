@@ -1,0 +1,43 @@
+<div class="flex w-full flex-col gap-4">
+  <h2 class="text-xl font-bold" *ngIf="heading">{{heading}}</h2>
+  <div class="grid grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-4 w-full">
+    <!-- predefined integrations -->
+    <div *ngFor="let integration of predefinedIntegrations"
+      [ngClass]="['relative bg-white rounded-lg p-3 text-center cursor-pointer transition-transform flex flex-col gap-3.5 items-center w-full', isServerConfigured(integration.id) ? 'border-2 border-indigo-500' : 'border-[0.5px] border-secondary-300']"
+      (click)="configurePredefinedMCPServer(integration)">
+      <ng-icon *ngIf="isServerConfigured(integration.id)" name="heroXMark"
+        class="text-danger-300 hover:text-danger-500 size-5 absolute top-1 left-2 cursor-pointer" strokeWidth="2.5"
+        (click)="removeServer({id: integration.id, name: integration.title}, $event)">
+      </ng-icon>
+      <img [src]="integration.iconPath" [alt]="integration.title" class="h-7 w-auto">
+      <h3 class="text-xs font-medium">{{ integration.title }}</h3>
+      <ng-icon name="heroCheck"
+        [ngClass]="[isServerConfigured(integration.id) ? 'text-primary-600' : 'text-secondary-300', 'size-6 absolute top-1 right-2']"
+        strokeWidth="2.5">
+      </ng-icon>
+    </div>
+    <!-- custom mcp servers -->
+    <div *ngFor="let serverInfo of getCustomMCPServersInfo()"
+      class="relative bg-white rounded-lg p-3 text-center cursor-pointer w-full flex flex-col items-center gap-3.5 border-2 border-indigo-500"
+      (click)="configureCustomMCPServer(serverInfo.id, serverInfo.serverOptions)">
+      <ng-icon name="heroXMark"
+        class="text-danger-300 hover:text-danger-500 size-5 absolute top-1 left-2 cursor-pointer" strokeWidth="2.5"
+        (click)="removeServer({id: serverInfo.id, name: serverInfo.serverOptions.name}, $event)">
+      </ng-icon>
+      <img src="./assets/img/logo/mcp_logo.svg" [alt]="" class="h-7 w-auto">
+      <h3 class="text-xs font-medium line-clamp-3" *ngIf="serverInfo.serverOptions.name">{{
+        serverInfo.serverOptions.name }}</h3>
+      <div class="w-full" style="word-wrap: break-word;">
+        <h3 class="text-xs font-medium line-clamp-1" *ngIf="!serverInfo.serverOptions.name && serverInfo.id">{{
+          serverInfo.id }}</h3>
+      </div>
+    </div>
+    <!-- add new mcp server -->
+    <div
+      class="bg-white rounded-lg p-3 text-center cursor-pointer w-full border-secondary-300 flex flex-col items-center gap-3.5 border-dashed border"
+      (click)="configureNewMCPServer()">
+      <img src="./assets/img/logo/mcp_logo.svg" alt="Add New MCP Server" class="h-7 w-auto">
+      <h3 class="text-xs font-medium">New MCP Server</h3>
+    </div>
+  </div>
+</div>

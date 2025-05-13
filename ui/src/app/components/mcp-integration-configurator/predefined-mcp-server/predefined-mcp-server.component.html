@@ -1,0 +1,48 @@
+<div class="p-4 flex flex-col gap-2">
+  <div class="flex flex-col gap-0.5">
+    <h2 class="font-medium">{{ data.integration.title }}</h2>
+    <p class="text-xs text-secondary-600">
+      {{ data.integration.description }}
+      <ng-container *ngIf="data.integration.readmeUrl">
+        Visit
+        <a (click)="openExternalUrl(data.integration.readmeUrl)" class="text-primary-600 hover:underline cursor-pointer">README</a>
+        for more information.
+      </ng-container>
+    </p>
+  </div>
+  <form [formGroup]="form" class="flex flex-col gap-2">
+    <div *ngFor="let field of data.integration.formFields" class="flex flex-col gap-1.5">
+      <ng-container [ngSwitch]="field.type">
+        <app-input-field *ngSwitchCase="'text'"
+          [formControlName]="field.name"
+          [elementId]="field.id"
+          [elementName]="field.label"
+          [elementPlaceHolder]="field.helpText"
+          [required]="field.required"
+        ></app-input-field>
+        <app-textarea-field *ngSwitchCase="'textarea'"
+          [formControlName]="field.name"
+          [elementId]="field.id"
+          [elementName]="field.label"
+          [elementPlaceHolder]="field.helpText"
+          [required]="field.required"
+          [rows]="5"
+        ></app-textarea-field>
+      </ng-container>
+      <span *ngIf="form.get(field.name)?.invalid && (form.get(field.name)?.dirty || form.get(field.name)?.touched)" class="text-xs text-danger-600">
+        {{ getFieldErrorMessage(field.name) }}
+      </span>
+    </div>
+    
+    <div class="flex gap-1 justify-end items-center">
+      <app-button buttonContent="Cancel" size="sm" (click)="onCancel()" theme="secondary_outline"></app-button>
+      <app-button buttonContent="Validate" size="sm" [disabled]="form.invalid || isValidating" (click)="onValidate()" theme="primary"></app-button>
+      <app-button buttonContent="Submit" size="sm" [disabled]="form.invalid || !isValidated || validatedServerStatus?.status === 'error'" (click)="onSubmit()" theme="primary"></app-button>
+    </div>
+  </form>
+
+  <div *ngIf="isValidated && showServerInformation && validatedServerStatus" class="flex flex-col gap-2">
+    <h3>Server Validation Result</h3>
+    <app-mcp-servers-item [server]="validatedServerStatus"></app-mcp-servers-item>
+  </div>
+</div>

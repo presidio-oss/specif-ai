@@ -5,6 +5,8 @@ import { store } from '../../services/store';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { flowchartPrompt } from '../../prompts/visualization/flowchart';
+import { traceBuilder } from '../../utils/trace-builder';
+import { COMPONENT, OPERATIONS } from '../../helper/constants';
 
 export async function createFlowchart(event: IpcMainInvokeEvent, data: unknown): Promise<FlowchartResponse> {
   try {
@@ -39,7 +41,8 @@ export async function createFlowchart(event: IpcMainInvokeEvent, data: unknown):
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const traceName = traceBuilder(COMPONENT.FLOWCHART, OPERATIONS.VISUALIZE);
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[create-flowchart] LLM Response:', response);
 
     return {

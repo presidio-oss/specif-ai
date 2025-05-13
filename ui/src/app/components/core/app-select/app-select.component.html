@@ -1,0 +1,77 @@
+<div class="custom-select-container relative" [class]="customClass">
+  <!-- Label -->
+  <label *ngIf="label" class="block text-sm font-medium text-secondary-900 mb-2">
+    {{ label }}
+    <span *ngIf="showRequiredIndicator" class="text-danger-500">*</span>
+  </label>
+
+  <!-- Select Input -->
+  <div class="relative">
+    <ng-container *ngIf="searchable; else regularSelect">
+      <input
+        type="text"
+        [value]="searchText"
+        (input)="onInputChange($event)"
+        (focus)="toggleDropdown()"
+        [placeholder]="placeholder"
+        [disabled]="disabled"
+        [required]="required"
+        class="h-10 block w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none cursor-text"
+        autocomplete="off"
+      />
+    </ng-container>
+
+    <ng-template #regularSelect>
+      <div
+        (click)="toggleDropdown()"
+        class="h-10 flex items-center w-full px-3 pr-10 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none cursor-pointer"
+        [class.bg-secondary-100]="disabled"
+        [class.cursor-not-allowed]="disabled"
+      >
+        {{ selectedOption?.label || placeholder }}
+      </div>
+    </ng-template>
+
+    <!-- Cross Button -->
+    <button
+      *ngIf="clearable && selectedOption"
+      (click)="clear($event)"
+      class="pointer-events-auto absolute inset-y-0 right-8 flex items-center pr-2 cursor-pointer"
+    >
+    <ng-icon name="heroXMark" class="text-secondary-500 h-4 w-4"></ng-icon>
+    </button>
+
+    <!-- Dropdown Arrow -->
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+      <svg
+        class="h-4 w-4 text-secondary-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 9l-7 7-7-7"
+        ></path>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Dropdown Options -->
+  <div
+    *ngIf="showDropdown && filteredOptions.length > 0"
+    class="absolute z-10 w-full mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg max-h-60 overflow-auto"
+    [class]="dropdownClass"
+  >
+    <div
+      *ngFor="let option of filteredOptions"
+      class="px-3 py-2 text-sm text-secondary-900 hover:bg-secondary-50 cursor-pointer"
+      [class]="optionClass"
+      (click)="selectOption(option)"
+    >
+      {{ option.label }}
+    </div>
+  </div>
+</div>

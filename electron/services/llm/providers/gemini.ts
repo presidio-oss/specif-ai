@@ -2,6 +2,8 @@ import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface GeminiConfig extends LLMConfig {
   apiKey: string;
@@ -12,6 +14,7 @@ export class GeminiHandler extends LLMHandler {
   private client: GenerativeModel;
   protected configData: GeminiConfig;
   private defaultModel = "gemini-2.0-flash-001";
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<GeminiConfig>) {
     super();
@@ -21,7 +24,7 @@ export class GeminiHandler extends LLMHandler {
     this.client = genAI.getGenerativeModel({
       model: this.configData.model,
       generationConfig: {
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4096,
         temperature: 0.7,
         topK: 40,
         topP: 0.95,
@@ -55,7 +58,8 @@ export class GeminiHandler extends LLMHandler {
   })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -69,13 +73,27 @@ export class GeminiHandler extends LLMHandler {
 
     // Start a chat
     const chat = this.client.startChat({
-      history: history.slice(0, -1), // Exclude last message for input
+      history: history.slice(0, -1),
     });
+
 
     // Send the last message
     const lastMessage = messageList[messageList.length - 1];
     const result = await chat.sendMessage(lastMessage.content);
-    const response = await result.response;
+    const response = result.response;
+
+    const traceName = `${TRACES.CHAT_GEMINI}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+
+    trace.generation({
+      name: operation,
+      model: this.configData.model,
+      usage: {
+        input: response.usageMetadata?.promptTokenCount,
+        output: response.usageMetadata?.candidatesTokenCount,
+        total: response.usageMetadata?.totalTokenCount
+      },
+    });
 
     if (!response.text()) {
       throw new LLMError(

@@ -1,12 +1,9 @@
-<div
-  class="mx-auto max-w-3xl px-4 py-1 sm:px-6 lg:max-w-7xl lg:px-8 h-full"
-  *ngIf="directories$ | async as directories"
->
+<div *ngIf="directories$ | async as directories">
   <!-- Main 3 column grid -->
   <div class="grid items-start gap-4 grid-cols-3 h-full">
     <section aria-labelledby="section-2-title" class="h-full">
       <div
-        class="overflow-hidden rounded-lg bg-white shadow flex flex-col py-4 px-6 space-y-4"
+        class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4"
       >
         <div class="">
           <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
@@ -14,11 +11,12 @@
         <hr class="my-4" />
         <ul role="list" class="min-h space-y-3">
           <li
-            class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50"
+            class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
             [ngClass]="{
-              'bg-secondary-50 border border-secondary-300':
+              'bg-secondary-50 border-secondary-300':
                 selectedFolder?.title === 'solution',
-              'bg-white': selectedFolder?.title !== 'solution',
+              'bg-white border-transparent':
+                selectedFolder?.title !== 'solution',
             }"
             (click)="selectFolder({ name: 'solution', children: [] })"
             (keydown.enter)="selectFolder({ name: 'solution', children: [] })"
@@ -70,11 +68,12 @@
           <ng-container *ngFor="let folder of directories; index as i">
             <li
               *ngIf="!isArchived(folder)"
-              class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50"
+              class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
               [ngClass]="{
-                'bg-secondary-50 border border-secondary-300':
+                'bg-secondary-50 border-secondary-300':
                   selectedFolder?.title === folder.name,
-                'bg-white': selectedFolder?.title !== folder.name,
+                'bg-white border-transparent':
+                  selectedFolder?.title !== folder.name,
               }"
               (click)="selectFolder(folder)"
               (keydown.enter)="selectFolder(folder)"
@@ -182,11 +181,12 @@
             role="button"
             tabindex="0"
             [ngClass]="{
-              'bg-secondary-50 border border-secondary-300':
+              'bg-secondary-50 border-secondary-300':
                 selectedFolder?.title === 'app-integrations',
-              'bg-white': selectedFolder?.title !== 'app-integrations',
+              'bg-white border-transparent':
+                selectedFolder?.title !== 'app-integrations',
             }"
-            class="flex cursor-pointer items-center justify-between p-2.5 rounded-lg bg-white hover:bg-secondary-50"
+            class="flex cursor-pointer items-center justify-between p-2.5 rounded-lg bg-white hover:bg-secondary-50 border-[0.5px]"
           >
             <div class="flex items-center">
               <ng-icon
@@ -217,7 +217,7 @@
     </section>
     <!-- Left column -->
     <section aria-labelledby="section-1-title" class="col-span-2 h-full">
-      <div class="overflow-hidden rounded-lg bg-white shadow h-full">
+      <div class="overflow-hidden rounded-lg bg-white border h-full">
         <div
           *ngIf="
             selectedFolder?.title !== 'solution' &&
@@ -258,7 +258,7 @@
             </div>
           </div>
         </div>
-        <div class="p-6" *ngIf="selectedFolder?.title === 'app-integrations'">
+        <div class="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto" *ngIf="selectedFolder?.title === 'app-integrations'">
           <h1
             class="text-title font-semibold text-secondary-950 mb-3 pb-3 border-b"
           >
@@ -365,7 +365,7 @@
                 {{ APP_MESSAGES.AWS_BEDROCK_ACCORDION_MESSAGE }}
               </p>
             </div>
-            <div class="flex items-center mb-4">
+            <div class="flex items-center mb-4" *ngIf="isBedrockConfigPresent">
               <input
                 type="checkbox"
                 id="useBedrockConfig"
@@ -374,8 +374,11 @@
                 [disabled]="isBedrockConnected"
                 class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <label for="useBedrockConfig" class="ml-2 text-sm font-medium text-secondary-700">
-                Use existing Bedrock configuration from chat settings
+              <label
+                for="useBedrockConfig"
+                class="ml-2 text-sm font-medium text-secondary-700"
+              >
+                Use existing Bedrock configuration from LLM settings
               </label>
             </div>
             <div
@@ -449,6 +452,54 @@
               >
               </app-button>
             </div>
+          </app-accordion>
+
+          <app-accordion
+            [withConnectionStatus]="false"
+            title="MCP Servers"
+            dynamicClass="text-sm font-medium text-secondary-950 ml-3"
+            iconImage="./assets/img/logo/mcp_logo.svg"
+            [isOpen]="accordionState['mcp']"
+            (toggleAccordion)="toggleAccordion('mcp')"
+          >
+            <ng-container *ngIf="!isEditingMcpSettings; else mcpSettingsForm">
+              <app-mcp-servers
+                [mcpServers]="mcpServers"
+                [isLoading]="mcpServersLoading"
+                [showHeading]="false"
+              ></app-mcp-servers>
+              <div class="mt-6 flex justify-end">
+                <app-button
+                  buttonContent="Edit MCP Settings"
+                  theme="primary"
+                  size="sm"
+                  (click)="toggleMcpSettingsEdit()"
+                ></app-button>
+              </div>
+            </ng-container>
+            <ng-template #mcpSettingsForm>
+              <form [formGroup]="mcpForm" (ngSubmit)="saveMcpSettings()">
+                <app-mcp-integration-configurator
+                  formControlName="mcpSettings"
+                ></app-mcp-integration-configurator>
+                <div class="mt-6 flex justify-end space-x-4">
+                  <app-button
+                    buttonContent="Cancel"
+                    theme="secondary"
+                    size="sm"
+                    type="button"
+                    (click)="toggleMcpSettingsEdit()"
+                  ></app-button>
+                  <app-button
+                    [buttonContent]="isSavingMcpSettings ? 'Saving...' : 'Save'"
+                    theme="primary"
+                    size="sm"
+                    type="submit"
+                    [disabled]="mcpForm.pristine || isSavingMcpSettings"
+                  ></app-button>
+                </div>
+              </form>
+            </ng-template>
           </app-accordion>
         </div>
       </div>

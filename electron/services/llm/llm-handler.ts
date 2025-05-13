@@ -11,7 +11,7 @@ export abstract class LLMHandler {
    * @param systemPrompt - An optional system-level prompt to guide the response.
    * @returns The generated response from the LLM.
    */
-  abstract invoke(messages: Message[], systemPrompt?: string | null): Promise<string>;
+  abstract invoke(messages: Message[], systemPrompt?: string | null, operation?: string): Promise<string>;
 
   /**
    * Parses the LLM configuration from the provided dictionary.

@@ -3,15 +3,15 @@ import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators,
+  Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { CreateProject } from '../../store/projects/projects.actions';
 import { v4 as uuid } from 'uuid';
 import { AddBreadcrumbs } from '../../store/breadcrumb/breadcrumb.actions';
-import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
+import { DialogService } from '../../services/dialog/dialog.service';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -24,11 +24,16 @@ import {
   APP_CONSTANTS,
   RootRequirementType,
   SOLUTION_CREATION_TOGGLE_MESSAGES,
+  REQUIREMENT_COUNT,
 } from '../../constants/app.constants';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ToggleComponent } from '../../components/toggle/toggle.component';
 import { SettingsComponent } from 'src/app/components/settings/settings.component';
+import { provideIcons } from '@ng-icons/core';
+import { heroChevronDown } from '@ng-icons/heroicons/outline';
+import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
+import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
 
 @Component({
   selector: 'app-create-solution',
@@ -45,18 +50,21 @@ import { SettingsComponent } from 'src/app/components/settings/settings.componen
     TextareaFieldComponent,
     ToggleComponent,
     AppSliderComponent,
+    CustomAccordionComponent,
+    McpIntegrationConfiguratorComponent
   ],
+  viewProviders: [provideIcons({ heroChevronDown })],
 })
 export class CreateSolutionComponent implements OnInit {
   solutionForm!: FormGroup;
   loading: boolean = false;
   addOrUpdate: boolean = false;
-
+  
   logger = inject(NGXLogger);
   appSystemService = inject(AppSystemService);
   electronService = inject(ElectronService);
   toast = inject(ToasterService);
-  readonly dialog = inject(MatDialog);
+  readonly dialogService = inject(DialogService);
   router = inject(Router);
   store = inject(Store);
 
@@ -72,19 +80,27 @@ export class CreateSolutionComponent implements OnInit {
     );
   }
 
-  private initRequirementGroup(enabled: boolean = true, maxCount: number = 15) {
+  showGenerationPreferencesTab(): boolean {
+    return !this.solutionForm.get('cleanSolution')?.value;
+  }
+
+  private initRequirementGroup(enabled: boolean = true, minCount: number = REQUIREMENT_COUNT.DEFAULT) {
     return {
       enabled: new FormControl(enabled),
-      maxCount: new FormControl(maxCount, [
-        Validators.required,
-        Validators.min(0),
-        Validators.max(30),
-      ]),
+      minCount: new FormControl(minCount, {
+        validators: [
+          Validators.required,
+          Validators.min(0),
+          Validators.max(REQUIREMENT_COUNT.MAX),
+        ],
+        updateOn: 'change'
+      }),
     };
   }
 
   createSolutionForm() {
-    return new FormGroup({
+    const solutionFormGroup = new FormGroup({
+      id: new FormControl(uuid()),
       name: new FormControl('', [
         Validators.required,
         Validators.pattern(/\S/),
@@ -98,23 +114,33 @@ export class CreateSolutionComponent implements OnInit {
         Validators.pattern(/\S/),
       ]),
       createReqt: new FormControl(true),
-      id: new FormControl(uuid()),
       createdAt: new FormControl(new Date().toISOString()),
       cleanSolution: new FormControl(false),
       BRD: new FormGroup(this.initRequirementGroup()),
       PRD: new FormGroup(this.initRequirementGroup()),
       UIR: new FormGroup(this.initRequirementGroup()),
       NFR: new FormGroup(this.initRequirementGroup()),
+      mcpSettings: new FormControl({ mcpServers: {} }, [Validators.required]),
     });
+
+    return solutionFormGroup;
   }
 
   onRequirementToggle(type: RootRequirementType, enabled: boolean) {
     const requirementGroup = this.solutionForm.get(type);
     if (!requirementGroup) return;
+    
+    // Always set a valid minCount value whether enabled or disabled
+    const minCount = enabled ? REQUIREMENT_COUNT.DEFAULT : 0;
     requirementGroup.patchValue({
       enabled,
-      maxCount: enabled ? 15 : 0,
+      minCount
     });
+    
+    // Ensure the control is marked as touched to trigger validation
+    requirementGroup.get('minCount')?.markAsTouched();
+    requirementGroup.get('enabled')?.markAsTouched();
+    requirementGroup.updateValueAndValidity();
   }
 
   async createSolution() {
@@ -138,14 +164,22 @@ export class CreateSolutionComponent implements OnInit {
     ) {
       this.addOrUpdate = true;
       const data = this.solutionForm.getRawValue();
+      data.createReqt = !data.cleanSolution;
+
       this.store.dispatch(new CreateProject(data.name, data));
     }
   }
 
+  get isCreateSolutionDisabled(): boolean {
+    return this.loading || this.solutionForm.invalid;
+  }
+
   openSelectRootDirectoryModal() {
-    this.dialog.open(SettingsComponent, {
-      disableClose: true,
-    });
+    this.dialogService
+      .createBuilder()
+      .forComponent(SettingsComponent)
+      .disableClose()
+      .open();
   }
 
   async selectRootDirectory(): Promise<void> {
@@ -183,4 +217,17 @@ export class CreateSolutionComponent implements OnInit {
   }
 
   protected readonly FormControl = FormControl;
+
+  get isMcpSettingsInvalid(): boolean {
+    const field = this.solutionForm?.get('mcpSettings');
+    return !!field?.invalid && (!!field?.dirty || !!field?.touched);
+  }
+
+  get isMcpSettingsJsonInvalid(): boolean {
+    return this.solutionForm?.get('mcpSettings')?.hasError('jsonInvalid') ?? false;
+  }
+
+  get isMcpSettingsSchemaInvalid(): boolean {
+    return this.solutionForm?.get('mcpSettings')?.hasError('invalidMcpSettings') ?? false;
+  }
 }

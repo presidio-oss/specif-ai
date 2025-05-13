@@ -50,6 +50,9 @@ import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { FeatureService } from '../../services/feature/feature.service';
 import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
+import { McpServersListComponent } from '../../components/mcp/mcp-servers-list/mcp-servers-list.component';
+import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
+import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
 
 @Component({
   selector: 'app-info',
@@ -68,6 +71,8 @@ import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
     NgIconComponent,
     DocumentListingComponent,
     NgForOf,
+    McpServersListComponent,
+    McpIntegrationConfiguratorComponent
   ],
 })
 export class AppInfoComponent implements OnInit, OnDestroy {
@@ -107,10 +112,15 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   isJiraConnected: boolean = false;
   isBedrockConnected: boolean = false;
   currentSettings?: ChatSettings;
+  mcpServers: MCPServerDetails[] = [];
+  mcpServersLoading: boolean = false;
+  isEditingMcpSettings: boolean = false;
+  mcpForm!: FormGroup;
 
   accordionState: { [key: string]: boolean } = {
     jira: false,
     knowledgeBase: false,
+    mcp: false
   };
 
   chatSettings$: Observable<ChatSettings> = this.store.select(
@@ -119,6 +129,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   
   // Predefined order of folders
   folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
+  isBedrockConfigPresent: boolean = false;
+  isSavingMcpSettings: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -143,7 +155,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
-      console.log("Current llm config", this.currentLLMConfig)
+      this.isBedrockConfigPresent = this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
     })
     this.store
       .select(ProjectsState.getProjects)
@@ -269,6 +281,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.isBedrockConnected = !!this.appInfo.integration?.bedrock?.kbId;
     this.isJiraConnected && this.jiraForm.disable();
     this.isBedrockConnected && this.bedrockForm.disable();
+
+    this.initMcpForm();
   }
 
   isTokenValid(): boolean {
@@ -419,10 +433,50 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       id: this.projectId as string,
       metadata: this.appInfo,
     };
+    
+    // Reset MCP servers list if navigating away from integrations
+    if (folder.name !== 'app-integrations') {
+       this.mcpServers = [];
+       this.accordionState['mcp'] = false;
+    }
   }
 
-  toggleAccordion(key: string) {
+  async toggleAccordion(key: string) {
     this.accordionState[key] = !this.accordionState[key];
+    
+    // Load MCP servers when the accordion is opened
+    if (key === 'mcp' && this.accordionState[key]) {
+     await this.loadMcpServers();
+    }
+  }
+
+  initMcpForm(): void {
+    this.mcpForm = new FormGroup({
+      mcpSettings: new FormControl(this.appInfo.integration?.mcp || {})
+    });
+  }
+
+  async loadMcpServers(): Promise<void> {
+    if (!this.projectId) {
+      this.logger.warn('Project ID not available to load MCP servers.');
+      return;
+    }
+
+    this.mcpServersLoading = true;
+    try {
+      // Pass the projectId in the filter
+      this.mcpServers = await this.electronService.listMCPServers({
+        _hai_mcp_source_id: this.projectId,
+        _hai_mcp_source_type: 'project',
+      });
+      this.logger.debug('MCP Servers loaded for project:', this.projectId, this.mcpServers);
+    } catch (error) {
+      this.logger.error('Error loading MCP servers:', error);
+      this.toast.showError('Failed to load MCP servers.');
+      this.mcpServers = []; // Reset on error
+    } finally {
+      this.mcpServersLoading = false;
+    }
   }
 
   getDescription(input: string | undefined): string | null {
@@ -543,6 +597,58 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         sessionKey: this.appInfo.integration?.bedrock?.sessionKey || ''
       }, { emitEvent: false });
     }
+  }
+
+  toggleMcpSettingsEdit(): void {
+    this.isEditingMcpSettings = !this.isEditingMcpSettings;
+    if (this.isEditingMcpSettings) {
+      this.loadMcpSettings(); 
+    } else {
+      this.mcpForm.reset(this.appInfo.integration?.mcp || {});
+    }
+  }
+
+  saveMcpSettings(): void {
+    if (this.mcpForm.valid && !this.isSavingMcpSettings) {
+      this.isSavingMcpSettings = true;
+      const mcpSettings: MCPSettings = this.mcpForm.get('mcpSettings')?.value;
+
+      this.toast.showInfo('Updating project mcp settings');
+      
+      this.electronService.updateProjectMCPSettings(this.projectId as string, mcpSettings)
+        .then((result: { success: boolean; error?: string }) => {
+          if (result.success) {
+            this.logger.debug('MCP settings updated successfully');
+            this.toast.showSuccess('MCP settings saved successfully');
+            this.isEditingMcpSettings = false;
+            this.loadMcpServers();
+          } else {
+            throw new Error(result.error || 'Unknown error occurred');
+          }
+        })
+        .catch((error: Error) => {
+          this.logger.error('Error updating MCP settings:', error);
+          this.toast.showError('Failed to save MCP settings');
+        })
+        .finally(() => {
+          this.isSavingMcpSettings = false;
+        });
+    }
+  }
+
+  loadMcpSettings(): void {
+    this.electronService.getProjectMCPSettings(this.projectId as string)
+      .then((result: { success: boolean; settings?: MCPSettings; error?: string }) => {
+        if (result.success && result.settings) {
+          this.mcpForm.patchValue({ mcpSettings: result.settings });
+        } else {
+          throw new Error(result.error || 'Unknown error occurred');
+        }
+      })
+      .catch((error: Error) => {
+        this.logger.error('Error loading MCP settings:', error);
+        this.toast.showError('Failed to load MCP settings');
+      });
   }
 
   ngOnDestroy() {

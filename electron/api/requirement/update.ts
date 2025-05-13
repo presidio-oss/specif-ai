@@ -6,6 +6,8 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { updateRequirementPrompt } from '../../prompts/requirement/update';
 import { repairJSON } from '../../utils/custom-json-parser';
+import { traceBuilder } from '../../utils/trace-builder';
+import { OPERATIONS } from '../../helper/constants';
 
 export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<UpdateRequirementResponse> {
   try {
@@ -25,7 +27,8 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
       updatedReqt,
       addReqtType,
       fileContent,
-      useGenAI
+      useGenAI,
+      brds
     } = validatedData;
 
     // If useGenAI is false and no file content provided, return direct update
@@ -47,7 +50,8 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
       updatedReqt,
       fileContent,
       reqId,
-      addReqtType
+      addReqtType,
+      brds
     });
 
     // Prepare messages for LLM
@@ -58,7 +62,8 @@ export async function updateRequirement(event: IpcMainInvokeEvent, data: unknown
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const traceName = traceBuilder(addReqtType, OPERATIONS.UPDATE);
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[update-requirement] LLM Response:', response);
 
     let result;

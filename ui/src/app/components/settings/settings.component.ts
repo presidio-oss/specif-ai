@@ -9,23 +9,20 @@ import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
 import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
 import { Store } from '@ngxs/store';
-import {
-  AvailableProviders,
-  ProviderModelMap,
-} from '../../constants/llm.models.constants';
+import { AvailableProviders } from '../../constants/llm.models.constants';
+import { SetBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import {
   SetLLMConfig,
-  SwitchProvider,
   SyncLLMConfig,
 } from '../../store/llm-config/llm-config.actions';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DialogService } from '../../services/dialog/dialog.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { StartupService } from '../../services/auth/startup.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ButtonComponent } from '../core/button/button.component';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
+import { AppSelectComponent } from '../core/app-select/app-select.component';
 import {
   APP_CONSTANTS,
   CONFIRMATION_DIALOG,
@@ -34,11 +31,11 @@ import { environment } from 'src/environments/environment';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
-import { LLM_PROVIDER_CONFIGS, ProviderField } from '../../constants/llm-provider-config';
+import { getLLMProviderConfig, ProviderField } from '../../constants/llm-provider-config';
 import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src/app/services/analytics/events/analytics.events';
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/utils/analytics.utils';
-import { CoreService } from 'src/app/services/core/core.service';
+import { CoreService, AppConfig } from 'src/app/services/core/core.service';
 import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
 
 @Component({
@@ -52,6 +49,7 @@ import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
     NgForOf,
     NgIf,
     ButtonComponent,
+    AppSelectComponent,
   ],
   providers: [
     provideIcons({ 
@@ -60,11 +58,18 @@ import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
   ]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
+  activeTab: 'general' | 'about' = 'general';
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
     LLMConfigState.getConfig,
   );
   currentLLMConfig!: LLMConfigModel;
-  availableProviders = AvailableProviders;
+  availableProviders = [...AvailableProviders].sort((a, b) => 
+    a.displayName.localeCompare(b.displayName)
+  );
+  providerOptions = this.availableProviders.map(p => ({
+    value: p.key,
+    label: p.displayName
+  }));
   currentProviderFields: ProviderField[] = [];
   configForm!: FormGroup;
   selectedProvider: FormControl = new FormControl();
@@ -83,13 +88,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
-  dialog = inject(MatDialog);
-  version: string = environment.APP_VERSION;
-  currentYear = new Date().getFullYear();
+  dialogService = inject(DialogService);
   analyticsWarning: string = '';
 
   constructor(
-    private modalRef: MatDialogRef<SettingsComponent>,
     private store: Store,
     private startupService: StartupService,
     private toasterService: ToasterService,
@@ -102,6 +104,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.initForm();
   }
 
+  private getAboutInfo() {
+    return {
+      version: environment.APP_VERSION,
+      currentYear: new Date().getFullYear()
+    };
+  }
+
   private initForm() {
     this.configForm = this.fb.group({
       provider: ['', Validators.required],
@@ -109,8 +118,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private updateConfigFields(provider: string) {
-    const providerConfig = LLM_PROVIDER_CONFIGS[provider];
+  private async updateConfigFields(provider: string) {
+    const providerConfig = await getLLMProviderConfig(provider);
     if (!providerConfig) return;
 
     this.currentProviderFields = providerConfig.fields;
@@ -124,6 +133,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           field.required ? [Validators.required] : []
         )
       );
+
     });
     this.configForm.setControl('config', newConfigGroup);
     this.applyStoredConfigValues(provider);
@@ -148,6 +158,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.store.dispatch(
+      new SetBreadcrumb(
+        {
+          label: 'Settings',
+          url: '/settings'
+        }
+      )
+    );
+
     this.electronService.getStoreValue('APP_CONFIG').then((value) => {
       const { isAutoUpdate = true } = value || {};
       this.autoUpdateEnabled.setValue(isAutoUpdate);
@@ -155,13 +174,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
 
     this.core.getAppConfig()
-      .then((config: any) => {
-        if (!this.analyticsTracker.isConfigValid(config)) {
+      .then((config: AppConfig) => {
+        const postHogEnabled = this.analyticsTracker.isEnabled() && this.analyticsTracker.isConfigValid(config);
+        const langfuseEnabled = config.langfuseEnabled;
+        if (!postHogEnabled && !langfuseEnabled) {
           this.analyticsEnabled.setValue(false);
           this.analyticsEnabled.disable({ onlySelf: true });
           this.updateAnalyticsState(false);
           this.hasChanges = false;
-          this.analyticsWarning = 'Analytics configuration is missing. Please update the settings.';
+          this.analyticsWarning = 'Analytics and observability configuration is missing or disabled. Please update the settings.';
         } else {
           this.analyticsEnabled.enable({ onlySelf: true });
           this.analyticsWarning = '';
@@ -182,9 +203,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const providerControl = this.configForm.get('provider');
     if (providerControl) {
       this.subscriptions.add(
-        providerControl.valueChanges.subscribe(provider => {
+        providerControl.valueChanges.subscribe(async(provider) => {
           console.log("Provider Changed", provider);
-          this.updateConfigFields(provider);
+          await this.updateConfigFields(provider);
           this.errorMessage = '';
         })
       );
@@ -200,13 +221,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }, { emitEvent: false });
     
       this.subscriptions.add(
-        this.llmConfig$.subscribe((config) => {
+        this.llmConfig$.subscribe(async (config) => {
           this.currentLLMConfig = config;
           const provider = config?.activeProvider || defaultProvider;
           this.initialProvider = provider;
           this.selectedProvider.setValue(provider);
           
-          this.updateConfigFields(provider);
+         await this.updateConfigFields(provider);
           
           this.configForm?.get('provider')?.setValue(provider, { emitEvent: false });
           
@@ -244,10 +265,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const provider = formValue.provider;
     this.configForm.updateValueAndValidity();    
     const latestConfigValues = (this.configForm.get('config') as FormGroup).getRawValue();
+    console.log("latestConfigValues", JSON.stringify(latestConfigValues))
 
     this.electronService.verifyLLMConfig(provider, latestConfigValues).then((response) => {
       if (response.status === 'success') {
-        // Get existing configs and update/add the new one
         const existingConfigs = this.currentLLMConfig.providerConfigs || {};
         const newConfig = {
           activeProvider: formValue.provider,
@@ -271,7 +292,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
             this.toasterService.showSuccess(
               `${providerDisplayName} configuration verified successfully.`,
             );
-            this.modalRef.close(true);
+            this.router.navigate(['/apps']);
             this.analyticsTracker.trackEvent(AnalyticsEvents.LLM_CONFIG_SAVED, {
               provider: provider,
               model: latestConfigValues.model || latestConfigValues.deployment,
@@ -326,7 +347,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   openFolderSelector() {
     this.selectRootDirectory().then();
-    this.modalRef.close(true);
   }
 
   onProviderChange() {
@@ -401,36 +421,60 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   updateAnalyticsState(enabled: boolean): void {
     setAnalyticsToggleState(enabled);
+    this.electronService.setStoreValue('analyticsEnabled', enabled);
     if (enabled) {
       this.analyticsTracker.initAnalytics();
     }
   }
 
-  closeModal() {
-    this.analyticsEnabled.setValue(this.initialAnalyticsState);
-    this.modalRef.close(false);
+  navigateToHome() {
+    if (this.hasChanges) {
+      this.dialogService
+        .confirm({
+          title: CONFIRMATION_DIALOG.UNSAVED_CHANGES.TITLE,
+          description: CONFIRMATION_DIALOG.UNSAVED_CHANGES.DESCRIPTION,
+          cancelButtonText: CONFIRMATION_DIALOG.UNSAVED_CHANGES.CANCEL_BUTTON_TEXT,
+          confirmButtonText: CONFIRMATION_DIALOG.UNSAVED_CHANGES.PROCEED_BUTTON_TEXT,
+        })
+        .subscribe((confirmed: boolean) => {
+          if (!confirmed) {
+            this.analyticsEnabled.setValue(this.initialAnalyticsState);
+            this.router.navigate(['/apps']);
+          }
+        });
+      return;
+    }
   }
 
   logout() {
     // Close the settings modal and open the logout confirmation dialog
-    this.modalRef.close(true);
-
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    this.dialogService
+      .confirm({
         title: CONFIRMATION_DIALOG.LOGOUT.TITLE,
         description: CONFIRMATION_DIALOG.LOGOUT.DESCRIPTION,
         cancelButtonText: CONFIRMATION_DIALOG.LOGOUT.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.LOGOUT.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) this.startupService.logout();
-    });
+        confirmButtonText: CONFIRMATION_DIALOG.LOGOUT.PROCEED_BUTTON_TEXT,
+      })
+      .subscribe((confirmed: boolean) => {
+        if (confirmed) this.startupService.logout();
+      });
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  onTabChange(tab: 'general'| 'about') {
+    this.activeTab = tab;
+  }
+
+  getAboutContent() {
+    const { version, currentYear } = this.getAboutInfo();
+
+    return {
+      version,
+      currentYear,
+      appName: this.appName
+    };
   }
 }

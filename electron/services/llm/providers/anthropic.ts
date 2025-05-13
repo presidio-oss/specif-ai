@@ -2,6 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 enum AnthropicModel {
   CLAUDE_3_5_SONNET_20241022 = 'claude-3-5-sonnet-20241022',
@@ -33,6 +35,7 @@ export class AnthropicHandler extends LLMHandler {
   private client: Anthropic;
   protected configData: AnthropicConfig;
   private defaultModel = AnthropicModel.CLAUDE_3_5_SONNET_20241022;
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<AnthropicConfig>) {
     super();
@@ -64,7 +67,7 @@ export class AnthropicHandler extends LLMHandler {
   }
 
   @withRetry({ retryAllErrors: true })
-  async invoke(messages: Message[], systemPrompt: string | null = null): Promise<string> {
+  async invoke(messages: Message[], systemPrompt: string | null = null, operation: string = "llm:invoke"): Promise<string> {
     const modelInfo = MODEL_CONFIGS[this.configData.model];
 
     // Convert messages to Anthropic's format
@@ -81,6 +84,19 @@ export class AnthropicHandler extends LLMHandler {
       max_tokens: modelInfo.maxTokens,
       messages: anthropicMessages,
       ...(systemPrompt && { system: systemPrompt })
+    });
+
+    const traceName = `${TRACES.CHAT_ANTHROPIC}:${modelInfo.id}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+    
+    trace.generation({
+      name: operation,
+      model: modelInfo.id,
+      usage: {
+        input: response.usage?.input_tokens,
+        output: response.usage?.output_tokens,
+        total: response.usage?.input_tokens + response.usage?.output_tokens
+      },
     });
 
     const content = response.content?.[0];

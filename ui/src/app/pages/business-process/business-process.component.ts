@@ -33,7 +33,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
-import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgForOf, NgIf, CommonModule } from '@angular/common';
+import { PillComponent } from '../../components/pill/pill.component';
+import { CheckboxCardComponent } from '../../components/checkbox-card/checkbox-card.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { ExpandDescriptionPipe } from '../../pipes/expand-description.pipe';
 import { TruncateEllipsisPipe } from '../../pipes/truncate-ellipsis-pipe';
@@ -50,6 +52,7 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { processPRDContentForView } from 'src/app/utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
   selector: 'app-business-process',
@@ -70,7 +73,10 @@ import { truncateMarkdown } from 'src/app/utils/markdown.utils';
     ExpandDescriptionPipe,
     TruncateEllipsisPipe,
     NgIconComponent,
-    RichTextEditorComponent
+    RichTextEditorComponent,
+    CommonModule,
+    PillComponent,
+    CheckboxCardComponent
   ],
   providers: [
     provideIcons({
@@ -83,6 +89,8 @@ export class BusinessProcessComponent implements OnInit {
   folderName: string = '';
   fileName: string = '';
   name: string = '';
+  originalSelectedPRDs: any[] = [];
+  originalSelectedBRDs: any[] = [];
   description: string = '';
   content: string = '';
   title: string = '';
@@ -91,6 +99,7 @@ export class BusinessProcessComponent implements OnInit {
   selectedRequirement: any = {};
   absoluteFilePath: string = '';
   oldContent: string = '';
+  allowForceRedirect: boolean = false;
   existingFlowDiagram: string = '';
   public loading: boolean = false;
   selectedBPFileContent$ = this.store.select(
@@ -104,8 +113,7 @@ export class BusinessProcessComponent implements OnInit {
   editLabel: string = '';
   bpRequirementId: string = '';
   requirementTypes: any = RequirementTypeEnum;
-  readonly dialog = inject(MatDialog);
-  allowFreeEdit: boolean = false;
+  readonly dialogService = inject(DialogService);
   activeTab: string = 'includeFiles';
   protected readonly JSON = JSON;
   toastService = inject(ToasterService);
@@ -223,7 +231,7 @@ export class BusinessProcessComponent implements OnInit {
         chatHistory: this.chatHistory,
       }),
     );
-    this.allowFreeEdit = true;
+    this.allowForceRedirect = true;
     this.navigateBackToDocumentList(this.data);
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.folderName),
@@ -321,7 +329,6 @@ export class BusinessProcessComponent implements OnInit {
     );
 
     this.loadingService.setLoading(false);
-    this.allowFreeEdit = true;
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
         this.folderName,
@@ -342,6 +349,11 @@ export class BusinessProcessComponent implements OnInit {
         selectedBRDs: formValue.selectedBRDs,
         selectedPRDs: formValue.selectedPRDs,
       });
+      // Update original values after successful save
+      this.originalSelectedPRDs = [...(formValue.selectedPRDs || [])];
+      this.originalSelectedBRDs = [...(formValue.selectedBRDs || [])];
+      this.businessProcessForm.markAsUntouched();
+      this.businessProcessForm.markAsPristine();
       return;
     }
 
@@ -379,6 +391,11 @@ export class BusinessProcessComponent implements OnInit {
         selectedBRDs: selectedBRDsWithId,
         selectedPRDs: selectedPRDsWithId,
       });
+      // Update original values after successful save with AI
+      this.originalSelectedPRDs = [...selectedPRDsWithId];
+      this.originalSelectedBRDs = [...selectedBRDsWithId];
+      this.businessProcessForm.markAsUntouched();
+      this.businessProcessForm.markAsPristine();
     })
     .catch((error) => {
       this.loggerService.error('Error updating requirement:', error);
@@ -406,6 +423,9 @@ export class BusinessProcessComponent implements OnInit {
         this.oldContent = res.requirement;
         this.selectedPRDs = res.selectedPRDs;
         this.selectedBRDs = res.selectedBRDs;
+        // Store original selections
+        this.originalSelectedPRDs = [...(res.selectedPRDs || [])];
+        this.originalSelectedBRDs = [...(res.selectedBRDs || [])];
         this.businessProcessForm.patchValue({
           title: res.title,
           content: res.requirement,
@@ -425,7 +445,7 @@ export class BusinessProcessComponent implements OnInit {
     contentControl?.updateValueAndValidity();
   }
 
-  selectTab(tab: string): void {
+  selectTab = (tab: string): void => {
     this.selectedTab = tab;
     this.getRequirementFiles(this.selectedTab);
   }
@@ -449,9 +469,7 @@ export class BusinessProcessComponent implements OnInit {
     );
   }
 
-  toggleSelection(event: any, type: string): void {
-    const item = JSON.parse(event.target.value);
-    const checked = event.target.checked;
+  toggleSelection(checked: boolean, item: { requirement: string; fileName: string }, type: string): void {
     if (type === this.requirementTypes.PRD) {
       this.updateSelection(this.selectedPRDs, item, checked, 'selectedPRDs');
     } else if (type === this.requirementTypes.BRD) {
@@ -520,12 +538,12 @@ export class BusinessProcessComponent implements OnInit {
 
   appendRequirement(data: any) {
     let { chat, chatHistory } = data;
-    if (chat.assistant) {
+    if (chat.contentToAdd) {
       this.businessProcessForm.patchValue({
-        content: `${this.businessProcessForm.get('content')?.value} ${chat.assistant}`,
+        content: `${this.businessProcessForm.get('content')?.value} ${chat.contentToAdd}`,
       });
       let newArray = chatHistory.map((item: any) => {
-        if (item.assistant == chat.assistant) return { ...item, isAdded: true };
+        if (item.name == chat.tool_name && item.tool_call_id == chat.tool_call_id) return { ...item, isAdded: true };
         else return item;
       });
       this.store.dispatch(
@@ -568,7 +586,7 @@ export class BusinessProcessComponent implements OnInit {
     }
   }
 
-  switchTab(tab: string): void {
+  switchTab = (tab: string): void=> {
     this.activeTab = tab;
   }
 
@@ -598,31 +616,27 @@ export class BusinessProcessComponent implements OnInit {
   }
 
   deleteBP() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    this.dialogService
+      .confirm({
         title: CONFIRMATION_DIALOG.DELETION.TITLE,
         description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(
           this.bpRequirementId,
         ),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) {
-        this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
-        this.allowFreeEdit = true;
-        this.navigateBackToDocumentList(this.data);
-        this.toastService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
-            this.folderName,
-            this.bpRequirementId,
-          ),
-        );
-      }
-    });
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+      })
+      .subscribe((res) => {
+        if (res) {
+          this.store.dispatch(new ArchiveFile(this.absoluteFilePath));
+          this.navigateBackToDocumentList(this.data);
+          this.toastService.showSuccess(
+            TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
+              this.folderName,
+              this.bpRequirementId,
+            ),
+          );
+        }
+      });
   }
 
   checkFormValidity(): boolean {
@@ -638,20 +652,45 @@ export class BusinessProcessComponent implements OnInit {
     }
   }
 
-  truncatePRDandBRDRequirement(requirement:string, folderName:string){
+  truncatePRDandBRDRequirement(requirement: string | undefined, folderName: string): string {
+    if (!requirement) return '';
+    
     const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folderName];
-    if (requirementType === REQUIREMENT_TYPE.PRD){
+    if (requirementType === REQUIREMENT_TYPE.PRD) {
       return processPRDContentForView(requirement, 64);
     }
 
     return truncateMarkdown(requirement, {maxChars: 180});
   }
 
-  canDeactivate(): boolean {
-    return (
-      !this.allowFreeEdit &&
-      this.businessProcessForm.dirty &&
-      this.businessProcessForm.touched
+  private areSelectionsEqual(original: any[], current: any[]): boolean {
+    if (original.length !== current.length) return false;
+    
+    // Create a Map to store current items for O(1) lookup
+    const currentMap = new Map(
+      current.map(item => [
+        `${item.requirement}-${item.fileName}`, 
+        item
+      ])
     );
+    
+    // Single pass through original array with O(1) lookups
+    return original.every(orig => 
+      currentMap.has(`${orig.requirement}-${orig.fileName}`)
+    );
+  }
+
+  canDeactivate(): boolean {
+    // Check form changes
+    const hasFormChanges = this.businessProcessForm.dirty && this.businessProcessForm.touched;
+    
+    // Compare original vs current PRD selections
+    const hasPRDChanges = !this.areSelectionsEqual(this.originalSelectedPRDs, this.selectedPRDs);
+    
+    // Compare original vs current BRD selections
+    const hasBRDChanges = !this.areSelectionsEqual(this.originalSelectedBRDs, this.selectedBRDs);
+
+    // Return true to allow navigation only if there are no changes or force redirect is allowed
+    return !this.allowForceRedirect && (hasFormChanges || hasPRDChanges || hasBRDChanges);
   }
 }

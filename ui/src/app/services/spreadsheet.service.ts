@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import * as XLSX from 'xlsx';
+import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver';
 import { NGXLogger } from 'ngx-logger';
 
@@ -9,7 +9,7 @@ const CSV_TYPE = 'text/csv;charset=utf-8;';
 
 type SheetExportInfo = {
   data: Array<any[]>;
-  name?: string;
+  name: string;
 };
 
 @Injectable({
@@ -19,18 +19,16 @@ export class SpreadSheetService {
   logger = inject(NGXLogger);
 
   public exportToExcel(sheets: SheetExportInfo[], fileName: string): void {
-    const workbook: XLSX.WorkBook = XLSX.utils.book_new();
+    const workbook = new Workbook();
 
     sheets.forEach((sheet) => {
-      const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(sheet.data);
-      XLSX.utils.book_append_sheet(workbook, worksheet, sheet.name);
+      const worksheet = workbook.addWorksheet(sheet.name);
+      worksheet.addRows(sheet.data);
     });
 
-    const excelBuffer: any = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array',
+    workbook.xlsx.writeBuffer().then((excelBuffer) => {
+      this.saveAsFile(excelBuffer, fileName, EXCEL_TYPE, '.xlsx');
     });
-    this.saveAsFile(excelBuffer, fileName, EXCEL_TYPE, '.xlsx');
   }
 
   public exportToCsv(data: Array<any[]> = [], fileName: string): void {

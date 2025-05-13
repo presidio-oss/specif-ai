@@ -23,9 +23,19 @@ on:
         required: true
       APPLE_APP_SPECIFIC_PASSWORD:
         required: true
+      ENABLE_POSTHOG:
+        required: true
       POSTHOG_HOST:
         required: true
       POSTHOG_KEY:
+        required: true
+      ENABLE_LANGFUSE:
+        required: true
+      LANGFUSE_SECRET_KEY:
+        required: true
+      LANGFUSE_PUBLIC_KEY:
+        required: true
+      LANGFUSE_BASE_URL: 
         required: true
 
 jobs:
@@ -106,37 +116,69 @@ jobs:
           cp -r ui/dist/ui electron/
 
       - name: Install Dependencies and Build Electron
+        shell: pwsh
         run: |
           cd electron
 
-          # Create .env file with PostHog configuration
-          echo "POSTHOG_HOST=$POSTHOG_HOST" > .env
-          echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+          # Append APP_ENVIRONMENT configuration to .env file
+          Add-Content -Path .env -Value "APP_ENVIRONMENT=${{ inputs.environment }}"
+          
+          # Append to .env file with PostHog configuration
+          Add-Content -Path .env -Value "ENABLE_POSTHOG=$env:ENABLE_POSTHOG"
+          Add-Content -Path .env -Value "POSTHOG_HOST=$env:POSTHOG_HOST"
+          Add-Content -Path .env -Value "POSTHOG_KEY=$env:POSTHOG_KEY"
+          Add-Content -Path .env -Value "ENABLE_LANGFUSE=$env:ENABLE_LANGFUSE"
+          Add-Content -Path .env -Value "LANGFUSE_SECRET_KEY=$env:LANGFUSE_SECRET_KEY"
+          Add-Content -Path .env -Value "LANGFUSE_PUBLIC_KEY=$env:LANGFUSE_PUBLIC_KEY"
+          Add-Content -Path .env -Value "LANGFUSE_BASE_URL=$env:LANGFUSE_BASE_URL"
+
+          Write-Host "POSTHOG_HOST is: $env:POSTHOG_HOST"
 
           npm install
           npm run build
           npm run package:win
+
+          # List what's actually created
+          Write-Host "`nListing dist contents:"
+          Get-ChildItem -Recurse dist | Format-List
         env:
+          ENABLE_POSTHOG: ${{ secrets.ENABLE_POSTHOG }}
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          ENABLE_LANGFUSE: ${{ secrets.ENABLE_LANGFUSE }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
+
 
       - name: Package Windows Build
         run: |
           cd electron
           $VERSION = (node -e "console.log(require('./package.json').version);" | Out-String).Trim()
-          Compress-Archive -Path dist/win-unpacked/* -DestinationPath win-unpacked.zip
-
-          # Upload to S3 for long-term storage
-          aws s3 cp win-unpacked.zip s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/win-unpacked.zip
-          aws s3 cp dist/latest.yml s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/latest.yml
+          
+          # Create out directory
+          New-Item -ItemType Directory -Path out -Force
+          
+          # Compress win-unpacked to out folder
+          Compress-Archive -Path dist/win-unpacked/* -DestinationPath out/win-unpacked.zip
+          
+          # Copy necessary files to out folder
+          Copy-Item dist/latest.yml out/
+          Copy-Item dist/*Setup*.exe out/ -ErrorAction SilentlyContinue
+          Copy-Item dist/*Setup*.exe.blockmap out/ -ErrorAction SilentlyContinue
+          
+          # Upload to S3 for long-term storage using sync
+          aws s3 sync out/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/"
 
       - name: Upload Windows Build as GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-electron-build
           path: |
-            electron/win-unpacked.zip
-            electron/dist/latest.yml
+            electron/out/win-unpacked.zip
+            electron/out/latest.yml
+            electron/out/*Setup*.exe
+            electron/out/*Setup*.exe.blockmap
           retention-days: 90
 
   build_electron_mac:
@@ -199,9 +241,17 @@ jobs:
         run: |
           cd electron
 
+          # Create .env file with APP_ENVIRONMENT configuration
+          echo "APP_ENVIRONMENT=${{ inputs.environment }}" >> .env
+          
           # Create .env file with PostHog configuration
-          echo "POSTHOG_HOST=$POSTHOG_HOST" > .env
+          echo "ENABLE_POSTHOG=$ENABLE_POSTHOG" >> .env
+          echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
           echo "POSTHOG_KEY=$POSTHOG_KEY" >> .env
+          echo "ENABLE_LANGFUSE=$ENABLE_LANGFUSE" >> .env
+          echo "LANGFUSE_SECRET_KEY=$LANGFUSE_SECRET_KEY" >> .env
+          echo "LANGFUSE_PUBLIC_KEY=$LANGFUSE_PUBLIC_KEY" >> .env
+          echo "LANGFUSE_BASE_URL=$LANGFUSE_BASE_URL" >> .env
 
           npm install
           npm run build
@@ -209,8 +259,13 @@ jobs:
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          ENABLE_POSTHOG: ${{ secrets.ENABLE_POSTHOG }}
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          ENABLE_LANGFUSE: ${{ secrets.ENABLE_LANGFUSE }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
 
       - name: Package and Upload to S3
         id: package_and_upload

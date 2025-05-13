@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow } from "electron";
+import { app, ipcMain, BrowserWindow, shell } from "electron";
 import path from "path";
 import dotenv from "dotenv";
 import { setupFileSystemHandlers } from "./handlers/fs-handler";
@@ -10,6 +10,8 @@ import { setupFeatureHandlers } from "./handlers/feature-handler";
 import { setupSolutionHandlers } from "./handlers/solution-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
+import { setupMcpHandlers } from "./handlers/mcp-handler";
+import { MCPHub } from "./mcp/mcp-hub";
 
 // ========================
 // CONFIGURATION
@@ -61,14 +63,19 @@ function createWindow(indexPath: string, themeConfiguration: any) {
     icon: path.join(__dirname, getIconPath(themeConfiguration)),
   });
 
-  mainWindow
-    .loadFile(`${indexPath}/index.html`)
-    .then(() => {
-      console.debug("Welcome Page loaded successfully", indexPath);
-    })
-    .catch((error) => {
-      console.error("Failed to load welcome page:", error);
-    });
+  if (!app.isPackaged) {
+    mainWindow.loadURL(process.env.DEV_ELECTRON_RENDERER_URL as string);
+  } else {
+    mainWindow
+      .loadFile(`${indexPath}/index.html`)
+      .then(() => {
+        console.debug("Welcome Page loaded successfully", indexPath);
+      })
+      .catch((error) => {
+        console.error("Failed to load welcome page:", error);
+      });
+  }
+
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -120,6 +127,14 @@ function setupUIHandlers(indexPath: string, themeConfiguration: any) {
   
   ipcMain.handle("get-style-url", () => {
     return path.join(process.resourcesPath, "tailwind.output.css");
+  });
+
+  ipcMain.handle("open-external-url", async (_event, url: string) => {
+    if (isValidUrl(url)) {
+      await shell.openExternal(url);
+      return true;
+    }
+    return false;
   });
   
   ipcMain.handle("show-error-message", async (_event, errorMessage: string) => {
@@ -191,5 +206,9 @@ app.whenReady().then(async () => {
     setupVisualizationHandlers();
     setupFeatureHandlers();
     setupSolutionHandlers();
+    setupMcpHandlers();
+
+    // start mcp servers in the background
+    MCPHub.getInstance()
   }
 });

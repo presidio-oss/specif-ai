@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { IpcRendererEvent } from 'electron';
+import { MCPServerDetails, MCPSettings } from '../types/mcp.types';
 import { ToasterService } from '../services/toaster/toaster.service';
 import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogService } from '../services/dialog/dialog.service';
 import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
-import { BedrockValidationPayload, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
+import { BedrockValidationPayload, ChatWithAIResponse, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import {
   ICreateSolutionRequest,
   ISolutionResponse,
@@ -32,6 +33,7 @@ import {
 import {
   conversePayload,
   ChatUpdateRequirementResponse,
+  ChatWithAIPayload,
 } from 'src/app/model/interfaces/chat.interface';
 import {
   IFlowChartRequest,
@@ -55,7 +57,7 @@ export class ElectronService {
     private logger: NGXLogger,
     private toast: ToasterService,
     private router: Router,
-    private dialog: MatDialog,
+    private dialogService: DialogService,
     private ipc: IpcInterceptor,
   ) {
     if (this.isElectron()) {
@@ -68,6 +70,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'core:getSuggestions',
         args: [payload],
+        skipLoading: true
       });
     }
   }
@@ -111,6 +114,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'requirement:chat',
         args: [request],
+        skipLoading: true
       });
     }
     throw new Error('Electron is not available');
@@ -208,6 +212,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'task:create',
         args: [request],
+        skipLoading: true
       });
     }
     throw new Error('Electron is not available');
@@ -256,6 +261,18 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'story:chat',
         args: [request],
+        skipLoading: true
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async chatWithAI(request: ChatWithAIPayload): Promise<ChatWithAIResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'core:chat',
+        args: [request],
+        skipLoading: true
       });
     }
     throw new Error('Electron is not available');
@@ -338,9 +355,11 @@ export class ElectronService {
 
         this.electronAPI.on('port-error', (_: any, message: string) => {
           console.error('Port Error: ', message);
-          this.dialog.open(PortErrorDialogComponent, {
-            disableClose: true,
-          });
+          this.dialogService
+            .createBuilder()
+            .forComponent(PortErrorDialogComponent)
+            .disableClose()
+            .open();
         });
         this.electronAPI.on('server-started', () => {
           sessionStorage.setItem('serverActive', 'true');
@@ -402,6 +421,7 @@ export class ElectronService {
           params: { ...params },
         }],
         skipWarning: true,
+        skipLoading: true
       });
     }
   }
@@ -452,16 +472,18 @@ export class ElectronService {
     }
 
     // Trigger auto updater modal
-    this.dialog.open(AutoUpdateModalComponent, {
-      width: '600px',
-      disableClose: true,
-      data: {
-        version: response.version,
-        currentVersion: response.currentVersion,
-        releaseDate: response.releaseDate,
-        releaseNotes: await htmlToMarkdown(response.releaseNotes ?? '')
-      }
-    });
+    this.dialogService
+    .createBuilder()
+    .forComponent(AutoUpdateModalComponent)
+    .withWidth('600px')
+    .withData({
+      version: response.version,
+      currentVersion: response.currentVersion,
+      releaseDate: response.releaseDate,
+      releaseNotes: await htmlToMarkdown(response.releaseNotes ?? ''),
+    })
+    .disableClose()
+    .open();
   }
 
   async downloadUpdates(version: string) {
@@ -473,5 +495,88 @@ export class ElectronService {
       channel: 'app-updater:download-updates',
       args: [{ version }]
     });
+  }
+
+  async listMCPServers(filter?: Record<string, any>): Promise<MCPServerDetails[]> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+
+    return this.ipc.request({
+      channel: 'mcp:listMCPServers',
+      args: [filter], // Pass the filter object
+      skipLoading: true
+    });
+  }
+
+  async validateMCPSettings(mcpSettings: MCPSettings): Promise<MCPServerDetails[]> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+
+    return this.ipc.request({
+      channel: 'mcp:validateMCPSettings',
+      args: [mcpSettings],
+      skipLoading: true
+    });
+  }
+
+  async updateProjectMCPSettings(projectId: string, settings: MCPSettings): Promise<{ success: boolean; error?: string }> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+    return this.ipc.request({
+      channel: 'mcp:updateProjectSettings',
+      args: [projectId, settings],
+      skipLoading: true
+    });
+  }
+
+  async getProjectMCPSettings(projectId: string): Promise<{ success: boolean; settings?: MCPSettings; error?: string }> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+    return this.ipc.request({
+      channel: 'mcp:getProjectSettings',
+      args: [projectId],
+      skipLoading: true
+    });
+  }
+
+  async setMCPProjectId(projectId: string): Promise<void> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+
+    console.log("setting project id", projectId)
+
+    return this.ipc.request({
+      channel: 'mcp:setProjectId',
+      args: [projectId],
+      skipLoading: true
+    });
+  }
+
+  listenChatEvents(id: string, callback: (event: IpcRendererEvent, response: any) => void): void {
+    if (this.electronAPI) {
+      this.electronAPI.on(this.buildChatStreamChannel(id), callback);
+    }
+  }
+
+  removeChatListener(id: string, callback: (event: IpcRendererEvent, response: any) => void): void {
+    if (this.electronAPI) {
+      this.electronAPI.removeListener(this.buildChatStreamChannel(id), callback);
+    }
+  }
+
+  private buildChatStreamChannel(id:string){
+    return `core:${id}-chatStream`;
+  }
+  
+  async openExternalUrl(url: string): Promise<boolean> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+    return this.electronAPI.invoke('open-external-url', url);
   }
 }

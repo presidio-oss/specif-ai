@@ -1,11 +1,18 @@
-interface ImprovedSuggestionsParams {
+type ImprovedSuggestionsParams = {
   name: string;
   description?: string;
   type: string;
+  requirementAbbr: string;
   requirement: string;
   suggestions: string[];
   selectedSuggestion?: string;
   knowledgeBase?: string;
+  referenceInformation?: string;
+  brds?: Array<{
+    id: string;
+    title: string;
+    requirement: string;
+  }>;
 }
 
 export function generateImprovedSuggestionsPrompt(params: ImprovedSuggestionsParams): string {
@@ -18,6 +25,10 @@ Application Details:
 - Description: ${description || 'N/A'}
 - Requirement Type: ${type}
 - Abstract Requirement: ${requirement}
+
+${buildContextForRequirementType(params)}
+
+${params.referenceInformation ? `### Additional Context:\n${params.referenceInformation}`:''}
 
 Your suggestions should be broad, versatile, and aimed at enhancing:
 1. Clarity - making the requirement more specific and understandable
@@ -44,3 +55,28 @@ Your new suggestions should build upon this direction but offer improved alterna
   
   return prompt;
 }
+
+const buildContextForRequirementType = (params: ImprovedSuggestionsParams) => {
+  switch (params.requirementAbbr) {
+    case "PRD": {
+      return buildProductRequirementContext(params.brds)
+    }
+    default: {
+      return '';
+    }
+  }
+}
+
+const buildProductRequirementContext = (brds: ImprovedSuggestionsParams['brds'] = []) => {
+  if (!brds || brds.length === 0) return "";
+
+  return `The above provided product requirement is linked to the following business requirement documents by product managers.
+Consider these when generating suggestions.
+
+## Business Requirement Documents
+
+${brds.map((brd) =>
+  `BRD Id: ${brd.id}
+BRD Title: ${brd.title}
+BRD Requirement: ${brd.requirement}`.trim()).join('\n\n')}`;
+};

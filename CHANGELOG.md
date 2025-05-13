@@ -1,6 +1,106 @@
 # Changelog
 
-## 1.9.10
+## [2.3.0]
+
+### Added
+- Added Model Context Protocol (MCP) server configurations to Create Solution Flow, featuring predefined AWS Bedrock integration and support for multiple custom MCP servers, all manageable through Solution's Integrations section.
+- Agentic workflow implementation for task and user story generation.
+ 
+### Enhancements
+- Switched to minimum threshold for preferred count in requirement generation.
+- Refactored analytics settings toggle to depend on both PostHog and Langfuse configurations.
+- Improved Home Screen UI for empty solutions handling.
+ 
+### Fixed
+- Resolved AWS Bedrock cross-region reference model connection issues.
+- Fixed Solution Integrations page scrolling.
+- Fixed login flow to require working directory selection.
+- Upgraded spreadsheet export from xlsx to exceljs library.
+
+## [2.2.2]
+
+### Fixes
+
+- Removed HAI Chat integration from requirements document add flow.
+- Enhanced Business Process navigation with improved guards to prevent data loss and eliminate redundant popups.
+
+## [2.2.1]
+
+### Fixes
+
+- Resolved an issue with the Create Solution when using AWS Bedrock models. Replaced the community package with the official @langchain/aws package and correctly configured the maxTokens parameter within the expected input path for the Bedrock model.
+
+## [2.2.0]
+
+### Added
+
+- Implemented Agentic flow within the Create Solution workflow utilising LangGraph.
+
+### Enhancements
+
+- Disabled search functionality for the provider dropdown to streamline user interaction.
+
+### Fixed
+
+- Addressed an issue causing tasks to regenerate upon cancellation.
+- Standardised font consistency in the Export dropdown menu by transitioning from Angular Material to Tailwind CSS.
+- Prevented unintended solution requirement generation when Clean Solution is set to enabled in the Create Solution workflow.
+- Resolved a click-related issue in the Export dropdown menu.
+- Introduced a clear button to the select component for improved usability.
+- Eliminated an unintended discard pop-up during the Add and Edit Requirement workflows.
+
+## [2.1.1]
+
+### Added
+
+- Dialog service and builder for consistent modal management.
+- Support for linking relevant BRDs in PRDs — linked BRDs are now passed as context during enhance requirement, add requirement, chat suggestions, and conversations.
+
+### Enhancements
+
+- Refactored the Settings page for improved organization and clarity.
+- UI updates to the chat and include sections in requirement workflows.
+- Prompt modal added for unsaved BRD–PRD mapping changes.
+
+### Fixed
+
+- Fixed issue where “Add to Description” persisted on Cancel for BRDs in Create Solution Trace flow.
+
+## [2.1.0]
+
+### Added
+
+- Added Openrouter & Ollama Providers
+- Added Langfuse Observability
+
+### Enhancements
+
+- Enhanced existing getModelOptions to function for better flexibility
+- Added active provider to PostHog tracking
+
+### Fixed
+
+- Fixed Bedrock KB override to toggle only when bedrock credentials are present
+- Fixed Loader Lag issues in user story task generaton
+
+## [2.0.0]
+
+### Added
+
+- Migrated core backend from Python to electron IPC layer
+- Added auto updater for the electron app
+- Added support to access any AWS Bedrock Knowledge base
+- Added feasibility for users to add own LLM Configuration
+
+### Fixed
+
+- Fixed unable to update/add task with AI
+- Fixed instruction in requirement update prompt to output only single requirement
+- Fixed user information getting cleared in login screen
+- Fixed handling corrupted/invalid solution files during directory loading
+- Fixed UI inconsistencies in BP and file upload button
+
+## [1.9.10]
 
 ### Enhancements
 

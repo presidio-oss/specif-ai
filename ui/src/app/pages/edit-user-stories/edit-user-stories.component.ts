@@ -26,8 +26,8 @@ import {
   AddBreadcrumb,
   DeleteBreadcrumb,
 } from '../../store/breadcrumb/breadcrumb.actions';
-import { MatDialog } from '@angular/material/dialog';
 import { NgClass, NgIf } from '@angular/common';
+import { DialogService } from '../../services/dialog/dialog.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
@@ -40,7 +40,6 @@ import {
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { ArchiveUserStory } from '../../store/user-stories/user-stories.actions';
-import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
@@ -102,10 +101,10 @@ export class EditUserStoriesComponent implements OnDestroy {
   activatedRoute = inject(ActivatedRoute);
   userStoryId: string | null = '';
   editLabel: string = '';
+  allowForceRedirect: boolean = false;
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   selectedPRD: any = {};
-  allowFreeRedirection: boolean = false;
-  readonly dialog = inject(MatDialog);
+  readonly dialogService = inject(DialogService);
   selectedFileContent$ = this.store.select(
     ProjectsState.getSelectedFileContent,
   );
@@ -193,7 +192,6 @@ export class EditUserStoriesComponent implements OnDestroy {
               chatHistory: this.chatHistory,
             }),
           );
-          this.allowFreeRedirection = true;
           this.userStoryForm.patchValue({
             name: featureName,
             description: featureDescription
@@ -209,6 +207,8 @@ export class EditUserStoriesComponent implements OnDestroy {
         } else {
           console.log('No matching feature found for the given ID.');
         }
+        this.userStoryForm.markAsUntouched();
+        this.userStoryForm.markAsPristine();
       })
       .catch((error) => {
         console.error('Error updating requirement:', error);
@@ -236,8 +236,9 @@ export class EditUserStoriesComponent implements OnDestroy {
           chatHistory: this.chatHistory,
         }),
       );
-      this.allowFreeRedirection = true;
 
+      this.userStoryForm.markAsUntouched();
+      this.userStoryForm.markAsPristine();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
           this.entityType,
@@ -285,7 +286,7 @@ export class EditUserStoriesComponent implements OnDestroy {
                 this.absoluteFilePath,
               ),
             );
-            this.allowFreeRedirection = true;
+            this.allowForceRedirect = true;
             this.navigateBackToUserStories();
             this.toasterService.showSuccess(
               TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -311,7 +312,7 @@ export class EditUserStoriesComponent implements OnDestroy {
           this.absoluteFilePath,
         ),
       );
-      this.allowFreeRedirection = true;
+      this.allowForceRedirect = true;
       this.navigateBackToUserStories();
       this.toasterService.showSuccess(
         TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(this.entityType),
@@ -333,12 +334,12 @@ export class EditUserStoriesComponent implements OnDestroy {
 
   updateContent(data: any) {
     let { chat, chatHistory } = data;
-    if (chat.assistant) {
+    if (chat.contentToAdd) {
       this.userStoryForm.patchValue({
-        description: `${this.userStoryForm.getRawValue().description} ${chat.assistant}`,
+        description: `${this.userStoryForm.getRawValue().description} ${chat.contentToAdd}`,
       });
       let newArray = chatHistory.map((item: any) => {
-        if (item.assistant == chat.assistant) return { ...item, isAdded: true };
+        if (item.name == chat.tool_name && item.tool_call_id == chat.tool_call_id) return { ...item, isAdded: true };
         else return item;
       });
       this.chatHistory = newArray;
@@ -382,32 +383,32 @@ export class EditUserStoriesComponent implements OnDestroy {
   }
 
   deleteUserStory() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '500px',
-      data: {
+    this.dialogService
+      .confirm({
         title: CONFIRMATION_DIALOG.DELETION.TITLE,
         description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(
           this.existingUserForm.id,
         ),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
-        proceedButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((res) => {
-      if (!res) {
-        this.store.dispatch(
-          new ArchiveUserStory(this.absoluteFilePath, this.existingUserForm.id),
-        );
-        this.navigateBackToUserStories();
-        this.toasterService.showSuccess(
-          TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
-            this.entityType,
-            this.existingUserForm.id,
-          ),
-        );
-      }
-    });
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+      })
+      .subscribe((res) => {
+        if (res) {
+          this.store.dispatch(
+            new ArchiveUserStory(
+              this.absoluteFilePath,
+              this.existingUserForm.id,
+            ),
+          );
+          this.navigateBackToUserStories();
+          this.toasterService.showSuccess(
+            TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
+              this.entityType,
+              this.existingUserForm.id,
+            ),
+          );
+        }
+      });
   }
 
   enhanceUserStoryWithAI(){
@@ -429,7 +430,7 @@ export class EditUserStoriesComponent implements OnDestroy {
 
   canDeactivate(): boolean {
     return (
-      !this.allowFreeRedirection &&
+      !this.allowForceRedirect &&
       this.userStoryForm.dirty &&
       this.userStoryForm.touched
     );

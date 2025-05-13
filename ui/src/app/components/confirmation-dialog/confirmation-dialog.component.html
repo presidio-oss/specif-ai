@@ -1,20 +1,20 @@
 <div class="p-6 flex flex-col justify-start">
   <h1 class="text-lg font-medium mb-4">{{ data.title }}</h1>
-  <p class="text-sm mb-4" [innerHTML]="data.description"></p>
+  <p [ngClass]="['text-sm mb-4', data.renderNewLine ? 'whitespace-pre-line': '']" [innerHTML]="data.description"></p>
   <div class="flex justify-end gap-4">
     <app-button
       [buttonContent]="data.cancelButtonText || 'Cancel'"
       theme="secondary"
       size="sm"
       rounded="lg"
-      (click)="onLeave()"
+      (click)="onCancel()"
     />
     <app-button
-      [buttonContent]="data.proceedButtonText || 'Proceed'"
+      [buttonContent]="data.confirmButtonText || 'Confirm'"
       theme="primary"
       size="sm"
       rounded="lg"
-      (click)="onStay()"
+      (click)="onConfirm()"
     />
   </div>
 </div>

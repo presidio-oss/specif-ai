@@ -6,6 +6,8 @@ import { buildLLMHandler } from '../../../services/llm';
 import { store } from '../../../services/store';
 import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
+import { traceBuilder } from '../../../utils/trace-builder';
+import { COMPONENT, OPERATIONS } from '../../../helper/constants';
 
 export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Promise<AddUserStoryResponse> {
   try {
@@ -54,7 +56,8 @@ export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Pr
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const traceName = traceBuilder(COMPONENT.STORY, OPERATIONS.ADD);
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[add-user-story] LLM Response:', response);
 
     let result;

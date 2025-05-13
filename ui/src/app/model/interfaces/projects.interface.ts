@@ -6,13 +6,13 @@ export interface IProject {
 }
 
 export interface IGenerationRange {
-  max_count: number;
+  minCount: number;
   isEnabled: boolean;
 }
 
 export interface IRequirementConfig {
   enabled?: boolean;
-  maxCount?: number;
+  minCount?: number;
   count: number;
 }
 
@@ -36,6 +36,7 @@ export interface IProjectMetadata {
 }
 
 export interface ICreateSolutionRequest {
+  id: string;
   name: string;
   description: string;
   createReqt: boolean;
@@ -44,13 +45,20 @@ export interface ICreateSolutionRequest {
   prdPreferences: IGenerationRange;
   uirPreferences: IGenerationRange;
   nfrPreferences: IGenerationRange;
+  mcpSettings?: string;
+}
+
+export interface ISolutionResponseRequirementItem {
+  id: string;
+  title: string;
+  requirement: string;
 }
 
 export interface ISolutionResponse {
-  brd?: { [key in string]: string }[];
-  nfr?: { [key in string]: string }[];
-  prd?: { [key in string]: string }[];
-  uir?: { [key in string]: string }[];
+  brd?: ISolutionResponseRequirementItem[];
+  nfr?: ISolutionResponseRequirementItem[];
+  prd?: (ISolutionResponseRequirementItem & { linkedBRDIds: Array<string> })[];
+  uir?: ISolutionResponseRequirementItem[];
   createReqt: boolean;
   description: string;
   name: string;

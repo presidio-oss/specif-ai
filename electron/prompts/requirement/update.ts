@@ -9,6 +9,10 @@ interface UpdateRequirementParams {
   fileContent?: string;
   reqId: string;
   addReqtType: 'BRD' | 'PRD' | 'UIR' | 'NFR' | 'BP';
+  brds?: Array<{
+    title: string;
+    requirement: string;
+  }>;
 }
 
 export function updateRequirementPrompt({
@@ -18,7 +22,8 @@ export function updateRequirementPrompt({
   updatedReqt,
   fileContent,
   reqId,
-  addReqtType
+  addReqtType,
+  brds = []
 }: UpdateRequirementParams): string {
   const { context, requirementType, format } = getContextAndType(addReqtType);
 
@@ -35,6 +40,8 @@ ${existingReqt}
 Client Request:
 ${updatedReqt}
 ${fileContentSection}
+
+${buildBRDContextForPRD(brds)}
 
 Context:
 ${context}
@@ -54,4 +61,15 @@ ${MARKDOWN_RULES}
     The value of the updated key MUST represent one requirement (and absolutely NOT an array of requirements)
 
 Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.`;
+}
+
+
+const buildBRDContextForPRD = (brds: UpdateRequirementParams["brds"])=>{
+  if(!brds || brds.length == 0) return '';
+
+  return `### Business Requirement Documents
+  Please consider the following Business Requirements when updating the requirement:
+  ${brds.map(brd=>
+`BRD Title: ${brd.title}
+BRD Requirement: ${brd.requirement}\n`)}` + '\n';
 }

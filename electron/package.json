@@ -1,6 +1,6 @@
 {
   "name": "specif_ai",
-  "version": "1.9.10",
+  "version": "2.3.0",
   "description": "AI-powered requirements management and specification platform",
   "productName": "Specif AI",
   "main": "build/app.js",
@@ -11,8 +11,8 @@
     "build": "npm run clean && npm run check && tsc --pretty --listEmittedFiles",
     "start": "npm run build && electron .",
     "postinstall": "electron-builder install-app-deps",
-    "package:mac": "electron-builder build -m --arm64 --x64",
-    "package:win": "electron-builder build -w --x64 --ia32",
+    "package:mac": "electron-builder build -m --arm64 --x64 --publish=never",
+    "package:win": "electron-builder build -w --x64 --ia32 --publish=never",
     "serve:electron": "electron .",
     "build:ui": "rm -rf ui && cd ../ui && npm run build:dev && cp -r ./dist/ui ../electron/ui/",
     "build-watch:ui": "rm -rf ui && mkdir ui && cd ../ui && npm run watch:dev",
@@ -44,9 +44,18 @@
     "@aws-sdk/client-bedrock-runtime": "^3.758.0",
     "@azure/openai": "^2.0.0",
     "@google/generative-ai": "^0.24.0",
-    "@langchain/aws": "^0.1.7",
-    "@langchain/core": "^0.3.43",
+    "@langchain/anthropic": "^0.3.17",
+    "@langchain/aws": "^0.1.8",
+    "@langchain/community": "^0.3.40",
+    "@langchain/core": "^0.3.44",
+    "@langchain/google-genai": "^0.2.3",
+    "@langchain/langgraph": "^0.2.63",
+    "@langchain/ollama": "^0.2.0",
+    "@langchain/openai": "^0.5.5",
+    "@modelcontextprotocol/sdk": "^1.9.0",
     "@sentry/electron": "^5.3.0",
+    "@smithy/eventstream-codec": "^2.2.0",
+    "@smithy/signature-v4": "^2.3.0",
     "axios": "^1.7.7",
     "dotenv": "^16.4.7",
     "electron-notarize": "^1.2.2",
@@ -56,7 +65,9 @@
     "express": "^4.21.0",
     "jsonrepair": "^3.12.0",
     "langchain": "^0.3.19",
+    "langfuse": "^3.37.0",
     "openai": "^4.87.4",
+    "shell-path": "^3.0.0",
     "zod": "^3.24.2"
   },
   "build": {
@@ -77,7 +88,10 @@
         "teamId": "9NENB68LF9"
       },
       "hardenedRuntime": true,
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "entitlements": "build-assets/entitlements.mac.plist",
       "entitlementsInherit": "build-assets/entitlements.mac.plist"
     },

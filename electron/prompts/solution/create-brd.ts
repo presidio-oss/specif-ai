@@ -4,10 +4,11 @@ import { MARKDOWN_RULES } from '../context/markdown-rules';
 interface CreateBRDParams {
   name: string;
   description: string;
-  max_count: number;
+  minCount: number;
+  referenceInformation?: string;
 }
 
-export function createBRDPrompt({ name, description, max_count }: CreateBRDParams): string {
+export function createBRDPrompt({ name, description, minCount, referenceInformation }: CreateBRDParams): string {
   return `You are a requirements analyst tasked with extracting detailed Business Requirements from the provided app description.
 
 Below is the description of the app:
@@ -15,6 +16,8 @@ App Name: ${name}
 App Description: ${description}
 
 ${BRD_CONTEXT}
+
+${referenceInformation ? `### Additional Context:\n${referenceInformation}`:''}
 
 Output Structure should be a valid JSON: Here is the sample Structure:
 
@@ -33,5 +36,6 @@ Special Instructions:
   ${MARKDOWN_RULES}
 
 Please ensure the requirements are clear and comprehensive. Output only valid JSON. Do not include \`\`\`json \`\`\` on the start and end of the response.
-Generate Business Requirements with a maximum count of ${max_count}. Sort all requirements based on business impact (High to Medium to Low).`;
+Generate **${minCount}** business requirements. You may generate more if needed for clarity or completeness, but not fewer.
+Sort all requirements based on business impact (High to Medium to Low).`;
 }

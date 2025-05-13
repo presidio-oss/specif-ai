@@ -23,7 +23,7 @@ export async function verifyConfig(event: IpcMainInvokeEvent, data: any): Promis
     const testPrompt = "This is a test prompt to verify the provider configuration.";
     const testMessages = [{ role: 'user', content: testPrompt }];
 
-    const result = await handler.invoke(testMessages);
+    const result = await handler.invoke(testMessages, null, "core:verifyConfig");
     console.log('[verify-config] Test call succeeded');
 
     // For the response, use the actual model ID from the handler

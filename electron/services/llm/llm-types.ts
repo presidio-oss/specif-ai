@@ -5,6 +5,7 @@ export enum LLMProvider {
   BEDROCK = 'bedrock',
   OLLAMA = 'ollama',
   GEMINI = 'gemini',
+  OPENROUTER = 'openrouter',
 }
 
 export interface Message {
@@ -17,6 +18,11 @@ export interface ModelInfo {
   id: string;
   provider: string;
   maxTokens?: number;
+}
+
+export interface ModelInfoV1 {
+  maxTokens?: number;
+  contextWindow?: number;
 }
 
 export interface LLMConfig {

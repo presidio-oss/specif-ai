@@ -6,6 +6,8 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { LLMConfigModel } from '../../services/llm/llm-types';
 import { chatUpdateRequirementPrompt } from '../../prompts/requirement/chat';
 import { repairJSON } from '../../utils/custom-json-parser';
+import { OPERATIONS } from '../../helper/constants';
+import { traceBuilder } from '../../utils/trace-builder';
 
 export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<ChatUpdateRequirementResponse> {
   try {
@@ -26,7 +28,8 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
       requirementAbbr,
       chatHistory,
       knowledgeBase,
-      bedrockConfig
+      bedrockConfig,
+      brds
     } = validatedData;
 
     // Generate prompt
@@ -36,7 +39,8 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
       type,
       requirement,
       userMessage,
-      requirementAbbr
+      requirementAbbr,
+      brds
     });
 
     // Generate knowledge base constraint prompt if provided
@@ -60,7 +64,8 @@ export async function chatUpdateRequirement(event: IpcMainInvokeEvent, data: unk
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const response = await handler.invoke(messages);
+    const traceName = traceBuilder(requirementAbbr, OPERATIONS.CHAT)
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[chat-update-requirement] LLM Response:', response);
 
     let result;

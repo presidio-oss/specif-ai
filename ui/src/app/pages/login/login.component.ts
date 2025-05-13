@@ -34,10 +34,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class LoginComponent implements OnInit {
   loginForm = new FormGroup({
     username: new FormControl('', Validators.required),
-    directoryPath: new FormControl(
-      { value: '', disabled: true },
-      Validators.required,
-    ),
+    directoryPath: new FormControl('', Validators.required),
   });
 
   themeConfiguration = environment.ThemeConfiguration;
@@ -49,11 +46,24 @@ export class LoginComponent implements OnInit {
   logger = inject(NGXLogger);
 
   async ngOnInit() {
+    // Check if already logged in by examining values in localStorage, and if so, redirect
+    if (
+      localStorage.getItem(APP_CONSTANTS.USER_NAME) &&
+      localStorage.getItem(APP_CONSTANTS.WORKING_DIR)
+    ) {
+      this.startupService.setIsLoggedIn(true);
+      this.routerService.navigate(['/apps']);
+      return;
+    }
+
+    // Only set this to false if we're actually showing the login page
     this.startupService.setIsLoggedIn(false);
+
     const config =
       (await this.electronService.getStoreValue('APP_CONFIG')) || {};
 
-    const username = config.username || localStorage.getItem(APP_CONSTANTS.USER_NAME);
+    const username =
+      config.username || localStorage.getItem(APP_CONSTANTS.USER_NAME);
     const directoryPath =
       config.directoryPath || localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
 
@@ -61,13 +71,6 @@ export class LoginComponent implements OnInit {
       username: username as string,
       directoryPath: directoryPath as string,
     });
-
-    if (this.loginForm.valid) {
-      // Auto-login if values are present in localStorage
-      if (localStorage.getItem(APP_CONSTANTS.USER_NAME)) {
-        await this.login();
-      }
-    }
   }
 
   async login() {
@@ -79,10 +82,11 @@ export class LoginComponent implements OnInit {
       return;
     }
     if (this.loginForm.valid) {
-    const { username } = this.loginForm.getRawValue() as {
-      username: string;
-    };
-      const electronStoreValue = await this.electronService.getStoreValue('APP_CONFIG');
+      const { username } = this.loginForm.getRawValue() as {
+        username: string;
+      };
+      const electronStoreValue =
+        await this.electronService.getStoreValue('APP_CONFIG');
       let userId = electronStoreValue?.userId;
       if (!userId) {
         userId = uuidv4();

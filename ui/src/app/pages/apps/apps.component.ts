@@ -7,6 +7,8 @@ import { AddBreadcrumbs } from '../../store/breadcrumb/breadcrumb.actions';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { TimeZonePipe } from '../../pipes/timezone-pipe';
+import { ElectronService } from '../../electron-bridge/electron.service';
+import { EmptyStateComponent } from '../../components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-apps',
@@ -20,15 +22,17 @@ import { TimeZonePipe } from '../../pipes/timezone-pipe';
     AsyncPipe,
     NgForOf,
     TimeZonePipe,
+    EmptyStateComponent,
   ],
 })
 export class AppsComponent implements OnInit {
   store = inject(Store);
   route = inject(Router);
+  electronService = inject(ElectronService);
 
   projectList$ = this.store.select(ProjectsState.getProjects);
 
-  navigateToApp(data: any) {
+  async navigateToApp(data: any) {
     this.route
       .navigate([`apps/${data.id}`], {
         state: {
@@ -40,7 +44,10 @@ export class AppsComponent implements OnInit {
           },
         },
       })
-      .then();
+      .then(async () => {
+        // Call setMCPProjectId with the project ID
+        await this.electronService.setMCPProjectId(data.id);
+      });
   }
 
   navigateToCreate() {

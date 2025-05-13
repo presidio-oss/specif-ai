@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { BehaviorSubject, combineLatest, Observable, Subscription, first } from 'rxjs';
@@ -18,10 +18,11 @@ import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.cons
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
-import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
 import { processPRDContentForView } from '../../utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
+import { ExportDropdownComponent } from "../../export-dropdown/export-dropdown.component";
 
 @Component({
   selector: 'app-document-listing',
@@ -38,7 +39,8 @@ import { truncateMarkdown } from 'src/app/utils/markdown.utils';
     SearchInputComponent,
     MatMenuModule,
     RichTextEditorComponent,
-    NgClass
+    NgClass,
+    ExportDropdownComponent
 ],
 })
 export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -56,7 +58,6 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({ title: '', id: '' });
   private subscription: Subscription = new Subscription();
   private scrollContainer: HTMLElement | null = null;
-
   @Input() set folder(value: { title: string; id: string; metadata: any }) {
     this.appInfo = value.metadata;
     this.selectedFolder = value;
@@ -72,6 +73,10 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       this.searchInput.clearSearch();
     }
   }
+
+  // For Export Dropdown Options
+  exportOptions: { label: string; callback: () => void }[] = [];
+  exportedFolderName: string = '';
 
   currentRoute: string;
   constructor(
@@ -271,5 +276,37 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       maxChars: 180,
       ellipsis: true,
     });
+  }
+
+  getExportOptions(folderName: string) {
+    if (!folderName) {
+      console.warn('Folder name is undefined');
+      return [];
+    }
+
+    if (this.exportedFolderName === folderName) {
+      return this.exportOptions;
+    }
+        
+    const exportJson = () => {
+      this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.JSON);
+    };
+
+    const exportExcel = () => {
+      this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.EXCEL);
+    };
+
+    this.exportedFolderName = folderName;
+    this.exportOptions = [
+      {
+        label: 'Copy JSON to Clipboard',
+        callback: exportJson.bind(this)
+      },
+      {
+        label: 'Download as Excel (.xlsx)',
+        callback: exportExcel.bind(this)
+      }
+    ];
+    return this.exportOptions;
   }
 }

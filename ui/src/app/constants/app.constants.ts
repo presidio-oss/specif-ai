@@ -6,7 +6,11 @@ export const APP_CONSTANTS = {
   USER_NAME: 'USER_NAME',
   USER_ID: 'USER_ID',
 };
-export const FILTER_STRINGS = { BASE: 'base', FEATURE: 'feature', ARCHIVED: 'archived' };
+export const FILTER_STRINGS = {
+  BASE: 'base',
+  FEATURE: 'feature',
+  ARCHIVED: 'archived',
+};
 export const CHAT_TYPES = {
   REQUIREMENT: 'requirement',
   USERSTORY: 'userstory',
@@ -22,13 +26,15 @@ export const ERROR_MESSAGES = {
   GENERATE_SUGGESTIONS_FAILED: 'Failed to generate suggestions',
   DELETE_ASSOCIATED_ERROR: (reqId: string, bpIds: string[]) =>
     `Unable to remove ${reqId} because it's linked to the following business processes: ${bpIds.join(', ')}.`,
+  DELETE_ASSOCIATED_PRDs_ERROR: (reqId: string, prdIds: string[]) =>
+    `Unable to remove ${reqId} because it's linked to the following product requirement/s: ${prdIds.join(', ')}.`,
 };
 
 export const SOLUTION_CREATION_TOGGLE_MESSAGES = {
   BROWNFIELD_SOLUTION:
     'Enabling this toggle will not generate any business or solution requirements for the given solution.',
   GREENFIELD_SOLUTION:
-    'You can create requirements based on the solution context!',
+    'You can create requirements based on the solution context',
 };
 
 export const CONFIRMATION_DIALOG = {
@@ -66,7 +72,47 @@ export const CONFIRMATION_DIALOG = {
     CANCEL_BUTTON_TEXT: 'Cancel',
     PROCEED_BUTTON_TEXT: 'Open integration settings',
   },
+  CONFIRM_BRD_UPDATE: {
+    TITLE: 'Confirm Update BRD',
+    DESCRIPTION: ({
+      hasRemovedLinks,
+      hasLinkedPRDs,
+    }: {
+      hasRemovedLinks: boolean;
+      hasLinkedPRDs: boolean;
+    }) => {
+      let description = '';
+
+      if (hasLinkedPRDs) {
+        description =
+          'Please note that linked PRDs will not be automatically updated.';
+      }
+
+      if (hasRemovedLinks) {
+        description +=
+          (description ? '\nAdditionally, ' : 'Please note that ') +
+          'unlinking this BRD will not remove any content that was added to the previously linked PRD(s).';
+      }
+      description +=
+        ' Any necessary updates to those PRDs will require manual review.\n\nDo you want to proceed?';
+      return description;
+    },
+    CANCEL_BUTTON_TEXT: 'Cancel',
+    PROCEED_BUTTON_TEXT: 'Confirm',
+  },
+  CONFIRM_PRD_UPDATE: {
+    TITLE: 'Confirm Update PRD',
+    DESCRIPTION:
+      'Please note that content added to this PRD from previously linked BRDs will remain. Any necessary updates will require manual review.\n\nDo you want to proceed?',
+    CANCEL_BUTTON_TEXT: 'Cancel',
+    PROCEED_BUTTON_TEXT: 'Confirm',
+  },
 };
+
+export const REQUIREMENT_COUNT = {
+  DEFAULT: 15,
+  MAX: 30,
+} as const;
 
 export const REQUIREMENT_TYPE = {
   BRD: 'BRD',
@@ -212,7 +258,6 @@ export const FOLDER_REQUIREMENT_TYPE_MAP = {
   [FOLDER.UIR]: REQUIREMENT_TYPE.UIR,
   [FOLDER.BP]: REQUIREMENT_TYPE.BP,
 } as const;
-
 
 // types
 

@@ -5,6 +5,8 @@ import {
 import LLMHandler from "../llm-handler";
 import { Message, ModelInfo, LLMConfig, LLMError } from "../llm-types";
 import { withRetry } from "../../../utils/retry";
+import { ObservabilityManager } from "../../observability/observability.manager";
+import { TRACES } from "../../../helper/constants";
 
 interface BedrockConfig extends LLMConfig {
   region: string;
@@ -12,11 +14,13 @@ interface BedrockConfig extends LLMConfig {
   secretAccessKey: string;
   sessionToken?: string;
   model: string;
+  useCrossRegionInference?: boolean;
 }
 
 export class BedrockHandler extends LLMHandler {
   private client: BedrockRuntimeClient;
   protected configData: BedrockConfig;
+  private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<BedrockConfig>) {
     super();
@@ -61,13 +65,15 @@ export class BedrockHandler extends LLMHandler {
       secretAccessKey: config.secretAccessKey,
       sessionToken: config.sessionToken,
       model: config.model,
+      useCrossRegionInference: config.useCrossRegionInference,
     };
   }
 
   @withRetry({ retryAllErrors: true })
   async invoke(
     messages: Message[],
-    systemPrompt: string | null = null
+    systemPrompt: string | null = null,
+    operation: string = "llm:invoke"
   ): Promise<string> {
     const messageList = systemPrompt
       ? [{ role: "system", content: systemPrompt }, ...messages]
@@ -95,8 +101,9 @@ export class BedrockHandler extends LLMHandler {
       };
     }
 
+    const modelId = this.getModelId();
     const command = new InvokeModelCommand({
-      modelId: this.configData.model,
+      modelId,
       body: JSON.stringify(requestBody),
     });
 
@@ -104,6 +111,21 @@ export class BedrockHandler extends LLMHandler {
 
     // Parse response based on model provider
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+    const totalTokens = responseBody?.usage?.output_tokens + responseBody?.usage?.input_tokens;
+
+    const traceName = `${TRACES.CHAT_BEDROCK_CONVERSE}:${this.configData.model}`;
+    const trace = this.observabilityManager.createTrace(traceName);
+
+    // test trace pricing
+    trace.generation({
+      name: operation,
+      model: this.configData.model,
+      usage: {
+        input: responseBody?.usage?.input_tokens,
+        output: responseBody?.usage?.output_tokens,
+        total: totalTokens
+      },
+    });
 
     if (this.configData.model.includes("anthropic")) {
       if (!responseBody.content?.[0]?.text) {
@@ -123,6 +145,28 @@ export class BedrockHandler extends LLMHandler {
       }
       return responseBody.choices[0].message.content;
     }
+  }
+
+  /**
+   * Gets the appropriate model ID, accounting for cross-region inference if enabled
+   */
+  private getModelId(): string {
+    if (this.configData.useCrossRegionInference) {
+      const regionPrefix = this.configData.region.slice(0, 3);
+
+      switch (regionPrefix) {
+        case "us-":
+          return `us.${this.getModel().id}`;
+        case "eu-":
+          return `eu.${this.getModel().id}`;
+        case "ap-":
+          return `apac.${this.getModel().id}`;
+        default:
+          // cross region inference is not supported in this region, falling back to default model
+          return this.getModel().id;
+      }
+    }
+    return this.getModel().id;
   }
 
   getModel(): ModelInfo {
