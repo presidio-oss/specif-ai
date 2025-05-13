@@ -4,7 +4,7 @@ import { StartupService } from '../../../services/auth/startup.service';
 import { environment } from '../../../../environments/environment';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { BreadcrumbsComponent } from '../../core/breadcrumbs/breadcrumbs.component';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { heroCog8Tooth } from '@ng-icons/heroicons/outline';
 
@@ -17,6 +17,7 @@ import { heroCog8Tooth } from '@ng-icons/heroicons/outline';
     BreadcrumbsComponent,
     NgIconComponent,
     NgIf,
+    NgClass,
     RouterLink,
     AsyncPipe,
     MatTooltipModule,
@@ -25,6 +26,7 @@ import { heroCog8Tooth } from '@ng-icons/heroicons/outline';
 })
 export class HeaderComponent {
   protected themeConfiguration = environment.ThemeConfiguration;
+  protected isMacOS = navigator.platform.toLowerCase().includes('mac');
 
   startupService = inject(StartupService);
   router = inject(Router);
