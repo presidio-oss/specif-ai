@@ -1,12 +1,16 @@
 import { Langfuse } from "langfuse";
 import { AppConfig } from ".././../schema/core/store.schema";
 import { store } from "../store";
+import { LLMConfigModel } from "../../services/llm/llm-types";
+import { buildLLMHandler } from "../../services/llm";
 
 export class ObservabilityManager {
   private static instance: ObservabilityManager;
   private langfuse: Langfuse | null = null;
   private tracingEnabled: boolean = false;
   private userName: string = "";
+  private model: string = "";
+  private provider: string = ""
   private lastAnalyticsUserConsentState: boolean = false;
 
   private constructor() {
@@ -19,6 +23,23 @@ export class ObservabilityManager {
    */
   private initializeTracing(): void {
     const APP_CONFIG = store.get<AppConfig>("APP_CONFIG");
+
+    const LLM_CONFIG = store.get<LLMConfigModel>('llmConfig');
+    this.provider = LLM_CONFIG?.activeProvider || "unknown";
+
+    if (LLM_CONFIG?.providerConfigs[this.provider]?.config) {
+      try {
+        const handler = buildLLMHandler(this.provider, LLM_CONFIG.providerConfigs[this.provider].config);
+        const modelInfo = handler.getModel();
+        this.model = modelInfo.id;
+      } catch (error) {
+        console.error("Failed to get model info:", error);
+        this.model = "unknown";
+      }
+    } else {
+      this.model = "unknown";
+    }
+
     this.userName = APP_CONFIG?.username || "anonymous";
     const analyticsUserConsentEnabled = store.get<boolean>("analyticsEnabled") || false;
     this.tracingEnabled = analyticsUserConsentEnabled && (process.env.ENABLE_LANGFUSE === 'true' || false);
@@ -57,8 +78,13 @@ export class ObservabilityManager {
     }
 
     return this.langfuse.trace({
+      environment: process.env.APP_ENVIRONMENT,
       name,
       userId: this.userName,
+      metadata: {
+        provider: this.provider,
+        model: this.model
+      }
     });
   }
 
