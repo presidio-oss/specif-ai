@@ -8,16 +8,24 @@ import { addRequirementPrompt } from '../../prompts/requirement/add';
 import { repairJSON } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
 import { OPERATIONS } from '../../helper/constants';
+import { ObservabilityManager } from '../../services/observability/observability.manager';
+import { HumanMessage } from "@langchain/core/messages";
+import { isDevEnv } from '../../utils/env';
 
 export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): Promise<AddRequirementResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace('add-requirement');
+
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
 
     console.log('[add-requirement] Using LLM config:', llmConfig);
+    const validationSpan = trace.span({name: "input-validation"});
     const validatedData = addRequirementSchema.parse(data);
+    validationSpan.end();
 
     const {
       name,
@@ -58,8 +66,27 @@ export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): 
     );
 
     const traceName = traceBuilder(addReqtType, OPERATIONS.ADD);
+    const llmSpan = trace.span({
+      name: `add-${addReqtType.toLowerCase()}-requirement`,
+    });
+    
+    const generation = llmSpan.generation({
+      name: "llm",
+      model: llmConfig.activeProvider,
+      environment: process.env.APP_ENVIRONMENT,
+      input: isDevEnv() ? [new HumanMessage(prompt)] : undefined,
+    });
+
     const response = await handler.invoke(messages, null, traceName);
     console.log('[add-requirement] LLM Response:', response);
+
+    generation.end({
+      output: isDevEnv() ? response : undefined,
+    });
+
+    llmSpan.end({
+      statusMessage: `Successfully generated ${addReqtType} requirement`
+    });
 
     let result;
     try {
@@ -71,6 +98,10 @@ export async function addRequirement(event: IpcMainInvokeEvent, data: unknown): 
       result = parsed;
     } catch (error) {
       console.error('[add-requirement] Error parsing LLM response:', error);
+      llmSpan.end({
+        level: "ERROR",
+        statusMessage: `Error parsing LLM response: ${error}`
+      });
       throw new Error('Failed to parse LLM response as JSON');
     }
 

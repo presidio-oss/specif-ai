@@ -6,5 +6,6 @@ export interface UserStoryWorkflowRunnableConfig
   configurable?: {
     trace?: LangfuseObservationClient;
     thread_id?: string;
+    sendMessagesInTelemetry?: boolean;
   };
 }

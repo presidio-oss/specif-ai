@@ -27,7 +27,8 @@ export const buildResearchNode = ({
     state: IUserStoryWorkflowStateAnnotation["State"],
     runnableConfig: UserStoryWorkflowRunnableConfig
   ) => {
-    const trace = runnableConfig.configurable?.trace;
+    const { trace, sendMessagesInTelemetry = false } =
+      runnableConfig?.configurable ?? {};
     const span = trace?.span({
       name: "research",
     });
@@ -87,6 +88,7 @@ export const buildResearchNode = ({
         configurable: {
           trace: span,
           thread_id: runnableConfig.configurable?.thread_id,
+          sendMessagesInTelemetry: sendMessagesInTelemetry,
         },
       }
     );
@@ -109,7 +111,9 @@ export const buildGenerateStoriesNode = (
     state: IUserStoryWorkflowStateAnnotation["State"],
     runnableConfig: UserStoryWorkflowRunnableConfig
   ) => {
-    const trace = runnableConfig.configurable?.trace;
+    const { trace, sendMessagesInTelemetry = false } =
+      runnableConfig?.configurable ?? {};
+
     const span = trace?.span({
       name: "generate-stories",
     });
@@ -129,9 +133,30 @@ export const buildGenerateStoriesNode = (
         evaluation: state.evaluation,
       });
 
+      const generation = span?.generation({
+        name: "llm",
+        model: modelProvider.getModel().id,
+        environment: process.env.APP_ENVIRONMENT,
+        input: sendMessagesInTelemetry
+          ? state.messages.length > 0
+            ? state.messages
+            : [new HumanMessage(prompt)]
+          : undefined,
+      });
+
       // LLM Call
       const model = modelProvider.getChatModel();
       const response = await model.invoke(prompt);
+      console.log(response);
+
+      generation?.end({
+        usage: {
+          input: response.usage_metadata?.input_tokens,
+          output: response.usage_metadata?.output_tokens,
+          total: response.usage_metadata?.total_tokens,
+        },
+        output: sendMessagesInTelemetry ? response : undefined,
+      });
 
       let parsedStories;
       try {
@@ -164,7 +189,6 @@ export const buildGenerateStoriesNode = (
       };
     } catch (error) {
       const message = `[user-story-workflow] Error in generate-stories node: ${error}`;
-      console.error(message, error);
       span?.end({
         level: "ERROR",
         statusMessage: message,
@@ -187,7 +211,8 @@ export const buildEvaluateStoriesNode = (
     state: IUserStoryWorkflowStateAnnotation["State"],
     runnableConfig: UserStoryWorkflowRunnableConfig
   ) => {
-    const trace = runnableConfig.configurable?.trace;
+    const { trace, sendMessagesInTelemetry = false } =
+      runnableConfig.configurable ?? {};
     const span = trace?.span({
       name: "evaluate-stories",
     });
@@ -212,8 +237,27 @@ export const buildEvaluateStoriesNode = (
         features: JSON.stringify(state.stories),
       });
 
+      const generation = span?.generation({
+        name: "llm",
+        model: modelProvider.getModel().id,
+        input: sendMessagesInTelemetry
+          ? state.messages.length > 0
+            ? state.messages
+            : [new HumanMessage(prompt)]
+          : undefined,
+      });
+
       const model = modelProvider.getChatModel();
       const response = await model.invoke(prompt);
+
+      generation?.end({
+        usage: {
+          input: response.usage_metadata?.input_tokens,
+          output: response.usage_metadata?.output_tokens,
+          total: response.usage_metadata?.total_tokens,
+        },
+        output: sendMessagesInTelemetry ? response : undefined,
+      });
 
       // Check if approved
       const responseText =
