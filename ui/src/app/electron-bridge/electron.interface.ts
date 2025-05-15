@@ -96,6 +96,9 @@ export interface ElectronAPI {
   createTask(request: ITaskRequest): Promise<ITasksResponse>;
   addTask(request: IAddTaskRequest): Promise<ITasksResponse>;
   updateTask(request: IAddTaskRequest): Promise<ITasksResponse>;
+  onFullscreenChange: (callback: (isFullscreen: boolean) => void) => void;
+  removeFullscreenListener: () => void;
+  getFullscreenState: () => Promise<boolean>;
 }
 
 declare global {

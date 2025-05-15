@@ -3,7 +3,7 @@
     class="bg-white border-b [app-region:drag] select-none h-[39px] w-full"
   >
     <div class="flex items-center justify-between pl-4">
-      <div [ngClass]="{ 'pl-16': isMacOS }">
+      <div [ngClass]="{ 'pl-16': isMacOS && !isFullscreen }">
         <app-breadcrumbs />
       </div>
       <div class="flex items-center gap-x-3">
