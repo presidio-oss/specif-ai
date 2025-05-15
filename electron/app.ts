@@ -101,6 +101,18 @@ function onAppReload(indexPath: string) {
 }
 
 function setupWindowHandlers(window: BrowserWindow, indexPath: string) {
+  window.on("enter-full-screen", () => {
+    window?.webContents.send("fullscreen-change", true);
+  });
+
+  window.on("leave-full-screen", () => {
+    window?.webContents.send("fullscreen-change", false);
+  });
+
+  ipcMain.handle("window:get-fullscreen", () => {
+    return window?.isFullScreen();
+  });
+
   window.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
   });
