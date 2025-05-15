@@ -145,11 +145,7 @@ export const buildGenerateSuggestionsNode = (
         name: "llm",
         model: modelProvider.getModel().id,
         environment: process.env.APP_ENVIRONMENT,
-        input: sendMessagesInTelemetry
-          ? state.messages.length > 0
-            ? state.messages
-            : [new HumanMessage(prompt)]
-          : undefined,
+        input: sendMessagesInTelemetry ? prompt : undefined,
       });
 
       // LLM Call
