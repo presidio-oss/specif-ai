@@ -9,6 +9,7 @@ import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
 import { getMcpToolsForActiveProvider } from '../../../mcp';
 import { MCPHub } from '../../../mcp/mcp-hub';
+import { isDevEnv } from '../../../utils/env';
 
 export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<CreateTaskResponse> {
   try {
@@ -53,10 +54,11 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
     };
     
     const config = {
-      "configurable": {
-        "thread_id": `${randomUUID()}_create_tasks`,
-        "trace": trace
-      }
+      configurable: {
+        thread_id: `${randomUUID()}_create_tasks`,
+        trace: trace,
+        sendMessagesInTelemetry: isDevEnv(),
+      },
     };
     
     const stream = taskWorkflow.streamEvents(initialState, {

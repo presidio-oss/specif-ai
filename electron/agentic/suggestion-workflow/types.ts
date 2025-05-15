@@ -6,5 +6,6 @@ export interface SuggestionWorkflowRunnableConfig
   configurable?: {
     trace?: LangfuseObservationClient;
     thread_id?: string;
+    sendMessagesInTelemetry?: boolean;
   };
 }

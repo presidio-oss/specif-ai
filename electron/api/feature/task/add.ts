@@ -8,16 +8,24 @@ import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
 import { OPERATIONS, COMPONENT } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
+import { ObservabilityManager } from '../../../services/observability/observability.manager';
+import { HumanMessage } from "@langchain/core/messages";
+import { isDevEnv } from '../../../utils/env';
 
 export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<AddTaskResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace('add-task');
+
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
 
     console.log('[add-task] Using LLM config:', llmConfig);
+    const validationSpan = trace.span({name: "input-validation"});
     const validatedData = addTaskSchema.parse(data) as AddTaskRequest;
+    validationSpan.end();
 
     // Generate prompt
     const prompt = addTaskPrompt({
@@ -38,9 +46,27 @@ export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<Add
     );
 
     const traceName = traceBuilder(COMPONENT.TASK, OPERATIONS.ADD);
-    const response = await handler.invoke(messages, null, traceName);
+    const llmSpan = trace.span({
+      name: "add-task",
+    });
     
+    const generation = llmSpan.generation({
+      name: "llm",
+      model: llmConfig.activeProvider,
+      environment: process.env.APP_ENVIRONMENT,
+      input: isDevEnv() ? [new HumanMessage(prompt)] : undefined,
+    });
+
+    const response = await handler.invoke(messages, null, traceName);
     console.log('[add-task] LLM Response:', response);
+
+    generation.end({
+      output: isDevEnv() ? response : undefined,
+    });
+
+    llmSpan.end({
+      statusMessage: "Successfully generated task"
+    });
 
     let llmResponseDict;
     try {
@@ -68,6 +94,10 @@ export async function addTask(event: IpcMainInvokeEvent, data: any): Promise<Add
       };
     } catch (error) {
       console.error('[add-task] Error parsing LLM response:', error);
+      llmSpan.end({
+        level: "ERROR",
+        statusMessage: `Error parsing LLM response: ${error}`
+      });
       throw new Error('Failed to parse LLM response as JSON');
     }
 

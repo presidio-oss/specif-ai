@@ -8,16 +8,24 @@ import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
 import { traceBuilder } from '../../../utils/trace-builder';
 import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { ObservabilityManager } from '../../../services/observability/observability.manager';
+import { HumanMessage } from "@langchain/core/messages";
+import { isDevEnv } from '../../../utils/env';
 
 export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<UpdateTaskResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace('update-task');
+
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
 
     console.log('[update-task] Using LLM config:', llmConfig);
+    const validationSpan = trace.span({name: "input-validation"});
     const validatedData = updateTaskSchema.parse(data) as UpdateTaskRequest;
+    validationSpan.end();
 
     // Generate prompt
     const prompt = updateTaskPrompt({
@@ -39,9 +47,28 @@ export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<
     );
 
     const traceName = traceBuilder(COMPONENT.TASK, OPERATIONS.UPDATE);
+    const llmSpan = trace.span({
+      name: "update-task",
+    });
+    
+    const generation = llmSpan.generation({
+      name: "llm",
+      model: llmConfig.activeProvider,
+      environment: process.env.APP_ENVIRONMENT,
+      input: isDevEnv() ? [new HumanMessage(prompt)] : undefined,
+    });
+
     const response = await handler.invoke(messages, null, traceName);
     
     console.log('[update-task] LLM Response:', response);
+
+    generation.end({
+      output: isDevEnv() ? response : undefined,
+    });
+
+    llmSpan.end({
+      statusMessage: "Successfully updated task"
+    });
 
     try {
       let cleanedResponse = repairJSON(response); 
@@ -75,6 +102,10 @@ export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<
       };
     } catch (error) {
       console.error('[update-task] Error parsing LLM response:', error);
+      llmSpan.end({
+        level: "ERROR",
+        statusMessage: `Error parsing LLM response: ${error}`
+      });
       throw new Error('Failed to parse LLM response as JSON');
     }
   } catch (error) {
