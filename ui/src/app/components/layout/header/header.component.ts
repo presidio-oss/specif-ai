@@ -1,6 +1,7 @@
 import { Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { StartupService } from '../../../services/auth/startup.service';
+import { ElectronService } from '../../../electron-bridge/electron.service';
 import { environment } from '../../../../environments/environment';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { BreadcrumbsComponent } from '../../core/breadcrumbs/breadcrumbs.component';
@@ -32,15 +33,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   startupService = inject(StartupService);
   router = inject(Router);
   private ngZone = inject(NgZone);
+  private electronService = inject(ElectronService);
 
   ngOnInit() {
-    window.electronAPI.onFullscreenChange((isFullscreen: boolean) => {
+    this.electronService.onFullscreenChange((isFullscreen: boolean) => {
       this.ngZone.run(() => {
         this.isFullscreen = isFullscreen;
       });
     });
 
-    window.electronAPI.getFullscreenState().then((isFullscreen: boolean) => {
+    this.electronService.getFullscreenState().then((isFullscreen: boolean) => {
       this.ngZone.run(() => {
         this.isFullscreen = isFullscreen;
       });
@@ -48,7 +50,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    window.electronAPI.removeFullscreenListener();
+    this.electronService.removeFullscreenListener();
   }
 
   navigateToSettings() {

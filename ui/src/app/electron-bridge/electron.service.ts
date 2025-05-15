@@ -579,4 +579,23 @@ export class ElectronService {
     }
     return this.electronAPI.invoke('open-external-url', url);
   }
+
+  onFullscreenChange(callback: (isFullscreen: boolean) => void): void {
+    if (this.electronAPI) {
+      this.electronAPI.onFullscreenChange(callback);
+    }
+  }
+
+  removeFullscreenListener(): void {
+    if (this.electronAPI) {
+      this.electronAPI.removeFullscreenListener();
+    }
+  }
+
+  async getFullscreenState(): Promise<boolean> {
+    if (this.electronAPI) {
+      return this.electronAPI.getFullscreenState();
+    }
+    return false;
+  }
 }
