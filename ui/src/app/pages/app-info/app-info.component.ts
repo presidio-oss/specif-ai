@@ -28,7 +28,19 @@ import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroArchiveBox,
+  heroLink,
+  heroBriefcase,
+  heroSquares2x2,
+  heroCube,
+  heroWindow,
+  heroSquare3Stack3d,
+  heroChevronDown,
+  heroChevronUp,
+  heroServerStack,
+} from '@ng-icons/heroicons/outline';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
 import { APP_MESSAGES, FILTER_STRINGS } from '../../constants/app.constants';
 import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
@@ -72,7 +84,21 @@ import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
     DocumentListingComponent,
     NgForOf,
     McpServersListComponent,
-    McpIntegrationConfiguratorComponent
+    McpIntegrationConfiguratorComponent,
+  ],
+  providers: [
+    provideIcons({
+      heroArchiveBox,
+      heroLink,
+      heroBriefcase,
+      heroSquares2x2,
+      heroCube,
+      heroWindow,
+      heroSquare3Stack3d,
+      heroChevronDown,
+      heroChevronUp,
+      heroServerStack,
+    }),
   ],
 })
 export class AppInfoComponent implements OnInit, OnDestroy {
@@ -89,7 +115,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     key,
     value: IconPairingEnum[key as keyof typeof IconPairingEnum],
   }));
-  
+
   useGenAI: any = true;
   llmConfig$: Observable<LLMConfigModel> = this.store.select(
     LLMConfigState.getConfig,
@@ -120,13 +146,13 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   accordionState: { [key: string]: boolean } = {
     jira: false,
     knowledgeBase: false,
-    mcp: false
+    mcp: false,
   };
 
   chatSettings$: Observable<ChatSettings> = this.store.select(
     ChatSettingsState.getConfig,
   );
-  
+
   // Predefined order of folders
   folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
   isBedrockConfigPresent: boolean = false;
@@ -155,8 +181,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
-      this.isBedrockConfigPresent = this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
-    })
+      this.isBedrockConfigPresent =
+        this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
+    });
     this.store
       .select(ProjectsState.getProjects)
       .pipe(first())
@@ -195,7 +222,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         }
         // Sort directories based on predefined order
         directories.sort((a, b) => {
-          return this.folderOrder.indexOf(a.name) - this.folderOrder.indexOf(b.name);
+          return (
+            this.folderOrder.indexOf(a.name) - this.folderOrder.indexOf(b.name)
+          );
         });
       });
 
@@ -227,10 +256,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         Validators.required,
       ),
       sessionKey: new FormControl(
-        this.appInfo.integration?.bedrock?.sessionKey || ''
+        this.appInfo.integration?.bedrock?.sessionKey || '',
       ),
     });
-
 
     this.jiraForm = new FormGroup({
       jiraProjectKey: new FormControl(
@@ -353,7 +381,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     const { kbId, accessKey, secretKey, region, sessionKey } =
       this.bedrockForm.getRawValue();
     const config = { kbId, accessKey, secretKey, region, sessionKey };
-      
+
     this.featureService
       .validateBedrockId(config)
       .then((isValid) => {
@@ -363,21 +391,21 @@ export class AppInfoComponent implements OnInit, OnDestroy {
             accessKey,
             secretKey,
             region,
-            ...(sessionKey && { sessionKey })
+            ...(sessionKey && { sessionKey }),
           };
 
           const updatedMetadata = {
             ...this.appInfo,
-            integration: { 
-              ...this.appInfo.integration, 
-              bedrock: bedrockConfig
+            integration: {
+              ...this.appInfo.integration,
+              bedrock: bedrockConfig,
             },
           };
 
           this.store.dispatch(
             new SetChatSettings({
               ...this.currentSettings,
-              ...bedrockConfig
+              ...bedrockConfig,
             }),
           );
 
@@ -413,7 +441,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         accessKey: '',
         sessionKey: '',
         secretKey: '',
-        region: ''
+        region: '',
       }),
     );
 
@@ -433,26 +461,26 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       id: this.projectId as string,
       metadata: this.appInfo,
     };
-    
+
     // Reset MCP servers list if navigating away from integrations
     if (folder.name !== 'app-integrations') {
-       this.mcpServers = [];
-       this.accordionState['mcp'] = false;
+      this.mcpServers = [];
+      this.accordionState['mcp'] = false;
     }
   }
 
   async toggleAccordion(key: string) {
     this.accordionState[key] = !this.accordionState[key];
-    
+
     // Load MCP servers when the accordion is opened
     if (key === 'mcp' && this.accordionState[key]) {
-     await this.loadMcpServers();
+      await this.loadMcpServers();
     }
   }
 
   initMcpForm(): void {
     this.mcpForm = new FormGroup({
-      mcpSettings: new FormControl(this.appInfo.integration?.mcp || {})
+      mcpSettings: new FormControl(this.appInfo.integration?.mcp || {}),
     });
   }
 
@@ -469,7 +497,11 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         _hai_mcp_source_id: this.projectId,
         _hai_mcp_source_type: 'project',
       });
-      this.logger.debug('MCP Servers loaded for project:', this.projectId, this.mcpServers);
+      this.logger.debug(
+        'MCP Servers loaded for project:',
+        this.projectId,
+        this.mcpServers,
+      );
     } catch (error) {
       this.logger.error('Error loading MCP servers:', error);
       this.toast.showError('Failed to load MCP servers.');
@@ -487,32 +519,45 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     folderName: string,
     directories: { name: string; children: string[] }[],
   ) {
-    return directories.some((dir) => dir.name.includes(folderName) && !this.isArchived(dir));
+    return directories.some(
+      (dir) => dir.name.includes(folderName) && !this.isArchived(dir),
+    );
   }
 
-  isArchived(directories: { name: string; children: string[]}) {
-    if(directories.name === RequirementTypeEnum.PRD)  return directories.children.filter((child) => child.includes(FILTER_STRINGS.BASE)).every((child) => child.includes(FILTER_STRINGS.ARCHIVED));
-    return directories.children.every((child) => child.includes(FILTER_STRINGS.ARCHIVED));
+  isArchived(directories: { name: string; children: string[] }) {
+    if (directories.name === RequirementTypeEnum.PRD)
+      return directories.children
+        .filter((child) => child.includes(FILTER_STRINGS.BASE))
+        .every((child) => child.includes(FILTER_STRINGS.ARCHIVED));
+    return directories.children.every((child) =>
+      child.includes(FILTER_STRINGS.ARCHIVED),
+    );
   }
 
   navigateToBPAdd(): void {
     // Check if any non-archived PRD or BRD exists
-    this.directories$.pipe(first()).subscribe(directories => {
-      const prdDir = directories.find(dir => dir.name === 'PRD');
-      const brdDir = directories.find(dir => dir.name === 'BRD');
-      
+    this.directories$.pipe(first()).subscribe((directories) => {
+      const prdDir = directories.find((dir) => dir.name === 'PRD');
+      const brdDir = directories.find((dir) => dir.name === 'BRD');
+
       // For PRD, only check base files that aren't archived
-      const hasPRD = prdDir && prdDir.children
-        .filter(child => child.includes('-base.json'))
-        .some(child => !child.includes('-archived'));
+      const hasPRD =
+        prdDir &&
+        prdDir.children
+          .filter((child) => child.includes('-base.json'))
+          .some((child) => !child.includes('-archived'));
 
       // For BRD, only check base files that aren't archived
-      const hasBRD = brdDir && brdDir.children
-        .filter(child => child.includes('-base.json'))
-        .some(child => !child.includes('-archived'));
+      const hasBRD =
+        brdDir &&
+        brdDir.children
+          .filter((child) => child.includes('-base.json'))
+          .some((child) => !child.includes('-archived'));
 
       if (!hasPRD && !hasBRD) {
-        this.toast.showWarning(APP_INFO_COMPONENT_ERROR_MESSAGES.REQUIRES_PRD_OR_BRD);
+        this.toast.showWarning(
+          APP_INFO_COMPONENT_ERROR_MESSAGES.REQUIRES_PRD_OR_BRD,
+        );
         return;
       }
 
@@ -581,28 +626,38 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
   toggleBedrockConfig(event: Event): void {
     this.useBedrockConfig = (event.target as HTMLInputElement).checked;
-    if (this.useBedrockConfig && this.currentLLMConfig?.providerConfigs['bedrock']) {
-      const bedrockConfig = this.currentLLMConfig.providerConfigs['bedrock'].config;
-      this.bedrockForm.patchValue({
-        accessKey: bedrockConfig.accessKeyId || '',
-        secretKey: bedrockConfig.secretAccessKey || '',
-        region: bedrockConfig.region || '',
-        sessionKey: bedrockConfig.sessionToken || ''
-      }, { emitEvent: false });
+    if (
+      this.useBedrockConfig &&
+      this.currentLLMConfig?.providerConfigs['bedrock']
+    ) {
+      const bedrockConfig =
+        this.currentLLMConfig.providerConfigs['bedrock'].config;
+      this.bedrockForm.patchValue(
+        {
+          accessKey: bedrockConfig.accessKeyId || '',
+          secretKey: bedrockConfig.secretAccessKey || '',
+          region: bedrockConfig.region || '',
+          sessionKey: bedrockConfig.sessionToken || '',
+        },
+        { emitEvent: false },
+      );
     } else {
-      this.bedrockForm.patchValue({
-        accessKey: this.appInfo.integration?.bedrock?.accessKey || '',
-        secretKey: this.appInfo.integration?.bedrock?.secretKey || '',
-        region: this.appInfo.integration?.bedrock?.region || '',
-        sessionKey: this.appInfo.integration?.bedrock?.sessionKey || ''
-      }, { emitEvent: false });
+      this.bedrockForm.patchValue(
+        {
+          accessKey: this.appInfo.integration?.bedrock?.accessKey || '',
+          secretKey: this.appInfo.integration?.bedrock?.secretKey || '',
+          region: this.appInfo.integration?.bedrock?.region || '',
+          sessionKey: this.appInfo.integration?.bedrock?.sessionKey || '',
+        },
+        { emitEvent: false },
+      );
     }
   }
 
   toggleMcpSettingsEdit(): void {
     this.isEditingMcpSettings = !this.isEditingMcpSettings;
     if (this.isEditingMcpSettings) {
-      this.loadMcpSettings(); 
+      this.loadMcpSettings();
     } else {
       this.mcpForm.reset(this.appInfo.integration?.mcp || {});
     }
@@ -614,8 +669,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       const mcpSettings: MCPSettings = this.mcpForm.get('mcpSettings')?.value;
 
       this.toast.showInfo('Updating project mcp settings');
-      
-      this.electronService.updateProjectMCPSettings(this.projectId as string, mcpSettings)
+
+      this.electronService
+        .updateProjectMCPSettings(this.projectId as string, mcpSettings)
         .then((result: { success: boolean; error?: string }) => {
           if (result.success) {
             this.logger.debug('MCP settings updated successfully');
@@ -637,14 +693,21 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   loadMcpSettings(): void {
-    this.electronService.getProjectMCPSettings(this.projectId as string)
-      .then((result: { success: boolean; settings?: MCPSettings; error?: string }) => {
-        if (result.success && result.settings) {
-          this.mcpForm.patchValue({ mcpSettings: result.settings });
-        } else {
-          throw new Error(result.error || 'Unknown error occurred');
-        }
-      })
+    this.electronService
+      .getProjectMCPSettings(this.projectId as string)
+      .then(
+        (result: {
+          success: boolean;
+          settings?: MCPSettings;
+          error?: string;
+        }) => {
+          if (result.success && result.settings) {
+            this.mcpForm.patchValue({ mcpSettings: result.settings });
+          } else {
+            throw new Error(result.error || 'Unknown error occurred');
+          }
+        },
+      )
       .catch((error: Error) => {
         this.logger.error('Error loading MCP settings:', error);
         this.toast.showError('Failed to load MCP settings');
