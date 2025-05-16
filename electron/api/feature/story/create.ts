@@ -9,6 +9,7 @@ import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
 import { getMcpToolsForActiveProvider } from '../../../mcp';
 import { MCPHub } from '../../../mcp/mcp-hub';
+import { isDevEnv } from '../../../utils/env';
 
 export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
@@ -63,10 +64,11 @@ export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promi
     };
     
     const config = {
-      "configurable": {
-        "thread_id": `${randomUUID()}_create_stories`,
-        "trace": trace
-      }
+      configurable: {
+        thread_id: `${randomUUID()}_create_stories`,
+        trace: trace,
+        sendMessagesInTelemetry: isDevEnv(),
+      },
     };
     
     const stream = userStoryWorkflow.streamEvents(initialState, {

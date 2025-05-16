@@ -87,6 +87,17 @@ const mcpListeners = {
   setProjectId: () => ipcRenderer.invoke("mcp:setProjectId"),
 }
 
+const windowListeners = {
+  onFullscreenChange: (callback: (isFullscreen: boolean) => void) => {
+    ipcRenderer.on("fullscreen-change", (_event, isFullscreen) => callback(isFullscreen));
+  },
+  removeFullscreenListener: () => {
+    ipcRenderer.removeAllListeners("fullscreen-change");
+  },
+  getFullscreenState: () => ipcRenderer.invoke("window:get-fullscreen"),
+  getPlatform: () => process.platform
+};
+
 const electronAPI = {
   ...electronListeners,
   ...coreListeners,
@@ -95,7 +106,8 @@ const electronAPI = {
   ...visualizationListeners,
   ...featureListeners,
   ...appAutoUpdaterListeners,
-  ...mcpListeners
+  ...mcpListeners,
+  ...windowListeners
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

@@ -9,6 +9,7 @@ import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
 import { ObservabilityManager } from '../../services/observability/observability.manager';
 import { getMcpToolsForActiveProvider } from '../../mcp';
 import { MCPHub } from '../../mcp/mcp-hub';
+import { isDevEnv } from '../../utils/env';
 
 export async function getSuggestions(_: IpcMainInvokeEvent, data: unknown): Promise<string[]> {
   try {
@@ -57,12 +58,13 @@ export async function getSuggestions(_: IpcMainInvokeEvent, data: unknown): Prom
     };
     
     const config = {
-      "configurable": {
-        "thread_id": `${randomUUID()}_get_suggestions`,
-        "trace": trace
-      }
+      configurable: {
+        thread_id: `${randomUUID()}_get_suggestions`,
+        trace: trace,
+        sendMessagesInTelemetry: isDevEnv(),
+      },
     };
-    
+
     const stream = suggestionWorkflow.streamEvents(initialState, {
       version: "v2",
       streamMode: "messages",

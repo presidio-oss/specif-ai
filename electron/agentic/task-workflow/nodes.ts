@@ -26,7 +26,8 @@ export const buildResearchNode = ({
     state: ITaskWorkflowStateAnnotation["State"],
     runnableConfig: TaskWorkflowRunnableConfig
   ) => {
-    const trace = runnableConfig.configurable?.trace;
+    const { trace, sendMessagesInTelemetry = false } =
+      runnableConfig.configurable ?? {};
     const span = trace?.span({
       name: "research",
     });
@@ -86,6 +87,7 @@ export const buildResearchNode = ({
         configurable: {
           trace: span,
           thread_id: runnableConfig.configurable?.thread_id,
+          sendMessagesInTelemetry: sendMessagesInTelemetry,
         },
       }
     );
@@ -108,7 +110,8 @@ export const buildGenerateTasksNode = (
     state: ITaskWorkflowStateAnnotation["State"],
     runnableConfig: TaskWorkflowRunnableConfig
   ) => {
-    const trace = runnableConfig.configurable?.trace;
+    const { trace, sendMessagesInTelemetry = false } =
+      runnableConfig.configurable ?? {};
     const span = trace?.span({
       name: "generate-tasks",
     });
@@ -123,9 +126,25 @@ export const buildGenerateTasksNode = (
         referenceInformation: state.referenceInformation,
       });
 
+      const generation = span?.generation({
+        name: "llm",
+        model: modelProvider.getModel().id,
+        environment: process.env.APP_ENVIRONMENT,
+        input: sendMessagesInTelemetry ? prompt : undefined,
+      });
+
       // LLM Call
       const model = modelProvider.getChatModel();
       const response = await model.invoke(prompt);
+
+      generation?.end({
+        usage: {
+          input: response.usage_metadata?.input_tokens,
+          output: response.usage_metadata?.output_tokens,
+          total: response.usage_metadata?.total_tokens,
+        },
+        output: sendMessagesInTelemetry ? response : undefined,
+      });
 
       let parsedTasks;
       try {
