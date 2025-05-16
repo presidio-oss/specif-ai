@@ -27,7 +27,7 @@ import { heroCog8Tooth } from '@ng-icons/heroicons/outline';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   protected themeConfiguration = environment.ThemeConfiguration;
-  protected isMacOS = navigator.platform.toLowerCase().includes('mac');
+  protected isMacOS = false;
   protected isFullscreen = false;
 
   startupService = inject(StartupService);
@@ -36,6 +36,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private electronService = inject(ElectronService);
 
   ngOnInit() {
+    this.electronService.getPlatform().then(platform => {
+      this.isMacOS = platform === 'darwin';
+    });
+
     this.electronService.onFullscreenChange((isFullscreen: boolean) => {
       this.ngZone.run(() => {
         this.isFullscreen = isFullscreen;
