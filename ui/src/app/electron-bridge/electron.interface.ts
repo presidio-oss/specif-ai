@@ -99,6 +99,7 @@ export interface ElectronAPI {
   onFullscreenChange: (callback: (isFullscreen: boolean) => void) => void;
   removeFullscreenListener: () => void;
   getFullscreenState: () => Promise<boolean>;
+  getPlatform: () => Promise<string>;
 }
 
 declare global {

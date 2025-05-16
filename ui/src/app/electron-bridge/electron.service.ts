@@ -598,4 +598,10 @@ export class ElectronService {
     }
     return false;
   }
+
+  async getPlatform() {
+    if (this.electronAPI) {
+      return this.electronAPI.invoke('get-platform');
+    }
+  }
 }
