@@ -1,19 +1,16 @@
 <div *ngIf="directories$ | async as directories">
   <!-- Main 3 column grid -->
   <div class="grid items-start gap-4 grid-cols-3 h-full">
-    <section aria-labelledby="section-2-title" class="h-full">
+    <section aria-labelledby="navigation" class="h-full">
       <div
         class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4"
       >
-        <div class="">
-          <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
-        </div>
-        <hr class="my-4" />
-        <ul role="list" class="min-h space-y-3">
+        <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
+        <ul role="list" class="min-h space-y-1.5">
           <li
-            class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
+            class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
             [ngClass]="{
-              'bg-secondary-50 border-secondary-300':
+              'bg-secondary-50 border-secondary-200':
                 selectedFolder?.title === 'solution',
               'bg-white border-transparent':
                 selectedFolder?.title !== 'solution',
@@ -28,31 +25,15 @@
             tabindex="0"
           >
             <div class="flex items-center">
-              <svg
-                class="text-xl mr-2"
+              <ng-icon
+                class="size-4 mr-2"
+                strokeWidth="2"
                 [ngClass]="{
                   'text-primary-600': selectedFolder?.title === 'solution',
                   'text-secondary-500': selectedFolder?.title !== 'solution',
                 }"
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M15 5.25H3C2.17157 5.25 1.5 5.92157 1.5 6.75V14.25C1.5 15.0784 2.17157 15.75 3 15.75H15C15.8284 15.75 16.5 15.0784 16.5 14.25V6.75C16.5 5.92157 15.8284 5.25 15 5.25Z"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M12 15.75V3.75C12 3.35218 11.842 2.97064 11.5607 2.68934C11.2794 2.40804 10.8978 2.25 10.5 2.25H7.5C7.10218 2.25 6.72064 2.40804 6.43934 2.68934C6.15804 2.97064 6 3.35218 6 3.75V15.75"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+                name="heroArchiveBox"
+              ></ng-icon>
               <h4
                 class="text-sm font-medium"
                 [ngClass]="{
@@ -68,9 +49,9 @@
           <ng-container *ngFor="let folder of directories; index as i">
             <li
               *ngIf="!isArchived(folder)"
-              class="flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-secondary-50 border-[0.5px]"
+              class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
               [ngClass]="{
-                'bg-secondary-50 border-secondary-300':
+                'bg-secondary-50 border-secondary-200':
                   selectedFolder?.title === folder.name,
                 'bg-white border-transparent':
                   selectedFolder?.title !== folder.name,
@@ -83,7 +64,8 @@
             >
               <div class="flex items-center">
                 <ng-icon
-                  class="w-5 h-5 text-xl mr-2"
+                  class="size-4 mr-2"
+                  strokeWidth="2"
                   *ngIf="folder.name === 'BRD'"
                   [ngClass]="{
                     'text-primary-600': selectedFolder?.title === folder.name,
@@ -92,7 +74,8 @@
                   name="heroBriefcase"
                 ></ng-icon>
                 <ng-icon
-                  class="w-5 h-5 text-xl mr-2"
+                  class="size-4 mr-2"
+                  strokeWidth="2"
                   *ngIf="folder.name === 'PRD'"
                   [ngClass]="{
                     'text-primary-600': selectedFolder?.title === folder.name,
@@ -101,7 +84,8 @@
                   name="heroSquares2x2"
                 ></ng-icon>
                 <ng-icon
-                  class="w-5 h-5 text-xl mr-2"
+                  class="size-4 mr-2"
+                  strokeWidth="2"
                   *ngIf="folder.name === 'NFR'"
                   [ngClass]="{
                     'text-primary-600': selectedFolder?.title === folder.name,
@@ -111,7 +95,8 @@
                 ></ng-icon>
 
                 <ng-icon
-                  class="w-5 h-5 text-xl mr-2"
+                  class="size-4 mr-2"
+                  strokeWidth="2"
                   *ngIf="folder.name === 'UIR'"
                   [ngClass]="{
                     'text-primary-600': selectedFolder?.title === folder.name,
@@ -145,11 +130,12 @@
           <ng-container *ngFor="let folder of haiFolder">
             <li
               *ngIf="!directoryContainsFolder(folder.key, directories)"
-              class="flex items-center justify-between p-2.5 rounded-lg bg-white"
+              class="flex items-center justify-between px-2 py-2 rounded-lg bg-white"
             >
               <div class="flex items-center">
                 <ng-icon
-                  class="text-secondary-500 w-5 h-5 text-xl mr-2"
+                  class="size-4 mr-2 text-secondary-500"
+                  strokeWidth="2"
                   [name]="getIconName(folder.key)"
                 ></ng-icon>
                 <h4 class="text-sm text-secondary-500 font-medium">
@@ -181,16 +167,17 @@
             role="button"
             tabindex="0"
             [ngClass]="{
-              'bg-secondary-50 border-secondary-300':
+              'bg-secondary-50 border-secondary-200':
                 selectedFolder?.title === 'app-integrations',
               'bg-white border-transparent':
                 selectedFolder?.title !== 'app-integrations',
             }"
-            class="flex cursor-pointer items-center justify-between p-2.5 rounded-lg bg-white hover:bg-secondary-50 border-[0.5px]"
+            class="flex cursor-pointer items-center justify-between px-2 py-2 rounded-lg bg-white hover:bg-secondary-50 border"
           >
             <div class="flex items-center">
               <ng-icon
-                class="w-5 h-5 text-xl mr-2"
+                class="size-4 mr-2"
+                strokeWidth="2"
                 [ngClass]="{
                   'text-primary-600':
                     selectedFolder?.title === 'app-integrations',
@@ -215,8 +202,7 @@
         </ul>
       </div>
     </section>
-    <!-- Left column -->
-    <section aria-labelledby="section-1-title" class="col-span-2 h-full">
+    <section aria-labelledby="Main Content" class="col-span-2 h-full">
       <div class="overflow-hidden rounded-lg bg-white border h-full">
         <div
           *ngIf="
@@ -236,29 +222,33 @@
             No documents available.
           </div>
         </div>
-        <div class="p-6" *ngIf="selectedFolder?.title === 'solution'">
-          <h1
-            class="text-title font-semibold text-secondary-700 mb-3 pb-3 border-b"
+        <div
+          class="divide-y h-[calc(100vh-200px)] overflow-auto"
+          *ngIf="selectedFolder?.title === 'solution'"
+        >
+          <h1 class="text-title font-semibold p-4">Solution Information</h1>
+          <div class="grid grid-cols-3 gap-4 p-4">
+            <p class="text-secondary-500">Title</p>
+            <h1 class="col-span-2 font-medium capitalize">
+              {{ appInfo.name }}
+            </h1>
+          </div>
+          <div class="grid grid-cols-3 gap-4 p-4">
+            <p class="text-secondary-500">Description</p>
+            <p class="col-span-2">{{ appInfo.description }}</p>
+          </div>
+          <div
+            class="grid grid-cols-3 gap-4 p-4"
+            *ngIf="appInfo.technicalDetails"
           >
-            Solution Information
-          </h1>
-          <div class="h-[calc(100vh-275px)] overflow-auto">
-            <h1 class="text-xl capitalize">{{ appInfo.name }}</h1>
-            <p class="text-secondary-700 pt-2 pb-3">
-              {{ appInfo.description }}
-            </p>
-            <div class="py-3 flex gap-3" *ngIf="appInfo.technicalDetails">
-              <div>
-                <ng-icon class="text-2xl" name="heroServerStack"></ng-icon>
-              </div>
-              <div>
-                <div class="text-secondary-500 text-xs">Technical Details</div>
-                <div>{{ appInfo.technicalDetails }}</div>
-              </div>
-            </div>
+            <p class="text-secondary-500">Technical Details</p>
+            <p class="col-span-2">{{ appInfo.technicalDetails }}</p>
           </div>
         </div>
-        <div class="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto" *ngIf="selectedFolder?.title === 'app-integrations'">
+        <div
+          class="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto"
+          *ngIf="selectedFolder?.title === 'app-integrations'"
+        >
           <h1
             class="text-title font-semibold text-secondary-950 mb-3 pb-3 border-b"
           >
