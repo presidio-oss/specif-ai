@@ -6,7 +6,7 @@ import {
   leakageGuard,
   piiGuard,
   secretGuard,
-  SelectionType,
+  SelectionType
 } from "@presidio-dev/hai-guardrails";
 import { LLMHandler } from "../services/llm/llm-handler";
 
@@ -17,7 +17,7 @@ export class GuardrailsShouldBlock extends Error {
   }
 }
 
-export const guardrailsEngine = new GuardrailsEngine({
+export let guardrailsEngine = new GuardrailsEngine({
   guards: [
     injectionGuard(
       {
@@ -42,6 +42,42 @@ export const guardrailsEngine = new GuardrailsEngine({
   ],
 });
 
+export function createComprehensiveGuardrails() {
+  // Injection protection with multiple tactics
+  const heuristicInjectionGuard = injectionGuard(
+    { roles: ['user'] },
+    { mode: 'heuristic', threshold: 0.8 }
+  )
+
+  const patternInjectionGuard = injectionGuard(
+    { roles: ['user'] },
+    { mode: 'pattern', threshold: 0.8 }
+  )
+
+  // Leakage protection
+  const leakageGuardrail = leakageGuard({ roles: ['user'] }, { mode: 'heuristic', threshold: 0.8 })
+
+  // PII and secret protection
+  const piiGuardrail = piiGuard({ mode: 'redact' })
+  const secretGuardrail = secretGuard({ mode: 'redact' })
+
+  // Create engine with all guards
+  return new GuardrailsEngine({
+    guards: [
+      // TODO: Enable heuristic injection guard when ready
+      // heuristicInjectionGuard,
+      patternInjectionGuard,
+      leakageGuardrail,
+      piiGuardrail,
+      secretGuardrail,
+    ],
+  })
+}
+
+guardrailsEngine = createComprehensiveGuardrails();
+
+// export const guardrailsEngine = createComprehensiveGuardrails();
+
 export const isBlockedByGuard = (guardResult: GuardrailsEngineResult) => {
   return guardResult.messagesWithGuardResult.some((message) =>
     message.messages.some((message) => !message.passed)
@@ -50,23 +86,24 @@ export const isBlockedByGuard = (guardResult: GuardrailsEngineResult) => {
 
 export const generateLLMMessage = (messages: string | any[]): LLMMessage[] => {
   if (typeof messages === "string") {
-    return [
-      {
-        role: "user",
-        content: messages,
-      },
-    ];
-  } else if (Array.isArray(messages)) {
-    return messages.map((message) => {
-      return {
-        ...message,
-        role: message.role as string,
-        content: message.content as string,
-      };
-    });
-  } else {
-    throw new Error("Invalid message format");
+    return [{
+      role: "user",
+      content: messages,
+    }];
   }
+  
+  if (Array.isArray(messages)) {
+    return messages.map(message => ({
+      role: message.role || "user",
+      content: typeof message.content === "string" 
+        ? message.content 
+        : message.content?.text || message.content,
+      ...(message.id && { id: message.id }),
+      ...(message.tool_calls && { tool_calls: message.tool_calls })
+    }));
+  }
+
+  throw new Error("Invalid message format");
 };
 
 type ProxyHandler<T extends LLMHandler> = {
@@ -81,16 +118,34 @@ type ProxyHandler<T extends LLMHandler> = {
     : never;
 };
 
-const DEFAULT_HANDLER: ProxyHandler<LLMHandler> = {
-  invoke: async (method, target, thisArg, args, guardrailsEngine) => {
-    const [messages, systemPrompt, operation] = args;
-    const llmMessages = generateLLMMessage(messages);
-    const guardResult = await guardrailsEngine.run(llmMessages);
+export async function validateGuardrails(messages: string | any[]): Promise<LLMMessage[]> {
+  const llmMessages = generateLLMMessage(messages);
+  
+  // Find messages that need validation (user messages)
+  const messagesToValidate = llmMessages.filter(msg => msg.role === "user");
+  
+  if (messagesToValidate.length === 0) {
+    return llmMessages; // No user messages to validate
+  }
+
+  // Validate only user messages
+  for (const message of messagesToValidate) {
+    const guardResult = await guardrailsEngine.run([message]);
+    console.log("Guard result:", JSON.stringify(guardResult));
     if (isBlockedByGuard(guardResult)) {
       throw new GuardrailsShouldBlock("Guardrails blocked the response");
     }
+  }
+
+  return llmMessages;
+}
+
+const DEFAULT_HANDLER: ProxyHandler<LLMHandler> = {
+  invoke: async (method, target, thisArg, args, guardrailsEngine) => {
+    const [messages, systemPrompt, operation] = args;
+    const validatedMessages = await validateGuardrails(messages);
     return method.apply(thisArg, [
-      guardResult.messages,
+      validatedMessages,
       systemPrompt,
       operation,
     ]);

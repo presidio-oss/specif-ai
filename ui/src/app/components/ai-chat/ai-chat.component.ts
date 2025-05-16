@@ -329,6 +329,8 @@ export class AiChatComponent implements OnInit {
               name: call.name,
               args: call.args || {},
             })),
+            blocked: item.blocked || undefined,
+            blockReason: item.blockedReason || undefined,
           };
         } else if (item.tool) {
           return {
@@ -397,7 +399,7 @@ export class AiChatComponent implements OnInit {
           if (chunk.blocked) {
             // Create new message if none exists
             if (!this.chatHistory.length || this.chatHistory[this.chatHistory.length - 1].assistant !== '') {
-              this.chatHistory.push({ assistant: chunk.blockedReason });
+              this.chatHistory.push({ assistant: '' });
             }
 
             this.updateLastAIMessage(chunk.blockedReason, [], {
@@ -518,6 +520,11 @@ export class AiChatComponent implements OnInit {
             });
           }
         });
+      }
+
+      if (metadata?.blocked) {
+        lastMessage.blocked = metadata.blocked;
+        lastMessage.blockReason = metadata.blockedReason;
       }
 
       this.chatHistory[this.chatHistory.length - 1] = { ...lastMessage };
