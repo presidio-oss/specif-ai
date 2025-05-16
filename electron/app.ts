@@ -161,8 +161,6 @@ function setupUIHandlers(indexPath: string, themeConfiguration: any) {
     mainWindow?.webContents.send("display-error", errorMessage);
   });
 
-  ipcMain.handle("get-platform", () => process.platform);
-
   ipcMain.on("load-url", (_event, serverConfig: string) => {
     if (serverConfig && isValidUrl(serverConfig)) {
       mainWindow

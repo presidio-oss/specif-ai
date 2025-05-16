@@ -599,9 +599,10 @@ export class ElectronService {
     return false;
   }
 
-  async getPlatform() {
+  getPlatform(): string {
     if (this.electronAPI) {
-      return this.electronAPI.invoke('get-platform');
+      return this.electronAPI.getPlatform();
     }
+    return '';
   }
 }
