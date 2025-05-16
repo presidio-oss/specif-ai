@@ -180,7 +180,7 @@ The Model Context Protocol (MCP) is a powerful integration framework that enable
 
 ### 📚 Built-in Integration: AWS Bedrock Knowledge Base
 
-Specifai includes native support for **AWS Bedrock Knowledge Base (KB)**. Configuration is available directly in the UI.
+Specifai includes native support for **AWS Bedrock Knowledge Base (KB)**. Configuration is available directly in the UI. For detailed setup instructions, see our [AWS Bedrock KB Configuration Guide](docs/aws-bedrock-kb-configuration.md).
 
 <div align="center">
   <img src="assets/img/mcp/aws-bedrock-kb-config.png" alt="AWS Bedrock KB Configuration" width="800">
@@ -225,7 +225,7 @@ Specifai is a powerful desktop application built to streamline and organize your
 
 ## 🗺 Roadmap
 - [x] Advanced BRD-PRD linking capabilities.
-- [ ] Agentic Workflow.
+- [x] Agentic Workflow.
 - [ ] Enhanced collaboration features.
 - [ ] Custom template support.
 
