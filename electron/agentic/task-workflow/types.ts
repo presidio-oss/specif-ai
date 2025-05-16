@@ -5,5 +5,6 @@ export interface TaskWorkflowRunnableConfig extends LangGraphRunnableConfig {
   configurable?: {
     trace?: LangfuseObservationClient;
     thread_id?: string;
+    sendMessagesInTelemetry?: boolean;
   };
 }

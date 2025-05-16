@@ -1,5 +1,5 @@
 <nav
-  class="flex"
+  class="flex [app-region:no-drag]"
   aria-label="Breadcrumb"
   *ngIf="breadcrumbs$ | async as breadcrumbs"
 >
@@ -27,8 +27,7 @@
       <a
         routerLink="/apps"
         (click)="navigateTo({ label: 'Solutions', url: '/apps' })"
-        class="inline-flex items-center text-sm font-normal text-secondary-300 hover:text-white cursor-pointer"
-        [class.text-white]="breadcrumbs.length == 0"
+        class="inline-flex items-center text-sm font-normal cursor-pointer"
         [class.font-semibold]="breadcrumbs.length == 0"
       >
         <ng-icon class="text-sm mr-1" name="heroHome" strokeWidth="2"></ng-icon>
@@ -44,10 +43,9 @@
           (keydown.space)="navigateTo(breadcrumb); $event.preventDefault()"
           role="button"
           tabindex="0"
-          [class.text-white]="last"
           [class.font-semibold]="last"
           [class.cursor-pointer]="breadcrumb.url"
-          class="ml-1 text-sm text-secondary-300 hover:text-white cursor-pointer"
+          class="ml-1 text-sm cursor-pointer"
           [matTooltip]="breadcrumb.tooltipLabel || ''"
           >{{ breadcrumb.label }}</span
         >

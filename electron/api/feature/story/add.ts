@@ -8,16 +8,24 @@ import type { LLMConfigModel } from '../../../services/llm/llm-types';
 import { repairJSON } from '../../../utils/custom-json-parser';
 import { traceBuilder } from '../../../utils/trace-builder';
 import { COMPONENT, OPERATIONS } from '../../../helper/constants';
+import { ObservabilityManager } from '../../../services/observability/observability.manager';
+import { HumanMessage } from "@langchain/core/messages";
+import { isDevEnv } from '../../../utils/env';
 
 export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Promise<AddUserStoryResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const o11y = ObservabilityManager.getInstance();
+    const trace = o11y.createTrace('add-user-story');
+
     if (!llmConfig) {
       throw new Error('LLM configuration not found');
     }
 
     console.log('[add-user-story] Using LLM config:', llmConfig);
+    const validationSpan = trace.span({name: "input-validation"});
     const validatedData = addUserStorySchema.parse(data) as AddUserStoryRequest;
+    validationSpan.end();
 
     let featureRequest = '';
     let fileContent = '';
@@ -57,8 +65,27 @@ export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Pr
     );
 
     const traceName = traceBuilder(COMPONENT.STORY, OPERATIONS.ADD);
+    const llmSpan = trace.span({
+      name: "add-user-story",
+    });
+    
+    const generation = llmSpan.generation({
+      name: "llm",
+      model: llmConfig.activeProvider,
+      environment: process.env.APP_ENVIRONMENT,
+      input: isDevEnv() ? [new HumanMessage(prompt)] : undefined,
+    });
+
     const response = await handler.invoke(messages, null, traceName);
     console.log('[add-user-story] LLM Response:', response);
+
+    generation.end({
+      output: isDevEnv() ? response : undefined,
+    });
+
+    llmSpan.end({
+      statusMessage: "Successfully generated user story"
+    });
 
     let result;
     try {
@@ -70,6 +97,10 @@ export async function addUserStory(event: IpcMainInvokeEvent, data: unknown): Pr
       result = parsed;
     } catch (error) {
       console.error('[add-user-story] Error parsing LLM response:', error);
+      llmSpan.end({
+        level: "ERROR",
+        statusMessage: `Error parsing LLM response: ${error}`
+      });
       throw new Error('Failed to parse LLM response as JSON');
     }
 

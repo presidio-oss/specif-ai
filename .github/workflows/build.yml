@@ -31,11 +31,17 @@ on:
         required: true
       ENABLE_LANGFUSE:
         required: true
-      LANGFUSE_SECRET_KEY:
+      DEV_LANGFUSE_SECRET_KEY:
         required: true
-      LANGFUSE_PUBLIC_KEY:
+      DEV_LANGFUSE_PUBLIC_KEY:
         required: true
-      LANGFUSE_BASE_URL: 
+      DEV_LANGFUSE_BASE_URL:
+        required: true
+      PROD_LANGFUSE_SECRET_KEY:
+        required: true
+      PROD_LANGFUSE_PUBLIC_KEY:
+        required: true
+      PROD_LANGFUSE_BASE_URL:
         required: true
 
 jobs:
@@ -122,7 +128,7 @@ jobs:
 
           # Append APP_ENVIRONMENT configuration to .env file
           Add-Content -Path .env -Value "APP_ENVIRONMENT=${{ inputs.environment }}"
-          
+
           # Append to .env file with PostHog configuration
           Add-Content -Path .env -Value "ENABLE_POSTHOG=$env:ENABLE_POSTHOG"
           Add-Content -Path .env -Value "POSTHOG_HOST=$env:POSTHOG_HOST"
@@ -146,27 +152,26 @@ jobs:
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
           ENABLE_LANGFUSE: ${{ secrets.ENABLE_LANGFUSE }}
-          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
-          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
-
+          LANGFUSE_SECRET_KEY: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_SECRET_KEY || secrets.DEV_LANGFUSE_SECRET_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_PUBLIC_KEY || secrets.DEV_LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_BASE_URL: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_BASE_URL || secrets.DEV_LANGFUSE_BASE_URL }}
 
       - name: Package Windows Build
         run: |
           cd electron
           $VERSION = (node -e "console.log(require('./package.json').version);" | Out-String).Trim()
-          
+
           # Create out directory
           New-Item -ItemType Directory -Path out -Force
-          
+
           # Compress win-unpacked to out folder
           Compress-Archive -Path dist/win-unpacked/* -DestinationPath out/win-unpacked.zip
-          
+
           # Copy necessary files to out folder
           Copy-Item dist/latest.yml out/
           Copy-Item dist/*Setup*.exe out/ -ErrorAction SilentlyContinue
           Copy-Item dist/*Setup*.exe.blockmap out/ -ErrorAction SilentlyContinue
-          
+
           # Upload to S3 for long-term storage using sync
           aws s3 sync out/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/"
 
@@ -243,7 +248,7 @@ jobs:
 
           # Create .env file with APP_ENVIRONMENT configuration
           echo "APP_ENVIRONMENT=${{ inputs.environment }}" >> .env
-          
+
           # Create .env file with PostHog configuration
           echo "ENABLE_POSTHOG=$ENABLE_POSTHOG" >> .env
           echo "POSTHOG_HOST=$POSTHOG_HOST" >> .env
@@ -263,9 +268,9 @@ jobs:
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
           ENABLE_LANGFUSE: ${{ secrets.ENABLE_LANGFUSE }}
-          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
-          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
+          LANGFUSE_SECRET_KEY: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_SECRET_KEY || secrets.DEV_LANGFUSE_SECRET_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_PUBLIC_KEY || secrets.DEV_LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_BASE_URL: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_BASE_URL || secrets.DEV_LANGFUSE_BASE_URL }}
 
       - name: Package and Upload to S3
         id: package_and_upload
