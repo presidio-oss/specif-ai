@@ -111,7 +111,7 @@
                     </div>
 
                     <!-- Content Preview -->
-                    <div class="bg-secondary-50 border border-secondary-200 rounded-lg px-3 py-2">
+                    <div class="bg-primary-50 border border-primary-500 rounded-lg px-3 py-2">
                       <app-rich-text-editor
                         editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs"
                         mode="view"
@@ -163,19 +163,27 @@
               <div class="flex-1 flex max-w-[75%] relative min-h-10 items-center">
                 <div
                   [ngClass]="{
-                    'inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative': !chat.blocked,
-                    'inline-block bg-danger-100 px-4 py-3 rounded-2xl text-sm border border-danger-200 relative': chat.blocked
+                    'bg-secondary-50 border-[1px] border-secondary-200 rounded-lg px-3 py-2 text-sm': !chat.blocked,
+                    'bg-danger-100 px-4 py-3 rounded-2xl text-sm border border-danger-200': chat.blocked
                   }"
                 >
+                  <!-- Assistant content -->
+                  <div *ngIf="chat.assistant">
+                    <div class="message-content">
+                      <app-rich-text-editor
+                        editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs"
+                        mode="view"
+                        [content]="chat.assistant"
+                        [editable]="false"
+                        [editorClass]="'!rounded-none'">
+                      </app-rich-text-editor>
 
-                {{ chat.blocked && chat.blockedReason ? chat.assistant + ', ' + chat.blockedReason : chat.assistant }}
-
-                <!-- Assistant content -->
-                <div *ngIf="chat.assistant">
-                  <app-rich-text-editor editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs" mode="view"
-                    [content]="chat.assistant" [editable]="false" [editorClass]="'!rounded-none'">
-                  </app-rich-text-editor>
-                </div>
+                      <!-- Blocked Reason -->
+                      <div *ngIf="chat.blocked && chat.blockedReason" class="mt-2 text-sm text-danger-700 font-medium">
+                        {{ chat.blockedReason }}
+                      </div>
+                    </div>
+                  </div>
 
                   <!-- Unified feedback badge with two buttons -->
                   <div

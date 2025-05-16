@@ -22,14 +22,16 @@ import { z } from "zod";
 import { isDevEnv } from "../../utils/env";
 
 export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
+  let validatedData: ChatWithAIParams | undefined;
+  
   try {
     const o11y = ObservabilityManager.getInstance();
-    const trace = o11y.createTrace("chat-with-ai");
+    const trace = o11y.createTrace('chat-with-ai');
 
-    const llmConfig = store.get<LLMConfigModel>("llmConfig");
+    const llmConfig = store.get<LLMConfigModel>('llmConfig');
 
     if (!llmConfig) {
-      throw new Error("LLM configuration not found");
+      throw new Error('LLM configuration not found');
     }
 
     const model = buildLangchainModelProvider(
@@ -37,8 +39,8 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const validationSpan = trace.span({ name: "input-validation" });
-    const validatedData = await ChatWithAISchema.parseAsync(data);
+    const validationSpan = trace.span({ name: 'input-validation' });
+    validatedData = await ChatWithAISchema.parseAsync(data);
     validationSpan.end();
 
     const memoryCheckpointer = new MemorySaver();
@@ -71,7 +73,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
         ],
       },
       {
-        version: "v2",
+        version: 'v2',
         ...config,
       }
     );
@@ -85,7 +87,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
     });
 
     const completionEvent = {
-      event: "specif.chat.complete",
+      event: 'specif.chat.complete',
       state: finalState,
     };
 
@@ -96,7 +98,32 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
 
     return finalState;
   } catch (error) {
-    console.error("[chat-with-ai] error", error);
+    console.error('[chat-with-ai] error', error);
+    _.sender.send(`core:${validatedData?.requestId}-chatStream`, {
+      event: 'on_chat_model_stream',
+      metadata: {
+        langgraph_node: 'llm',
+      },
+      data: {
+        chunk: {
+          response: 'Request not processed',
+          blocked: true,
+          blockedReason:
+            'Prompt contains malicious content, that violates our security policies.',
+        },
+      },
+    });
+    const blockedState = {
+      messages: validatedData?.chatHistory || [],
+      conversationSummary: '',
+      structuredResponse: {
+        response: 'Request not processed',
+        blocked: true,
+        blockedReason:
+          'Prompt contains malicious content, that violates our security policies.',
+      },
+    };
+    return blockedState;
   }
 };
 
