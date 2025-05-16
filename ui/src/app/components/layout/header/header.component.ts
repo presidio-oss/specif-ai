@@ -36,9 +36,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private electronService = inject(ElectronService);
 
   ngOnInit() {
-    this.electronService.getPlatform().then(platform => {
-      this.isMacOS = platform === 'darwin';
-    });
+    this.isMacOS = this.electronService.getPlatform() === 'darwin';
 
     this.electronService.onFullscreenChange((isFullscreen: boolean) => {
       this.ngZone.run(() => {

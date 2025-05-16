@@ -94,7 +94,8 @@ const windowListeners = {
   removeFullscreenListener: () => {
     ipcRenderer.removeAllListeners("fullscreen-change");
   },
-  getFullscreenState: () => ipcRenderer.invoke("window:get-fullscreen")
+  getFullscreenState: () => ipcRenderer.invoke("window:get-fullscreen"),
+  getPlatform: () => process.platform
 };
 
 const electronAPI = {
