@@ -74,7 +74,7 @@
             </div>
             <!-- File attachments -->
             <div
-              class="p-2 bg-secondary-100 border border-secondary-200 rounded-2xl w-fit max-w-[75%]"
+              class="p-2 bg-secondary-100 border rounded-2xl w-fit max-w-[75%]"
               *ngIf="chat.files"
             >
               <div class="flex flex-col gap-2">
@@ -157,7 +157,11 @@
 
                     <!-- Content Preview -->
                     <div
+<<<<<<< HEAD
                       class="bg-primary-50 border border-primary-500 rounded-lg px-3 py-2"
+=======
+                      class="bg-secondary-50 border border-secondary-200 rounded-lg px-3 py-2"
+>>>>>>> 0b7867b (refactor: standardize border styles across components for consistency)
                     >
                       <app-rich-text-editor
                         editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs"
@@ -222,7 +226,11 @@
               >
                 <div
                   [ngClass]="{
+<<<<<<< HEAD
                     'bg-secondary-50 border-[1px] border-secondary-200 rounded-lg px-3 py-2 text-sm':
+=======
+                    'bg-secondary-50 border rounded-lg px-3 py-2 text-sm':
+>>>>>>> 0b7867b (refactor: standardize border styles across components for consistency)
                       !chat.blocked,
                     'bg-danger-100 px-4 py-3 rounded-2xl text-sm border border-danger-200':
                       chat.blocked,
@@ -230,6 +238,7 @@
                 >
                   <!-- Assistant content -->
                   <div *ngIf="chat.assistant">
+<<<<<<< HEAD
                     <div class="message-content">
                       <app-rich-text-editor
                         editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs"
@@ -247,6 +256,16 @@
                         {{ chat.blockedReason }}
                       </div>
                     </div>
+=======
+                    <app-rich-text-editor
+                      editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs"
+                      mode="view"
+                      [content]="chat.assistant"
+                      [editable]="false"
+                      [editorClass]="'!rounded-none'"
+                    >
+                    </app-rich-text-editor>
+>>>>>>> 0b7867b (refactor: standardize border styles across components for consistency)
                   </div>
 
                   <!-- Unified feedback badge with two buttons -->
@@ -419,7 +438,7 @@
       <!-- Selected Files Display -->
       <div
         *ngIf="selectedFiles.length > 0"
-        class="max-h-28 overflow-y-auto border-t border-secondary-300"
+        class="max-h-28 overflow-y-auto border-t"
       >
         <div
           *ngFor="let file of selectedFiles; let i = index"
