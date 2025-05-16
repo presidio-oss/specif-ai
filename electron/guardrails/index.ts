@@ -17,45 +17,20 @@ export class GuardrailsShouldBlock extends Error {
   }
 }
 
-export let guardrailsEngine = new GuardrailsEngine({
-  guards: [
-    injectionGuard(
-      {
-        selection: SelectionType.Last,
-      },
-      {
-        mode: "pattern",
-        threshold: 0.95,
-      }
-    ),
-    leakageGuard(
-      {
-        selection: SelectionType.Last,
-      },
-      {
-        mode: "pattern",
-        threshold: 0.95,
-      }
-    ),
-    piiGuard(),
-    secretGuard(),
-  ],
-});
-
 export function createComprehensiveGuardrails() {
   // Injection protection with multiple tactics
   const heuristicInjectionGuard = injectionGuard(
-    { roles: ['user'] },
+    { roles: ['user'], selection: SelectionType.Last },
     { mode: 'heuristic', threshold: 0.8 }
   )
 
   const patternInjectionGuard = injectionGuard(
-    { roles: ['user'] },
+    { roles: ['user'], selection: SelectionType.Last },
     { mode: 'pattern', threshold: 0.8 }
   )
 
   // Leakage protection
-  const leakageGuardrail = leakageGuard({ roles: ['user'] }, { mode: 'heuristic', threshold: 0.8 })
+  const leakageGuardrail = leakageGuard({ roles: ['user'], selection: SelectionType.Last }, { mode: 'heuristic', threshold: 0.8 })
 
   // PII and secret protection
   const piiGuardrail = piiGuard({ mode: 'redact' })
@@ -74,7 +49,7 @@ export function createComprehensiveGuardrails() {
   })
 }
 
-guardrailsEngine = createComprehensiveGuardrails();
+export const guardrailsEngine = createComprehensiveGuardrails();
 
 // export const guardrailsEngine = createComprehensiveGuardrails();
 
