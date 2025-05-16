@@ -67,7 +67,7 @@ import { ThreeBounceLoaderComponent } from "../three-bounce-loader/three-bounce-
     ThreeBounceLoaderComponent
 ],
   providers: [
-    provideIcons({ 
+    provideIcons({
       heroDocumentPlus,
       heroCheck,
       heroPaperClip,
@@ -329,6 +329,8 @@ export class AiChatComponent implements OnInit {
               name: call.name,
               args: call.args || {},
             })),
+            blocked: item.blocked || undefined,
+            blockReason: item.blockedReason || undefined,
           };
         } else if (item.tool) {
           return {
@@ -387,13 +389,32 @@ export class AiChatComponent implements OnInit {
         // when the chat model in llm node streams a chunk of data
         // update the last message with the chunk
         case 'on_chat_model_stream': {
-          if(event["metadata"]["langgraph_node"] === "llm"){
-            const chunk = event.data.chunk;
+          const chunk = event.data.chunk;
 
-            if(chunk.content){
-              this.generateLoader = false;
+          if(chunk.content){
+            this.generateLoader = false;
+          }
+
+          // Handle blocked messages
+          if (chunk.blocked) {
+            // Create new message if none exists
+            if (!this.chatHistory.length || this.chatHistory[this.chatHistory.length - 1].assistant !== '') {
+              this.chatHistory.push({ assistant: '' });
             }
 
+            this.updateLastAIMessage(chunk.blockedReason, [], {
+              blocked: true,
+              blockedReason: chunk.blockedReason
+            });
+
+            // Add visual indicator for blocked message
+            this.chatHistory[this.chatHistory.length - 1].blocked = true;
+            this.chatHistory[this.chatHistory.length - 1].blockReason = chunk.blockedReason;
+            this.toastService.showWarning('Message was blocked: ' + chunk.blockedReason);
+
+            // Ensure loader is hidden for blocked messages
+            this.generateLoader = false;
+          } else if (event["metadata"]?.["langgraph_node"] === "llm") {
             this.updateLastAIMessage(chunk.content, []);
           }
           break;
@@ -470,9 +491,9 @@ export class AiChatComponent implements OnInit {
     this.getSuggestion();
   }
 
-  updateLastAIMessage(content?: string, toolCalls?: any[]) {
+  updateLastAIMessage(content?: string, toolCalls?: any[], metadata?: { blocked?: boolean, blockedReason?: string }) {
     const lastMessage = this.chatHistory[this.chatHistory.length - 1];
-    
+
     if (lastMessage?.assistant !== undefined) {
       // Update existing assistant message
       if (content) {
@@ -501,6 +522,11 @@ export class AiChatComponent implements OnInit {
         });
       }
 
+      if (metadata?.blocked) {
+        lastMessage.blocked = metadata.blocked;
+        lastMessage.blockReason = metadata.blockedReason;
+      }
+
       this.chatHistory[this.chatHistory.length - 1] = { ...lastMessage };
     } else if (content || (toolCalls && toolCalls.length > 0)) {
       // Create new assistant message
@@ -513,6 +539,7 @@ export class AiChatComponent implements OnInit {
               args: call.args || {},
             }))
           : [],
+        ...(metadata || {})
       });
     }
 
@@ -578,7 +605,7 @@ export class AiChatComponent implements OnInit {
   removeFile(index: number) {
     // Remove the file from selectedFiles array
     this.selectedFiles.splice(index, 1);
-    
+
     // Reset and rebuild selectedFilesContent from remaining files
     this.selectedFilesContent = '';
     this.selectedFiles.forEach(file => {
@@ -625,15 +652,15 @@ export class AiChatComponent implements OnInit {
   converse(message: string) {
     this.responseStatus = true;
     this.selectedSuggestion = message;
-    this.chatSuggestions = []; 
+    this.chatSuggestions = [];
 
     if (message || this.selectedFiles.length > 0) {
       this.generateLoader = true;
-      
+
       // Add user message and files to chat history
       if (message && this.selectedFiles.length > 0) {
         // Both message and files
-        this.chatHistory = [...this.chatHistory, { 
+        this.chatHistory = [...this.chatHistory, {
           user: message,
           files: this.selectedFiles.map(f => ({
             name: f.name,
@@ -643,7 +670,7 @@ export class AiChatComponent implements OnInit {
         }];
       } else if (this.selectedFiles.length > 0) {
         // Only files
-        this.chatHistory = [...this.chatHistory, { 
+        this.chatHistory = [...this.chatHistory, {
           files: this.selectedFiles.map(f => ({
             name: f.name,
             size: this.formatFileSize(f.size)
@@ -654,7 +681,7 @@ export class AiChatComponent implements OnInit {
         // Only message
         this.chatHistory = [...this.chatHistory, { user: message }];
       }
-      
+
       this.finalCall();
 
       // Clear message and files after sending
@@ -672,14 +699,14 @@ export class AiChatComponent implements OnInit {
   onKbToggle(isActive: boolean) {
     this.isKbActive = isActive;
     this.kb = isActive ? this.metadata.integration?.bedrock?.kbId : '';
-    
+
     // Update base payload with new KB setting
     this.basePayload = {
       ...this.basePayload,
       knowledgeBase: this.kb
     };
 
-    this.getSuggestion();    
+    this.getSuggestion();
   }
 
   onChatInputKeyDown(event: KeyboardEvent) {

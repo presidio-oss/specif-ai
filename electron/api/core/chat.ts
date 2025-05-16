@@ -20,16 +20,55 @@ import { ObservabilityManager } from "../../services/observability/observability
 import { store } from "../../services/store";
 import { z } from "zod";
 import { isDevEnv } from "../../utils/env";
+import { APP_MESSAGES } from '../../constants/message.constants';
+import { GuardrailsShouldBlock, validateGuardrails } from "../../guardrails";
+
+// Message type mapping
+const MESSAGE_TYPES = {
+  SystemMessage: "system",
+  HumanMessage: "user",
+  AIMessage: "assistant",
+  ToolMessage: "tool"
+} as const;
+
+// Helper functions for message conversion
+function determineLangchainMessageRole(message: any): string {
+  if (message.constructor && message.constructor.name in MESSAGE_TYPES) {
+    return MESSAGE_TYPES[message.constructor.name as keyof typeof MESSAGE_TYPES];
+  }
+  return "user";
+}
+
+function extractContent(content: any): string {
+  if (Array.isArray(content)) {
+    return content
+      .filter(item => item.type === "text")
+      .map(item => item.text)
+      .join("\n");
+  }
+  return content?.toString() || "";
+}
+
+export function convertToGuardrailMessage(message: any): any {
+  return {
+    role: determineLangchainMessageRole(message),
+    content: extractContent(message.content),
+    ...(message.id && { id: message.id }),
+    ...(message.tool_calls && { tool_calls: message.tool_calls })
+  };
+}
 
 export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
+  let validatedData: ChatWithAIParams | undefined;
+  
   try {
     const o11y = ObservabilityManager.getInstance();
-    const trace = o11y.createTrace("chat-with-ai");
+    const trace = o11y.createTrace('chat-with-ai');
 
-    const llmConfig = store.get<LLMConfigModel>("llmConfig");
+    const llmConfig = store.get<LLMConfigModel>('llmConfig');
 
     if (!llmConfig) {
-      throw new Error("LLM configuration not found");
+      throw new Error('LLM configuration not found');
     }
 
     const model = buildLangchainModelProvider(
@@ -37,8 +76,8 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const validationSpan = trace.span({ name: "input-validation" });
-    const validatedData = await ChatWithAISchema.parseAsync(data);
+    const validationSpan = trace.span({ name: 'input-validation' });
+    validatedData = await ChatWithAISchema.parseAsync(data);
     validationSpan.end();
 
     const memoryCheckpointer = new MemorySaver();
@@ -62,16 +101,26 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
     };
 
     const messages = transformToLangchainMessages(validatedData.chatHistory);
+    const allMessages = [
+      new SystemMessage(chatWithAIPrompt(validatedData)),
+      ...messages,
+    ];
+
+    // Convert messages to guardrail format and validate
+    // Get last user message for guardrails validation
+    const lastUserMessage = messages[messages.length - 1];
+    if (lastUserMessage) {
+      // Only validate the last message
+      const lastMessageForGuardrails = convertToGuardrailMessage(lastUserMessage);
+      await validateGuardrails([lastMessageForGuardrails]);
+    }
 
     const stream = agent.streamEvents(
       {
-        messages: [
-          new SystemMessage(chatWithAIPrompt(validatedData)),
-          ...messages,
-        ],
+        messages: allMessages,
       },
       {
-        version: "v2",
+        version: 'v2',
         ...config,
       }
     );
@@ -85,7 +134,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
     });
 
     const completionEvent = {
-      event: "specif.chat.complete",
+      event: 'specif.chat.complete',
       state: finalState,
     };
 
@@ -96,7 +145,37 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
 
     return finalState;
   } catch (error) {
-    console.error("[chat-with-ai] error", error);
+    console.error('[chat-with-ai] error', error);
+    
+    const errorResponse = error instanceof GuardrailsShouldBlock 
+      ? {
+          response: 'Request blocked by guardrails',
+          blocked: true,
+          blockedReason: APP_MESSAGES.BLOCKED_REASON,
+        }
+      : {
+          response: 'Request not processed',
+          blocked: true,
+          blockedReason: APP_MESSAGES.RESPONSE_NOT_PROCESSES,
+        };
+    _.sender.send(`core:${validatedData?.requestId}-chatStream`, {
+      event: 'on_chat_model_stream',
+      metadata: {
+        langgraph_node: 'llm',
+      },
+      data: {
+        chunk: errorResponse,
+      },
+    });
+    const blockedState = {
+      messages: validatedData?.chatHistory || [],
+      conversationSummary: '',
+      structuredResponse: {
+        response: errorResponse.response,
+        blocked: true,
+        blockedReason: errorResponse.blockedReason      },
+    };
+    return blockedState;
   }
 };
 

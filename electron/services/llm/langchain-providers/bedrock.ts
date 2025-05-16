@@ -1,6 +1,8 @@
 import { ChatBedrockConverse } from "@langchain/aws";
 import { LLMConfig, LLMError, ModelInfoV1 } from "../llm-types";
 import { LangChainModelProvider } from "./base";
+import { LangChainChatGuardrails } from "@presidio-dev/hai-guardrails"
+import { guardrailsEngine } from "../../../guardrails";
 
 export enum BedrockModelId {
   AMAZON_NOVA_PRO_V1 = "amazon.nova-pro-v1:0",
@@ -80,16 +82,19 @@ export class BedrockLangChainProvider implements LangChainModelProvider {
     this.configData = this.getConfig(config);
     const modelInfo = BedrockModels[this.configData.model];
 
-    this.model = new ChatBedrockConverse({
-      model: this.transformModelId(),
-      region: this.configData.region,
-      credentials: {
-        accessKeyId: this.configData.accessKeyId,
-        secretAccessKey: this.configData.secretAccessKey,
-        sessionToken: this.configData.sessionToken,
-      },
-      maxTokens: modelInfo.maxTokens ?? 8192,
-    });
+    this.model = LangChainChatGuardrails(
+      new ChatBedrockConverse({
+        model: this.transformModelId(),
+        region: this.configData.region,
+        credentials: {
+          accessKeyId: this.configData.accessKeyId,
+          secretAccessKey: this.configData.secretAccessKey,
+          sessionToken: this.configData.sessionToken,
+        },
+        maxTokens: modelInfo.maxTokens ?? 8192,
+      }),
+      guardrailsEngine
+    );
   }
 
   private transformModelId(): string {

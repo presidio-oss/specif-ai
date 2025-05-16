@@ -1,21 +1,23 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { LLMConfig, LLMError, ModelInfoV1 } from "../llm-types";
-import { LangChainModelProvider } from "./base";
+import { ChatOpenAI } from '@langchain/openai';
+import { LLMConfig, LLMError, ModelInfoV1 } from '../llm-types';
+import { LangChainModelProvider } from './base';
+import { LangChainChatGuardrails } from '@presidio-dev/hai-guardrails';
+import { guardrailsEngine } from '../../../guardrails';
 
 export enum OpenAiModelId {
-  O3 = "o3",
-  O4_MINI = "o4-mini",
-  GPT_4_1 = "gpt-4.1",
-  GPT_4_1_MINI = "gpt-4.1-mini",
-  GPT_4_1_NANO = "gpt-4.1-nano",
-  O3_MINI = "o3-mini",
-  O1 = "o1",
-  O1_PREVIEW = "o1-preview",
-  O1_MINI = "o1-mini",
-  GPT_4O = "gpt-4o",
-  GPT_4O_MINI = "gpt-4o-mini",
-  CHATGPT_4O_LATEST = "chatgpt-4o-latest",
-  GPT_4_5_PREVIEW = "gpt-4.5-preview",
+  O3 = 'o3',
+  O4_MINI = 'o4-mini',
+  GPT_4_1 = 'gpt-4.1',
+  GPT_4_1_MINI = 'gpt-4.1-mini',
+  GPT_4_1_NANO = 'gpt-4.1-nano',
+  O3_MINI = 'o3-mini',
+  O1 = 'o1',
+  O1_PREVIEW = 'o1-preview',
+  O1_MINI = 'o1-mini',
+  GPT_4O = 'gpt-4o',
+  GPT_4O_MINI = 'gpt-4o-mini',
+  CHATGPT_4O_LATEST = 'chatgpt-4o-latest',
+  GPT_4_5_PREVIEW = 'gpt-4.5-preview',
 }
 
 const OpenAiModels: Record<OpenAiModelId, ModelInfoV1> = {
@@ -88,23 +90,26 @@ export class OpenAILangChainProvider implements LangChainModelProvider {
     this.configData = this.getConfig(config);
     const modelInfo = OpenAiModels[this.configData.model];
 
-    this.model = new ChatOpenAI({
-      openAIApiKey: this.configData.apiKey,
-      modelName: this.configData.model,
-      maxRetries: this.configData.maxRetries,
-      configuration: {
-        baseURL: this.configData.baseUrl,
-      },
-      maxTokens: modelInfo.maxTokens,
-    });
+    this.model = LangChainChatGuardrails(
+      new ChatOpenAI({
+        openAIApiKey: this.configData.apiKey,
+        modelName: this.configData.model,
+        maxRetries: this.configData.maxRetries,
+        configuration: {
+          baseURL: this.configData.baseUrl,
+        },
+        maxTokens: modelInfo.maxTokens,
+      }),
+      guardrailsEngine
+    );
   }
 
   getConfig(config: Partial<OpenAIConfig>): OpenAIConfig {
     if (!config.apiKey) {
-      throw new LLMError("OpenAI API key is required", "openai");
+      throw new LLMError('OpenAI API key is required', 'openai');
     }
     if (!config.model) {
-      throw new LLMError("Model ID is required", "openai");
+      throw new LLMError('Model ID is required', 'openai');
     }
 
     return {
@@ -124,7 +129,7 @@ export class OpenAILangChainProvider implements LangChainModelProvider {
 
     return {
       id: this.configData.model,
-      provider: "openai",
+      provider: 'openai',
       info: modelInfo,
     };
   }

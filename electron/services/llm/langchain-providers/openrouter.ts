@@ -1,6 +1,8 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { LLMConfig, LLMError } from "../llm-types";
 import { LangChainModelProvider } from "./base";
+import { LangChainChatGuardrails } from "@presidio-dev/hai-guardrails"
+import { guardrailsEngine } from "../../../guardrails";
 
 interface OpenRouterConfig extends LLMConfig {
   apiKey: string;
@@ -15,13 +17,16 @@ export class OpenRouterLangChainProvider implements LangChainModelProvider {
 
   constructor(config: Partial<OpenRouterConfig>) {
     this.configData = this.getConfig(config);
-    this.model = new ChatOpenAI({
-      openAIApiKey: this.configData.apiKey,
-      modelName: this.configData.model,
-      configuration: {
-        baseURL: this.configData.baseUrl || this.defaultBaseUrl,
-      },
-    });
+    this.model = LangChainChatGuardrails(
+      new ChatOpenAI({
+        openAIApiKey: this.configData.apiKey,
+        modelName: this.configData.model,
+        configuration: {
+          baseURL: this.configData.baseUrl || this.defaultBaseUrl,
+        },
+      }),
+      guardrailsEngine
+    );
   }
 
   getConfig(config: Partial<OpenRouterConfig>): OpenRouterConfig {
