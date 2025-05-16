@@ -28,7 +28,7 @@ function initializeConfig() {
     indexPath: app.isPackaged
       ? path.join(process.resourcesPath, "ui")
       : path.resolve(process.cwd(), "ui"),
-    themeConfiguration: JSON.parse(process.env.THEME_CONFIGURATION || '{}')
+    themeConfiguration: JSON.parse(process.env.THEME_CONFIGURATION || "{}"),
   };
 }
 
@@ -60,6 +60,7 @@ function createWindow(indexPath: string, themeConfiguration: any) {
       contextIsolation: true,
       nodeIntegration: false,
     },
+    titleBarStyle: "hiddenInset",
     icon: path.join(__dirname, getIconPath(themeConfiguration)),
   });
 
@@ -76,7 +77,6 @@ function createWindow(indexPath: string, themeConfiguration: any) {
       });
   }
 
-
   mainWindow.on("closed", () => {
     mainWindow = null;
     app.quit();
@@ -90,21 +90,41 @@ function createWindow(indexPath: string, themeConfiguration: any) {
 }
 
 function onAppReload(indexPath: string) {
-  mainWindow?.loadFile(`${indexPath}/index.html`).then(() => {
-    console.debug("Welcome Page reloaded successfully", indexPath);
-  }).catch((error) => {
-    console.error("Failed to reload welcome page:", error);
-  });
+  mainWindow
+    ?.loadFile(`${indexPath}/index.html`)
+    .then(() => {
+      console.debug("Welcome Page reloaded successfully", indexPath);
+    })
+    .catch((error) => {
+      console.error("Failed to reload welcome page:", error);
+    });
 }
 
 function setupWindowHandlers(window: BrowserWindow, indexPath: string) {
+  window.on("enter-full-screen", () => {
+    window?.webContents.send("fullscreen-change", true);
+  });
+
+  window.on("leave-full-screen", () => {
+    window?.webContents.send("fullscreen-change", false);
+  });
+
+  ipcMain.handle("window:get-fullscreen", () => {
+    return window?.isFullScreen();
+  });
+
   window.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
   });
 
   window.webContents.on(
     "did-fail-load",
-    (_event, errorCode: number, errorDescription: string, validatedURL: string) => {
+    (
+      _event,
+      errorCode: number,
+      errorDescription: string,
+      validatedURL: string
+    ) => {
       if (errorCode === -6) {
         console.error(
           `Failed to load URL: ${validatedURL}, error: ${errorDescription}`
@@ -122,9 +142,9 @@ function setupWindowHandlers(window: BrowserWindow, indexPath: string) {
 
 function setupUIHandlers(indexPath: string, themeConfiguration: any) {
   ipcMain.handle("reloadApp", () => onAppReload(indexPath));
-  
+
   ipcMain.handle("get-theme-configuration", () => themeConfiguration);
-  
+
   ipcMain.handle("get-style-url", () => {
     return path.join(process.resourcesPath, "tailwind.output.css");
   });
@@ -136,14 +156,15 @@ function setupUIHandlers(indexPath: string, themeConfiguration: any) {
     }
     return false;
   });
-  
+
   ipcMain.handle("show-error-message", async (_event, errorMessage: string) => {
     mainWindow?.webContents.send("display-error", errorMessage);
   });
 
   ipcMain.on("load-url", (_event, serverConfig: string) => {
     if (serverConfig && isValidUrl(serverConfig)) {
-      mainWindow?.loadURL(serverConfig)
+      mainWindow
+        ?.loadURL(serverConfig)
         .then(() => {
           console.debug("URL loaded successfully");
         })
@@ -176,13 +197,13 @@ function isValidUrl(url: string): boolean {
 app.whenReady().then(async () => {
   // Initialize configuration
   const { indexPath, themeConfiguration } = initializeConfig();
-  
+
   // Setup store
   setupStore();
-  
+
   // Create main window
   mainWindow = createWindow(indexPath, themeConfiguration);
-  
+
   // Register app lifecycle handlers
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -191,11 +212,11 @@ app.whenReady().then(async () => {
   });
 
   app.on("window-all-closed", () => app.quit());
-  
+
   if (mainWindow) {
     // Setup window event handlers
     setupWindowHandlers(mainWindow, indexPath);
-    
+
     // Register all IPC handlers
     setupAppUpdateHandler();
     setupFileSystemHandlers();
@@ -209,6 +230,6 @@ app.whenReady().then(async () => {
     setupMcpHandlers();
 
     // start mcp servers in the background
-    MCPHub.getInstance()
+    MCPHub.getInstance();
   }
 });
