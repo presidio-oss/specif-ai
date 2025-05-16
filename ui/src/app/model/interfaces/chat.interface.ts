@@ -92,4 +92,6 @@ export interface ChatWithAIResponse {
 
 export interface ChatUpdateRequirementResponse {
   response: string;
+  blocked?: boolean;
+  blockedReason?: string;
 }

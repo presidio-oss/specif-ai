@@ -1,6 +1,8 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { LLMConfig, LLMError, ModelInfoV1 } from "../llm-types";
 import { LangChainModelProvider } from "./base";
+import { LangChainChatGuardrails } from "@presidio-dev/hai-guardrails"
+import { guardrailsEngine } from "../../../guardrails";
 
 export enum GeminiModelId {
   GEMINI_2_5_PRO_EXP_03_25 = "gemini-2.5-pro-exp-03-25",
@@ -93,11 +95,14 @@ export class GeminiLangChainProvider implements LangChainModelProvider {
     this.configData = this.getConfig(config);
     const modelInfo = GeminiModels[this.configData.model];
 
-    this.model = new ChatGoogleGenerativeAI({
-      apiKey: this.configData.apiKey,
-      model: this.configData.model,
-      maxOutputTokens: modelInfo.maxTokens ?? 8192,
-    });
+    this.model = LangChainChatGuardrails(
+      new ChatGoogleGenerativeAI({
+        apiKey: this.configData.apiKey,
+        model: this.configData.model,
+        maxOutputTokens: modelInfo.maxTokens ?? 8192,
+      }),
+      guardrailsEngine
+    );
   }
 
   getConfig(config: Partial<GeminiConfig>): GeminiConfig {

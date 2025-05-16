@@ -1,6 +1,8 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import { LLMConfig, LLMError, ModelInfoV1 } from "../llm-types";
 import { LangChainModelProvider } from "./base";
+import { LangChainChatGuardrails } from "@presidio-dev/hai-guardrails"
+import { guardrailsEngine } from "../../../guardrails";
 
 enum AnthropicModel {
   CLAUDE_3_7_SONNET_20250219 = "claude-3-7-sonnet-20250219",
@@ -48,13 +50,16 @@ export class AnthropicLangChainProvider implements LangChainModelProvider {
   constructor(config: Partial<AnthropicConfig>) {
     this.configData = this.getConfig(config);
     const modelInfo = MODEL_CONFIGS[this.configData.model];
-    this.model = new ChatAnthropic({
-      anthropicApiKey: this.configData.apiKey,
-      modelName: this.configData.model,
-      maxTokens: modelInfo.maxTokens ?? 8192,
-      maxRetries: this.configData.maxRetries,
-      anthropicApiUrl: this.configData.baseUrl,
-    });
+    this.model = LangChainChatGuardrails(
+      new ChatAnthropic({
+        anthropicApiKey: this.configData.apiKey,
+        modelName: this.configData.model,
+        maxTokens: modelInfo.maxTokens ?? 8192,
+        maxRetries: this.configData.maxRetries,
+        anthropicApiUrl: this.configData.baseUrl,
+      }),
+      guardrailsEngine
+    );
   }
 
   getConfig(config: Partial<AnthropicConfig>): AnthropicConfig {

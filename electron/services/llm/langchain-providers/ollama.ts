@@ -1,6 +1,8 @@
 import { ChatOllama } from "@langchain/ollama";
 import { LLMConfig, LLMError } from "../llm-types";
 import { LangChainModelProvider } from "./base";
+import { LangChainChatGuardrails } from "@presidio-dev/hai-guardrails"
+import { guardrailsEngine } from "../../../guardrails";
 
 interface OllamaConfig extends LLMConfig {
   baseUrl: string;
@@ -14,10 +16,13 @@ export class OllamaLangChainProvider implements LangChainModelProvider {
 
   constructor(config: Partial<OllamaConfig>) {
     this.configData = this.getConfig(config);
-    this.model = new ChatOllama({
-      baseUrl: this.configData.baseUrl,
-      model: this.configData.model,
-    });
+    this.model = LangChainChatGuardrails(
+      new ChatOllama({
+        baseUrl: this.configData.baseUrl,
+        model: this.configData.model,
+      }),
+      guardrailsEngine
+    );
   }
 
   getConfig(config: Partial<OllamaConfig>): OllamaConfig {
