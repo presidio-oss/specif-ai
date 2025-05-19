@@ -4,7 +4,7 @@
   : 'h-[calc(100dvh-200px)]', 'min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden border border-secondary-200', containerClass]">
   <!-- Fixed Header -->
   <div *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)" class="border-b border-secondary-200 p-1.5">
-    <div class="flex-none border-[0.5px] border-secondary-300 bg-indigo-50 text-sm font-medium rounded-lg text-center py-2.5 border-secondary-300 bg-primary-50 text-primary-600">
+    <div class="flex-none border border-secondary-300 bg-indigo-50 text-sm font-medium rounded-lg text-center py-2.5 border-secondary-300 bg-primary-50 text-primary-600">
       <p *ngIf="!isKbAvailable && !['BP', 'PRD'].includes(requirementAbbrivation)" class="text-md font-medium">
         AI Chat
       </p>
@@ -344,7 +344,7 @@
       <!-- Selected Files Display -->
       <div
         *ngIf="selectedFiles.length > 0"
-        class="max-h-28 overflow-y-auto border-t border-secondary-300"
+        class="max-h-28 overflow-y-auto border-t border-secondary-200"
       >
         <div
           *ngFor="let file of selectedFiles; let i = index"

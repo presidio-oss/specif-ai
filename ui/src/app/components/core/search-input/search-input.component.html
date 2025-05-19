@@ -1,16 +1,17 @@
 <div class="mt-4 relative">
   <div
-    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+    class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"
   >
     <ng-icon
       name="heroMagnifyingGlass"
       class="h-5 w-5 text-secondary-500"
+      strokeWidth="2"
     ></ng-icon>
   </div>
   <input
     [formControl]="searchControl"
     type="text"
     [placeholder]="placeholder"
-    class="w-full pl-10 px-4 py-2 border border-secondary-300 rounded-md text-secondary-500 focus:outline-none"
+    class="block w-full pl-8 p-2.5 border border-secondary-200 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
   />
 </div>
