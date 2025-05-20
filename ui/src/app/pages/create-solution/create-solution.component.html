@@ -22,6 +22,13 @@
     ></app-button>
   </div>
 </header>
+
+<app-thinking-process
+  [thinkingLogs]="thinkingLogs"
+  [actionsTaken]="actionsTaken"
+  [show]="thinkingLogs.length > 0 || actionsTaken.length > 0"
+></app-thinking-process>
+
 <form [formGroup]="solutionForm" class="flex flex-col gap-3 overflow-auto pb-4">
   <!-- Basic Information Section -->
   <app-custom-accordion [id]="'basic-info'" [isOpen]="true">

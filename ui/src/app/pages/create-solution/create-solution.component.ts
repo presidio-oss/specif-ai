@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, NgZone } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -15,7 +15,7 @@ import { DialogService } from '../../services/dialog/dialog.service';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { NgIf } from '@angular/common';
+import { NgIf, NgFor } from '@angular/common';
 import { NgxLoadingModule } from 'ngx-loading';
 import { AppSliderComponent } from '../../components/core/slider/slider.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
@@ -34,6 +34,7 @@ import { provideIcons } from '@ng-icons/core';
 import { heroChevronDown } from '@ng-icons/heroicons/outline';
 import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
+import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
 
 @Component({
   selector: 'app-create-solution',
@@ -42,6 +43,7 @@ import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integr
   standalone: true,
   imports: [
     NgIf,
+    NgFor,
     ReactiveFormsModule,
     NgxLoadingModule,
     ButtonComponent,
@@ -51,14 +53,17 @@ import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integr
     ToggleComponent,
     AppSliderComponent,
     CustomAccordionComponent,
-    McpIntegrationConfiguratorComponent
+    McpIntegrationConfiguratorComponent,
+    ThinkingProcessComponent
   ],
   viewProviders: [provideIcons({ heroChevronDown })],
 })
-export class CreateSolutionComponent implements OnInit {
+export class CreateSolutionComponent implements OnInit, OnDestroy {
   solutionForm!: FormGroup;
   loading: boolean = false;
   addOrUpdate: boolean = false;
+  thinkingLogs: string[] = [];
+  actionsTaken: string[] = [];
   
   logger = inject(NGXLogger);
   appSystemService = inject(AppSystemService);
@@ -67,6 +72,19 @@ export class CreateSolutionComponent implements OnInit {
   readonly dialogService = inject(DialogService);
   router = inject(Router);
   store = inject(Store);
+  zone = inject(NgZone);
+
+  private thinkingLogListener = (event: any, logs: string[]) => {
+    this.zone.run(() => {
+      this.thinkingLogs = [...this.thinkingLogs, ...logs];
+    });
+  };
+
+  private actionLogListener = (event: any, actions: string[]) => {
+    this.zone.run(() => {
+      this.actionsTaken = [...this.actionsTaken, ...actions];
+    });
+  };
 
   ngOnInit() {
     this.solutionForm = this.createSolutionForm();
@@ -78,6 +96,20 @@ export class CreateSolutionComponent implements OnInit {
         },
       ]),
     );
+
+    const solutionId = this.solutionForm.get('id')?.value;
+    if (solutionId) {
+      this.electronService.listenSolutionThinkingLogEvents(solutionId, this.thinkingLogListener);
+      this.electronService.listenSolutionActionEvents(solutionId, this.actionLogListener);
+    }
+  }
+
+  ngOnDestroy() {
+    const solutionId = this.solutionForm.get('id')?.value;
+    if (solutionId) {
+      this.electronService.removeSolutionThinkingLogListener(solutionId, this.thinkingLogListener);
+      this.electronService.removeSolutionActionListener(solutionId, this.actionLogListener);
+    }
   }
 
   showGenerationPreferencesTab(): boolean {

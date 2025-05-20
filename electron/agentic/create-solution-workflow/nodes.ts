@@ -46,8 +46,17 @@ export const buildResearchNode = ({
 
       return {
         referenceInformation: "",
+        thinking_log: ["Skipping research phase - no tools available"],
+        actions_taken: ["Skipped research phase"]
       };
     }
+
+    const initialThoughts = [
+      "Analyzing application requirements...",
+      "Preparing to gather research information...",
+      "Setting up research tools..."
+    ];
+    const initialActions = ["Initialized research phase"];
 
     const agent = buildReactAgent({
       model: model,
@@ -94,6 +103,16 @@ export const buildResearchNode = ({
 
     return {
       referenceInformation: response.structuredResponse.referenceInformation,
+      thinking_log: [
+        ...initialThoughts,
+        "Processing research results...",
+        "Compiling reference information..."
+      ],
+      actions_taken: [
+        ...initialActions,
+        "Executed research queries",
+        "Generated reference information"
+      ]
     };
   };
 };
@@ -131,8 +150,18 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
               feedback: message,
             } as IGenerationRequirementsState,
           },
+          thinking_log: [`Skipping ${type} requirement generation - disabled by user preferences`],
+          actions_taken: [`Skipped ${type} requirement generation`]
         };
       }
+
+      // Log requirement generation thoughts
+      const genThoughts = [
+        `Analyzing ${type} requirements generation context...`,
+        `Preparing to generate ${type} requirements...`,
+        `Processing reference information for ${type}...`
+      ];
+      const genActions = [`Initialized ${type} requirement generation`];
 
       const subgraph = createRequirementGenWorkflow({
         model: model,
@@ -178,6 +207,16 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
             feedback: response.feedbackOnRequirements,
           } as IGenerationRequirementsState,
         },
+        thinking_log: [
+          ...genThoughts,
+          `Finalizing ${type} requirements...`,
+          `Validating generated ${type} requirements...`
+        ],
+        actions_taken: [
+          ...genActions,
+          `Generated ${type} requirements`,
+          `Validated ${type} requirements`
+        ]
       };
     } catch (error) {
       const message = `[create-solution] Error in generate-${type.toLowerCase()} node: ${error}`;
@@ -193,6 +232,14 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
             feedback: message,
           } as IGenerationRequirementsState,
         },
+        thinking_log: [
+          `Error encountered during ${type} requirement generation`,
+          `Handling error gracefully...`
+        ],
+        actions_taken: [
+          `Failed to generate ${type} requirements`,
+          `Handled error gracefully`
+        ]
       };
     }
   };

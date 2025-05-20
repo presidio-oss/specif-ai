@@ -91,6 +91,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'solution:createSolution',
         args: [data],
+        skipLoading: true,
       });
     }
     throw new Error('Electron is not available');
@@ -571,6 +572,56 @@ export class ElectronService {
 
   private buildChatStreamChannel(id:string){
     return `core:${id}-chatStream`;
+  }
+  
+  listenSolutionThinkingLogEvents(
+    id: string,
+    callback: (event: IpcRendererEvent, response: any) => void,
+  ): void {
+    if (this.electronAPI) {
+      this.electronAPI.on(this.buildSolutionThinkingLogChannel(id), callback);
+    }
+  }
+
+  removeSolutionThinkingLogListener(
+    id: string,
+    callback: (event: IpcRendererEvent, response: any) => void,
+  ): void {
+    if (this.electronAPI) {
+      this.electronAPI.removeListener(
+        this.buildSolutionThinkingLogChannel(id),
+        callback,
+      );
+    }
+  }
+
+  private buildSolutionThinkingLogChannel(id: string) {
+    return `solution:${id}-thinking-log-update`;
+  }
+
+  listenSolutionActionEvents(
+    id: string,
+    callback: (event: IpcRendererEvent, response: any) => void,
+  ): void {
+    if (this.electronAPI) {
+      this.electronAPI.on(this.buildSolutionActionChannel(id), callback);
+    }
+  }
+
+  removeSolutionActionListener(
+    id: string,
+    callback: (event: IpcRendererEvent, response: any) => void,
+  ): void {
+    if (this.electronAPI) {
+      this.electronAPI.removeListener(
+        this.buildSolutionActionChannel(id),
+        callback,
+      );
+    }
+  }
+
+  private buildSolutionActionChannel(id: string) {
+    return `solution:${id}-action-update`;
   }
   
   async openExternalUrl(url: string): Promise<boolean> {

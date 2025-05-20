@@ -188,13 +188,23 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         },
       };
 
-      const stream = createSolutionWorkflow.streamEvents(initialState, {
-        version: "v2",
-        streamMode: "messages",
+      const stream = await createSolutionWorkflow.stream(initialState, {
+        streamMode: "updates",
         ...config,
-      })
+      });
 
-      for await (const event of stream){
+      for await (const streamEvent of stream) {
+        const stepIdentifier = Object.keys(streamEvent)[0];
+        const stepPayload = streamEvent[stepIdentifier];
+
+        const solutionId = validatedData.id;
+        if (stepPayload?.thinking_log) {
+          event.sender.send(`solution:${solutionId}-thinking-log-update`, stepPayload.thinking_log);
+        }
+
+        if (stepPayload?.actions_taken) {
+          event.sender.send(`solution:${solutionId}-action-update`, stepPayload.actions_taken);
+        }
       }
 
       const response = await createSolutionWorkflow.getState({
