@@ -53,12 +53,6 @@ export const buildResearchNode = ({
         runnableConfig
       );
 
-      await workflowEvents.dispatchAction(
-        "research",
-        "Skipped research - no tools available to perform research",
-        runnableConfig
-      );
-
       return {
         referenceInformation: "",
       };
@@ -70,14 +64,6 @@ export const buildResearchNode = ({
       "Researching relevant technical context based on app details",
       runnableConfig
     );
-
-    // Dispatch initial action event
-    await workflowEvents.dispatchAction(
-      "research",
-      "Started researching solution context using available tools",
-      runnableConfig
-    );
-
 
     const agent = buildReactAgent({
       model: model,
@@ -116,13 +102,6 @@ export const buildResearchNode = ({
           sendMessagesInTelemetry: sendMessagesInTelemetry
         },
       }
-    );
-
-    // Dispatch completion events
-    await workflowEvents.dispatchThinking(
-      "research",
-      "Synthesizing insights from research phase",
-      runnableConfig
     );
 
     await workflowEvents.dispatchAction(
@@ -217,12 +196,6 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
         type: type,
       };
 
-      await workflowEvents.dispatchAction(
-        "requirement-generation",
-        `Started ${type} requirement generation process`,
-        runnableConfig!
-      );
-
       const response = await subgraph.invoke(initialState, {
         configurable: {
           trace: span,
@@ -230,12 +203,6 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
           sendMessagesInTelemetry: sendMessagesInTelemetry
         },
       });
-
-      await workflowEvents.dispatchThinking(
-        "requirement-generation",
-        `Reviewing and validating ${type} requirements`,
-        runnableConfig
-      );
 
       await workflowEvents.dispatchAction(
         "requirement-generation",
