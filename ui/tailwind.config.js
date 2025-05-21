@@ -30,61 +30,6 @@ module.exports = {
         foreground: colors.slate["950"],
         'muted-foreground': colors.slate["500"]
       },
-      keyframes: {
-        backdropFadeIn: {
-          'from': { opacity: '0' },
-          'to': { opacity: '1' }
-        },
-        modalSlideIn: {
-          'from': {
-            opacity: '0',
-            transform: 'translateY(-20px) scale(0.95)'
-          },
-          'to': {
-            opacity: '1',
-            transform: 'translateY(0) scale(1)'
-          }
-        },
-        iconPulse: {
-          '0%': {
-            transform: 'scale(1)',
-            opacity: '1'
-          },
-          '50%': {
-            transform: 'scale(1.1)',
-            opacity: '0.7'
-          },
-          '100%': {
-            transform: 'scale(1)',
-            opacity: '1'
-          }
-        },
-        progressLine: {
-          '0%': {
-            backgroundPosition: '100% 0'
-          },
-          '100%': {
-            backgroundPosition: '-100% 0'
-          }
-        },
-        pulse: {
-          '0%': {
-            transform: 'scale(0.5)',
-            opacity: '0.5'
-          },
-          '100%': {
-            transform: 'scale(1.5)',
-            opacity: '0'
-          }
-        }
-      },
-      animation: {
-        'backdrop-fade-in': 'backdropFadeIn 0.3s ease-out',
-        'modal-slide-in': 'modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-        'icon-pulse': 'iconPulse 2s infinite',
-        'progress-line': 'progressLine 2s linear infinite',
-        'pulse': 'pulse 1.5s ease-out infinite'
-      },
       typography: ()=>({
         'secondary-edit': {
           css: {
