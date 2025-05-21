@@ -60,7 +60,7 @@ export const buildResearchNode = ({
       );
 
       return {
-        referenceInformation: ""
+        referenceInformation: "",
       };
     }
 
@@ -136,7 +136,7 @@ export const buildResearchNode = ({
     });
 
     return {
-      referenceInformation: response.structuredResponse.referenceInformation
+      referenceInformation: response.structuredResponse.referenceInformation,
     };
   };
 };
@@ -180,7 +180,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
               requirements: [],
               feedback: message,
             } as IGenerationRequirementsState,
-          }
+          },
         };
       }
 
@@ -253,7 +253,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
             requirements: response.requirements,
             feedback: response.feedbackOnRequirements,
           } as IGenerationRequirementsState,
-        }
+        },
       };
     } catch (error) {
       const message = `[create-solution] Error in generate-${type.toLowerCase()} node: ${error}`;
@@ -268,7 +268,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
             requirements: [],
             feedback: message,
           } as IGenerationRequirementsState,
-        }
+        },
       };
     }
   };
