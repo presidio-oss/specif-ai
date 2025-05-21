@@ -11,9 +11,10 @@ import {
   ThinkingProcessConfig,
   defaultConfig,
 } from './thinking-process.config';
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf, NgFor, NgClass } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroCpuChip, heroSquare3Stack3d } from '@ng-icons/heroicons/outline';
+import { heroSparkles, heroCheckCircle } from '@ng-icons/heroicons/outline';
+import { WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
 import {
   trigger,
   transition,
@@ -29,11 +30,11 @@ import {
   templateUrl: './thinking-process.component.html',
   styleUrls: ['./thinking-process.component.scss'],
   standalone: true,
-  imports: [NgIf, NgFor, NgIconComponent],
+  imports: [NgIf, NgFor, NgClass, NgIconComponent],
   providers: [
     provideIcons({
-      heroCpuChip,
-      heroSquare3Stack3d,
+      heroSparkles,
+      heroCheckCircle,
     }),
   ],
   animations: [
@@ -78,32 +79,25 @@ import {
   ],
 })
 export class ThinkingProcessComponent implements OnChanges {
-  @Input() thinkingLogs: string[] = [];
-  @Input() actionsTaken: string[] = [];
+  @Input() progress: WorkflowProgressEvent[] = [];
   @Input() show: boolean = false;
   @Input() config: ThinkingProcessConfig = defaultConfig;
 
   @ViewChild('logsContainer') private logsContainer?: ElementRef;
-  @ViewChild('actionsContainer') private actionsContainer?: ElementRef;
 
   appName = environment.ThemeConfiguration.appName;
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['thinkingLogs'] && this.thinkingLogs.length > 0) {
-      this.scrollToBottom('thinking');
-    }
-    if (changes['actionsTaken'] && this.actionsTaken.length > 0) {
-      this.scrollToBottom('actions');
+    if (changes['progress']?.currentValue?.length > 0) {
+      this.scrollToBottom();
     }
   }
 
-  private scrollToBottom(type: 'thinking' | 'actions'): void {
-    const container =
-      type === 'thinking' ? this.logsContainer : this.actionsContainer;
-    if (container) {
+  private scrollToBottom(): void {
+    if (this.logsContainer) {
       setTimeout(() => {
         requestAnimationFrame(() => {
-          const element = container!.nativeElement;
+          const element = this.logsContainer!.nativeElement;
           const scrollOptions = {
             top: element.scrollHeight,
             behavior: 'smooth' as ScrollBehavior,

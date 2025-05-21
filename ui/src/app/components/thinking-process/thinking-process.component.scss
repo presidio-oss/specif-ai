@@ -1,7 +1,4 @@
 .custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
-
   &::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -12,11 +9,23 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(99, 102, 241, 0.3);
+    background-color: rgba(0, 0, 0, 0.1);
     border-radius: 3px;
 
     &:hover {
-      background-color: rgba(99, 102, 241, 0.5);
+      background-color: rgba(0, 0, 0, 0.2);
     }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+@keyframes progress-line {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }

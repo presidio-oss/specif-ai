@@ -9,7 +9,7 @@
   <div class="absolute inset-0"></div>
 
   <div
-    class="relative w-[95%] max-w-4xl mx-auto p-6 sm:p-8 bg-white/95 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary-900/20 overflow-hidden ring-2 ring-primary-100/50"
+    class="relative w-[90%] max-w-2xl mx-auto p-5 sm:p-6 bg-white/95 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl shadow-primary-900/20 overflow-hidden"
     [@fadeInOut]
   >
     <div class="absolute bottom-0 left-0 right-0 h-2 overflow-hidden">
@@ -18,7 +18,7 @@
       ></div>
     </div>
 
-    <div class="text-center mb-8 relative">
+    <div class="text-center mb-6 relative">
       <div class="absolute -top-1 left-1/2 -translate-x-1/2">
         <div class="relative">
           <div
@@ -29,7 +29,7 @@
 
       <h2
         id="modal-title"
-        class="text-3xl sm:text-4xl font-bold text-primary-600 mb-3 tracking-tight"
+        class="text-2xl sm:text-3xl font-bold text-primary-600 mb-2 tracking-tight"
       >
         {{ config.title }}
       </h2>
@@ -62,122 +62,55 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-6">
-      <div
-        class="bg-gradient-to-br from-primary-50/70 to-primary-100/40 rounded-2xl shadow-lg shadow-primary-500/10 ring-1 ring-primary-200/30 flex flex-col backdrop-blur-sm"
+    <div
+      #logsContainer
+      class="overflow-y-auto max-h-[50vh] px-2 custom-scrollbar"
+    >
+      <ul
+        class="space-y-2"
+        [@listAnimation]="progress.length"
+        *ngIf="progress.length > 0; else loadingSkeleton"
       >
-        <h3
-          class="sticky top-0 z-10 p-4 pb-3 bg-white/40 backdrop-blur-sm border-b border-primary-200/20"
+        <li
+          *ngFor="let event of progress"
+          class="py-2 flex items-start gap-2"
+          [@fadeInOut]
         >
-          <div
-            class="relative pl-6 text-base font-semibold flex items-center gap-2.5 text-primary-700 before:content-[''] before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-4 before:h-0.5 before:bg-primary-500 before:opacity-70 before:rounded-full"
-          >
+          <ng-icon
+            [name]="
+              event.type === 'thinking' ? 'heroSparkles' : 'heroCheckCircle'
+            "
+            class="h-5 w-5 mt-0.5 shrink-0"
+            [class.text-primary-500]="event.type === 'thinking'"
+            [class.text-success-500]="event.type === 'action'"
+          ></ng-icon>
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span
+                class="text-sm leading-relaxed flex-1"
+                [ngClass]="{
+                  'text-primary-600/90': event.type === 'thinking',
+                  'text-success-600/90': event.type === 'action',
+                }"
+                >{{ event.message }}</span
+              >
+            </div>
+          </div>
+        </li>
+      </ul>
+      <ng-template #loadingSkeleton>
+        <div class="flex flex-col items-center justify-center py-8">
+          <div class="flex items-center gap-3">
             <ng-icon
-              name="heroCpuChip"
-              class="h-5 w-5 animate-icon-pulse"
+              name="heroSparkles"
+              class="h-6 w-6 text-primary-500 animate-bounce"
             ></ng-icon>
-            <span>{{ config.thinkingSectionTitle }}</span>
-          </div>
-        </h3>
-
-        <div
-          #logsContainer
-          class="overflow-y-auto max-h-[45vh] p-5 pt-3 custom-scrollbar"
-        >
-          <div class="min-h-[100px]">
-            <ul
-              class="space-y-3"
-              [@listAnimation]="thinkingLogs.length"
-              *ngIf="thinkingLogs.length > 0; else loadingSkeleton"
+            <span class="text-base text-primary-600 font-medium"
+              >Initializing process...</span
             >
-              <li
-                *ngFor="let log of thinkingLogs; let last = last"
-                class="p-4 rounded-xl relative bg-white/60 shadow-sm before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0.5 before:bg-primary-500/40 before:rounded-full"
-                [@fadeInOut]
-              >
-                <div class="flex items-start gap-3">
-                  <span class="text-primary-500 mt-1 opacity-80 text-base"
-                    >•</span
-                  >
-                  <span
-                    class="text-base text-muted-foreground/90 leading-relaxed"
-                    >{{ log }}</span
-                  >
-                </div>
-                <div
-                  *ngIf="last"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4"
-                >
-                  <div
-                    class="absolute inset-0 rounded-full bg-primary-500/30 animate-[pulse_1.5s_ease-in-out_infinite]"
-                  ></div>
-                  <div
-                    class="absolute inset-0 rounded-full bg-primary-500/30 animate-[pulse_1.5s_ease-in-out_0.75s_infinite]"
-                  ></div>
-                </div>
-              </li>
-            </ul>
-            <ng-template #loadingSkeleton>
-              <div class="space-y-3 animate-pulse">
-                <div class="h-[52px] bg-primary-200/40 rounded-xl"></div>
-                <div class="h-[52px] bg-primary-200/40 rounded-xl"></div>
-                <div class="h-[52px] bg-primary-200/40 rounded-xl"></div>
-              </div>
-            </ng-template>
           </div>
         </div>
-      </div>
-
-      <div
-        class="bg-gradient-to-br from-success-50/70 to-success-100/40 rounded-2xl shadow-lg shadow-success-500/10 ring-1 ring-success-200/30 flex flex-col backdrop-blur-sm"
-      >
-        <h3
-          class="sticky top-0 z-10 p-4 pb-3 bg-white/40 backdrop-blur-sm border-b border-success-200/20"
-        >
-          <div
-            class="relative pl-6 text-base font-semibold flex items-center gap-2.5 text-success-700 before:content-[''] before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-4 before:h-0.5 before:bg-success-500 before:opacity-70 before:rounded-full"
-          >
-            <ng-icon name="heroSquare3Stack3d" class="h-5 w-5"></ng-icon>
-            <span>{{ config.actionsSectionTitle }}</span>
-          </div>
-        </h3>
-
-        <div
-          #actionsContainer
-          class="overflow-y-auto max-h-[45vh] p-5 pt-3 custom-scrollbar"
-        >
-          <div class="min-h-[100px]">
-            <ul
-              class="space-y-3"
-              [@listAnimation]="actionsTaken.length"
-              *ngIf="actionsTaken.length > 0; else loadingSkeleton"
-            >
-              <li
-                *ngFor="let action of actionsTaken"
-                class="p-4 rounded-xl relative bg-white/60 shadow-sm before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0.5 before:bg-success-500/40 before:rounded-full"
-                [@fadeInOut]
-              >
-                <div class="flex items-start gap-3">
-                  <span class="text-success-500 mt-1 opacity-80 text-base"
-                    >✓</span
-                  >
-                  <span
-                    class="text-base text-muted-foreground/90 leading-relaxed"
-                    >{{ action }}</span
-                  >
-                </div>
-              </li>
-            </ul>
-            <ng-template #loadingSkeleton>
-              <div class="space-y-3 animate-pulse">
-                <div class="h-[52px] bg-success-200/40 rounded-xl"></div>
-                <div class="h-[52px] bg-success-200/40 rounded-xl"></div>
-                <div class="h-[52px] bg-success-200/40 rounded-xl"></div>
-              </div>
-            </ng-template>
-          </div>
-        </div>
-      </div>
+      </ng-template>
     </div>
   </div>
 </div>

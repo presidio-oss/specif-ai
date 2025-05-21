@@ -1,6 +1,7 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { BaseCheckpointSaver } from "@langchain/langgraph-checkpoint";
 import { z } from "zod";
+import { WorkflowEventsService } from "../../services/events/workflow-events.service";
 import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { IRequirementType, ITool } from "../common/types";
@@ -15,6 +16,8 @@ import {
 } from "./state";
 import { CreateSolutionWorkflowRunnableConfig } from "./types";
 import { buildPromptForRequirement } from "./utils";
+
+const workflowEvents = new WorkflowEventsService("create-solution");
 
 // nodes
 
@@ -44,19 +47,37 @@ export const buildResearchNode = ({
         statusMessage: message,
       });
 
+      await workflowEvents.dispatchThinking(
+        "research",
+        "Skipping research phase - no tools available",
+        runnableConfig
+      );
+
+      await workflowEvents.dispatchAction(
+        "research",
+        "Skipped research - no tools available to perform research",
+        runnableConfig
+      );
+
       return {
-        referenceInformation: "",
-        thinking_log: ["Skipping research phase - no tools available"],
-        actions_taken: ["Skipped research phase"]
+        referenceInformation: ""
       };
     }
 
-    const initialThoughts = [
-      "Analyzing application requirements...",
-      "Preparing to gather research information...",
-      "Setting up research tools..."
-    ];
-    const initialActions = ["Initialized research phase"];
+    // Dispatch initial thinking event
+    await workflowEvents.dispatchThinking(
+      "research",
+      "Researching relevant technical context based on app details",
+      runnableConfig
+    );
+
+    // Dispatch initial action event
+    await workflowEvents.dispatchAction(
+      "research",
+      "Started researching solution context using available tools",
+      runnableConfig
+    );
+
 
     const agent = buildReactAgent({
       model: model,
@@ -97,22 +118,25 @@ export const buildResearchNode = ({
       }
     );
 
+    // Dispatch completion events
+    await workflowEvents.dispatchThinking(
+      "research",
+      "Synthesizing insights from research phase",
+      runnableConfig
+    );
+
+    await workflowEvents.dispatchAction(
+      "research",
+      "Finished research - summarized findings ready for requirement generation",
+      runnableConfig
+    );
+
     span?.end({
       statusMessage: "Research completed successfully!",
     });
 
     return {
-      referenceInformation: response.structuredResponse.referenceInformation,
-      thinking_log: [
-        ...initialThoughts,
-        "Processing research results...",
-        "Compiling reference information..."
-      ],
-      actions_taken: [
-        ...initialActions,
-        "Executed research queries",
-        "Generated reference information"
-      ]
+      referenceInformation: response.structuredResponse.referenceInformation
     };
   };
 };
@@ -143,25 +167,30 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
         span?.end({
           statusMessage: message,
         });
+
+        await workflowEvents.dispatchAction(
+          "requirement-generation",
+          `Skipped ${type} requirement generation - disabled by preferences`,
+          runnableConfig
+        );
+
         return {
           generatedRequirements: {
             [type]: {
               requirements: [],
               feedback: message,
             } as IGenerationRequirementsState,
-          },
-          thinking_log: [`Skipping ${type} requirement generation - disabled by user preferences`],
-          actions_taken: [`Skipped ${type} requirement generation`]
+          }
         };
       }
 
-      // Log requirement generation thoughts
-      const genThoughts = [
-        `Analyzing ${type} requirements generation context...`,
-        `Preparing to generate ${type} requirements...`,
-        `Processing reference information for ${type}...`
-      ];
-      const genActions = [`Initialized ${type} requirement generation`];
+      // Dispatch initial events
+      await workflowEvents.dispatchThinking(
+        "requirement-generation",
+        `Preparing input context for ${type} requirement generation`,
+        runnableConfig
+      );
+
 
       const subgraph = createRequirementGenWorkflow({
         model: model,
@@ -188,6 +217,12 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
         type: type,
       };
 
+      await workflowEvents.dispatchAction(
+        "requirement-generation",
+        `Started ${type} requirement generation process`,
+        runnableConfig!
+      );
+
       const response = await subgraph.invoke(initialState, {
         configurable: {
           trace: span,
@@ -195,6 +230,18 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
           sendMessagesInTelemetry: sendMessagesInTelemetry
         },
       });
+
+      await workflowEvents.dispatchThinking(
+        "requirement-generation",
+        `Reviewing and validating ${type} requirements`,
+        runnableConfig
+      );
+
+      await workflowEvents.dispatchAction(
+        "requirement-generation",
+        `Successfully generated and validated ${type} requirements`,
+        runnableConfig
+      );
 
       span?.end({
         statusMessage: "Successfully generated requirements",
@@ -206,17 +253,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
             requirements: response.requirements,
             feedback: response.feedbackOnRequirements,
           } as IGenerationRequirementsState,
-        },
-        thinking_log: [
-          ...genThoughts,
-          `Finalizing ${type} requirements...`,
-          `Validating generated ${type} requirements...`
-        ],
-        actions_taken: [
-          ...genActions,
-          `Generated ${type} requirements`,
-          `Validated ${type} requirements`
-        ]
+        }
       };
     } catch (error) {
       const message = `[create-solution] Error in generate-${type.toLowerCase()} node: ${error}`;
@@ -231,15 +268,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
             requirements: [],
             feedback: message,
           } as IGenerationRequirementsState,
-        },
-        thinking_log: [
-          `Error encountered during ${type} requirement generation`,
-          `Handling error gracefully...`
-        ],
-        actions_taken: [
-          `Failed to generate ${type} requirements`,
-          `Handled error gracefully`
-        ]
+        }
       };
     }
   };

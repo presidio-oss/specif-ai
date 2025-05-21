@@ -35,6 +35,7 @@ import { heroChevronDown } from '@ng-icons/heroicons/outline';
 import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
 import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
+import { WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
 
 @Component({
   selector: 'app-create-solution',
@@ -62,8 +63,7 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
   solutionForm!: FormGroup;
   loading: boolean = false;
   addOrUpdate: boolean = false;
-  thinkingLogs: string[] = [];
-  actionsTaken: string[] = [];
+  solutionCreationProgress: WorkflowProgressEvent[] = [];
   
   logger = inject(NGXLogger);
   appSystemService = inject(AppSystemService);
@@ -74,15 +74,12 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
   store = inject(Store);
   zone = inject(NgZone);
 
-  private thinkingLogListener = (event: any, logs: string[]) => {
+  private workflowProgressListener = (
+    event: any,
+    data: WorkflowProgressEvent,
+  ) => {
     this.zone.run(() => {
-      this.thinkingLogs = [...this.thinkingLogs, ...logs];
-    });
-  };
-
-  private actionLogListener = (event: any, actions: string[]) => {
-    this.zone.run(() => {
-      this.actionsTaken = [...this.actionsTaken, ...actions];
+      this.solutionCreationProgress = [...this.solutionCreationProgress, data];
     });
   };
 
@@ -99,16 +96,20 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
 
     const solutionId = this.solutionForm.get('id')?.value;
     if (solutionId) {
-      this.electronService.listenSolutionThinkingLogEvents(solutionId, this.thinkingLogListener);
-      this.electronService.listenSolutionActionEvents(solutionId, this.actionLogListener);
+      this.electronService.listenSolutionWorkflowProgress(
+        solutionId,
+        this.workflowProgressListener,
+      );
     }
   }
 
   ngOnDestroy() {
     const solutionId = this.solutionForm.get('id')?.value;
     if (solutionId) {
-      this.electronService.removeSolutionThinkingLogListener(solutionId, this.thinkingLogListener);
-      this.electronService.removeSolutionActionListener(solutionId, this.actionLogListener);
+      this.electronService.removeSolutionWorkflowProgressListener(
+        solutionId,
+        this.workflowProgressListener,
+      );
     }
   }
 

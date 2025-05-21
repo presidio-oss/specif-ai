@@ -8,14 +8,6 @@ export type IGenerationRequirementsState = {
 };
 
 export const CreateSolutionStateAnnotation = Annotation.Root({
-  thinking_log: Annotation<string[]>({
-    reducer: (current, update) => current.concat(update),
-    default: () => [],
-  }),
-  actions_taken: Annotation<string[]>({
-    reducer: (current, update) => current.concat(update),
-    default: () => [],
-  }),
   generatedRequirements: Annotation<{
     PRD: IGenerationRequirementsState;
     BRD: IGenerationRequirementsState;

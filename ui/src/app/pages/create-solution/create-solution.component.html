@@ -24,9 +24,8 @@
 </header>
 
 <app-thinking-process
-  [thinkingLogs]="thinkingLogs"
-  [actionsTaken]="actionsTaken"
-  [show]="thinkingLogs.length > 0 || actionsTaken.length > 0"
+  [progress]="solutionCreationProgress"
+  [show]="addOrUpdate"
 ></app-thinking-process>
 
 <form [formGroup]="solutionForm" class="flex flex-col gap-3 overflow-auto pb-4">

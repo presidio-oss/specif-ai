@@ -574,54 +574,29 @@ export class ElectronService {
     return `core:${id}-chatStream`;
   }
   
-  listenSolutionThinkingLogEvents(
+  private buildSolutionWorkflowProgressChannel(id: string) {
+    return `solution:${id}-workflow-progress`;
+  }
+
+  listenSolutionWorkflowProgress(
     id: string,
     callback: (event: IpcRendererEvent, response: any) => void,
   ): void {
     if (this.electronAPI) {
-      this.electronAPI.on(this.buildSolutionThinkingLogChannel(id), callback);
+      this.electronAPI.on(this.buildSolutionWorkflowProgressChannel(id), callback);
     }
   }
 
-  removeSolutionThinkingLogListener(
-    id: string,
-    callback: (event: IpcRendererEvent, response: any) => void,
-  ): void {
-    if (this.electronAPI) {
-      this.electronAPI.removeListener(
-        this.buildSolutionThinkingLogChannel(id),
-        callback,
-      );
-    }
-  }
-
-  private buildSolutionThinkingLogChannel(id: string) {
-    return `solution:${id}-thinking-log-update`;
-  }
-
-  listenSolutionActionEvents(
-    id: string,
-    callback: (event: IpcRendererEvent, response: any) => void,
-  ): void {
-    if (this.electronAPI) {
-      this.electronAPI.on(this.buildSolutionActionChannel(id), callback);
-    }
-  }
-
-  removeSolutionActionListener(
+  removeSolutionWorkflowProgressListener(
     id: string,
     callback: (event: IpcRendererEvent, response: any) => void,
   ): void {
     if (this.electronAPI) {
       this.electronAPI.removeListener(
-        this.buildSolutionActionChannel(id),
+        this.buildSolutionWorkflowProgressChannel(id),
         callback,
       );
     }
-  }
-
-  private buildSolutionActionChannel(id: string) {
-    return `solution:${id}-action-update`;
   }
   
   async openExternalUrl(url: string): Promise<boolean> {
