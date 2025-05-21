@@ -78,11 +78,14 @@
         >
           <ng-icon
             [name]="
-              event.type === 'thinking' ? 'heroSparkles' : 'heroCheckCircle'
+              event.type === 'thinking' ? 'heroSparkles' : 
+              event.type === 'action' ? 'heroCheckCircle' :
+              'heroWrenchScrewdriver'
             "
             class="h-5 w-5 mt-0.5 shrink-0"
             [class.text-primary-500]="event.type === 'thinking'"
             [class.text-success-500]="event.type === 'action'"
+            [class.text-info-500]="event.type === 'mcp'"
           ></ng-icon>
           <div class="flex-1">
             <div class="flex items-center gap-2">
@@ -91,6 +94,7 @@
                 [ngClass]="{
                   'text-primary-600/90': event.type === 'thinking',
                   'text-success-600/90': event.type === 'action',
+                  'text-info-600/90': event.type === 'mcp',
                 }"
                 >{{ event.message }}</span
               >

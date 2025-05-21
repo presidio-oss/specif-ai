@@ -13,7 +13,7 @@ import {
 } from './thinking-process.config';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroSparkles, heroCheckCircle } from '@ng-icons/heroicons/outline';
+import { heroSparkles, heroCheckCircle, heroWrenchScrewdriver } from '@ng-icons/heroicons/outline';
 import { WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
 import {
   trigger,
@@ -35,6 +35,7 @@ import {
     provideIcons({
       heroSparkles,
       heroCheckCircle,
+      heroWrenchScrewdriver,
     }),
   ],
   animations: [

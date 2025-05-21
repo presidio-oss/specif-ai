@@ -195,6 +195,18 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       })
 
       for await (const streamEvent of stream) {
+        if (streamEvent.event === "on_tool_start") {
+          event.sender.send(
+            `solution:${validatedData.id}-workflow-progress`,
+            {
+              node: "tools",
+              type: "mcp",
+              message: `Using tool: ${streamEvent.name}`,
+              timestamp: Date.now()
+            }
+          );
+        }
+          
         if (streamEvent.event === "on_custom_event") {
           event.sender.send(
             `solution:${validatedData.id}-workflow-progress`,

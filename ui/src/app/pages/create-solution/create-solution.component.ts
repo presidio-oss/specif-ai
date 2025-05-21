@@ -79,7 +79,11 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
     data: WorkflowProgressEvent,
   ) => {
     this.zone.run(() => {
-      this.solutionCreationProgress = [...this.solutionCreationProgress, data];
+      this.solutionCreationProgress = this.solutionCreationProgress.some(
+        (item) => item.message === data.message,
+      )
+        ? this.solutionCreationProgress
+        : [...this.solutionCreationProgress, data];
     });
   };
 
