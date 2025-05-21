@@ -1,60 +1,66 @@
 <div
   *ngIf="show"
-  class="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-lg"
+  class="fixed inset-0 flex items-center justify-center z-50"
   [@fadeInOut]
   role="dialog"
   aria-labelledby="modal-title"
   aria-describedby="modal-description"
 >
-  <div class="absolute inset-0"></div>
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-md"></div>
 
   <div
-    class="relative w-[90%] max-w-2xl mx-auto p-5 sm:p-6 bg-white/95 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl shadow-primary-900/20 overflow-hidden"
+    class="relative w-[90%] max-w-2xl mx-auto p-6 sm:p-8 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl shadow-primary-900/15 overflow-hidden"
     [@fadeInOut]
   >
-    <div class="absolute bottom-0 left-0 right-0 h-2 overflow-hidden">
+    <div class="absolute bottom-0 left-0 right-0 h-1.5 overflow-hidden">
       <div
-        class="h-full bg-gradient-to-r from-primary-500 via-success-500 to-primary-500 bg-[length:200%_100%] rounded-b-3xl animate-[progress-line_2.5s_ease-in-out_infinite] shadow-sm"
+        class="h-full bg-gradient-to-r from-primary-500 via-success-500 to-primary-500 bg-[length:200%_100%] rounded-full animate-[progress-line_3s_ease-in-out_infinite] shadow-sm"
       ></div>
     </div>
 
-    <div class="text-center mb-6 relative">
+    <div
+      class="absolute -top-6 left-1/2 -translate-x-1/2 w-40 h-12 bg-primary-500/20 blur-2xl rounded-full"
+    ></div>
+
+    <div class="text-center mb-8 relative">
       <div class="absolute -top-1 left-1/2 -translate-x-1/2">
-        <div class="relative">
-          <div
-            class="w-20 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent rounded-full opacity-80"
-          ></div>
-        </div>
+        <div
+          class="w-16 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent rounded-full opacity-70"
+        ></div>
       </div>
 
       <h2
         id="modal-title"
-        class="text-2xl sm:text-3xl font-bold text-primary-600 mb-2 tracking-tight"
+        class="text-2xl sm:text-3xl font-bold text-primary-700 mb-2 tracking-tight"
       >
         {{ config.title }}
       </h2>
+
       <p
         id="modal-description"
-        class="text-base sm:text-lg text-muted-foreground/90 font-medium flex items-center justify-center gap-2"
+        class="text-base sm:text-lg text-muted-foreground/80 font-medium flex items-center justify-center gap-2"
       >
         <span>{{ config.subtitle }}</span>
         <span class="inline-flex gap-1">
           <span
-            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce [animation-delay:-0.3s]"
+            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse [animation-delay:-0.3s]"
           ></span>
           <span
-            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce [animation-delay:-0.15s]"
+            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse [animation-delay:-0.15s]"
           ></span>
           <span
-            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce"
+            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse"
           ></span>
         </span>
       </p>
-      <div class="mt-4 flex justify-center">
+
+      <div class="mt-5 flex justify-center">
         <div
-          class="bg-primary-50 px-4 py-1.5 rounded-full flex items-center gap-2"
+          class="bg-primary-50/80 backdrop-blur-sm px-5 py-2 rounded-full flex items-center gap-2.5 shadow-sm border border-primary-100"
         >
-          <div class="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></div>
+          <div
+            class="w-2.5 h-2.5 rounded-full bg-primary-500 animate-pulse"
+          ></div>
           <span class="text-sm font-medium text-primary-700">{{
             config.loadingMessage
           }}</span>
@@ -64,37 +70,50 @@
 
     <div
       #logsContainer
-      class="overflow-y-auto max-h-[50vh] px-2 custom-scrollbar"
+      class="overflow-y-auto max-h-[55vh] px-2 pb-2 custom-scrollbar rounded-lg"
     >
       <ul
-        class="space-y-2"
+        class="space-y-3"
         [@listAnimation]="progress.length"
         *ngIf="progress.length > 0; else loadingSkeleton"
       >
         <li
           *ngFor="let event of progress"
-          class="py-2 flex items-start gap-2"
+          class="py-2.5 px-3 flex items-start gap-3 bg-white/40 backdrop-blur-sm rounded-lg border border-white/50 shadow-sm transition-all duration-300 hover:bg-white/70"
           [@fadeInOut]
         >
-          <ng-icon
-            [name]="
-              event.type === 'thinking' ? 'heroSparkles' : 
-              event.type === 'action' ? 'heroCheckCircle' :
-              'heroWrenchScrewdriver'
-            "
-            class="h-5 w-5 mt-0.5 shrink-0"
-            [class.text-primary-500]="event.type === 'thinking'"
-            [class.text-success-500]="event.type === 'action'"
-            [class.text-info-500]="event.type === 'mcp'"
-          ></ng-icon>
+          <div class="relative">
+            <div
+              class="absolute inset-0 rounded-full blur-md opacity-30"
+              [ngClass]="{
+                'bg-primary-400': event.type === 'thinking',
+                'bg-success-400': event.type === 'action',
+                'bg-info-400': event.type === 'mcp',
+              }"
+            ></div>
+            <ng-icon
+              [name]="
+                event.type === 'thinking'
+                  ? 'heroSparkles'
+                  : event.type === 'action'
+                    ? 'heroCheckCircle'
+                    : 'heroWrenchScrewdriver'
+              "
+              class="h-5 w-5 mt-0.5 shrink-0 relative"
+              [class.text-primary-500]="event.type === 'thinking'"
+              [class.text-success-500]="event.type === 'action'"
+              [class.text-info-500]="event.type === 'mcp'"
+            ></ng-icon>
+          </div>
+
           <div class="flex-1">
             <div class="flex items-center gap-2">
               <span
                 class="text-sm leading-relaxed flex-1"
                 [ngClass]="{
-                  'text-primary-600/90': event.type === 'thinking',
-                  'text-success-600/90': event.type === 'action',
-                  'text-info-600/90': event.type === 'mcp',
+                  'text-primary-700': event.type === 'thinking',
+                  'text-success-700': event.type === 'action',
+                  'text-info-700': event.type === 'mcp',
                 }"
                 >{{ event.message }}</span
               >
@@ -102,13 +121,23 @@
           </div>
         </li>
       </ul>
+
       <ng-template #loadingSkeleton>
-        <div class="flex flex-col items-center justify-center py-8">
-          <div class="flex items-center gap-3">
-            <ng-icon
-              name="heroSparkles"
-              class="h-6 w-6 text-primary-500 animate-bounce"
-            ></ng-icon>
+        <div class="flex flex-col items-center justify-center py-10">
+          <div class="flex flex-col items-center gap-4">
+            <div class="relative">
+              <div
+                class="absolute inset-0 bg-primary-300/30 rounded-full blur-xl animate-pulse"
+              ></div>
+              <div
+                class="relative w-12 h-12 flex items-center justify-center rounded-full bg-primary-50 border border-primary-200"
+              >
+                <ng-icon
+                  name="heroSparkles"
+                  class="h-6 w-6 text-primary-500 animate-bounce"
+                ></ng-icon>
+              </div>
+            </div>
             <span class="text-base text-primary-600 font-medium"
               >Initializing process...</span
             >

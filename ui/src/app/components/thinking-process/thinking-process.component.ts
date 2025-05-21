@@ -5,6 +5,8 @@ import {
   ViewChild,
   SimpleChanges,
   OnChanges,
+  AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import {
@@ -13,7 +15,11 @@ import {
 } from './thinking-process.config';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroSparkles, heroCheckCircle, heroWrenchScrewdriver } from '@ng-icons/heroicons/outline';
+import {
+  heroSparkles,
+  heroCheckCircle,
+  heroWrenchScrewdriver,
+} from '@ng-icons/heroicons/outline';
 import { WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
 import {
   trigger,
@@ -23,6 +29,7 @@ import {
   query,
   stagger,
   group,
+  state,
 } from '@angular/animations';
 
 @Component({
@@ -41,16 +48,16 @@ import {
   animations: [
     trigger('fadeInOut', [
       transition(':enter', [
-        style({ opacity: 0, transform: 'scale(0.97)' }),
+        style({ opacity: 0, transform: 'scale(0.96)' }),
         animate(
-          '250ms cubic-bezier(0.4, 0, 0.2, 1)',
+          '300ms cubic-bezier(0.4, 0, 0.2, 1)',
           style({ opacity: 1, transform: 'scale(1)' }),
         ),
       ]),
       transition(':leave', [
         animate(
-          '200ms cubic-bezier(0.4, 0, 0.2, 1)',
-          style({ opacity: 0, transform: 'scale(0.97)' }),
+          '240ms cubic-bezier(0.4, 0, 0.2, 1)',
+          style({ opacity: 0, transform: 'scale(0.96)' }),
         ),
       ]),
     ]),
@@ -59,15 +66,15 @@ import {
         query(
           ':enter',
           [
-            style({ opacity: 0, transform: 'translateY(8px)' }),
-            stagger(60, [
+            style({ opacity: 0, transform: 'translateY(10px)' }),
+            stagger(70, [
               group([
                 animate(
-                  '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+                  '360ms cubic-bezier(0.4, 0, 0.2, 1)',
                   style({ opacity: 1 }),
                 ),
                 animate(
-                  '400ms cubic-bezier(0.4, 0, 0.2, 1)',
+                  '460ms cubic-bezier(0.4, 0, 0.2, 1)',
                   style({ transform: 'translateY(0)' }),
                 ),
               ]),
@@ -77,9 +84,17 @@ import {
         ),
       ]),
     ]),
+    trigger('pulseAnimation', [
+      state('active', style({ transform: 'scale(1.05)', opacity: 0.9 })),
+      state('inactive', style({ transform: 'scale(1)', opacity: 1 })),
+      transition('inactive => active', animate('500ms ease-in')),
+      transition('active => inactive', animate('500ms ease-out')),
+    ]),
   ],
 })
-export class ThinkingProcessComponent implements OnChanges {
+export class ThinkingProcessComponent
+  implements OnChanges, AfterViewInit, OnDestroy
+{
   @Input() progress: WorkflowProgressEvent[] = [];
   @Input() show: boolean = false;
   @Input() config: ThinkingProcessConfig = defaultConfig;
@@ -87,11 +102,29 @@ export class ThinkingProcessComponent implements OnChanges {
   @ViewChild('logsContainer') private logsContainer?: ElementRef;
 
   appName = environment.ThemeConfiguration.appName;
+  pulseState: 'active' | 'inactive' = 'inactive';
+  private pulseInterval?: any;
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['progress']?.currentValue?.length > 0) {
       this.scrollToBottom();
     }
+
+    if (changes['show']?.currentValue === true && !this.pulseInterval) {
+      this.startPulseAnimation();
+    } else if (changes['show']?.currentValue === false && this.pulseInterval) {
+      this.stopPulseAnimation();
+    }
+  }
+
+  ngAfterViewInit() {
+    if (this.show) {
+      this.startPulseAnimation();
+    }
+  }
+
+  ngOnDestroy() {
+    this.stopPulseAnimation();
   }
 
   private scrollToBottom(): void {
@@ -105,7 +138,20 @@ export class ThinkingProcessComponent implements OnChanges {
           };
           element.scrollTo(scrollOptions);
         });
-      }, 100);
+      }, 120);
+    }
+  }
+
+  private startPulseAnimation(): void {
+    this.pulseInterval = setInterval(() => {
+      this.pulseState = this.pulseState === 'active' ? 'inactive' : 'active';
+    }, 2000);
+  }
+
+  private stopPulseAnimation(): void {
+    if (this.pulseInterval) {
+      clearInterval(this.pulseInterval);
+      this.pulseInterval = undefined;
     }
   }
 }
