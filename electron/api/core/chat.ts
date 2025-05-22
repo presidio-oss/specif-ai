@@ -19,9 +19,9 @@ import { LLMConfigModel } from "../../services/llm/llm-types";
 import { ObservabilityManager } from "../../services/observability/observability.manager";
 import { store } from "../../services/store";
 import { z } from "zod";
-import { isDevEnv } from "../../utils/env";
 import { APP_MESSAGES } from '../../constants/message.constants';
 import { GuardrailsShouldBlock, validateGuardrails } from "../../guardrails";
+import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
 
 // Message type mapping
 const MESSAGE_TYPES = {
@@ -96,7 +96,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
         thread_id: `${validatedData.requestId}_create_solution`,
         trace: trace,
         requestId: validatedData.requestId,
-        sendMessagesInTelemetry: isDevEnv(),
+        sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
       },
     };
 

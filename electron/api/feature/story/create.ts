@@ -9,7 +9,7 @@ import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
 import { getMcpToolsForActiveProvider } from '../../../mcp';
 import { MCPHub } from '../../../mcp/mcp-hub';
-import { isDevEnv } from '../../../utils/env';
+import { isLangfuseDetailedTracesEnabled } from '../../../services/observability/observability.util';
 
 export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
@@ -67,7 +67,7 @@ export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promi
       configurable: {
         thread_id: `${randomUUID()}_create_stories`,
         trace: trace,
-        sendMessagesInTelemetry: isDevEnv(),
+        sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
       },
     };
     

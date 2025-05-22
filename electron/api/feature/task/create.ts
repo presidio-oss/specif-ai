@@ -9,7 +9,7 @@ import { buildLangchainModelProvider } from '../../../services/llm/llm-langchain
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
 import { getMcpToolsForActiveProvider } from '../../../mcp';
 import { MCPHub } from '../../../mcp/mcp-hub';
-import { isDevEnv } from '../../../utils/env';
+import { isLangfuseDetailedTracesEnabled } from '../../../services/observability/observability.util';
 
 export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<CreateTaskResponse> {
   try {
@@ -57,7 +57,7 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
       configurable: {
         thread_id: `${randomUUID()}_create_tasks`,
         trace: trace,
-        sendMessagesInTelemetry: isDevEnv(),
+        sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
       },
     };
     

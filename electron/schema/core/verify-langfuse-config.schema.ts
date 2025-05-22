@@ -21,6 +21,7 @@ export interface LangfuseConfigStore {
       publicKey: string;
       secretKey: string;
       baseUrl?: string;
+      enableDetailedTraces?: boolean
     } | null;
   }
 }

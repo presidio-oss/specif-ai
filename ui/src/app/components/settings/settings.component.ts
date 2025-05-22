@@ -159,7 +159,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   private loadLangfuseConfig(): void {
     this.electronService.getStoreValue(LANGFUSE_CONFIG_STORE_KEY).then((value: LangfuseConfigStore) => {
-      console.log('Langfuse config loaded:', value);
       const { langfuseConfig } = value || {};
       if (langfuseConfig) {
         this.useLangfuseCustomConfig.setValue(langfuseConfig.useCustomConfig || false);
@@ -199,7 +198,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.useLangfuseCustomConfig.valueChanges
         .pipe(distinctUntilChanged())
         .subscribe((enabled) => {
-          console.log('Langfuse config changed:', this.langfuseForm.value);
           if (enabled) {
             this.langfuseForm.enable();
           } else {
