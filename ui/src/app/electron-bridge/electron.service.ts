@@ -51,7 +51,7 @@ import { htmlToMarkdown } from '../utils/html.utils';
   providedIn: 'root',
 })
 export class ElectronService {
-  
+
   electronAPI: ElectronAPI | undefined;
   constructor(
     private logger: NGXLogger,
@@ -292,6 +292,15 @@ export class ElectronService {
     }
   }
 
+  async verifyLangfuseConfig(config: any) {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'core:verifyLangfuseConfig',
+        args: [config],
+      });
+    }
+  }
+
   async killPort(port: number): Promise<void> {
     if (this.electronAPI) {
       this.electronAPI.invoke('kill-port', port);
@@ -456,7 +465,7 @@ export class ElectronService {
     if (!this.electronAPI) {
       throw new Error('Electron is not available');
     }
-    
+
     // Check whether auto update is turned on
     const { isAutoUpdate = true } = await this.electronAPI.getStoreValue('APP_CONFIG') || {};
     if (!force && !isAutoUpdate) {
@@ -572,7 +581,7 @@ export class ElectronService {
   private buildChatStreamChannel(id:string){
     return `core:${id}-chatStream`;
   }
-  
+
   async openExternalUrl(url: string): Promise<boolean> {
     if (!this.electronAPI) {
       throw new Error('Electron is not available');
