@@ -21,7 +21,7 @@ import { randomUUID } from "node:crypto";
 import { ObservabilityManager } from '../../services/observability/observability.manager';
 import { MCPHub } from '../../mcp/mcp-hub';
 import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
-import { isDevEnv } from '../../utils/env';
+import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
 
 // types
 
@@ -184,7 +184,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         configurable: {
           thread_id: `${randomUUID()}_create_solution`,
           trace: trace,
-          sendMessagesInTelemetry: isDevEnv(),
+          sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
         },
       };
 
