@@ -31,6 +31,8 @@ const coreListeners = {
     ipcRenderer.invoke("core:getSuggestions", data),
   verifyLLMConfig: (provider: string, config: Record<string, any>) =>
     ipcRenderer.invoke("core:verifyLLMConfig", { provider, config }),
+  verifyLangfuseConfig: (config: any) =>
+    ipcRenderer.invoke("core:verifyLangfuseConfig", config),
   getAppConfig: () => ipcRenderer.invoke("core:getAppConfig"),
   chat: (data: any) => ipcRenderer.invoke("core:chat", data),
 };

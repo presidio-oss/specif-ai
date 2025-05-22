@@ -22,6 +22,12 @@
     ></app-button>
   </div>
 </header>
+
+<app-thinking-process
+  [progress]="solutionCreationProgress"
+  [show]="addOrUpdate"
+></app-thinking-process>
+
 <form [formGroup]="solutionForm" class="flex flex-col gap-3 overflow-auto pb-4">
   <!-- Basic Information Section -->
   <app-custom-accordion [id]="'basic-info'" [isOpen]="true">

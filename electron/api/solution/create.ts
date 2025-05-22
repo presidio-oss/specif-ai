@@ -21,7 +21,7 @@ import { randomUUID } from "node:crypto";
 import { ObservabilityManager } from '../../services/observability/observability.manager';
 import { MCPHub } from '../../mcp/mcp-hub';
 import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
-import { isDevEnv } from '../../utils/env';
+import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
 
 // types
 
@@ -184,7 +184,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         configurable: {
           thread_id: `${randomUUID()}_create_solution`,
           trace: trace,
-          sendMessagesInTelemetry: isDevEnv(),
+          sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
         },
       };
 
@@ -194,7 +194,25 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
         ...config,
       })
 
-      for await (const event of stream){
+      for await (const streamEvent of stream) {
+        if (streamEvent.event === "on_tool_start") {
+          event.sender.send(
+            `solution:${validatedData.id}-workflow-progress`,
+            {
+              node: "tools",
+              type: "mcp",
+              message: `Using tool: ${streamEvent.name}`,
+              timestamp: Date.now()
+            }
+          );
+        }
+          
+        if (streamEvent.event === "on_custom_event") {
+          event.sender.send(
+            `solution:${validatedData.id}-workflow-progress`,
+            streamEvent.data
+          );
+        }
       }
 
       const response = await createSolutionWorkflow.getState({
