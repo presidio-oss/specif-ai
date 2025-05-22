@@ -1,5 +1,5 @@
 import { verifyConfig } from "../api/core/verify-config";
-import { verifyLangfuseConfig } from "../api/core/verify-langfuse-config";
+import { verifyLangfuseConfig } from "../services/observability/verify-langfuse-config";
 import { getSuggestions } from "../api/core/get-suggestions";
 import { getAppConfig } from "../api/core/get-app-config";
 import { chatWithAI } from "../api/core/chat";

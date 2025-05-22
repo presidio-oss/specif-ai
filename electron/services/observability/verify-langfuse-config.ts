@@ -1,6 +1,7 @@
 import type { IpcMainInvokeEvent } from 'electron';
 import { verifyLangfuseConfigSchema, VerifyLangfuseConfigResponse } from '../../schema/core/verify-langfuse-config.schema';
 import { Langfuse } from 'langfuse';
+import { TRACE_NAMES } from './observability.constant';
 
 export async function verifyLangfuseConfig(event: IpcMainInvokeEvent, data: any): Promise<VerifyLangfuseConfigResponse> {
   try {
@@ -34,7 +35,7 @@ export async function verifyLangfuseConfig(event: IpcMainInvokeEvent, data: any)
       metadata: { test: true }
     });
     
-    const span = trace.span({ name: "connection-test" });
+    const span = trace.span({ name: TRACE_NAMES.CONNECTION_TEST });
     span.end();
 
     return {
