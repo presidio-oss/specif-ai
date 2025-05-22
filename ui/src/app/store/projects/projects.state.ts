@@ -265,7 +265,7 @@ export class ProjectsState {
         ...state,
         projects: sortedProjectList,
       });
-      this.router.navigate(['/apps']);
+      this.router.navigate([`apps/${metadata.id}`]);
     } catch (e) {
       this.logger.error('Error creating project', e);
       this.toast.showError('Error creating project');

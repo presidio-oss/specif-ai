@@ -91,6 +91,7 @@ export class ElectronService {
       return this.ipc.request({
         channel: 'solution:createSolution',
         args: [data],
+        skipLoading: true,
       });
     }
     throw new Error('Electron is not available');
@@ -571,6 +572,31 @@ export class ElectronService {
 
   private buildChatStreamChannel(id:string){
     return `core:${id}-chatStream`;
+  }
+  
+  private buildSolutionWorkflowProgressChannel(id: string) {
+    return `solution:${id}-workflow-progress`;
+  }
+
+  listenSolutionWorkflowProgress(
+    id: string,
+    callback: (event: IpcRendererEvent, response: any) => void,
+  ): void {
+    if (this.electronAPI) {
+      this.electronAPI.on(this.buildSolutionWorkflowProgressChannel(id), callback);
+    }
+  }
+
+  removeSolutionWorkflowProgressListener(
+    id: string,
+    callback: (event: IpcRendererEvent, response: any) => void,
+  ): void {
+    if (this.electronAPI) {
+      this.electronAPI.removeListener(
+        this.buildSolutionWorkflowProgressChannel(id),
+        callback,
+      );
+    }
   }
   
   async openExternalUrl(url: string): Promise<boolean> {
