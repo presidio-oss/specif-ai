@@ -10,7 +10,7 @@ import { COMPONENT, OPERATIONS } from '../../../helper/constants';
 import { traceBuilder } from '../../../utils/trace-builder';
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
 import { HumanMessage } from "@langchain/core/messages";
-import { isDevEnv } from '../../../utils/env';
+import { isLangfuseDetailedTracesEnabled } from '../../../services/observability/observability.util';
 
 export async function updateBusinessProcess(event: IpcMainInvokeEvent, data: any): Promise<UpdateBusinessProcessResponse> {
   try {
@@ -73,14 +73,14 @@ export async function updateBusinessProcess(event: IpcMainInvokeEvent, data: any
       name: "llm",
       model: llmConfig.activeProvider,
       environment: process.env.APP_ENVIRONMENT,
-      input: isDevEnv() ? [new HumanMessage(prompt)] : undefined,
+      input: isLangfuseDetailedTracesEnabled() ? [new HumanMessage(prompt)] : undefined,
     });
 
     const response = await handler.invoke(messages, null, traceName);
     console.log('[update-business-process] LLM Response:', response);
 
     generation.end({
-      output: isDevEnv() ? response : undefined,
+      output: isLangfuseDetailedTracesEnabled() ? response : undefined,
     });
 
     llmSpan.end({

@@ -37,11 +37,15 @@ on:
         required: true
       DEV_LANGFUSE_BASE_URL:
         required: true
+      DEV_ENABLE_LANGFUSE_DETAILED_TRACES:
+        required: true
       PROD_LANGFUSE_SECRET_KEY:
         required: true
       PROD_LANGFUSE_PUBLIC_KEY:
         required: true
       PROD_LANGFUSE_BASE_URL:
+        required: true
+      PROD_ENABLE_LANGFUSE_DETAILED_TRACES:
         required: true
 
 jobs:
@@ -137,6 +141,7 @@ jobs:
           Add-Content -Path .env -Value "LANGFUSE_SECRET_KEY=$env:LANGFUSE_SECRET_KEY"
           Add-Content -Path .env -Value "LANGFUSE_PUBLIC_KEY=$env:LANGFUSE_PUBLIC_KEY"
           Add-Content -Path .env -Value "LANGFUSE_BASE_URL=$env:LANGFUSE_BASE_URL"
+          Add-Content -Path .env -Value "ENABLE_LANGFUSE_DETAILED_TRACES=$env:ENABLE_LANGFUSE_DETAILED_TRACES"
 
           Write-Host "POSTHOG_HOST is: $env:POSTHOG_HOST"
 
@@ -155,6 +160,7 @@ jobs:
           LANGFUSE_SECRET_KEY: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_SECRET_KEY || secrets.DEV_LANGFUSE_SECRET_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_PUBLIC_KEY || secrets.DEV_LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_BASE_URL: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_BASE_URL || secrets.DEV_LANGFUSE_BASE_URL }}
+          ENABLE_LANGFUSE_DETAILED_TRACES: ${{ inputs.environment == 'production' && secrets.PROD_ENABLE_LANGFUSE_DETAILED_TRACES || secrets.DEV_ENABLE_LANGFUSE_DETAILED_TRACES }}
 
       - name: Package Windows Build
         run: |
@@ -257,6 +263,7 @@ jobs:
           echo "LANGFUSE_SECRET_KEY=$LANGFUSE_SECRET_KEY" >> .env
           echo "LANGFUSE_PUBLIC_KEY=$LANGFUSE_PUBLIC_KEY" >> .env
           echo "LANGFUSE_BASE_URL=$LANGFUSE_BASE_URL" >> .env
+          echo "ENABLE_LANGFUSE_DETAILED_TRACES=$ENABLE_LANGFUSE_DETAILED_TRACES" >> .env
 
           npm install
           npm run build
@@ -271,6 +278,7 @@ jobs:
           LANGFUSE_SECRET_KEY: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_SECRET_KEY || secrets.DEV_LANGFUSE_SECRET_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_PUBLIC_KEY || secrets.DEV_LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_BASE_URL: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_BASE_URL || secrets.DEV_LANGFUSE_BASE_URL }}
+          ENABLE_LANGFUSE_DETAILED_TRACES: ${{ inputs.environment == 'production' && secrets.PROD_ENABLE_LANGFUSE_DETAILED_TRACES || secrets.DEV_ENABLE_LANGFUSE_DETAILED_TRACES }}
 
       - name: Package and Upload to S3
         id: package_and_upload

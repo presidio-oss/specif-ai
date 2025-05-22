@@ -204,15 +204,104 @@
                   ></div>
                 </label>
               </div>
-            </div>
-            <div *ngIf="analyticsWarning">
-              <p class="text-warning-600 text-xs flex items-center gap-1">
-                <ng-icon
-                  name="heroExclamationTriangle"
-                  class="text-md"
-                ></ng-icon>
-                {{ analyticsWarning }}
-              </p>
+
+              <!-- Langfuse Configuration -->
+              <div class="px-4 py-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-secondary-900"
+                    >Use Custom Langfuse Account</span
+                  >
+                  <label class="relative inline-flex items-center" [class.cursor-not-allowed]="!analyticsEnabled.value" [class.cursor-pointer]="analyticsEnabled.value">
+                    <input
+                      type="checkbox"
+                      id="langfuseToggle"
+                      [formControl]="useLangfuseCustomConfig"
+                      class="sr-only peer"
+                      [attr.readonly]="!analyticsEnabled.value"
+                    />
+                    <div
+                      class="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"
+                      [class.opacity-50]="!analyticsEnabled.value"
+                    ></div>
+                  </label>
+                </div>
+
+
+
+                <form [formGroup]="langfuseForm" class="space-y-4 mt-4" *ngIf="useLangfuseCustomConfig.value">
+                  <!-- Error Message -->
+                  <div
+                    *ngIf="langfuseErrorMessage && hasChanges"
+                    class="mb-6 p-2 text-danger-600 font-medium bg-danger-50 rounded"
+                  >
+                    {{ langfuseErrorMessage }}
+                  </div>
+                  <div class="space-y-2">
+                    <label
+                      for="baseUrl"
+                      class="block text-sm font-medium text-secondary-900"
+                    >
+                      Base URL
+                    </label>
+                    <input
+                      type="text"
+                      id="baseUrl"
+                      formControlName="baseUrl"
+                      class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
+                      placeholder="Enter Langfuse Base URL (optional)"
+                    />
+                  </div>
+
+                  <div class="space-y-2">
+                    <label
+                      for="publicKey"
+                      class="block text-sm font-medium text-secondary-900"
+                    >
+                      Public Key <span class="text-danger-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="publicKey"
+                      formControlName="publicKey"
+                      class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
+                      placeholder="Enter Langfuse Public Key"
+                    />
+                  </div>
+
+                  <div class="space-y-2">
+                    <label
+                      for="secretKey"
+                      class="block text-sm font-medium text-secondary-900"
+                    >
+                      Secret Key <span class="text-danger-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      id="secretKey"
+                      formControlName="secretKey"
+                      class="h-10 block w-full px-3 border border-secondary-300 text-secondary-900 text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 disabled:bg-secondary-100 focus-visible:outline-none"
+                      placeholder="Enter Langfuse Secret Key"
+                    />
+                  </div>
+
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="enableDetailedTraces"
+                        formControlName="enableDetailedTraces"
+                        class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                      />
+                      <label
+                        for="enableDetailedTraces"
+                        class="ml-2 block text-sm font-medium text-secondary-900"
+                      >
+                        Enable Detailed Traces
+                      </label>
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
 
@@ -329,7 +418,7 @@
             theme="primary"
             size="sm"
             (click)="onSave()"
-            [disabled]="!configForm.valid"
+            [disabled]="!isFormValid()"
           />
         </div>
       </div>
