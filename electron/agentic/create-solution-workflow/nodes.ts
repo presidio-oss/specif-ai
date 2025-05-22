@@ -1,6 +1,7 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { BaseCheckpointSaver } from "@langchain/langgraph-checkpoint";
 import { z } from "zod";
+import { WorkflowEventsService } from "../../services/events/workflow-events.service";
 import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { IRequirementType, ITool } from "../common/types";
@@ -15,6 +16,8 @@ import {
 } from "./state";
 import { CreateSolutionWorkflowRunnableConfig } from "./types";
 import { buildPromptForRequirement } from "./utils";
+
+const workflowEvents = new WorkflowEventsService("create-solution");
 
 // nodes
 
@@ -44,10 +47,23 @@ export const buildResearchNode = ({
         statusMessage: message,
       });
 
+      await workflowEvents.dispatchThinking(
+        "research",
+        "Skipping research phase - no tools available",
+        runnableConfig
+      );
+
       return {
         referenceInformation: "",
       };
     }
+
+    // Dispatch initial thinking event
+    await workflowEvents.dispatchThinking(
+      "research",
+      "Researching relevant technical context based on app details",
+      runnableConfig
+    );
 
     const agent = buildReactAgent({
       model: model,
@@ -88,6 +104,12 @@ export const buildResearchNode = ({
       }
     );
 
+    await workflowEvents.dispatchAction(
+      "research",
+      "Finished research - summarized findings ready for requirement generation",
+      runnableConfig
+    );
+
     span?.end({
       statusMessage: "Research completed successfully!",
     });
@@ -124,6 +146,13 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
         span?.end({
           statusMessage: message,
         });
+
+        await workflowEvents.dispatchAction(
+          "requirement-generation",
+          `Skipped ${type} requirement generation - disabled by preferences`,
+          runnableConfig
+        );
+
         return {
           generatedRequirements: {
             [type]: {
@@ -133,6 +162,14 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
           },
         };
       }
+
+      // Dispatch initial events
+      await workflowEvents.dispatchThinking(
+        "requirement-generation",
+        `Preparing input context for ${type} requirement generation`,
+        runnableConfig
+      );
+
 
       const subgraph = createRequirementGenWorkflow({
         model: model,
@@ -166,6 +203,12 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
           sendMessagesInTelemetry: sendMessagesInTelemetry
         },
       });
+
+      await workflowEvents.dispatchAction(
+        "requirement-generation",
+        `Successfully generated and validated ${type} requirements`,
+        runnableConfig
+      );
 
       span?.end({
         statusMessage: "Successfully generated requirements",
