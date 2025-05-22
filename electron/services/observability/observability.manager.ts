@@ -73,13 +73,11 @@ export class ObservabilityManager {
             secretKey: this.langfuseConfig.config.secretKey,
             publicKey: this.langfuseConfig.config.publicKey,
             baseUrl: this.langfuseConfig.config.baseUrl,
-            enableDetailedTraces: this.langfuseConfig.config.enableDetailedTraces,
           }
         : {
             secretKey: process.env.LANGFUSE_SECRET_KEY,
             publicKey: process.env.LANGFUSE_PUBLIC_KEY,
             baseUrl: process.env.LANGFUSE_BASE_URL,
-            enableDetailedTraces: process.env.ENABLE_DETAILED_TRACES,
           };
 
       this.langfuse = new Langfuse(config);
