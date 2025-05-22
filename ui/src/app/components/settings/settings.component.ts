@@ -36,7 +36,9 @@ import { AnalyticsEventSource, AnalyticsEvents, AnalyticsEventStatus } from 'src
 import { AnalyticsTracker } from 'src/app/services/analytics/analytics.interface';
 import { getAnalyticsToggleState, setAnalyticsToggleState } from '../../services/analytics/utils/analytics.utils';
 import { CoreService, AppConfig } from 'src/app/services/core/core.service';
+import { LangfuseConfigService } from 'src/app/services/analytics/observability/langfuse-config.service';
 import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
+import { LANGFUSE_CONFIG_STORE_KEY, LangfuseConfigStore } from 'src/app/services/analytics/observability/langfuse-config-type';
 
 @Component({
   selector: 'app-settings',
@@ -52,7 +54,7 @@ import { heroExclamationTriangle } from '@ng-icons/heroicons/outline';
     AppSelectComponent,
   ],
   providers: [
-    provideIcons({ 
+    provideIcons({
       heroExclamationTriangle
     })
   ]
@@ -63,7 +65,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     LLMConfigState.getConfig,
   );
   currentLLMConfig!: LLMConfigModel;
-  availableProviders = [...AvailableProviders].sort((a, b) => 
+  availableProviders = [...AvailableProviders].sort((a, b) =>
     a.displayName.localeCompare(b.displayName)
   );
   providerOptions = this.availableProviders.map(p => ({
@@ -75,7 +77,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   selectedProvider: FormControl = new FormControl();
   analyticsEnabled: FormControl = new FormControl();
   autoUpdateEnabled: FormControl = new FormControl();
+  useLangfuseCustomConfig: FormControl = new FormControl(false);
+  langfuseForm!: FormGroup;
   errorMessage: string = '';
+  langfuseErrorMessage: string = '';
   hasChanges: boolean = false;
   workingDir: string | null;
   appName = environment.ThemeConfiguration.appName;
@@ -83,13 +88,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private initialProvider: string = '';
   private initialAnalyticsState: boolean = false;
   private initialAutoUpdateState: boolean = true;
+  private initialEnableCustomLangfuseToggleState: boolean = false;
+  private initialCustomLangfuseConfigState: any = {};
   protected themeConfiguration = environment.ThemeConfiguration;
 
   electronService = inject(ElectronService);
   logger = inject(NGXLogger);
   router = inject(Router);
   dialogService = inject(DialogService);
-  analyticsWarning: string = '';
 
   constructor(
     private store: Store,
@@ -98,7 +104,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
     private analyticsTracker: AnalyticsTracker,
-    private core: CoreService
+    private core: CoreService,
+    private langfuseConfigService: LangfuseConfigService
   ) {
     this.workingDir = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
     this.initForm();
@@ -111,19 +118,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     };
   }
 
-  private initForm() {
-    this.configForm = this.fb.group({
-      provider: ['', Validators.required],
-      config: this.fb.group({})
-    });
-  }
-
   private async updateConfigFields(provider: string) {
     const providerConfig = await getLLMProviderConfig(provider);
     if (!providerConfig) return;
 
     this.currentProviderFields = providerConfig.fields;
-    if (!this.configForm) return;    
+    if (!this.configForm) return;
     const newConfigGroup = this.fb.group({});
     providerConfig.fields.forEach(field => {
       newConfigGroup.addControl(
@@ -142,19 +142,72 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   private applyStoredConfigValues(provider: string) {
     if (!this.currentLLMConfig || !this.currentLLMConfig.providerConfigs) return;
-    
+
     const providerConfig = this.currentLLMConfig.providerConfigs[provider];
     if (!providerConfig || !providerConfig.config) return;
-    
+
     const configGroup = this.configForm.get('config') as FormGroup;
     if (!configGroup) return;
-    
+
     const storedConfig: Record<string, any> = providerConfig.config;
-    
+
     configGroup.patchValue(storedConfig, { emitEvent: true });
     this.configForm.markAsPristine();
-    
+
     this.cdr.markForCheck();
+  }
+
+  private loadLangfuseConfig(): void {
+    this.electronService.getStoreValue(LANGFUSE_CONFIG_STORE_KEY).then((value: LangfuseConfigStore) => {
+      const { langfuseConfig } = value || {};
+      if (langfuseConfig) {
+        this.useLangfuseCustomConfig.setValue(langfuseConfig.useCustomConfig || false);
+        this.initialEnableCustomLangfuseToggleState = langfuseConfig.useCustomConfig || false;
+        if (langfuseConfig.config) {
+          this.langfuseForm.patchValue(langfuseConfig.config);
+          this.initialCustomLangfuseConfigState = { ...langfuseConfig.config };
+        }
+      }
+    });
+  }
+
+  private saveLangfuseConfig(): void {
+    this.electronService.getStoreValue(LANGFUSE_CONFIG_STORE_KEY).then((value: LangfuseConfigStore) => {
+      value = value || {};
+      const config = this.useLangfuseCustomConfig.value ? {
+        ...this.langfuseForm.value
+      } : null;
+
+      const langfuseConfig = {
+        useCustomConfig: this.useLangfuseCustomConfig.value,
+        config
+      };
+
+      this.electronService.setStoreValue(LANGFUSE_CONFIG_STORE_KEY, {
+        ...value,
+        langfuseConfig
+      });
+
+      this.initialEnableCustomLangfuseToggleState = this.useLangfuseCustomConfig.value;
+      this.initialCustomLangfuseConfigState = config || {};
+    });
+  }
+
+  onLangfuseToggleChange() {
+    this.subscriptions.add(
+      this.useLangfuseCustomConfig.valueChanges
+        .pipe(distinctUntilChanged())
+        .subscribe((enabled) => {
+          if (enabled) {
+            this.langfuseForm.enable();
+          } else {
+            this.langfuseForm.disable();
+          }
+          this.langfuseErrorMessage = '';
+          this.checkForChanges();
+          this.cdr.markForCheck();
+        }),
+    );
   }
 
   ngOnInit(): void {
@@ -167,6 +220,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       )
     );
 
+    this.loadLangfuseConfig();
+
     this.electronService.getStoreValue('APP_CONFIG').then((value) => {
       const { isAutoUpdate = true } = value || {};
       this.autoUpdateEnabled.setValue(isAutoUpdate);
@@ -175,17 +230,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     this.core.getAppConfig()
       .then((config: AppConfig) => {
-        const postHogEnabled = this.analyticsTracker.isEnabled() && this.analyticsTracker.isConfigValid(config);
-        const langfuseEnabled = config.langfuseEnabled;
-        if (!postHogEnabled && !langfuseEnabled) {
-          this.analyticsEnabled.setValue(false);
-          this.analyticsEnabled.disable({ onlySelf: true });
-          this.updateAnalyticsState(false);
-          this.hasChanges = false;
-          this.analyticsWarning = 'Analytics and observability configuration is missing or disabled. Please update the settings.';
+        // Keep analytics enabled state based on user preference
+        const analyticsState = getAnalyticsToggleState();
+        this.analyticsEnabled.setValue(analyticsState);
+        this.initialAnalyticsState = analyticsState;
+
+        // Enable/disable Langfuse toggle based on analytics state
+        if (analyticsState) {
+          this.useLangfuseCustomConfig.enable();
         } else {
-          this.analyticsEnabled.enable({ onlySelf: true });
-          this.analyticsWarning = '';
+          this.useLangfuseCustomConfig.setValue(false);
+          this.useLangfuseCustomConfig.disable();
         }
       })
       .catch((error: any) => {
@@ -199,6 +254,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.onProviderChange();
     this.onAnalyticsToggleChange();
     this.onAutoUpdateToggleChange();
+    this.onLangfuseToggleChange();
 
     const providerControl = this.configForm.get('provider');
     if (providerControl) {
@@ -214,23 +270,23 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (this.configForm) {
       // Set initial default values
       const defaultProvider = AvailableProviders[0].key;
-      
+
       this.configForm.patchValue({
         provider: defaultProvider,
         config: {}
       }, { emitEvent: false });
-    
+
       this.subscriptions.add(
         this.llmConfig$.subscribe(async (config) => {
           this.currentLLMConfig = config;
           const provider = config?.activeProvider || defaultProvider;
           this.initialProvider = provider;
           this.selectedProvider.setValue(provider);
-          
+
          await this.updateConfigFields(provider);
-          
+
           this.configForm?.get('provider')?.setValue(provider, { emitEvent: false });
-          
+
           this.hasChanges = false;
         }),
       );
@@ -243,9 +299,40 @@ export class SettingsComponent implements OnInit, OnDestroy {
       );
     }
   }
-  
-  onSave() {
-    if (!this.configForm?.valid) return;
+
+  isFormValid(): boolean {
+    const isConfigFormValid = this.configForm?.valid ?? false;
+    const isLangfuseValid = !this.useLangfuseCustomConfig.value || this.langfuseForm?.valid;
+    return isConfigFormValid && isLangfuseValid;
+  }
+
+  private async validateLangfuseConfig(): Promise<boolean> {
+    if (!this.useLangfuseCustomConfig.value) return true;
+    if (!this.langfuseForm.valid) {
+      this.langfuseErrorMessage = 'Please fill in all required Langfuse fields.';
+      return false;
+    }
+
+    try {
+      const response = await this.langfuseConfigService.verifyConfig(this.langfuseForm.value);
+      if (response.status === 'failed') {
+        this.langfuseErrorMessage = response.message;
+        return false;
+      }
+      return true;
+    } catch (error) {
+      this.langfuseErrorMessage = 'Failed to validate Langfuse configuration.';
+      return false;
+    }
+  }
+
+  async onSave() {
+    if (!this.isFormValid()) return;
+
+    // Validate Langfuse config first if enabled
+    if (!(await this.validateLangfuseConfig())) {
+      return;
+    }
     const analyticsEnabled = this.analyticsEnabled.value;
 
     if (analyticsEnabled !== this.initialAnalyticsState) {
@@ -263,9 +350,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const formValue = this.configForm.value;
     const provider = formValue.provider;
-    this.configForm.updateValueAndValidity();    
+    this.configForm.updateValueAndValidity();
     const latestConfigValues = (this.configForm.get('config') as FormGroup).getRawValue();
     console.log("latestConfigValues", JSON.stringify(latestConfigValues))
+
+    // Save Langfuse config first
+    if (this.useLangfuseCustomConfig.value !== this.initialEnableCustomLangfuseToggleState ||
+        (this.useLangfuseCustomConfig.value && this.langfuseForm.dirty)) {
+      this.saveLangfuseConfig();
+    }
 
     this.electronService.verifyLLMConfig(provider, latestConfigValues).then((response) => {
       if (response.status === 'success') {
@@ -367,8 +460,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.analyticsEnabled.valueChanges
         .pipe(distinctUntilChanged())
         .subscribe((enabled) => {
+          if (!enabled) {
+            // Disable and uncheck custom Langfuse when analytics is disabled
+            this.useLangfuseCustomConfig.setValue(false);
+            this.useLangfuseCustomConfig.disable();
+          } else {
+            this.useLangfuseCustomConfig.enable();
+          }
+          console.log('Analytics enabled:', enabled);
+          console.log('Langfuse enabled:', this.useLangfuseCustomConfig.value);
           this.checkForChanges();
-          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         }),
     );
   }
@@ -388,35 +490,63 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.electronService.checkForUpdates(true);
   }
 
-  checkForChanges() {
+  private initForm() {
+    this.configForm = this.fb.group({
+      provider: ['', Validators.required],
+      config: this.fb.group({})
+    });
+
+    this.langfuseForm = this.fb.group({
+      publicKey: ['', Validators.required],
+      secretKey: ['', Validators.required],
+      baseUrl: [''],
+      enableDetailedTraces: [false]
+    });
+
+    // Subscribe to form changes
+    this.subscriptions.add(
+      this.langfuseForm.valueChanges.subscribe(() => {
+        this.langfuseErrorMessage = '';
+        this.checkForChanges();
+      })
+    );
+
+    this.subscriptions.add(
+      this.configForm.valueChanges.subscribe(() => {
+        this.checkForChanges();
+      })
+    );
+  }
+
+  private checkForChanges() {
     const formValue = this.configForm.value;
-    const currentConfig = this.currentLLMConfig.providerConfigs[this.currentLLMConfig.activeProvider]?.config;
-    
+    const currentConfig = this.currentLLMConfig?.providerConfigs[this.currentLLMConfig.activeProvider]?.config;
+
     // Compare provider
-    let hasProviderChanged = formValue.provider !== this.initialProvider;
-    
+    const hasProviderChanged = formValue.provider !== this.initialProvider;
+
     // Compare config fields
     let hasConfigChanged = false;
     if (formValue.config && currentConfig) {
-      const configKeys = new Set([
-        ...Object.keys(formValue.config),
-        ...Object.keys(currentConfig)
-      ]);
-      
-      for (const key of configKeys) {
-        if (formValue.config[key as keyof typeof formValue.config] !== 
-            currentConfig[key as keyof typeof currentConfig]) {
-          hasConfigChanged = true;
-          break;
-        }
-      }
+      hasConfigChanged = JSON.stringify(formValue.config) !== JSON.stringify(currentConfig);
     }
+
+    // Compare Langfuse changes
+    const hasLangfuseToggleChanged = this.useLangfuseCustomConfig.value !== this.initialEnableCustomLangfuseToggleState;
+    const hasLangfuseValuesChanged = this.useLangfuseCustomConfig.value &&
+      JSON.stringify(this.langfuseForm.value) !== JSON.stringify(this.initialCustomLangfuseConfigState);
+
+    // Compare other toggles
+    const hasAnalyticsChanged = this.analyticsEnabled.value !== this.initialAnalyticsState;
+    const hasAutoUpdateChanged = this.autoUpdateEnabled.value !== this.initialAutoUpdateState;
 
     this.hasChanges =
       hasProviderChanged ||
       hasConfigChanged ||
-      this.analyticsEnabled.value !== this.initialAnalyticsState || 
-      this.autoUpdateEnabled.value !== this.initialAutoUpdateState;
+      hasAnalyticsChanged ||
+      hasAutoUpdateChanged ||
+      hasLangfuseToggleChanged ||
+      hasLangfuseValuesChanged;
   }
 
   updateAnalyticsState(enabled: boolean): void {

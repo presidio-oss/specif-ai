@@ -10,7 +10,7 @@ import { traceBuilder } from '../../../utils/trace-builder';
 import { COMPONENT, OPERATIONS } from '../../../helper/constants';
 import { ObservabilityManager } from '../../../services/observability/observability.manager';
 import { HumanMessage } from "@langchain/core/messages";
-import { isDevEnv } from '../../../utils/env';
+import { isLangfuseDetailedTracesEnabled } from '../../../services/observability/observability.util';
 
 export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<UpdateTaskResponse> {
   try {
@@ -55,7 +55,7 @@ export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<
       name: "llm",
       model: llmConfig.activeProvider,
       environment: process.env.APP_ENVIRONMENT,
-      input: isDevEnv() ? [new HumanMessage(prompt)] : undefined,
+      input: isLangfuseDetailedTracesEnabled() ? [new HumanMessage(prompt)] : undefined,
     });
 
     const response = await handler.invoke(messages, null, traceName);
@@ -63,7 +63,7 @@ export async function updateTask(event: IpcMainInvokeEvent, data: any): Promise<
     console.log('[update-task] LLM Response:', response);
 
     generation.end({
-      output: isDevEnv() ? response : undefined,
+      output: isLangfuseDetailedTracesEnabled() ? response : undefined,
     });
 
     llmSpan.end({
