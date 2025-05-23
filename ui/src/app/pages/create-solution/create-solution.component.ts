@@ -204,11 +204,15 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
       const data = this.solutionForm.getRawValue();
       data.createReqt = !data.cleanSolution;
 
-      this.store.dispatch(new CreateProject(data.name, data)).subscribe(() => {
-        this.triggerSuccessConfetti();
-        this.toast.showSuccess(
-          'All set! Your solution is ready to roll.',
-        );
+      this.store.dispatch(new CreateProject(data.name, data)).subscribe({
+        next: () => {
+          this.triggerSuccessConfetti();
+          this.toast.showSuccess('All set! Your solution is ready to roll.');
+        },
+        error: (error) => {
+          this.addOrUpdate = false;
+          this.toast.showError(error.message);
+        },
       });
     }
   }
