@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0]
+
+### Added
+
+- Support for custom Langfuse configurations via Settings.
+- Integrated thinking process visualization in Create Solution workflow.
+
 ## [2.4.0]
 
 ### Added
