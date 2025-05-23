@@ -15,6 +15,7 @@ import {
 } from './thinking-process.config';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { ThreeBounceLoaderComponent } from '../three-bounce-loader/three-bounce-loader.component';
 import {
   heroSparkles,
   heroCheckCircle,
@@ -37,7 +38,7 @@ import {
   templateUrl: './thinking-process.component.html',
   styleUrls: ['./thinking-process.component.scss'],
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, NgIconComponent],
+  imports: [NgIf, NgFor, NgClass, NgIconComponent, ThreeBounceLoaderComponent],
   providers: [
     provideIcons({
       heroSparkles,

@@ -12,16 +12,6 @@
     class="relative w-[90%] max-w-2xl mx-auto p-6 sm:p-8 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl shadow-primary-900/15 overflow-hidden"
     [@fadeInOut]
   >
-    <div class="absolute bottom-0 left-0 right-0 h-1.5 overflow-hidden">
-      <div
-        class="h-full bg-gradient-to-r from-primary-500 via-success-500 to-primary-500 bg-[length:200%_100%] rounded-full animate-[progress-line_3s_ease-in-out_infinite] shadow-sm"
-      ></div>
-    </div>
-
-    <div
-      class="absolute -top-6 left-1/2 -translate-x-1/2 w-40 h-12 bg-primary-500/20 blur-2xl rounded-full"
-    ></div>
-
     <div class="text-center mb-8 relative">
       <div class="absolute -top-1 left-1/2 -translate-x-1/2">
         <div
@@ -34,18 +24,6 @@
         class="text-2xl sm:text-3xl font-bold text-primary-700 mb-2 tracking-tight"
       >
         {{ config.title }}
-
-        <span class="inline-flex gap-1">
-          <span
-            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse [animation-delay:-0.3s]"
-          ></span>
-          <span
-            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse [animation-delay:-0.15s]"
-          ></span>
-          <span
-            class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse"
-          ></span>
-        </span>
       </h2>
 
       <div class="mt-5 flex justify-center">
@@ -82,7 +60,7 @@
               [ngClass]="{
                 'bg-primary-400': event.type === 'thinking',
                 'bg-success-400': event.type === 'action',
-                'bg-info-400': event.type === 'mcp',
+                'bg-amber-400': event.type === 'mcp',
               }"
             ></div>
             <ng-icon
@@ -96,7 +74,7 @@
               class="h-5 w-5 mt-0.5 shrink-0 relative"
               [class.text-primary-500]="event.type === 'thinking'"
               [class.text-success-500]="event.type === 'action'"
-              [class.text-info-500]="event.type === 'mcp'"
+              [class.text-amber-500]="event.type === 'mcp'"
             ></ng-icon>
           </div>
 
@@ -107,10 +85,46 @@
                 [ngClass]="{
                   'text-primary-700': event.type === 'thinking',
                   'text-success-700': event.type === 'action',
-                  'text-info-700': event.type === 'mcp',
+                  'text-amber-700': event.type === 'mcp',
                 }"
                 >{{ event.message }}</span
               >
+              <div
+                *ngIf="event === progress[progress.length - 1]"
+                [ngClass]="{
+                  'bg-primary-50/80 border-primary-100':
+                    event.type === 'thinking',
+                  'bg-success-50/80 border-success-100':
+                    event.type === 'action',
+                  'bg-amber-50/80 border-amber-100': event.type === 'mcp',
+                }"
+                class="backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-2 shadow-sm border"
+              >
+                <span
+                  class="text-xs font-medium"
+                  [ngClass]="{
+                    'text-primary-700': event.type === 'thinking',
+                    'text-success-700': event.type === 'action',
+                    'text-amber-700': event.type === 'mcp',
+                  }"
+                  >Executing</span
+                >
+                <div
+                  class="inline-block relative [--dot-size:0.25rem]"
+                  [ngClass]="{
+                    '[--dot-color:theme(colors.primary.500)]':
+                      event.type === 'thinking',
+                    '[--dot-color:theme(colors.success.500)]':
+                      event.type === 'action',
+                    '[--dot-color:theme(colors.amber.500)]':
+                      event.type === 'mcp',
+                  }"
+                >
+                  <app-three-bounce-loader
+                    loadingSRMessage="Executing"
+                  ></app-three-bounce-loader>
+                </div>
+              </div>
             </div>
           </div>
         </li>
