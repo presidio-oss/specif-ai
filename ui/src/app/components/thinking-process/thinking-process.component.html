@@ -90,40 +90,16 @@
                 >{{ event.message }}</span
               >
               <div
-                *ngIf="event === progress[progress.length - 1]"
+                *ngIf="shouldShowSpinner(event)"
+                class="inline-block w-3 h-3 border-2 border-t-transparent rounded-full animate-spin"
                 [ngClass]="{
-                  'bg-primary-50/80 border-primary-100':
-                    event.type === 'thinking',
-                  'bg-success-50/80 border-success-100':
-                    event.type === 'action',
-                  'bg-amber-50/80 border-amber-100': event.type === 'mcp',
+                  'border-primary-500': event.type === 'thinking',
+                  'border-success-500': event.type === 'action',
+                  'border-amber-500': event.type === 'mcp',
                 }"
-                class="backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-2 shadow-sm border"
+                role="status"
+                aria-label="Executing"
               >
-                <span
-                  class="text-xs font-medium"
-                  [ngClass]="{
-                    'text-primary-700': event.type === 'thinking',
-                    'text-success-700': event.type === 'action',
-                    'text-amber-700': event.type === 'mcp',
-                  }"
-                  >Executing</span
-                >
-                <div
-                  class="inline-block relative [--dot-size:0.25rem]"
-                  [ngClass]="{
-                    '[--dot-color:theme(colors.primary.500)]':
-                      event.type === 'thinking',
-                    '[--dot-color:theme(colors.success.500)]':
-                      event.type === 'action',
-                    '[--dot-color:theme(colors.amber.500)]':
-                      event.type === 'mcp',
-                  }"
-                >
-                  <app-three-bounce-loader
-                    loadingSRMessage="Executing"
-                  ></app-three-bounce-loader>
-                </div>
               </div>
             </div>
           </div>

@@ -155,4 +155,22 @@ export class ThinkingProcessComponent
       this.pulseInterval = undefined;
     }
   }
+
+  shouldShowSpinner(event: WorkflowProgressEvent): boolean {
+    if (event.type === 'action') {
+      return false;
+    }
+
+    const currentIndex = this.progress.indexOf(event);
+
+    let lastActionIndex = -1;
+    for (let i = this.progress.length - 1; i >= 0; i--) {
+      if (this.progress[i].type === 'action') {
+        lastActionIndex = i;
+        break;
+      }
+    }
+
+    return currentIndex > lastActionIndex;
+  }
 }
