@@ -158,10 +158,7 @@ export class ProjectsState {
       const state = getState();
       const projectExists = await this.appSystemService.fileExists(projectName);
       if (projectExists) {
-        this.toast.showError(
-          'Project already exists, please retry with another unique project name',
-        );
-        return;
+        throw new Error('Project already exists, please retry with another unique project name');
       }
 
       const response = await this.solutionService.generateDocumentsFromLLM({
@@ -268,7 +265,7 @@ export class ProjectsState {
       this.router.navigate([`apps/${metadata.id}`]);
     } catch (e) {
       this.logger.error('Error creating project', e);
-      this.toast.showError('Error creating project');
+      throw e;
     }
   }
 

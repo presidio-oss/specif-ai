@@ -133,6 +133,24 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 </div>
 
+#### Custom Langfuse Configuration
+
+Specifai supports custom Langfuse configuration for enhanced observability and analytics:
+
+<div align="center">
+  <img src="assets/img/specifai-custom-langfuse-settings.png" alt="Custom Langfuse Configuration" width="800">
+  <em>Custom Langfuse configuration settings</em>
+</div>
+
+Key configuration options include:
+- **Enable Analytics Tracking**: Toggle to enable/disable analytics tracking
+- **Use Custom Langfuse Account**: Switch to use your own Langfuse instance
+- **Base URL**: Custom Langfuse instance URL
+- **Public Key**: Langfuse public key for authentication
+- **Secret Key**: Langfuse secret key for secure access
+- **Enable Detailed Traces**: Option to capture detailed execution traces includes detailed input and output.
+
+
 #### ✨ Agentic Solution Requirement Generation Flow
 
 Specif AI utilises the Langgraph framework to deliver an efficient agentic workflow, enhancing the creation of solution requirements with precision. Following are the key phases involved:
