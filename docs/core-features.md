@@ -14,6 +14,7 @@ Discover the powerful features that make Specifai your ultimate companion for SD
 ## 🎯 Solution Creation and Management
 
 ### Creating Your First Solution
+![Solution Creation](assets/gif/specifai-overview.gif)
 Transform your ideas into well-structured solutions in minutes:
 
 1. **Launch Solution Creation**
@@ -22,13 +23,15 @@ Transform your ideas into well-structured solutions in minutes:
 
 2. **Define Solution Details**
    - **Solution Name**: Choose a clear, descriptive name
-     * Good example: "Customer-Portal-Modernization"
+     * Good example: "Task-Management-System"
      * Avoid generic names like "New Project"
    
    - **Description**: Provide comprehensive context
      * Include business objectives
      * Mention key stakeholders
      * Outline primary goals
+     * Include third-party integrations
+     * Include compliance requirements
    
    - **Technical Stack**: Specify your technology choices
      * Frontend frameworks (e.g., React, Angular)
@@ -38,8 +41,8 @@ Transform your ideas into well-structured solutions in minutes:
 
    - **Solution Context**: Configure solution preferences
      * Toggle "Is solution built already?" for existing solutions
-     * When enabled, Specifai leverages existing solution context for requirement generation
-     * When disabled, starts fresh with new requirement generation
+     * When enabled, no requirements will be generated which gives users more control over requirement creation.
+     * When disabled, starts fresh with new requirement generation based on the provided context.
 
 3. **Configure Solution Preferences**
    Set minimum requirements and optimize your project settings:
@@ -68,9 +71,6 @@ Transform your ideas into well-structured solutions in minutes:
 5. create Solution Space
    - Click "Create" to create your solution with requirements and mcp configurations.
    - Watch as Specifai sets up your workspace with AI-powered intelligence
-
-
-![Solution Overview](assets/gif/specifai-overview.gif)
 
 
 ### Understanding Solution Structure
@@ -106,92 +106,298 @@ Each solution follows a modular, scalable structure:
 2. **📑 Document Types**
    - **BRD**: Business objectives and stakeholder needs
    - **PRD**: Technical specifications and implementation details
+   - **User Stories**: Actionable user stories derived from PRD
+   - **Tasks**: User Stories broken down into manageable tasks
+   - **UIR**: User interface design and interaction guidelines
    - **NFR**: Performance, security, and operational requirements
    - **UIR**: Design guidelines and user interaction flows
 
+
 ## 🤖 AI-Powered Document Generation
 
-### Business Requirement Documents (BRD)
-![Document Generation](../assets/gifs/specifai-sections.gif)
+![Document Generation](assets/gif/specifai-sections.gif)
 
-Create comprehensive BRDs with AI assistance:
+1. **Business Requirements (BRD)**
+   
+   #### What is a BRD?
+   A Business Requirements Document (BRD) is a formal document that describes the business solution for a project, including the user's needs and expectations, the purpose and objectives of the product/solution, and any high-level constraints or dependencies. It serves as a bridge between business objectives and technical implementation, ensuring all stakeholders have a clear understanding of what needs to be achieved.
 
-1. **Access BRD Generation**
-   - Navigate to your solution
-   - Select "Generate BRD"
+   #### Best Practices for Writing BRDs
+   - Start with a clear business objective
+   - Include stakeholder impact analysis
+   - Define measurable success criteria
+   - Specify regulatory/compliance requirements
+   - Document assumptions and constraints
+   - Include cost-benefit analysis
+   - Reference related industry standards
+   - Maintain traceability to business goals
 
-2. **Define Business Context**
-   - Industry vertical
-   - Target audience
-   - Market positioning
-   - Business objectives
+   #### Example BRD
+   ```markdown
+   Title: Implement Multi-Factor Authentication System
 
-3. **Specify Requirements**
-   - Business processes
-   - Stakeholder needs
-   - Success criteria
-   - ROI expectations
+   Business Need:
+   To enhance security and comply with industry regulations, we need to implement a robust multi-factor authentication system that reduces unauthorized access attempts while maintaining user convenience.
 
-> 💡 **Pro Tip**: Use the AI chat interface to refine and enhance your requirements iteratively.
-<img src="../assets/gifs/specifai-chat.gif" alt="Chat Interface" width="100%">
+   Key Objectives:
+   - Reduce security incidents by 75%
+   - Achieve compliance with GDPR and PSD2 requirements
+   - Minimize user friction during authentication
 
-### Product Requirement Documents (PRD)
+   Success Criteria:
+   - 99.9% system availability
+   - <30 seconds authentication completion time
+   - 50% reduction in password reset requests
+   ```
 
-Transform business requirements into detailed technical specifications:
+   ![BRD Details](assets/img/specifai-brd-details.png)
 
-1. **Initialize PRD Creation**
-   - Click "Generate PRD"
-   - Link to existing BRD for context
+2. **Product Requirements (PRD)**
 
-2. **Technical Specifications**
-   - Feature breakdown
-   - System architecture
-   - Data models
-   - API specifications
+   #### What is a PRD?
+   A Product Requirements Document (PRD) is a technical document that outlines the specific requirements, features, and functionalities of a product or system. It translates business requirements into detailed technical specifications that guide development teams in implementing the solution effectively. 
 
-3. **Implementation Details**
-   - Development phases
-   - Technical dependencies
-   - Integration points
-   - Performance criteria
+   Also, PRDs can be linked to relevant BRDs to ensure alignment between business needs and technical implementation.
 
-### Non-Functional Requirements (NFR)
+   #### Best Practices for Writing PRDs
+   - Detail technical implementation approaches
+   - List system dependencies and integrations
+   - Specify performance requirements
+   - Document API specifications
+   - Include error handling scenarios
+   - Define data models and flows
+   - Outline security requirements
+   - Specify testing criteria
 
-Define system quality and operational standards:
+   #### Example PRD
+   ```markdown
+   Title: JWT-Based Authentication System Implementation
 
-1. **Performance Requirements**
-   - Response time targets
-   - Throughput expectations
-   - Scalability needs
-   - Resource utilization
+   Technical Scope:
+   Implement a secure authentication system using JWT tokens with refresh mechanism and 2FA support.
 
-2. **Security Specifications**
-   - Authentication methods
-   - Authorization levels
-   - Data protection
-   - Compliance requirements
+   Technical Requirements:
+   - JWT token-based authentication with RSA-256 encryption
+   - Secure refresh token mechanism with 7-day expiry
+   - Two-factor authentication via SMS/email
+   - Password policy enforcement (min 12 chars, special chars, etc.)
 
-3. **Operational Requirements**
-   - Availability targets
-   - Backup strategies
-   - Monitoring needs
-   - Disaster recovery
+   Performance Requirements:
+   - Handle 1000 concurrent login requests
+   - Authentication response time < 500ms
+   - 99.99% uptime for auth services
 
-### User Interface Requirements (UIR)
+   Security Measures:
+   - Rate limiting: 5 attempts per minute
+   - Token blacklisting for compromised sessions
+   - OWASP compliance for all endpoints
+   ```
 
-Create engaging and consistent user experiences:
+   ![PRD Details](assets/img/specifai-prd-details.png)
 
-1. **Design Guidelines**
-   - Brand compliance
-   - Color schemes
-   - Typography
-   - Component library
+3. **User Stories (US)**
 
-2. **User Interaction Flows**
-   - Navigation patterns
-   - Input handling
-   - Error management
-   - Responsive design
+   #### What are User Stories?
+   User Stories are concise descriptions of functionality from an end user's perspective. They capture what users want to achieve, why they want it, and what value it brings to them. User stories help teams understand the user's needs and expectations.
+
+   #### Best Practices for Writing User Stories
+   - Follow the "As a/I want/So that" format
+   - Focus on user value and benefits
+   - Keep scope manageable and specific
+   - Include clear acceptance criteria
+   - Link to relevant PRDs
+   - Prioritize based on business value
+   - Add effort estimation
+   - Include dependencies
+
+   #### Example User Story
+   ```markdown
+   Title: Biometric Authentication for Mobile Users
+
+   User Story:
+   As a mobile user,
+   I want to use biometric authentication
+   So that I can securely access my account without typing passwords
+
+   Acceptance Criteria:
+   - Support fingerprint and face recognition
+   - Fallback to password if biometric fails
+   - Work offline after initial setup
+   - Complete auth within 3 seconds
+
+   Priority: High
+   Effort: Medium
+   Dependencies: Authentication System PRD
+   ```
+
+   ![User Story Details](assets/img/specifai-user-story-details.png)
+
+4. **Tasks**
+
+   #### What are Tasks?
+   Tasks are specific, actionable items that break down the implementation of user stories into manageable pieces of work. They represent the technical steps needed to deliver the functionality described in user stories.
+
+   #### Best Practices for Writing Tasks
+   - Make tasks specific and actionable
+   - Keep scope small and focused
+   - Include technical details
+   - Set clear completion criteria
+   - Estimate effort accurately
+   - Identify dependencies
+   - Consider testing requirements
+   - Document technical constraints
+
+   #### Example Tasks
+   ```markdown
+   Parent User Story: Biometric Authentication for Mobile Users
+
+   Tasks:
+   1. Implement Biometric API Integration
+      Description: Set up and configure biometric authentication system
+      Steps:
+      - Research available biometric libraries
+      - Set up device compatibility checks
+      - Implement fingerprint reader interface
+      - Add face recognition support
+      Effort: 3 days
+      Dependencies: None
+
+   2. Secure Storage Implementation
+      Description: Create secure storage for biometric data
+      Steps:
+      - Design encryption mechanism
+      - Implement secure key storage
+      - Add data privacy compliance checks
+      - Set up secure backup system
+      Effort: 2 days
+      Dependencies: Task 1
+
+   3. Fallback Mechanism
+      Description: Implement password fallback system
+      Steps:
+      - Design password fallback flow
+      - Implement attempt tracking
+      - Add user notifications
+      - Create recovery process
+      Effort: 2 days
+      Dependencies: Task 2
+   ```
+
+   ![Task Details](assets/img/specifai-task-details.png)
+
+5. **Non-Functional Requirements (NFR)**
+
+   #### What are NFRs?
+   Non-Functional Requirements define the quality attributes and operational characteristics of a system. Unlike functional requirements that specify what the system should do, NFRs describe how the system should perform, focusing on criteria that can be used to judge the system's operation rather than specific behaviors.
+
+   #### Best Practices for Writing NFRs
+   - Make requirements measurable
+   - Set clear acceptance criteria
+   - Consider system constraints
+   - Define monitoring metrics
+   - Include compliance standards
+   - Specify environmental conditions
+   - Document dependencies
+   - Address scalability needs
+
+   #### Example NFR
+   ```markdown
+   Title: System Performance and Reliability Requirements
+
+   Performance Criteria:
+   - Response Time: < 200ms for 95% of requests
+   - Throughput: 1000 transactions per second
+   - Concurrent Users: Support 10,000 active sessions
+
+   Security Requirements:
+   - Data Encryption: AES-256 for data at rest
+   - Access Control: Role-based with MFA
+   - Audit Logging: All system access events
+   - Compliance: SOC2, GDPR, HIPAA
+
+   Operational Standards:
+   - Availability: 99.99% uptime
+   - Backup: Hourly incremental, daily full
+   - Recovery Time: < 4 hours
+   - Data Retention: 7 years
+   ```
+
+   ![NFR Details](assets/img/specifai-nfr-details.png)
+
+6. **User Interface Requirements (UIR)**
+
+   #### What are UIRs?
+   User Interface Requirements define the visual, interactive, and experiential aspects of a system's user interface. They ensure consistency in design, optimal user experience, and adherence to brand guidelines while maintaining accessibility and usability standards.
+
+   #### Best Practices for Writing UIRs
+   - Define clear design system rules
+   - Specify accessibility standards
+   - Document responsive behaviors
+   - Include interaction patterns
+   - Set performance benchmarks
+   - Maintain brand consistency
+   - Consider user preferences
+   - Plan for localization
+
+   #### Example UIR
+   ```markdown
+   Title: Authentication Interface Requirements
+
+   Design System:
+   - Color Palette: Primary (#007AFF), Secondary (#6C757D)
+   - Typography: Roboto for headings, Open Sans for body
+   - Components: Material Design v3 specifications
+   - Spacing: 8px base unit grid system
+
+   Interface Elements:
+   - Login Form:
+     * Centered card layout (max-width: 400px)
+     * Input fields with floating labels
+     * Password visibility toggle
+     * Remember me checkbox
+     * Social login options grid
+
+   Responsive Behavior:
+   - Mobile: Single column, full-width inputs
+   - Tablet: 70% width container
+   - Desktop: Fixed width card (400px)
+
+   Accessibility:
+   - WCAG 2.1 AA compliance
+   - Keyboard navigation support
+   - Screen reader optimization
+   - High contrast mode support
+   ```
+
+   ![UIR Details](assets/img/specifai-uir-details.png)
+
+### Managing Requirements
+
+1. **Adding Requirements**
+   - Fill in Basic Details
+     * Title
+     * Description
+     * Upload Code Files References (if needed to construct the requirement from code)
+   
+   - Enhance with AI
+     * Click "Enhance with AI" button
+     * Enhance the requirement with AI-generated title and description. It will automatically save the requirement.
+     * [Screenshot: specifai-brd-details.png]
+
+2. **Updating Requirements**
+   - Click on any requirement
+   - Modify title, description
+   - Use the "Enhance with AI" button to enhance the requirement.
+   - Save changes to keep your requirements up-to-date
+
+>Pro Tip: Use the AI chat interface to get real-time suggestions and improvements for your requirements.
+<img src="assets/gif/specifai-chat.gif" alt="AI Chat Interface" />
+
+3. **Deleting Requirements**
+   - Click "Delete" on any requirement
+   - Confirm deletion to remove the requirement from the solution. 
+   - The requirement is soft deleted and archived in the HAI Solution Folder for future reference.
+
 
 ## 💬 Intelligent Chat Interface
 
