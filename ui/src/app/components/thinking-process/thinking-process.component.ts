@@ -161,6 +161,13 @@ export class ThinkingProcessComponent
       return false;
     }
 
+    if (event.correlationId) {
+      const hasCorrespondingAction = this.progress.some(
+        (e) => e.correlationId === event.correlationId && e.type === 'action',
+      );
+      return !hasCorrespondingAction;
+    }
+
     const currentIndex = this.progress.indexOf(event);
 
     let lastActionIndex = -1;

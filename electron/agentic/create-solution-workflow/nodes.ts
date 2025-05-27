@@ -1,6 +1,7 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { BaseCheckpointSaver } from "@langchain/langgraph-checkpoint";
 import { z } from "zod";
+import { v4 as uuid } from "uuid";
 import { WorkflowEventsService } from "../../services/events/workflow-events.service";
 import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
@@ -58,11 +59,14 @@ export const buildResearchNode = ({
       };
     }
 
+    const researchCorrelationId = uuid();
+
     // Dispatch initial thinking event
     await workflowEvents.dispatchThinking(
       "research",
       "Researching relevant technical context based on app details",
-      runnableConfig
+      runnableConfig,
+      researchCorrelationId
     );
 
     const agent = buildReactAgent({
@@ -107,7 +111,8 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchAction(
       "research",
       "Finished research - summarized findings ready for requirement generation",
-      runnableConfig
+      runnableConfig,
+      researchCorrelationId
     );
 
     span?.end({
@@ -139,6 +144,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
     });
 
     try {
+      const reqGenerationCorrelationId = uuid();
       const preferences = state.requirementGenerationPreferences[type];
 
       if (!preferences.isEnabled) {
@@ -150,7 +156,8 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
         await workflowEvents.dispatchAction(
           "requirement-generation",
           `Skipped ${type} requirement generation - disabled by preferences`,
-          runnableConfig
+          runnableConfig,
+          reqGenerationCorrelationId
         );
 
         return {
@@ -167,7 +174,8 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
       await workflowEvents.dispatchThinking(
         "requirement-generation",
         `Preparing input context for ${type} requirement generation`,
-        runnableConfig
+        runnableConfig,
+        reqGenerationCorrelationId
       );
 
 
@@ -207,7 +215,8 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
       await workflowEvents.dispatchAction(
         "requirement-generation",
         `Successfully generated and validated ${type} requirements`,
-        runnableConfig
+        runnableConfig,
+        reqGenerationCorrelationId
       );
 
       span?.end({

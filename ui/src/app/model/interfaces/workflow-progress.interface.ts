@@ -3,4 +3,5 @@ export interface WorkflowProgressEvent {
   type: "thinking" | "action" | "mcp";
   message: string;
   timestamp: number;
+  correlationId?: string;
 }
