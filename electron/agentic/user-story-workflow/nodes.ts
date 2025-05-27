@@ -1,6 +1,8 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { BaseCheckpointSaver } from "@langchain/langgraph-checkpoint";
 import { z } from "zod";
+import { v4 as uuid } from "uuid";
+import { WorkflowEventsService } from "../../services/events/workflow-events.service";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { ITool } from "../common/types";
 import { buildReactAgent } from "../react-agent";
@@ -11,6 +13,8 @@ import { IUserStoryWorkflowStateAnnotation } from "./state";
 import { UserStoryWorkflowRunnableConfig } from "./types";
 import { createUserStoryResearchInformationPrompt } from "./prompts/research-information";
 import { createSummarizeUserStoryResearchPrompt } from "./prompts/summarize-research";
+
+const workflowEvents = new WorkflowEventsService("user-story");
 
 type BuildResearchNodeParams = {
   model: LangChainModelProvider;
@@ -33,16 +37,31 @@ export const buildResearchNode = ({
       name: "research",
     });
 
+    const researchCorrelationId = uuid();
+
     if (tools.length === 0) {
       const message = "No tools are passed so skipping research phase";
       span?.end({
         statusMessage: message,
       });
 
+      await workflowEvents.dispatchThinking(
+        "research",
+        "Skipping research phase - no tools available",
+        runnableConfig
+      );
+
       return {
         referenceInformation: "",
       };
     }
+
+    await workflowEvents.dispatchThinking(
+      "research",
+      "Researching relevant context for user story generation",
+      runnableConfig,
+      researchCorrelationId
+    );
 
     const agent = buildReactAgent({
       model: model,
@@ -93,6 +112,13 @@ export const buildResearchNode = ({
       }
     );
 
+    await workflowEvents.dispatchAction(
+      "research",
+      "Research completed - context gathered for user story generation",
+      runnableConfig,
+      researchCorrelationId
+    );
+
     span?.end({
       statusMessage: "Research completed successfully!",
     });
@@ -118,7 +144,16 @@ export const buildGenerateStoriesNode = (
       name: "generate-stories",
     });
 
+    const generateCorrelationId = uuid();
+
     try {
+      await workflowEvents.dispatchThinking(
+        "generate-stories",
+        "Generating user stories based on requirements and context",
+        runnableConfig,
+        generateCorrelationId
+      );
+
       // Use existing refinePrompt logic
       const prompt = refinePrompt({
         reqName: state.reqName,
@@ -178,6 +213,15 @@ export const buildGenerateStoriesNode = (
         storiesCount: parsedStories.features?.length || 0,
       });
 
+      await workflowEvents.dispatchAction(
+        "generate-stories",
+        `Successfully generated ${
+          parsedStories.features?.length || 0
+        } user stories`,
+        runnableConfig,
+        generateCorrelationId
+      );
+
       span?.end({
         statusMessage: "Successfully generated user stories",
       });
@@ -193,6 +237,13 @@ export const buildGenerateStoriesNode = (
         level: "ERROR",
         statusMessage: message,
       });
+
+      await workflowEvents.dispatchAction(
+        "generate-stories",
+        "Error occurred during user story generation",
+        runnableConfig,
+        generateCorrelationId
+      );
 
       // Return current state to avoid breaking the workflow
       return {
@@ -217,6 +268,8 @@ export const buildEvaluateStoriesNode = (
       name: "evaluate-stories",
     });
 
+    const evaluateCorrelationId = uuid();
+
     try {
       if (state.stories.length === 0) {
         const message = "No stories to evaluate";
@@ -224,11 +277,25 @@ export const buildEvaluateStoriesNode = (
           statusMessage: message,
         });
 
+        await workflowEvents.dispatchAction(
+          "evaluate-stories",
+          "No stories available for evaluation",
+          runnableConfig,
+          evaluateCorrelationId
+        );
+
         return {
           evaluation: message,
           isComplete: true,
         };
       }
+
+      await workflowEvents.dispatchThinking(
+        "evaluate-stories",
+        "Evaluating generated user stories for quality and completeness",
+        runnableConfig,
+        evaluateCorrelationId
+      );
 
       // Use existing evaluatePrompt
       const prompt = evaluatePrompt({
@@ -266,13 +333,24 @@ export const buildEvaluateStoriesNode = (
         "APPROVED AND READY FOR REFINEMENT"
       );
 
+      const isComplete = isApproved || state.feedbackLoops >= 3;
+
+      await workflowEvents.dispatchAction(
+        "evaluate-stories",
+        isApproved
+          ? "User stories approved and ready for use"
+          : isComplete
+          ? "Maximum refinement loops reached - completing evaluation"
+          : "User stories need refinement - continuing iteration",
+        runnableConfig,
+        evaluateCorrelationId
+      );
+
       span?.end({
         statusMessage: isApproved
           ? "Stories approved"
           : "Stories need refinement",
       });
-
-      const isComplete = isApproved || state.feedbackLoops >= 3;
 
       return {
         evaluation: response,
@@ -286,6 +364,13 @@ export const buildEvaluateStoriesNode = (
         level: "ERROR",
         statusMessage: message,
       });
+
+      await workflowEvents.dispatchAction(
+        "evaluate-stories",
+        "Error occurred during user story evaluation",
+        runnableConfig,
+        evaluateCorrelationId
+      );
 
       // Return current state to avoid breaking the workflow
       return {
