@@ -22,34 +22,3 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
 }
-
-@keyframes progress-line {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes glow {
-  0%,
-  100% {
-    opacity: 0.6;
-    filter: blur(10px);
-  }
-  50% {
-    opacity: 0.8;
-    filter: blur(12px);
-  }
-}
