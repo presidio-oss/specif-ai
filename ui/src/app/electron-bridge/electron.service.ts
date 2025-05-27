@@ -46,6 +46,7 @@ import {
 } from '../model/interfaces/IUserStory';
 import { AutoUpdateModalComponent } from '../components/auto-update-modal/auto-update-modal.component';
 import { htmlToMarkdown } from '../utils/html.utils';
+import { WorkflowType } from '../model/interfaces/workflow-progress.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -583,26 +584,34 @@ export class ElectronService {
     return `core:${id}-chatStream`;
   }
 
-  private buildSolutionWorkflowProgressChannel(id: string) {
-    return `solution:${id}-workflow-progress`;
+  private buildWorkflowProgressChannel(
+    workflowType: WorkflowType,
+    solutionId: string,
+  ) {
+    return `${workflowType}:${solutionId}-workflow-progress`;
   }
 
-  listenSolutionWorkflowProgress(
-    id: string,
+  listenWorkflowProgress(
+    workflowType: WorkflowType,
+    solutionId: string,
     callback: (event: IpcRendererEvent, response: any) => void,
   ): void {
     if (this.electronAPI) {
-      this.electronAPI.on(this.buildSolutionWorkflowProgressChannel(id), callback);
+      this.electronAPI.on(
+        this.buildWorkflowProgressChannel(workflowType, solutionId),
+        callback,
+      );
     }
   }
 
-  removeSolutionWorkflowProgressListener(
-    id: string,
+  removeWorkflowProgressListener(
+    workflowType: WorkflowType,
+    solutionId: string,
     callback: (event: IpcRendererEvent, response: any) => void,
   ): void {
     if (this.electronAPI) {
       this.electronAPI.removeListener(
-        this.buildSolutionWorkflowProgressChannel(id),
+        this.buildWorkflowProgressChannel(workflowType, solutionId),
         callback,
       );
     }

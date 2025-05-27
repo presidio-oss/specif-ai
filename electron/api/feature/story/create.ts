@@ -11,7 +11,7 @@ import { getMcpToolsForActiveProvider } from '../../../mcp';
 import { MCPHub } from '../../../mcp/mcp-hub';
 import { isLangfuseDetailedTracesEnabled } from '../../../services/observability/observability.util';
 
-export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
+export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
     const o11y = ObservabilityManager.getInstance();
@@ -77,7 +77,26 @@ export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promi
       ...config,
     });
     
-    for await (const event of stream) {}
+    for await (const streamEvent of stream) {
+      if (streamEvent.event === "on_tool_start") {
+        event.sender.send(
+          `story:${appId}-workflow-progress`,
+          {
+            node: "tools",
+            type: "mcp",
+            message: `Using tool: ${streamEvent.name}`,
+            timestamp: Date.now()
+          }
+        );
+      }
+        
+      if (streamEvent.event === "on_custom_event") {
+        event.sender.send(
+          `story:${appId}-workflow-progress`,
+          streamEvent.data
+        );
+      }
+    }
     
     const response = await userStoryWorkflow.getState({
       ...config
