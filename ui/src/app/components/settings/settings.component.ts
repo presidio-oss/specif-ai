@@ -499,7 +499,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.langfuseForm = this.fb.group({
       publicKey: ['', Validators.required],
       secretKey: ['', Validators.required],
-      baseUrl: [''],
+      baseUrl: ['', Validators.required],
       enableDetailedTraces: [false]
     });
 

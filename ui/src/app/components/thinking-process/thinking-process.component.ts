@@ -15,6 +15,7 @@ import {
 } from './thinking-process.config';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { ThreeBounceLoaderComponent } from '../three-bounce-loader/three-bounce-loader.component';
 import {
   heroSparkles,
   heroCheckCircle,
@@ -37,7 +38,7 @@ import {
   templateUrl: './thinking-process.component.html',
   styleUrls: ['./thinking-process.component.scss'],
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, NgIconComponent],
+  imports: [NgIf, NgFor, NgClass, NgIconComponent, ThreeBounceLoaderComponent],
   providers: [
     provideIcons({
       heroSparkles,
@@ -153,5 +154,23 @@ export class ThinkingProcessComponent
       clearInterval(this.pulseInterval);
       this.pulseInterval = undefined;
     }
+  }
+
+  shouldShowSpinner(event: WorkflowProgressEvent): boolean {
+    if (event.type === 'action') {
+      return false;
+    }
+
+    const currentIndex = this.progress.indexOf(event);
+
+    let lastActionIndex = -1;
+    for (let i = this.progress.length - 1; i >= 0; i--) {
+      if (this.progress[i].type === 'action') {
+        lastActionIndex = i;
+        break;
+      }
+    }
+
+    return currentIndex > lastActionIndex;
   }
 }
