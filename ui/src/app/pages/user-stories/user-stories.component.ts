@@ -245,6 +245,18 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     this.userStories$.subscribe((userStories: IUserStory[]) => {
       this.userStoriesInState = userStories;
     });
+
+    this.electronService.listenWorkflowProgress(
+      WorkflowType.Story,
+      this.navigation.projectId,
+      this.workflowProgressListener,
+    );
+    
+    this.electronService.listenWorkflowProgress(
+      WorkflowType.Task,
+      this.navigation.projectId,
+      this.workflowProgressListener,
+    );
   }
 
   navigateToAddUserStory() {
@@ -313,18 +325,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     this.storyCreationProgress = [];
     this.showThinkingProcess = true;
-    
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.Story,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
-    
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.Task,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
 
     this.featureService.generateUserStories(request).then((response) => {
       this.userStories = response;

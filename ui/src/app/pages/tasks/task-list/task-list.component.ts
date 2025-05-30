@@ -219,12 +219,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.taskCreationProgress = [];
     this.showThinkingProcess = true;
     
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.Task,
-      this.config.projectId,
-      this.workflowProgressListener,
-    );
-
     let request: ITaskRequest = {
       appId: this.config.projectId,
       appName: this.metadata.name,
@@ -334,6 +328,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
       }),
     );
     this.getLatestUserStories();
+
+    this.electronService.listenWorkflowProgress(
+      WorkflowType.Task,
+      this.config.projectId,
+      this.workflowProgressListener,
+    );
   }
 
   private formatTaskForView(acceptance: string | undefined): string | null {
