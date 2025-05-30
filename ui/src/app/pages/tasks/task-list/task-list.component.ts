@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import {
@@ -12,7 +12,6 @@ import { NGXLogger } from 'ngx-logger';
 import { IUserStory } from '../../../model/interfaces/IUserStory';
 import { ITaskRequest, ITasksResponse } from '../../../model/interfaces/ITask';
 import { FeatureService } from '../../../services/feature/feature.service';
-import { LoadingService } from '../../../services/loading.service';
 import {
   AddBreadcrumb,
   DeleteBreadcrumb,
@@ -39,6 +38,11 @@ import { RichTextEditorComponent } from '../../../components/core/rich-text-edit
 import { processTaskContentForView } from 'src/app/utils/task.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
+import { ThinkingProcessComponent } from '../../../components/thinking-process/thinking-process.component';
+import { WorkflowType, WorkflowProgressEvent } from '../../../model/interfaces/workflow-progress.interface';
+import { ThinkingProcessConfig } from '../../../components/thinking-process/thinking-process.config';
+import { environment } from '../../../../environments/environment';
+import { ElectronService } from '../../../electron-bridge/electron.service';
 
 @Component({
   selector: 'app-task-list',
@@ -56,6 +60,7 @@ import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
     SearchInputComponent,
     MatTooltipModule,
     RichTextEditorComponent,
+    ThinkingProcessComponent,
   ],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
@@ -102,13 +107,34 @@ export class TaskListComponent implements OnInit, OnDestroy {
   selectedUserStory$ = this.store.select(UserStoriesState.getSelectedUserStory);
   userStories$ = this.store.select(UserStoriesState.getUserStories);
 
+  taskCreationProgress: WorkflowProgressEvent[] = [];
+  showThinkingProcess: boolean = false;
+  thinkingProcessConfig: ThinkingProcessConfig = {
+    title: 'Creating Tasks',
+    subtitle: `Sit back & let the ${environment.ThemeConfiguration.appName} do its job...`,
+  };
+  zone = inject(NgZone);
+  electronService = inject(ElectronService);
+
+  private workflowProgressListener = (
+    event: any,
+    data: WorkflowProgressEvent,
+  ) => {
+    this.zone.run(() => {
+      this.taskCreationProgress = this.taskCreationProgress.some(
+        (item) => item.message === data.message,
+      )
+        ? this.taskCreationProgress
+        : [...this.taskCreationProgress, data];
+    });
+  };
+
   onSearch(term: string) {
     this.searchTerm$.next(term);
   }
 
   constructor(
     private featureService: FeatureService,
-    private loadingService: LoadingService,
     private toastService: ToasterService,
     private requirementIdService: RequirementIdService,
   ) {
@@ -143,6 +169,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.electronService.removeWorkflowProgressListener(
+      WorkflowType.Task,
+      this.config.projectId,
+      this.workflowProgressListener,
+    );
     this.store.dispatch(new DeleteBreadcrumb(this.currentLabel));
   }
 
@@ -185,6 +216,15 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   refineUserStoryIntoTasks(regenerate: boolean = false, extraContext: string) {
+    this.taskCreationProgress = [];
+    this.showThinkingProcess = true;
+    
+    this.electronService.listenWorkflowProgress(
+      WorkflowType.Task,
+      this.config.projectId,
+      this.workflowProgressListener,
+    );
+
     let request: ITaskRequest = {
       appId: this.config.projectId,
       appName: this.metadata.name,
@@ -197,7 +237,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
       technicalDetails: this.metadata.technicalDetails || '',
       extraContext: extraContext,
     };
-    this.loadingService.setLoading(true);
     this.featureService.generateTask(request)
     .then((response: ITasksResponse) => {
       let tasksResponse = this.featureService.parseTaskResponse(response);
@@ -214,7 +253,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     })
     .catch((error) => {
       console.error('There was an error!', error);
-      this.loadingService.setLoading(false);
+      this.showThinkingProcess = false;
       this.toastService.showError(
         TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
       );
@@ -250,7 +289,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
     setTimeout(() => {
       this.getLatestUserStories();
-      this.loadingService.setLoading(false);
+      this.showThinkingProcess = false;
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
       );

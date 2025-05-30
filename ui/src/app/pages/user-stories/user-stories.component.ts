@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, ViewChild, OnDestroy, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
@@ -56,6 +56,10 @@ import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
+import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
+import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
+import { ThinkingProcessConfig } from '../../components/thinking-process/thinking-process.config';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-user-stories',
@@ -74,9 +78,10 @@ import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown
     SearchInputComponent,
     ExportDropdownComponent,
     MatTooltipModule,
+    ThinkingProcessComponent,
   ],
 })
-export class UserStoriesComponent implements OnInit {
+export class UserStoriesComponent implements OnInit, OnDestroy {
   currentProject!: string;
   newFileName: string = '';
   entityType: string = 'US';
@@ -126,6 +131,27 @@ export class UserStoriesComponent implements OnInit {
   );
 
   userStoriesInState: IUserStory[] = [];
+
+  storyCreationProgress: WorkflowProgressEvent[] = [];
+  showThinkingProcess: boolean = false;
+  thinkingProcessConfig: ThinkingProcessConfig = {
+    title: 'Creating User Stories',
+    subtitle: `Sit back & let the ${environment.ThemeConfiguration.appName} do its job...`,
+  };
+  zone = inject(NgZone);
+
+  private workflowProgressListener = (
+    event: any,
+    data: WorkflowProgressEvent,
+  ) => {
+    this.zone.run(() => {
+      this.storyCreationProgress = this.storyCreationProgress.some(
+        (item) => item.message === data.message,
+      )
+        ? this.storyCreationProgress
+        : [...this.storyCreationProgress, data];
+    });
+  };
 
   readonly dialogService = inject(DialogService);
 
@@ -285,7 +311,21 @@ export class UserStoriesComponent implements OnInit {
       extraContext: extraContext,
     };
 
-    this.loadingService.setLoading(true);
+    this.storyCreationProgress = [];
+    this.showThinkingProcess = true;
+    
+    this.electronService.listenWorkflowProgress(
+      WorkflowType.Story,
+      this.navigation.projectId,
+      this.workflowProgressListener,
+    );
+    
+    this.electronService.listenWorkflowProgress(
+      WorkflowType.Task,
+      this.navigation.projectId,
+      this.workflowProgressListener,
+    );
+
     this.featureService.generateUserStories(request).then((response) => {
       this.userStories = response;
       this.generateTasks(regenerate).then(() => {
@@ -293,7 +333,7 @@ export class UserStoriesComponent implements OnInit {
       });
     })
     .catch((error) => {
-      this.loadingService.setLoading(false);
+      this.showThinkingProcess = false;
       this.toast.showError(
         TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
       );
@@ -370,6 +410,7 @@ export class UserStoriesComponent implements OnInit {
 
     setTimeout(() => {
       this.getLatestUserStories();
+      this.showThinkingProcess = false;
       this.toast.showSuccess(
         TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
       );
@@ -629,4 +670,17 @@ export class UserStoriesComponent implements OnInit {
       callback: () => this.syncRequirementWithJira()
     }
   ];
+
+  ngOnDestroy() {
+    this.electronService.removeWorkflowProgressListener(
+      WorkflowType.Story,
+      this.navigation.projectId,
+      this.workflowProgressListener,
+    );
+    this.electronService.removeWorkflowProgressListener(
+      WorkflowType.Task,
+      this.navigation.projectId,
+      this.workflowProgressListener,
+    );
+  }
 }
