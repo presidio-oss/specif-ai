@@ -36,7 +36,7 @@ import { heroChevronDown } from '@ng-icons/heroicons/outline';
 import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
 import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
-import { WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
+import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
 
 @Component({
   selector: 'app-create-solution',
@@ -101,7 +101,8 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
 
     const solutionId = this.solutionForm.get('id')?.value;
     if (solutionId) {
-      this.electronService.listenSolutionWorkflowProgress(
+      this.electronService.listenWorkflowProgress(
+        WorkflowType.Solution,
         solutionId,
         this.workflowProgressListener,
       );
@@ -111,7 +112,8 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     const solutionId = this.solutionForm.get('id')?.value;
     if (solutionId) {
-      this.electronService.removeSolutionWorkflowProgressListener(
+      this.electronService.removeWorkflowProgressListener(
+        WorkflowType.Solution,
         solutionId,
         this.workflowProgressListener,
       );
