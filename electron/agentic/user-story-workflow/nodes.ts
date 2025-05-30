@@ -340,7 +340,7 @@ export const buildEvaluateStoriesNode = (
         isApproved
           ? "User stories approved and ready for use"
           : isComplete
-          ? "Maximum refinement loops reached - completing evaluation"
+          ? "Completing the evaluation since the maximum evaluation limit is reached."
           : "User stories need refinement - continuing iteration",
         runnableConfig,
         evaluateCorrelationId
