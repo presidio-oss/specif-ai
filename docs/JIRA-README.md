@@ -64,6 +64,7 @@ This guide explains how to integrate the Specifai solution with Jira using OAuth
 
 1. **Open the Solution Page:**
    - Launch the Requirements app and navigate to the **Solution** -> **Integration** page.
+   ![Specifai JIRA Integration Form](assets/img/specifai-jira-integration.png)
 
 2. **Enter the OAuth Credentials:**
    - Provide the following information in the Jira Integration section:
@@ -75,6 +76,19 @@ This guide explains how to integrate the Specifai solution with Jira using OAuth
 3. **Verify the Details:**
    - Ensure that the **Client ID**, **Client Secret**, and **Callback URL** match the information entered in the Atlassian Developer Console.
    - Confirm that the **Project Key** is correct, as it identifies the Jira project that the app will interact with.
+
+4. **Connect & Save the configurations:**
+   - Click the **Connect** button to initiate the OAuth flow.
+
+5. **Authorize the App:**
+   - A new browser window will open, prompting you to authorize the app.
+   - Review the permissions requested by the app and click **Allow** to grant access.
+     ![JIRA OAuth consent screen](assets/img/specifai-jira-oauth-consent.png)
+   *JIRA OAuth consent screen*
+
+6. **Successful Connection:**
+   - If the connection is successful, you will see a confirmation message indicating that the integration is connected.
+   ![JIRA Successful Connection](assets/img/specifai-jira-integration-connected.png)
 
 ---
 

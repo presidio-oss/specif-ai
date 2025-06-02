@@ -5,10 +5,14 @@ Welcome to Specifai - your AI-powered companion for revolutionizing the SDLC pro
 ## 📋 What You'll Learn
 
 In this guide, you'll learn how to:
-- Install and configure Specifai
-- Set up your workspace
-- Configure your AI model preferences
-- Start creating your first solution
+- Install Specifai on your system
+- Perform initial configuration steps, including:
+    - Setting up your user profile
+    - Configuring your workspace
+    - Connecting your preferred AI model
+    - Adjusting optional settings like analytics
+- Verify your Specifai installation
+- Discover next steps to start building solutions
 
 ## 🔍 Before You Begin
 
@@ -31,34 +35,26 @@ View all versions on our [releases page](https://github.com/presidio-oss/specif-
 ### Quick Install Guide
 
 #### Windows
-1. Run the downloaded `.exe` file
-2. Follow the installation wizard
-3. Allow security permissions if prompted
+1. Run the downloaded `.exe` file.
+2. Follow the installation wizard.
+3. Allow security permissions if prompted.
 
 #### macOS
-1. Open the `.dmg` file
-2. Drag Specifai to Applications
-3. Right-click and select "Open" (first time only)
+1. Open the `.dmg` file.
+2. Drag Specifai to Applications.
+3. Right-click and select "Open" (first time only).
 
 ## 🎯 Initial Setup
 
-When you first launch Specifai, you'll see the welcome screen:
+When you first launch Specifai, you'll see the welcome screen, guiding you through a quick setup process. Here's what you need to do:
 
 ![Welcome Screen](assets/img/welcome-page.png)
 
-### 1. Quick Setup Checklist
+### 1. User Profile
+- Choose a username that identifies your work.
+- Example: "john.doe" or "sarah.dev".
 
-- [ ] Create user profile
-- [ ] Configure workspace
-- [ ] Set up AI model
-- [ ] Configure analytics (optional)
-- [ ] Verify installation
-
-### 2. User Profile
-- Choose a username that identifies your work
-- Example: "john.doe" or "sarah.dev"
-
-### 3. Workspace Setup
+### 2. Workspace Setup
 
 Choose a workspace directory that is:
 - Easily accessible
@@ -66,86 +62,124 @@ Choose a workspace directory that is:
 - Has sufficient storage space
 - Ideally synced with cloud storage (like oneDrive)
 
-### 4. AI Model Configuration 🤖
+### 3. AI Model Configuration 🤖
 
-1. Access Settings ⚙️ (top right corner)
+1. Access **Settings** ⚙️ (top right corner).
 ![Settings Screen](assets/gif/specifai-settings.gif)
 
-2. Choose your preferred AI model:
-   - Anthropic
-   - Azure OpenAI
-   - OpenAI Native
-   - AWS Bedrock
-   - Gemini
-   - OpenRouter
-   - Ollama
+2. Select AI model provider:
+* **Anthropic**
+    * claude-3-7-sonnet-20250219-v1:0
+    * claude-3-5-sonnet-20241022-v2:0
+    * claude-3-5-haiku-20241022-v1:0
+    * claude-3-5-sonnet-20240620-v1:0
+    * claude-3-opus-20240229-v1:0
+    * claude-3-sonnet-20240229-v1:0
+    * claude-3-haiku-20240307-v1:0
+* **Azure OpenAI**
+    * gpt-4o
+    * gpt-4o-mini
+* **OpenAI Native**
+    * gpt-4o
+    * gpt-4o-mini
+* **AWS Bedrock**
+    * anthropic.claude-3-7-sonnet-20250219-v1:0
+    * anthropic.claude-3-5-sonnet-20241022-v2:0
+    * anthropic.claude-3-5-haiku-20241022-v1:0
+    * anthropic.claude-3-5-sonnet-20240620-v1:0
+    * anthropic.claude-3-opus-20240229-v1:0
+    * anthropic.claude-3-sonnet-20240229-v1:0
+    * anthropic.claude-3-haiku-20240307-v1:0
+* **Gemini**
+    * gemini-2.0-flash-001
+    * gemini-2.0-flash-lite-preview-02-05
+    * gemini-2.0-pro-exp-02-05
+    * gemini-2.0-flash-thinking-exp-01-21
+    * gemini-2.0-flash-thinking-exp-1219
+    * gemini-2.0-flash-exp
+    * gemini-1.5-flash-002
+    * gemini-1.5-flash-exp-0827
+    * gemini-1.5-flash-8b-exp-0827
+    * gemini-1.5-pro-002
+    * gemini-1.5-pro-exp-0827
+    * gemini-exp-1206
+* **OpenRouter**
+* **Ollama**
 
-3. Enter your model credentials
+3. Enter model credentials.
 ![Settings LLM Configuration](assets/img/settings-screen-llm-config.png)
-> 💡 For detailed model options and configurations, see our [Advanced Features Guide](advanced-features.md#model-configuration).
 
-### 5. Optional Settings
+4. Click "**Save**" to apply your model settings.
+
+5. Connection verification:
+    - Displays a success notification if the connection is established successfully.
+    - If there's an error, check your credentials and internet connection.
+
+### 4. Optional Settings
 
 #### Analytics & Updates
-- Enable/disable usage analytics to track the performance of Specifai  
-- Configure automatic updates
-- Set up custom Langfuse analytics (optional)
+- Enable/disable usage analytics to track the performance of Specifai.
+- Configure automatic updates.
+- Set up custom Langfuse analytics (optional).
 
 #### Save Your Configuration
-- Click "Save" to apply changes
-- Verify settings are saved successfully
+- Click "**Save**" to apply your changes.
+- Verify settings are saved successfully.
 
 ## ✅ Verification Steps
 
 Ensure your setup is complete by checking:
-1. Specifai launches without errors
-2. Workspace is accessible
-3. AI model connection is working
-4. Analytics are configured (if enabled)
+1. Specifai launches without errors.
+2. Your chosen workspace is accessible.
+3. The AI model connection is working correctly.
+4. Analytics are configured as desired (if enabled).
 
 ## 🎉 Next Steps
 
 You're ready to start using Specifai! Here's what to do next:
 
-1. [Create your first solution](core-features.md#solution-creation-and-management)
-   - Learn about solution structure
-   - Understand different requirement types
-   - Start documenting requirements
+1.  **Create your first solution:**
+    - Learn about solution structure.
+    - Understand different requirement types.
+    - Start documenting requirements.
+    (See: [Core Features Guide](core-features.md#solution-creation))
 
-2. [Set up integrations](integrations-setup.md)
-   - Configure Jira integration
-   - Set up AWS Bedrock
-   - Add custom MCP servers
+2.  **Set up integrations:**
+    - Configure Jira integration.
+    - Set up AWS Bedrock.
+    - Add custom MCP servers.
+    (See: [Integrations Setup Guide](integrations-setup.md))
 
-3. [Explore AI features](core-features.md#ai-powered-document-generation)
-   - Try AI-powered document generation
-   - Use the intelligent chat interface
-   - Generate user stories and tasks
+3.  **Explore AI features:**
+    - Try AI-powered document generation.
+    - Use the intelligent chat interface.
+    - Generate user stories and tasks.
+    (See: [Core Features Guide](core-features.md#ai-powered-document-generation))
 
 ## 🆘 Quick Troubleshooting
 
 Having issues? Check these common solutions:
 
-1. **Can't Start Application?**
-   - Verify system requirements
-   - Check internet connection
-   - Run as administrator (Windows)
+1.  **Can't Start Application?**
+    - Verify system requirements.
+    - Check internet connection.
+    - Run as administrator (Windows).
 
-2. **Workspace Issues?**
-   - Verify folder permissions
-   - Choose a different location
-   - Close conflicting applications
+2.  **Workspace Issues?**
+    - Verify folder permissions.
+    - Choose a different location.
+    - Close conflicting applications.
 
-3. **AI Model Problems?**
-   - Verify credentials
-   - Check internet connection
-   - Confirm model availability
+3.  **AI Model Problems?**
+    - Verify credentials.
+    - Check internet connection.
+    - Confirm model availability.
 
-Need more help? 
+Need more help?
 - 📚 [Full Troubleshooting Guide](troubleshooting.md)
 - 🐛 [GitHub Issues](https://github.com/presidio-oss/specif-ai/issues)
 - 📧 Contact: hai-feedback@presidio.com
 
 ---
 
-Remember: Specifai is designed to make your development process smoother and more efficient. Don't hesitate to reach out if you need help getting started!
+Specifai is designed to make your development process smoother and more efficient. Don't hesitate to reach out if you need help getting started!

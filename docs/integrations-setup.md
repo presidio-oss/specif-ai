@@ -1,250 +1,213 @@
-# Integrations Setup Guide 🔌
+# 🔌 Solution Integrations Setup Guide
 
-Welcome to the Specifai integrations guide! Here you'll learn how to supercharge your Specifai experience by connecting powerful tools and services. Let's make your requirements management even more efficient!
+Connect powerful external tools and services to enhance your Specifai workflows.
 
-## 🔄 Model Context Protocol (MCP)
+---
 
-![MCP Configuration](../assets/img/mcp/custom-mcp-config.png)
+## 🎯 JIRA Integration
 
-The Model Context Protocol (MCP) is Specifai's powerful integration framework that enhances your workflow with external tools and knowledge bases.
+Integrate JIRA to transform Specifai-generated requirements into actionable JIRA tickets, streamlining your development pipeline.
 
-### Benefits of MCP Integration
+<div align="center">
 
-1. **Enhanced Context Understanding**
-   - Access enterprise knowledge bases
-   - Leverage domain-specific tools
-   - Integrate custom data sources
+![JIRA Integration](assets/img/specifai-jira-integration.png)  
+*Manage JIRA integrations within Specifai*
 
-2. **Workflow Automation**
-   - Automate repetitive tasks
-   - Connect to external systems
-   - Streamline document generation
+</div>
 
-3. **Custom Tool Integration**
-   - Add specialized capabilities
-   - Create custom workflows
-   - Extend Specifai's functionality
+### ✨ Features and Benefits
 
-### Setting Up Custom MCP Servers
+* **Automated Ticket Creation:** Convert PRDs, User Stories, and Tasks into JIRA epics, stories, and tasks, maintaining hierarchy.
+* **Bulk Export:** Export multiple stories and tasks at once, saving manual creation time.
+* **Seamless Synchronization:** Create and update JIRA tickets based on Specifai changes, ensuring data consistency.
 
-1. **Access MCP Settings**
-   ```bash
-   # Navigate to:
-   Settings → Integrations → Add Custom Server
-   ```
+### ⚡ Quick Start Guide
 
-2. **Server Configuration**
-   ```json
-   {
-     "name": "Your Custom Server",
-     "url": "https://your-server-url.com",
-     "auth": {
-       "type": "bearer",
-       "token": "your-auth-token"
-     }
-   }
-   ```
+1.  **Prerequisites:** You'll need an active JIRA instance, administrator access (or relevant permissions) to create JIRA OAuth apps, and the Specifai desktop application.
 
-3. **Verify Connection**
-   - Test server connectivity
-   - Validate available tools
-   - Check resource access
+2.  **Detailed Setup:** For comprehensive OAuth configuration and permissions, refer to our [Jira OAuth 2.0 Integration Guide](./JIRA-README.md).
 
-## 🤖 AI Model Configuration
+3.  **Sync to JIRA:**
+    * From the **PRD** page in Specifai, select your PRD and go to its **Stories** tab.
+    * Click **Export** and choose **Sync to JIRA**.
+        <div align="center">
 
-### Azure OpenAI Setup
+        ![Sync to JIRA Option](assets/img/specifai-sync-with-jira-option.png)  
+        *Initiate sync to JIRA from the Export menu*
 
-1. **Prerequisites**
-   - Active Azure subscription
-   - Azure OpenAI service access
-   - API credentials
+        </div>
+    * Tickets are automatically created in JIRA with these mappings:
+        * **Epic**: PRD
+        * **Story**: User Story
+        * **Task**: Task
+    * You'll receive a notification upon sync completion. JIRA Ticket IDs are displayed in Specifai next to corresponding requirements for easy reference and search.
+        <div align="center">
 
-2. **Configuration Steps**
-   ```bash
-   # Navigate to:
-   Settings → AI Models → Azure OpenAI
-   ```
+        ![After Successful JIRA Sync](assets/img/specifai-post-jira-sync.png)  
+        *Synced JIRA tickets displayed in Specifai*
 
-3. **Required Details**
-   ```json
-   {
-     "endpoint": "https://your-resource.openai.azure.com/",
-     "apiKey": "your-api-key",
-     "deploymentName": "your-deployment",
-     "apiVersion": "2024-02-15-preview"
-   }
-   ```
+        </div>
 
-### AWS Bedrock Integration
+---
 
-![AWS Bedrock Configuration](../assets/img/mcp/aws-bedrock-kb-config.png)
+## 🚀 AWS Bedrock Knowledge Base Direct Solution Integration
 
-1. **AWS Setup**
-   ```bash
-   # Install AWS CLI
-   brew install awscli  # macOS
-   choco install awscli # Windows
-   
-   # Configure AWS
-   aws configure --profile specifai
-   ```
+Connect your enterprise knowledge base to Specifai's AI chat, enhancing suggestions and enabling context-aware requirement generation for all document types.
 
-2. **Bedrock Configuration**
-   - Region selection
-   - Model access setup
-   - API limits configuration
+### ✨ Benefits & Features
 
-3. **Knowledge Base Setup**
-   ```json
-   {
-     "profile": "specifai",
-     "region": "us-east-1",
-     "tagKey": "specif-mcp-rag-kb",
-     "modelId": "anthropic.claude-3-sonnet"
-   }
-   ```
+* **Enhanced Chat Suggestions:** Leverage organizational knowledge for insightful AI chat assistance.
+* **Context-Aware Generation:** Create precise requirements using context from your knowledge base (e.g., domain info).
+* **Historical Data Integration:** Integrate past data (e.g., previous requirements) for informed creation.
 
-### Gemini Setup
+### 🛠 Setup Instructions
 
-1. **Google Cloud Setup**
-   - Create Google Cloud project
-   - Enable Gemini API
-   - Generate API credentials
+1.  **Prerequisites:** You'll need an AWS Knowledge Base containing relevant context (domain info, past requirements) and an IAM key with `bedrock:ListKnowledgeBases`, `bedrock:GetKnowledgeBase`, `bedrock:Retrieve` permissions.
+    <div align="center">
 
-2. **Configuration**
-   ```json
-   {
-     "projectId": "your-project-id",
-     "apiKey": "your-api-key",
-     "location": "us-central1",
-     "modelName": "gemini-2.0-pro"
-   }
-   ```
+    ![AWS Bedrock Configuration](assets/img/specifai-aws-bedrock-kb-integration.png)  
+    *Configure your AWS Bedrock Knowledge Base connection*
 
-### OpenRouter/Ollama Configuration
+    </div>
 
-1. **OpenRouter Setup**
-   ```json
-   {
-     "apiKey": "your-api-key",
-     "modelName": "preferred-model",
-     "baseUrl": "https://openrouter.ai/api"
-   }
-   ```
+2.  **Existing Bedrock LLM Config (Optional):** If your existing AWS Bedrock LLM configuration has the necessary permissions, simply check **"Use existing Bedrock configuration from LLM settings"**.
 
-2. **Ollama Setup**
-   ```bash
-   # Install Ollama
-   curl https://ollama.ai/install.sh | sh
-   
-   # Configure in Specifai
-   Settings → AI Models → Ollama
-   ```
+3.  **Direct API Key Config:** Alternatively, configure AWS API Keys directly using the provided form fields.
 
-## 🔗 Jira Integration
+4.  **Knowledge Base ID:** Accurately enter your AWS Knowledge Base ID.
 
-![Jira Integration](../assets/img/mcp/custom-server-management.png)
+5.  **Connect:** Click "**Connect**" to establish the link between Specifai and your AWS Knowledge Base.
 
-### OAuth 2.0 Setup
+### ✅ Verification Steps
 
-1. **Create Atlassian App**
-   - Visit [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/)
-   - Create new OAuth 2.0 app
-   - Configure permissions
+* **Verify KB Access:** Confirm Specifai can access and retrieve data from your AWS KB.
+* **Test Chat Suggestions:** Verify AI chat suggestions are enhanced and relevant, drawing from the KB.
 
-2. **Required Scopes**
-   ```
-   read:jira-work
-   write:jira-work
-   read:jira-user
-   ```
+---
 
-3. **Specifai Configuration**
-   ```json
-   {
-     "clientId": "your-client-id",
-     "clientSecret": "your-client-secret",
-     "callbackUrl": "http://localhost:49153/callback"
-   }
-   ```
+## 🧠 Model Context Protocol (MCP) Integration
 
-### Story/Task Synchronization
+**MCP** is Specifai's extensible framework for integrating external tools and knowledge bases. It enhances AI relevance and accuracy for all generated requirements.
 
-1. **Project Setup**
-   - Link Jira project
-   - Configure issue types
-   - Map custom fields
+<div align="center">
+    *Supercharge your development workflow with powerful tools and knowledge bases through the flexible Model Context Protocol (MCP)*
+</div>
 
-2. **Automation Rules**
-   ```json
-   {
-     "storyType": "Story",
-     "taskType": "Sub-task",
-     "defaultAssignee": "project-lead",
-     "autoSync": true
-   }
-   ```
+### 🛠 Built-in MCP Server Integration
 
-## 📊 Analytics & Observability
+Specifai natively supports **AWS Bedrock Knowledge Base (KB)** as a built-in MCP server, leveraging your organizational data for requirements. Configuration is straightforward via the UI. For detailed setup, refer to our [AWS Bedrock KB Configuration Guide](docs/aws-bedrock-kb-configuration.md).
 
-### PostHog Setup
+<div align="center">
 
-1. **Configuration**
-   ```json
-   {
-     "projectApiKey": "your-api-key",
-     "host": "https://app.posthog.com",
-     "captureMode": "auto"
-   }
-   ```
+![AWS Bedrock KB Configuration](assets/img/mcp/aws-bedrock-kb-config.png)  
+*Interface for AWS Bedrock KB configuration*
 
-### Langfuse Integration
+</div>
 
-1. **Setup Steps**
-   ```json
-   {
-     "publicKey": "your-public-key",
-     "secretKey": "your-secret-key",
-     "host": "https://cloud.langfuse.com"
-   }
-   ```
+### 🛠 Custom MCP Server Integration
 
-## 🔍 Troubleshooting
+Beyond built-in options, Specifai enables custom MCP server integration, extending functionality with proprietary data or specialized applications (e.g., a file system MCP server).
+
+#### Configuring Custom MCP Servers
+
+1.  **Navigate to MCP Integrations:** Access **MCP Integrations** during **Solution Creation** or in **Settings > Integrations**.
+
+    <div align="center">
+
+    ![MCP Server Integration in Create Solution](assets/img/mcp/mcp-integration-create-solution.png)  
+    *Access MCP server integrations during solution creation*
+
+    </div>
+
+    ---
+
+    <div align="center">
+
+    ![MCP Server Integration in Solution](assets/img/mcp/custom-server-management.png)  
+    *Manage MCP server integrations for an existing solution*
+
+    </div>
+
+    ---
+
+2.  **Add New MCP Server:** From the **"MCP Integrations"** tab, select **"New MCP Server"**.
+
+3.  **Provide Details:**
+    * **Server ID:** A unique identifier (e.g., `filesystem`).
+    * **Server Configuration (JSON):** Define communication parameters.
+        ```json
+        {
+          "command": "npm",
+          "transportType": "stdio",
+          "args": ["run", "@modelcontextprotocol/server-filesystem", "/your/path/to/Mcp"],
+          "id": "filesystem"
+        }
+        ```
+
+    <div align="center">
+
+    ![Custom MCP Server Configuration](assets/img/mcp/custom-mcp-config.png)  
+    *Interface for configuring custom MCP server integrations*
+
+    </div>
+
+4.  **Validate & Submit:** Click "**Validate**" to confirm connectivity, then "**Submit**" to save.
+
+5.  **Save Integration:** Click "**Save**" to finalize the integration.
+
+---
+
+### 🌐 Centralized Integration Management
+
+All MCP integrations are managed from a single **Integrations** page, providing a unified hub to add, configure, monitor, and remove servers.
+
+<div align="center">
+
+![Custom Server Management Interface](assets/img/mcp/custom-server-management.png)  
+*Manage all MCP integrations from a single, centralized location*
+
+</div>
+
+---
+
+### 💡 How MCP Enhances Requirement Workflows
+
+MCP tools are dynamically invoked during the **research step** within Specifai's agentic workflows, gathering crucial information that directly impacts output quality.
+
+MCP specifically enhances:
+
+1.  **Solution Generation:** Improves **BRD, PRD, NFR, and UIR** accuracy by providing contextual information.
+2.  **User Story & Task Generation:** Contributes to the research phase for relevant and actionable **User Stories and Tasks**.
+3.  **AI Chat Assistance:** Refines **AI chat suggestions** with real-time contextual information.
+
+---
+
+## 🔍 Troubleshooting & Best Practices
+
+Encountering an issue? Here are common tips for smooth integrations:
 
 ### Common Integration Issues
+* **Network:** Check connectivity to service endpoints.
+* **Credentials:** Verify API keys and permissions.
+* **Service Status:** Confirm external service is operational.
+* **API Limits:** Be aware of rate limits.
 
-1. **Connection Problems**
-   - Check network connectivity
-   - Verify credentials
-   - Confirm service status
+### Performance Optimization
+* **Timeouts:** Configure appropriate API request timeouts.
+* **Resource Usage:** Monitor consumption to identify bottlenecks.
+* **Rate Limiting:** Implement client-side rate limiting for custom integrations.
+* **Caching:** Cache frequently accessed data to reduce API calls.
 
-2. **Authentication Errors**
-   - Refresh API tokens
-   - Validate permissions
-   - Check configuration
+### Security Considerations
+* **Rotate Credentials:** Regularly update API keys.
+* **Secure Authentication:** Use recommended secure methods (e.g., OAuth 2.0).
+* **Access Logs:** Monitor for unusual activity.
+* **Least Privilege:** Grant minimum necessary permissions.
 
-3. **Performance Issues**
-   - Monitor API limits
-   - Check resource usage
-   - Optimize requests
+---
 
-## 🎉 Next Steps
+Need more help?
+* Contact us at [hai-feedback@presidio.com](mailto:hai-feedback@presidio.com)
+* Visit our [GitHub Issues](https://github.com/presidio-oss/specif-ai/issues) page.
 
-After setting up integrations:
-
-1. **Verify Connections**
-   - Test each integration
-   - Monitor performance
-   - Check data flow
-
-2. **Configure Backups**
-   - Set up automated backups
-   - Define retention policies
-   - Test recovery procedures
-
-3. **Train Team Members**
-   - Share documentation
-   - Conduct training sessions
-   - Establish best practices
-
-Ready to explore advanced features? Check out our [Advanced Features Guide](advanced-features.md)!
+Specifai is continuously evolving—check our [release notes](https://github.com/presidio-oss/specif-ai/releases) for updates!
