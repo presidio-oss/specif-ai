@@ -1,22 +1,48 @@
 <div
-  [ngClass]="[requirementAbbrivation != 'BP'
-  ? 'h-[calc(100dvh-150px)]'
-  : 'h-[calc(100dvh-200px)]', 'min-h-[620px] relative flex flex-col bg-white rounded-lg overflow-hidden border border-secondary-200', containerClass]">
+  [ngClass]="[
+    'relative flex flex-col bg-white rounded overflow-hidden border h-full',
+    containerClass,
+  ]"
+>
   <!-- Fixed Header -->
-  <div *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)" class="border-b border-secondary-200 p-1.5">
-    <div class="flex-none border border-secondary-300 bg-indigo-50 text-sm font-medium rounded-lg text-center py-2.5 border-secondary-300 bg-primary-50 text-primary-600">
-      <p *ngIf="!isKbAvailable && !['BP', 'PRD'].includes(requirementAbbrivation)" class="text-md font-medium">
+  <div
+    *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)"
+    class="border-b border-secondary-200 p-1.5"
+  >
+    <div
+      class="flex-none border border-secondary-300 bg-indigo-50 text-sm font-medium rounded-lg text-center py-2.5 border-secondary-300 bg-primary-50 text-primary-600"
+    >
+      <p
+        *ngIf="
+          !isKbAvailable && !['BP', 'PRD'].includes(requirementAbbrivation)
+        "
+        class="text-md font-medium"
+      >
         AI Chat
       </p>
-      <div *ngIf="isKbAvailable" class="kb-container flex justify-between items-center">
+      <div
+        *ngIf="isKbAvailable"
+        class="kb-container flex justify-between items-center"
+      >
         <div class="flex items-center space-x-2">
-          <img src="./assets/img/logo/aws_dark_bg_white_logo.svg" class="h-[30px]" alt="AWS logo" />
+          <img
+            src="./assets/img/logo/aws_dark_bg_white_logo.svg"
+            class="h-[30px]"
+            alt="AWS logo"
+          />
           <p class="text-sm text-secondary-600">AWS Bedrock Knowledge Base</p>
-          <ng-icon name="heroInformationCircle" class="text-lg cursor-pointer"
-            matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"></ng-icon>
+          <ng-icon
+            name="heroInformationCircle"
+            class="text-lg cursor-pointer"
+            matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"
+          ></ng-icon>
         </div>
         <div class="flex items-center">
-          <app-toggle *ngIf="isKbAvailable" [isActive]="isKbActive" (toggleChange)="onKbToggle($event)" />
+          <app-toggle
+            *ngIf="isKbAvailable"
+            [isActive]="isKbActive"
+            (toggleChange)="onKbToggle($event)"
+          />
         </div>
       </div>
     </div>
@@ -73,30 +99,40 @@
           <!-- Tool Response -->
           <div *ngIf="chat.tool" class="flex flex-row gap-3">
             <div class="size-10 flex items-start justify-center">
-              <div class="size-8 flex items-center justify-center border border-secondary-200 rounded-full">
-                <ng-icon
-                  name="heroWrench"
-                  class="text-base text-secondary-700">
+              <div
+                class="size-8 flex items-center justify-center border border-secondary-200 rounded-full"
+              >
+                <ng-icon name="heroWrench" class="text-base text-secondary-700">
                 </ng-icon>
               </div>
             </div>
             <div class="flex-1 max-w-[75%] relative">
-              <div
-                class="inline-block rounded-2xl text-sm relative w-full"
-              >
+              <div class="inline-block rounded-2xl text-sm relative w-full">
                 <!-- Tool response -->
                 <div *ngIf="chat.tool" class="flex flex-col gap-2.5">
                   <!-- Tool Call Details Accordion -->
-                  <app-custom-accordion [id]="chat.name" [isOpen]="false" [triggerClassName]="'px-3 py-2'" [bodyClassName]="'!px-3 !py-0'">
+                  <app-custom-accordion
+                    [id]="chat.name"
+                    [isOpen]="false"
+                    [triggerClassName]="'px-3 py-2'"
+                    [bodyClassName]="'!px-3 !py-0'"
+                  >
                     <div accordion-trigger class="flex flex-col gap-1">
-                      <span class="text-xs font-medium text-secondary-700">{{ chat.name }}</span>
+                      <span class="text-xs font-medium text-secondary-700">{{
+                        chat.name
+                      }}</span>
                     </div>
                     <div accordion-body class="flex flex-col gap-2 pb-2">
-                      <div *ngIf="chat.args" class="text-sm text-secondary-700 flex flex-col gap-2 p-2 rounded-md bg-secondary-100">
+                      <div
+                        *ngIf="chat.args"
+                        class="text-sm text-secondary-700 flex flex-col gap-2 p-2 rounded-md bg-secondary-100"
+                      >
                         <span class="text-xs">Input</span>
                         <span class="text-sm">{{ chat.args | json }}</span>
                       </div>
-                      <div class="text-sm text-secondary-700 flex flex-col gap-2 p-2 rounded-md bg-secondary-100">
+                      <div
+                        class="text-sm text-secondary-700 flex flex-col gap-2 p-2 rounded-md bg-secondary-100"
+                      >
                         <span class="text-xs">Response</span>
                         <span class="text-sm">{{ chat.tool }}</span>
                       </div>
@@ -104,20 +140,29 @@
                   </app-custom-accordion>
 
                   <!-- Add to Description Section (Outside Accordion) -->
-                  <div *ngIf="chat.name === 'add_to_requirement_description'" class="flex flex-col gap-3">
+                  <div
+                    *ngIf="chat.name === 'add_to_requirement_description'"
+                    class="flex flex-col gap-3"
+                  >
                     <!-- Intent Message -->
                     <div class="text-xs text-secondary-600">
-                      <span>SpecifAI suggested adding the following content to your description:</span>
+                      <span
+                        >SpecifAI suggested adding the following content to your
+                        description:</span
+                      >
                     </div>
 
                     <!-- Content Preview -->
-                    <div class="bg-primary-50 border border-primary-500 rounded-lg px-3 py-2">
+                    <div
+                      class="bg-primary-50 border border-primary-500 rounded-lg px-3 py-2"
+                    >
                       <app-rich-text-editor
                         editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs"
                         mode="view"
                         [content]="chat.args.contentToAdd"
                         [editable]="false"
-                        [editorClass]="'!rounded-none'">
+                        [editorClass]="'!rounded-none'"
+                      >
                       </app-rich-text-editor>
                     </div>
 
@@ -126,7 +171,13 @@
                       <button
                         *ngIf="!chat.isAdded"
                         class="text-sm bg-white text-success-600 py-1 px-3 rounded-full flex items-center gap-1 transition-colors duration-200 border border-secondary-200"
-                        (click)="update({ contentToAdd: chat.args.contentToAdd, tool_name: chat.name, tool_call_id: chat.tool_call_id })"
+                        (click)="
+                          update({
+                            contentToAdd: chat.args.contentToAdd,
+                            tool_name: chat.name,
+                            tool_call_id: chat.tool_call_id,
+                          })
+                        "
                       >
                         <ng-icon
                           name="heroDocumentPlus"
@@ -138,7 +189,10 @@
                         *ngIf="chat.isAdded"
                         class="text-sm bg-success-600 text-white flex items-center py-1 px-3 gap-1 rounded-lg"
                       >
-                        <ng-icon name="heroCheck" class="text-lg text-white"></ng-icon>
+                        <ng-icon
+                          name="heroCheck"
+                          class="text-lg text-white"
+                        ></ng-icon>
                         Added Successfully
                       </div>
                     </div>
@@ -160,11 +214,15 @@
                   class="w-6 h-6"
                 />
               </div>
-              <div class="flex-1 flex max-w-[75%] relative min-h-10 items-center">
+              <div
+                class="flex-1 flex max-w-[75%] relative min-h-10 items-center"
+              >
                 <div
                   [ngClass]="{
-                    'bg-secondary-50 border-[1px] border-secondary-200 rounded-lg px-3 py-2 text-sm': !chat.blocked,
-                    'bg-danger-100 px-4 py-3 rounded-2xl text-sm border border-danger-200': chat.blocked
+                    'bg-secondary-50 border-[1px] border-secondary-200 rounded-lg px-3 py-2 text-sm':
+                      !chat.blocked,
+                    'bg-danger-100 px-4 py-3 rounded-2xl text-sm border border-danger-200':
+                      chat.blocked,
                   }"
                 >
                   <!-- Assistant content -->
@@ -174,11 +232,15 @@
                         editorClass="prose-secondary-edit text-wrap overflow-y-hidden prose-xs"
                         mode="view"
                         [content]="chat.assistant"
-                        [editable]="false">
+                        [editable]="false"
+                      >
                       </app-rich-text-editor>
 
                       <!-- Blocked Reason -->
-                      <div *ngIf="chat.blocked && chat.blockedReason" class="mt-2 text-sm text-danger-700 font-medium">
+                      <div
+                        *ngIf="chat.blocked && chat.blockedReason"
+                        class="mt-2 text-sm text-danger-700 font-medium"
+                      >
                         {{ chat.blockedReason }}
                       </div>
                     </div>
@@ -238,12 +300,19 @@
 
       <!-- Assistant loading -->
       <div class="flex flex-row gap-3" *ngIf="generateLoader">
-        <div class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10">
-          <img src="assets/img/logo/haibuild_onlylogo.svg" alt="AI" class="w-6 h-6" />
+        <div
+          class="flex-none bg-secondary-100 rounded-full flex items-center justify-center w-10 h-10"
+        >
+          <img
+            src="assets/img/logo/haibuild_onlylogo.svg"
+            alt="AI"
+            class="w-6 h-6"
+          />
         </div>
         <div class="flex-1 flex max-w-[75%] relative h-10 items-center">
           <div
-            class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative [--dot-color:#312e81] [--dot-size:0.25rem]">
+            class="inline-block bg-secondary-100 px-4 py-3 rounded-2xl text-sm border border-secondary-200 relative [--dot-color:#312e81] [--dot-size:0.25rem]"
+          >
             <app-three-bounce-loader></app-three-bounce-loader>
           </div>
         </div>
@@ -288,7 +357,7 @@
   <!-- Suggestions Area -->
   <div
     *ngIf="!responseStatus && !generateLoader"
-    class="flex-none bg-white px-6 py-4"
+    class="flex-none bg-white p-4"
   >
     <!-- Loading State -->
     <div *ngIf="loadingChat" class="flex items-start gap-3 mb-3">
@@ -321,7 +390,7 @@
         >
           <li
             *ngFor="let suggestion of chatSuggestions"
-            class="flex items-center gap-2 text-sm py-2 px-4 rounded-full bg-secondary-100 shadow-sm hover:shadow-md cursor-pointer transition-shadow duration-200 border border-secondary-200"
+            class="flex items-center gap-2.5 text-sm py-1.5 px-3.5 rounded-full bg-secondary-50 hover:bg-secondary-200 cursor-pointer border"
             (click)="converse(suggestion)"
             (keydown.enter)="converse(suggestion)"
             (keydown.space)="converse(suggestion); $event.preventDefault()"
@@ -329,7 +398,10 @@
             tabindex="0"
           >
             <div class="flex flex-col justify-center h-5">
-              <ng-icon name="heroSparklesSolid" class="text-lg text-warning-400"></ng-icon>
+              <ng-icon
+                name="heroSparklesSolid"
+                class="text-lg text-warning-400"
+              ></ng-icon>
             </div>
             <span class="text-secondary-950">{{ suggestion }}</span>
           </li>

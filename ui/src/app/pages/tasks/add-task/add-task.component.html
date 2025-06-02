@@ -115,7 +115,7 @@
         </div>
       </form>
     </div>
-    <div *ngIf="mode !== 'add'" class="space-y-4 h-full lg:col-span-1">
+    <div *ngIf="mode !== 'add'" class="lg:col-span-1 h-[calc(100vh-80px)]">
       <app-chat
         chatType="task"
         [name]="projectMetadata?.name"
