@@ -120,31 +120,15 @@ Choose the AI model that best suits your needs from a variety of providers. Spec
 - MCP Configuration
 
 ### [⚡ Advanced Features](advanced-features.md)
-- Agentic Solution Generation
-- Multi-Model Support
-- Analytics & Observability
-- BRD-PRD Linking
-- Custom Templates
-- Version Control
+- Application Architecture
+- Solution Creation Workflow
+- User Story Generation Process
+- Security and Safety Measures
 
 ### [❓ Troubleshooting & FAQs](troubleshooting.md)
 - Common Issues
+- Integration Problems
 - Performance Optimization
-- Best Practices
-- Support Resources
-
-## 🔍 Analytics & Observability
-- Optional analytics tracked in PostHog
-- Observability with Langfuse
-- Performance monitoring and optimization
-
-## 🎯 Solution Examples
-
-Recent solutions in our community:
-- Healthcare App
-- E-commerce Platforms
-
-Each solution follows our structured approach to requirements management, ensuring consistency and completeness across your projects.
 
 ## 🔗 Additional Resources
 

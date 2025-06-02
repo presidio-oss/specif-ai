@@ -182,28 +182,10 @@ MCP specifically enhances:
 
 ---
 
-## 🔍 Troubleshooting & Best Practices
-
-Encountering an issue? Here are common tips for smooth integrations:
-
-### Common Integration Issues
-* **Network:** Check connectivity to service endpoints.
-* **Credentials:** Verify API keys and permissions.
-* **Service Status:** Confirm external service is operational.
-* **API Limits:** Be aware of rate limits.
-
-### Performance Optimization
-* **Timeouts:** Configure appropriate API request timeouts.
-* **Resource Usage:** Monitor consumption to identify bottlenecks.
-* **Rate Limiting:** Implement client-side rate limiting for custom integrations.
-* **Caching:** Cache frequently accessed data to reduce API calls.
-
-### Security Considerations
-* **Rotate Credentials:** Regularly update API keys.
-* **Secure Authentication:** Use recommended secure methods (e.g., OAuth 2.0).
-* **Access Logs:** Monitor for unusual activity.
-* **Least Privilege:** Grant minimum necessary permissions.
-
+## Next Steps
+Now that you've set up your integrations, you're ready to enhance your Specifai experience! Explore the following:
+* **[Advanced Features Guide](advanced-features.md)** for deeper insights into Specifai's capabilities.
+* **[Troubleshooting Guide](troubleshooting.md)** for common issues and solutions.
 ---
 
 Need more help?

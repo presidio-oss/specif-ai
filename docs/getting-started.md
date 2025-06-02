@@ -150,12 +150,6 @@ You're ready to start using Specifai! Here's what to do next:
     - Add custom MCP servers.
     (See: [Integrations Setup Guide](integrations-setup.md))
 
-3.  **Explore AI features:**
-    - Try AI-powered document generation.
-    - Use the intelligent chat interface.
-    - Generate user stories and tasks.
-    (See: [Core Features Guide](core-features.md#ai-powered-document-generation))
-
 ## 🆘 Quick Troubleshooting
 
 Having issues? Check these common solutions:
