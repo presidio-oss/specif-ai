@@ -1,264 +1,131 @@
-# Advanced Features of Specifai 🚀
+# Advanced Architecture of Specifai 🏗️
 
-Take your Specifai experience to the next level! This guide explores the powerful advanced capabilities that will transform your requirements management into a seamless, intelligent process.
+Understand the advanced architectural components and intelligent workflows that power Specifai's requirement generation.
 
-## 🤖 Agentic Solution Requirement Generation
+---
 
-![Agentic Flow](../assets/img/specif-ai-create-solution-agentic-flow.png)
+## 📋 What's Inside
 
-Experience the future of requirement generation with our Langgraph-powered agentic workflow! This intelligent system works tirelessly to create precise, comprehensive solution requirements.
+This guide covers:
+- Application Architecture
+- Solution Creation Workflow
+- User Story Generation Process
+- Security and Safety Measures
 
-### 🔄 Key Phases
+---
 
-1. **Context Gathering Phase**
-   - **🎯 Summarisation**
-     * Analyzes solution metadata
-     * Processes conversation history
-     * Creates concise context summaries
-   
-   - **📚 Context Gathering**
-     * Integrates Knowledge-Base data
-     * Pulls relevant enterprise information
-     * Connects with MCP tools
-   
-   - **🤔 Decision Point**
-     * Smart LLM tool execution
-     * Adaptive processing
-     * Intelligent routing
-   
-   - **📊 Data Consolidation**
-     * Organizes into ReferenceInfo format
-     * Structures information hierarchically
-     * Prepares for requirement generation
+## 🏛️ Application Architecture
 
-2. **Requirement Generation Phase**
-   Transform structured data into comprehensive documentation:
-   ```mermaid
-   graph TD
-     A[Structured Data] --> B[BRD Generation]
-     A --> C[PRD Creation]
-     A --> D[NFR Development]
-     A --> E[UIR Specification]
-     B --> F[Final Documentation]
-     C --> F
-     D --> F
-     E --> F
-   ```
+Specifai is built as a robust Electron application, combining a modern frontend with a powerful backend.
 
-## 🎭 Multi-Model Support
+<div align="center">
 
-![Model Configuration](../assets/gifs/specif-ai-settings.gif)
+![Application Architecture](assets/img/specifai-architecture.png)  
+*Specifai's core architectural components*
 
-Choose the perfect AI model for your needs:
+</div>
 
-### 🌟 Supported Models
+### Core Components
 
-1. **Azure OpenAI**
-   ```json
-   {
-     "models": {
-       "gpt-4o": "Best for complex requirements",
-       "gpt-4o-mini": "Faster, cost-effective option"
-     }
-   }
-   ```
+* **Angular UI:** Provides a rich, responsive frontend interface.
+* **Node.js Backend:** Handles core application logic, data processing, and system integrations within the main Electron process.
+* **File System:** Serves as the primary data storage for application-specific information.
+* **Network LLM Integration:** Manages secure network calls to external AI services for language model operations.
 
-2. **AWS Bedrock**
-   - Latest Claude 3 Models:
-     * Sonnet: Balanced performance
-     * Opus: Highest capability
-     * Haiku: Fast, efficient processing
+#### Electron Process Model
 
-3. **Gemini**
-   - Pro Series Features:
-     * Enhanced context understanding
-     * Improved technical accuracy
-     * Faster response times
+* **Main Process:**
+    * **Event Management:** Manages system-wide events and application state changes.
+    * **File System Operations:** Handles all data persistence and I/O.
+    * **LLM Integration:** Executes network requests and manages communication with external AI services.
+* **Renderer Process:**
+    * **Angular Components:** Renders the user interface and manages user interactions.
+    * **State Management:** Manages local UI state for responsiveness.
+    * **IPC Communication:** Facilitates secure, asynchronous communication with the Main Process via Inter-Process Communication.
 
-4. **Additional Options**
-   - OpenRouter: Model marketplace access
-   - Ollama: Local model support
+---
 
-### 🎯 Smart Model Selection
+## 🔄 Solution Creation Workflow
 
-Choose your model based on:
-| Factor | Consideration |
-|--------|---------------|
-| Complexity | Task difficulty level |
-| Speed | Response time needs |
-| Cost | Budget constraints |
-| Features | Special capabilities |
+Specifai's solution creation leverages an advanced agentic workflow, intelligently orchestrating data processing and document generation.
 
-## 📊 Analytics & Observability
+<div align="center">
 
-### Real-time Insights
-- Performance metrics
-- Usage patterns
-- Error tracking
-- Response analysis
+![Solution Creation Flow](assets/img/specifai-create-solution-agentic-flow.png)  
+*Agentic workflow for solution creation*
 
-### Integration Options
-```python
-# PostHog Analytics
-analytics.track({
-    'event': 'document_generated',
-    'properties': {
-        'type': 'BRD',
-        'time_taken': '2.3s',
-        'model_used': 'gpt-4o'
-    }
-})
+</div>
 
-# Langfuse Observability
-trace = langfuse.trace({
-    'name': 'requirement_generation',
-    'metadata': {
-        'solution_id': 'xyz-123',
-        'complexity': 'high'
-    }
-})
-```
+### Agentic Flow Phases
 
-## 🔗 BRD-PRD Linking
+1.  **Research Phase:**
+    * **Context Gathering:** Collects and analyzes various input data sources.
+    * **Information Processing:** Structures and organizes the gathered information.
+    * **Context Refinement:** Iteratively refined using MCP Tools for enhanced context.
+    * **Quality Validation:** Ensures data completeness and accuracy before generation.
 
-![Document Generation](../assets/gifs/specif-ai-sections.gif)
+2.  **Generation Phase:**
+    This phase transforms structured data into comprehensive requirement documentation.
 
-### Smart Linking Features
-1. **Contextual Connections**
-   - Automatic reference mapping
-   - Requirement traceability matrix
-   - Impact analysis dashboard
+    ```mermaid
+    graph TD
+      A[Solution Information] --> B[BRD Generation]
+      B --> C[PRD Generation]
+      A --> D[NFR Generation]
+      A --> E[UIR Generation]
+      B --> F[Final Solution]
+      C --> F
+      D --> F
+      E --> F
+    ```
 
-2. **Intelligent Updates**
-   - Real-time synchronization
-   - Version control integration
-   - Change history tracking
+### Agent Orchestration
 
-### Best Practices
-```mermaid
-graph LR
-    A[BRD Creation] --> B[Link Establishment]
-    B --> C[PRD Development]
-    C --> D[Sync Management]
-    D --> E[Version Control]
-    E --> F[Change Tracking]
-```
+Within the Node.js backend, specialized agents collaborate to enhance context, refine AI responses, and assure output quality. This includes leveraging **MCP tools** for enriched contextual understanding during the research and generation processes.
 
-## 📝 Custom Templates
+---
 
-### Template Magic
-1. **Creation & Management**
-   ```json
-   {
-     "template_type": "BRD",
-     "sections": [
-       "Executive Summary",
-       "Business Context",
-       "Requirements",
-       "Success Criteria"
-     ],
-     "variables": {
-       "project_name": "${project}",
-       "stakeholders": "${stakeholders}",
-       "objectives": "${objectives}"
-     }
-   }
-   ```
+## 📝 User Story Generation Process
 
-2. **Smart Usage**
-   - One-click application
-   - Bulk processing
-   - Dynamic updates
+User Story generation in Specifai also follows a sophisticated agentic workflow, ensuring high-quality, contextually relevant outputs.
 
-## 📚 Version-Controlled Requirements
+### Flow Components
 
-### Power Features
-1. **Document Control**
-   - Git-style versioning
-   - Branch management
-   - Merge workflows
+* **Story Formation:**
+    * **Context Analysis:** Processes requirement context using specialized agents.
+    * **Acceptance Criteria:** Generates clear acceptance criteria with LLM assistance.
+    * **Quality Metrics:** Applies predefined quality standards through validation agents.
+* **Agentic Processing:**
+    * **MCP Tool Integration:** Leverages connected knowledge bases and tools for enhanced contextual understanding.
+    * **Output Enhancement:** Refines generated content through iterative improvements by dedicated agents.
+    * **Validation Steps:** Ensures story completeness and alignment with overall solution requirements.
 
-2. **Collaboration Tools**
-   - Real-time co-editing
-   - Comment threads
-   - Review system
+This iterative, agent-driven process ensures comprehensive coverage and consistency with the broader solution architecture.
 
-### VCS Integration
-```bash
-# Example Git workflow
-git checkout -b feature/new-requirement
-# Make changes in Specifai
-git add .
-git commit -m "Add payment processing requirements"
-git push origin feature/new-requirement
-```
+---
 
-## 🏗 Architecture Overview
+## 🛡️ Security and Safety
 
-![Architecture](../assets/gifs/specif-ai-architecture.gif)
+Specifai integrates **hai-guardrails** throughout its architecture to ensure robust security and content safety, particularly within AI-driven workflows.
 
-### System Components
-1. **Modern Frontend**
-   - Angular UI
-   - Real-time updates
-   - Responsive design
+### Hai-Guardrails Integration
 
-2. **Powerful Backend**
-   - Electron core
-   - RESTful APIs
-   - File system management
+The guardrails system is implemented at multiple architectural levels:
 
-3. **Flexible Integration**
-   - MCP protocol support
-   - External service connectors
-   - Custom adapters
+* **Content Filtering:** Implements robust content filtering and validation for security keys and tokens.
+* **Safe Prompt Handling:** Ensures all prompts adhere to defined security guidelines.
 
-## ⚡ Performance Tips
+### Implementation Points
 
-### Optimization Strategies
-1. **Document Management**
-   ```javascript
-   // Example cleanup configuration
-   {
-     "auto_cleanup": true,
-     "retention_period": "90d",
-     "index_optimization": "weekly"
-   }
-   ```
+* Integrated within the chat flow for real-time validation.
+* Applied during content generation safety checks.
+* Enforces comprehensive security policies across the application.
 
-2. **Model Optimization**
-   - Load balancing
-   - Response caching
-   - Fallback configuration
+---
 
-### Security Best Practices
-1. **Access Management**
-   - Role-based controls
-   - API key rotation
-   - Audit logging
+## 🔍 Next Steps
 
-2. **Data Protection**
-   - At-rest encryption
-   - TLS transmission
-   - Automated backups
+1. **Troubleshoot:** Consult the [Troubleshooting Guide](troubleshooting.md) for common issues and resolutions.
+2. **Explore Codebase:** For developers, delve into the codebase to understand the implementation of these architectural patterns.
 
-## 🎉 Next Steps
-
-Ready to master these advanced features?
-
-1. **Explore the Architecture**
-   - Review system diagrams
-   - Understand data flow
-   - Learn integration points
-
-2. **Optimize Your Setup**
-   - Test different models
-   - Configure analytics
-   - Set up version control
-
-3. **Enhance Security**
-   - Implement best practices
-   - Configure backups
-   - Set up monitoring
-
-Need help? Check our [Troubleshooting & FAQs](troubleshooting.md) guide or join our [Community Discussions](https://github.com/presidio-oss/specif-ai/discussions)!
+---
