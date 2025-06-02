@@ -66,11 +66,11 @@ const BedrockModels: Record<BedrockModelId, ModelInfoV1> = {
     contextWindow: 64_000,
   },
   [BedrockModelId.ANTHROPIC_CLAUDE_OPUS_4_20250514]: {
-    maxTokens: 8192,
+    maxTokens: 32000,
     contextWindow: 200_000,
   },
   [BedrockModelId.ANTHROPIC_CLAUDE_SONNET_4_20250514]: {
-    maxTokens: 8192,
+    maxTokens: 64000,
     contextWindow: 200_000,
   },
 };

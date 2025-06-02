@@ -36,11 +36,11 @@ const MODEL_CONFIGS: Record<AnthropicModel, ModelInfoV1> = {
     contextWindow: 200_000,
   },
   [AnthropicModel.CLAUDE_OPUS_4_20250514]: {
-    maxTokens: 8192,
+    maxTokens: 32000,
     contextWindow: 200_000,
   },
   [AnthropicModel.CLAUDE_SONNET_4_20250514]: {
-    maxTokens: 8192,
+    maxTokens: 64000,
     contextWindow: 200_000,
   },
 };
