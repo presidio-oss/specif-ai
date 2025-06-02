@@ -122,7 +122,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   ) => {
     this.zone.run(() => {
       this.taskCreationProgress = this.taskCreationProgress.some(
-        (item) => item.message === data.message,
+        (item) => item.message.title === data.message.title,
       )
         ? this.taskCreationProgress
         : [...this.taskCreationProgress, data];

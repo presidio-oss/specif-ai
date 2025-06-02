@@ -4,9 +4,14 @@ import { LangGraphRunnableConfig } from "@langchain/langgraph";
 export interface WorkflowProgressEvent {
   node: string;
   type: "thinking" | "action" | "mcp";
-  message: string;
+  message: WorkflowProgressEventData;
   timestamp: number;
   correlationId?: string;
+}
+export interface WorkflowProgressEventData {
+  title: string;
+  input?: string;
+  output?: string | object;
 }
 
 export class WorkflowEventsService {
@@ -19,7 +24,7 @@ export class WorkflowEventsService {
   private createEvent(
     node: string,
     type: WorkflowProgressEvent["type"],
-    message: string,
+    message: WorkflowProgressEventData,
     correlationId?: string
   ): WorkflowProgressEvent {
     return {
@@ -33,7 +38,7 @@ export class WorkflowEventsService {
 
   async dispatchThinking(
     node: string,
-    message: string,
+    message: WorkflowProgressEventData,
     config: LangGraphRunnableConfig,
     correlationId?: string
   ): Promise<void> {
@@ -43,7 +48,7 @@ export class WorkflowEventsService {
 
   async dispatchAction(
     node: string,
-    message: string,
+    message: WorkflowProgressEventData,
     config: LangGraphRunnableConfig,
     correlationId?: string
   ): Promise<void> {
@@ -53,7 +58,7 @@ export class WorkflowEventsService {
 
   async dispatchMcp(
     node: string,
-    message: string,
+    message: WorkflowProgressEventData,
     config: LangGraphRunnableConfig,
     correlationId?: string
   ): Promise<void> {

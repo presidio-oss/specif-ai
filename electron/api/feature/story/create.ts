@@ -77,24 +77,40 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
       ...config,
     });
     
-    for await (const streamEvent of stream) {
-      if (streamEvent.event === "on_tool_start") {
-        event.sender.send(
-          `story:${appId}-workflow-progress`,
-          {
+    for await (const { event: evt, name, data, run_id } of stream) {
+      const channel = `story:${appId}-workflow-progress`;
+      const timestamp = Date.now();
+
+      switch (evt) {
+        case "on_tool_start":
+          event.sender.send(channel, {
             node: "tools",
             type: "mcp",
-            message: `Using tool: ${streamEvent.name}`,
-            timestamp: Date.now()
-          }
-        );
-      }
-        
-      if (streamEvent.event === "on_custom_event") {
-        event.sender.send(
-          `story:${appId}-workflow-progress`,
-          streamEvent.data
-        );
+            message: {
+              title: `Tool call started: ${name}`
+            },
+            correlationId: run_id,
+            timestamp,
+          });
+          break;
+
+        case "on_tool_end":
+          event.sender.send(channel, {
+            node: "tools_end",
+            type: "mcp",
+            message: {
+              title: `Tool call completed: ${name}`,
+              input: data?.input,
+              output: data?.output?.content,
+            },
+            timestamp,
+            correlationId: run_id,
+          });
+          break;
+
+        case "on_custom_event":
+          event.sender.send(channel, data);
+          break;
       }
     }
     

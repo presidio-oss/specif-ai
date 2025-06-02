@@ -50,7 +50,9 @@ export const buildResearchNode = ({
 
       await workflowEvents.dispatchThinking(
         "research",
-        "Skipping research phase - no tools available",
+        {
+          title: "Skipping research phase - no tools available",
+        },
         runnableConfig
       );
 
@@ -64,7 +66,9 @@ export const buildResearchNode = ({
     // Dispatch initial thinking event
     await workflowEvents.dispatchThinking(
       "research",
-      "Researching relevant technical context based on app details",
+      {
+        title: "Researching relevant technical context based on app details",
+      },
       runnableConfig,
       researchCorrelationId
     );
@@ -110,7 +114,11 @@ export const buildResearchNode = ({
 
     await workflowEvents.dispatchAction(
       "research",
-      "Finished research - summarized findings ready for requirement generation",
+      {
+        title:
+          "Finished research - summarized findings ready for requirement generation",
+        output: response.structuredResponse.referenceInformation,
+      },
       runnableConfig,
       researchCorrelationId
     );
@@ -155,7 +163,9 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
 
         await workflowEvents.dispatchAction(
           "requirement-generation",
-          `Skipped ${type} requirement generation - disabled by preferences`,
+          {
+            title: `Skipped ${type} requirement generation - disabled by preferences`,
+          },
           runnableConfig,
           reqGenerationCorrelationId
         );
@@ -173,7 +183,9 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
       // Dispatch initial events
       await workflowEvents.dispatchThinking(
         "requirement-generation",
-        `Preparing input context for ${type} requirement generation`,
+        {
+          title: `Preparing input context for ${type} requirement generation`,
+        },
         runnableConfig,
         reqGenerationCorrelationId
       );
@@ -214,7 +226,11 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
 
       await workflowEvents.dispatchAction(
         "requirement-generation",
-        `Successfully generated and validated ${type} requirements`,
+        {
+          title: `Successfully generated and validated ${type} requirements`,
+          input: requirementTypePrompt,
+          output: response.requirements
+        },
         runnableConfig,
         reqGenerationCorrelationId
       );

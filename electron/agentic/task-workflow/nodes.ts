@@ -46,7 +46,9 @@ export const buildResearchNode = ({
 
       await workflowEvents.dispatchThinking(
         "research",
-        "Skipping research phase - no tools available",
+        {
+          title: "Skipping research phase - no tools available",
+        },
         runnableConfig
       );
 
@@ -57,7 +59,9 @@ export const buildResearchNode = ({
 
     await workflowEvents.dispatchThinking(
       "research",
-      "Researching relevant context for task generation",
+      {
+        title: "Researching relevant context for task generation",
+      },
       runnableConfig,
       researchCorrelationId
     );
@@ -113,7 +117,9 @@ export const buildResearchNode = ({
 
     await workflowEvents.dispatchAction(
       "research",
-      "Research completed - context gathered for task generation",
+      {
+        title: "Research completed - context gathered for task generation",
+      },
       runnableConfig,
       researchCorrelationId
     );
@@ -147,7 +153,9 @@ export const buildGenerateTasksNode = (
     try {
       await workflowEvents.dispatchThinking(
         "generate-tasks",
-        "Generating detailed tasks based on requirements and context",
+        {
+          title: "Generating detailed tasks based on requirements and context",
+        },
         runnableConfig,
         generateCorrelationId
       );
@@ -199,7 +207,13 @@ export const buildGenerateTasksNode = (
 
       await workflowEvents.dispatchAction(
         "generate-tasks",
-        `Successfully generated ${parsedTasks.tasks?.length || 0} tasks`,
+        {
+          title: `Successfully generated ${
+            parsedTasks.tasks?.length || 0
+          } tasks`,
+          input: prompt,
+          output: parsedTasks,
+        },
         runnableConfig,
         generateCorrelationId
       );
@@ -224,7 +238,9 @@ export const buildGenerateTasksNode = (
 
       await workflowEvents.dispatchAction(
         "generate-tasks",
-        "Error occurred during task generation",
+        {
+          title: "Error occurred during task generation",
+        },
         runnableConfig,
         generateCorrelationId
       );

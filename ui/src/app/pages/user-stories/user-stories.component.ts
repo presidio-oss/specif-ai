@@ -146,7 +146,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   ) => {
     this.zone.run(() => {
       this.storyCreationProgress = this.storyCreationProgress.some(
-        (item) => item.message === data.message,
+        (item) => item.message.title === data.message.title,
       )
         ? this.storyCreationProgress
         : [...this.storyCreationProgress, data];

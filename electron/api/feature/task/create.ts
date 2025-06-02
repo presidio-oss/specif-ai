@@ -68,23 +68,39 @@ export async function createTask(event: IpcMainInvokeEvent, data: any): Promise<
     });
     
     for await (const streamEvent of stream) {
-      if (streamEvent.event === "on_tool_start") {
-        event.sender.send(
-          `task:${validatedData.appId}-workflow-progress`,
-          {
+      const channel = `task:${validatedData.appId}-workflow-progress`;
+      const timestamp = Date.now();
+
+      switch (streamEvent.event) {
+        case "on_tool_start":
+          event.sender.send(channel, {
             node: "tools",
             type: "mcp",
-            message: `Using tool: ${streamEvent.name}`,
-            timestamp: Date.now()
-          }
-        );
-      }
-        
-      if (streamEvent.event === "on_custom_event") {
-        event.sender.send(
-          `task:${validatedData.appId}-workflow-progress`,
-          streamEvent.data
-        );
+            message: {
+              title: `Tool call started: ${streamEvent.name}`,
+            },
+            correlationId: streamEvent.run_id,
+            timestamp,
+          });
+          break;
+
+        case "on_tool_end":
+          event.sender.send(channel, {
+            node: "tools_end",
+            type: "mcp",
+            message: {
+              title: `Tool call completed: ${streamEvent.name}`,
+              input: streamEvent.data?.input,
+              output: streamEvent.data?.output?.content,
+            },
+            correlationId: streamEvent.run_id,
+            timestamp,
+          });
+          break;
+
+        case "on_custom_event":
+          event.sender.send(channel, streamEvent.data);
+          break;
       }
     }
     
