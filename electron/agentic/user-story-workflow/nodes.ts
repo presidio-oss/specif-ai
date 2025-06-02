@@ -47,7 +47,9 @@ export const buildResearchNode = ({
 
       await workflowEvents.dispatchThinking(
         "research",
-        "Skipping research phase - no tools available",
+        {
+          title: "Skipping research phase - no tools available",
+        },
         runnableConfig
       );
 
@@ -58,7 +60,9 @@ export const buildResearchNode = ({
 
     await workflowEvents.dispatchThinking(
       "research",
-      "Researching relevant context for user story generation",
+      {
+        title: "Researching relevant context for user story generation",
+      },
       runnableConfig,
       researchCorrelationId
     );
@@ -114,7 +118,11 @@ export const buildResearchNode = ({
 
     await workflowEvents.dispatchAction(
       "research",
-      "Research completed - context gathered for user story generation",
+      {
+        title:
+          "Research completed - context gathered for user story generation",
+        output: response.structuredResponse.referenceInformation,
+      },
       runnableConfig,
       researchCorrelationId
     );
@@ -149,7 +157,9 @@ export const buildGenerateStoriesNode = (
     try {
       await workflowEvents.dispatchThinking(
         "generate-stories",
-        "Generating user stories based on requirements and context",
+        {
+          title: "Generating user stories based on requirements and context",
+        },
         runnableConfig,
         generateCorrelationId
       );
@@ -215,9 +225,13 @@ export const buildGenerateStoriesNode = (
 
       await workflowEvents.dispatchAction(
         "generate-stories",
-        `Successfully generated ${
-          parsedStories.features?.length || 0
-        } user stories`,
+        {
+          title: `Successfully generated ${
+            parsedStories.features?.length || 0
+          } user stories`,
+          input: prompt,
+          output: JSON.stringify(parsedStories.features || []),
+        },
         runnableConfig,
         generateCorrelationId
       );
@@ -240,7 +254,7 @@ export const buildGenerateStoriesNode = (
 
       await workflowEvents.dispatchAction(
         "generate-stories",
-        "Error occurred during user story generation",
+        { title: "Error occurred during user story generation" },
         runnableConfig,
         generateCorrelationId
       );
@@ -279,7 +293,9 @@ export const buildEvaluateStoriesNode = (
 
         await workflowEvents.dispatchAction(
           "evaluate-stories",
-          "No stories available for evaluation",
+          {
+            title: "No stories available for evaluation",
+          },
           runnableConfig,
           evaluateCorrelationId
         );
@@ -292,7 +308,10 @@ export const buildEvaluateStoriesNode = (
 
       await workflowEvents.dispatchThinking(
         "evaluate-stories",
-        "Evaluating generated user stories for quality and completeness",
+        {
+          title:
+            "Evaluating generated user stories for quality and completeness",
+        },
         runnableConfig,
         evaluateCorrelationId
       );
@@ -337,11 +356,13 @@ export const buildEvaluateStoriesNode = (
 
       await workflowEvents.dispatchAction(
         "evaluate-stories",
-        isApproved
-          ? "User stories approved and ready for use"
-          : isComplete
-          ? "Completing the evaluation since the maximum evaluation limit is reached."
-          : "User stories need refinement - continuing iteration",
+        {
+          title: isApproved
+            ? "User stories approved and ready for use"
+            : isComplete
+            ? "Completing the evaluation since the maximum evaluation limit is reached."
+            : "User stories need refinement - continuing iteration",
+        },
         runnableConfig,
         evaluateCorrelationId
       );
@@ -367,7 +388,9 @@ export const buildEvaluateStoriesNode = (
 
       await workflowEvents.dispatchAction(
         "evaluate-stories",
-        "Error occurred during user story evaluation",
+        {
+          title: "Error occurred during user story evaluation",
+        },
         runnableConfig,
         evaluateCorrelationId
       );

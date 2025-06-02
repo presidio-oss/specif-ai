@@ -121,11 +121,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     data: WorkflowProgressEvent,
   ) => {
     this.zone.run(() => {
-      this.taskCreationProgress = this.taskCreationProgress.some(
-        (item) => item.message === data.message,
-      )
-        ? this.taskCreationProgress
-        : [...this.taskCreationProgress, data];
+      this.taskCreationProgress = [...this.taskCreationProgress, data];
     });
   };
 
