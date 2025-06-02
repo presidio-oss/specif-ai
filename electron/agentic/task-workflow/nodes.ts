@@ -119,6 +119,7 @@ export const buildResearchNode = ({
       "research",
       {
         title: "Research completed - context gathered for task generation",
+        output: response.structuredResponse.referenceInformation,
       },
       runnableConfig,
       researchCorrelationId
