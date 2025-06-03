@@ -16,6 +16,8 @@ export enum BedrockModelId {
   ANTHROPIC_CLAUDE_3_SONNET_20240229 = "anthropic.claude-3-sonnet-20240229-v1:0",
   ANTHROPIC_CLAUDE_3_HAIKU_20240307 = "anthropic.claude-3-haiku-20240307-v1:0",
   DEEPSEEK_R1_V1 = "deepseek.r1-v1:0",
+  ANTHROPIC_CLAUDE_OPUS_4_20250514 = "anthropic.claude-opus-4-20250514-v1:0",
+  ANTHROPIC_CLAUDE_SONNET_4_20250514 = "anthropic.claude-sonnet-4-20250514-v1:0",
 }
 
 const BedrockModels: Record<BedrockModelId, ModelInfoV1> = {
@@ -62,6 +64,14 @@ const BedrockModels: Record<BedrockModelId, ModelInfoV1> = {
   [BedrockModelId.DEEPSEEK_R1_V1]: {
     maxTokens: 8_000,
     contextWindow: 64_000,
+  },
+  [BedrockModelId.ANTHROPIC_CLAUDE_OPUS_4_20250514]: {
+    maxTokens: 32000,
+    contextWindow: 200_000,
+  },
+  [BedrockModelId.ANTHROPIC_CLAUDE_SONNET_4_20250514]: {
+    maxTokens: 64000,
+    contextWindow: 200_000,
   },
 };
 

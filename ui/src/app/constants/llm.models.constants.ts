@@ -37,6 +37,9 @@ export async function getProviderModels(provider: string): Promise<string[]> {
       'anthropic.claude-3-opus-20240229-v1:0',
       'anthropic.claude-3-sonnet-20240229-v1:0',
       'anthropic.claude-3-haiku-20240307-v1:0',
+      'anthropic.claude-opus-4-20250514-v1:0',
+      'anthropic.claude-sonnet-4-20250514-v1:0',
+
     ],
     'gemini': [
       'gemini-2.0-flash-001',
@@ -60,6 +63,8 @@ export async function getProviderModels(provider: string): Promise<string[]> {
       'claude-3-opus-20240229',
       'claude-3-sonnet-20240229',
       'claude-3-haiku-20240307',
+      'claude-opus-4-20250514',
+      'claude-sonnet-4-20250514',
     ],
   };
 

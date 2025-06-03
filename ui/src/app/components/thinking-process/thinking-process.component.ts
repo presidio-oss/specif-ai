@@ -16,6 +16,7 @@ import {
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { ThreeBounceLoaderComponent } from '../three-bounce-loader/three-bounce-loader.component';
+import { CustomAccordionComponent } from '../custom-accordion/custom-accordion.component';
 import {
   heroSparkles,
   heroCheckCircle,
@@ -38,7 +39,14 @@ import {
   templateUrl: './thinking-process.component.html',
   styleUrls: ['./thinking-process.component.scss'],
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, NgIconComponent, ThreeBounceLoaderComponent],
+  imports: [
+    NgIf,
+    NgFor,
+    NgClass,
+    NgIconComponent,
+    ThreeBounceLoaderComponent,
+    CustomAccordionComponent,
+  ],
   providers: [
     provideIcons({
       heroSparkles,
@@ -161,6 +169,16 @@ export class ThinkingProcessComponent
       return false;
     }
 
+    if (event.correlationId) {
+      const hasCorrespondingCompletion = this.progress.some(
+        (e) =>
+          e.correlationId === event.correlationId &&
+          (e.type === 'action' || e.type === 'mcp') &&
+          e !== event,
+      );
+      return !hasCorrespondingCompletion;
+    }
+
     const currentIndex = this.progress.indexOf(event);
 
     let lastActionIndex = -1;
@@ -172,5 +190,37 @@ export class ThinkingProcessComponent
     }
 
     return currentIndex > lastActionIndex;
+  }
+
+  hasInputOutput(event: WorkflowProgressEvent): boolean {
+    return (
+      (event.type === 'mcp' || event.type === 'action') &&
+      (!!event.message.input || !!event.message.output)
+    );
+  }
+
+  getAccordionId(event: WorkflowProgressEvent, index: number): string {
+    return `${event.type}-${index}-${event.timestamp}`;
+  }
+
+  formatData(data: any): string {
+    if (data === null || data === undefined) {
+      return '';
+    }
+
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data);
+        return JSON.stringify(parsed, null, 2);
+      } catch {
+        return data;
+      }
+    }
+
+    if (typeof data === 'object') {
+      return JSON.stringify(data, null, 2);
+    }
+
+    return String(data);
   }
 }

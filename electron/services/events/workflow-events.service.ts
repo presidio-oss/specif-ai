@@ -4,8 +4,14 @@ import { LangGraphRunnableConfig } from "@langchain/langgraph";
 export interface WorkflowProgressEvent {
   node: string;
   type: "thinking" | "action" | "mcp";
-  message: string;
+  message: WorkflowProgressEventData;
   timestamp: number;
+  correlationId?: string;
+}
+export interface WorkflowProgressEventData {
+  title: string;
+  input?: string;
+  output?: string | object;
 }
 
 export class WorkflowEventsService {
@@ -18,40 +24,45 @@ export class WorkflowEventsService {
   private createEvent(
     node: string,
     type: WorkflowProgressEvent["type"],
-    message: string
+    message: WorkflowProgressEventData,
+    correlationId?: string
   ): WorkflowProgressEvent {
     return {
       node,
       type,
       message,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      ...(correlationId && { correlationId }),
     };
   }
 
   async dispatchThinking(
     node: string,
-    message: string,
-    config: LangGraphRunnableConfig
+    message: WorkflowProgressEventData,
+    config: LangGraphRunnableConfig,
+    correlationId?: string
   ): Promise<void> {
-    const event = this.createEvent(node, "thinking", message);
+    const event = this.createEvent(node, "thinking", message, correlationId);
     await dispatchCustomEvent(this.eventName, event, config);
   }
 
   async dispatchAction(
     node: string,
-    message: string,
-    config: LangGraphRunnableConfig
+    message: WorkflowProgressEventData,
+    config: LangGraphRunnableConfig,
+    correlationId?: string
   ): Promise<void> {
-    const event = this.createEvent(node, "action", message);
+    const event = this.createEvent(node, "action", message, correlationId);
     await dispatchCustomEvent(this.eventName, event, config);
   }
 
   async dispatchMcp(
     node: string,
-    message: string,
-    config: LangGraphRunnableConfig
+    message: WorkflowProgressEventData,
+    config: LangGraphRunnableConfig,
+    correlationId?: string
   ): Promise<void> {
-    const event = this.createEvent(node, "mcp", message);
+    const event = this.createEvent(node, "mcp", message, correlationId);
     await dispatchCustomEvent(this.eventName, event, config);
   }
 }

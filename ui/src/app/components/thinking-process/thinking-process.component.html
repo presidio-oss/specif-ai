@@ -49,60 +49,138 @@
         [@listAnimation]="progress.length"
         *ngIf="progress.length > 0; else loadingSkeleton"
       >
-        <li
-          *ngFor="let event of progress"
-          class="py-2.5 px-3 flex items-start gap-3 bg-white/40 backdrop-blur-sm rounded-lg border border-white/50 shadow-sm transition-all duration-300 hover:bg-white/70"
-          [@fadeInOut]
-        >
-          <div class="relative">
-            <div
-              class="absolute inset-0 rounded-full blur-md opacity-30"
-              [ngClass]="{
-                'bg-primary-400': event.type === 'thinking',
-                'bg-success-400': event.type === 'action',
-                'bg-amber-400': event.type === 'mcp',
-              }"
-            ></div>
-            <ng-icon
-              [name]="
-                event.type === 'thinking'
-                  ? 'heroSparkles'
-                  : event.type === 'action'
-                    ? 'heroCheckCircle'
-                    : 'heroWrenchScrewdriver'
-              "
-              class="h-5 w-5 mt-0.5 shrink-0 relative"
-              [class.text-primary-500]="event.type === 'thinking'"
-              [class.text-success-500]="event.type === 'action'"
-              [class.text-amber-500]="event.type === 'mcp'"
-            ></ng-icon>
-          </div>
-
-          <div class="flex-1">
-            <div class="flex items-center gap-2">
-              <span
-                class="text-sm leading-relaxed flex-1"
-                [ngClass]="{
-                  'text-primary-700': event.type === 'thinking',
-                  'text-success-700': event.type === 'action',
-                  'text-amber-700': event.type === 'mcp',
-                }"
-                >{{ event.message }}</span
-              >
+        <li *ngFor="let event of progress; let i = index" [@fadeInOut]>
+          <div
+            *ngIf="!hasInputOutput(event)"
+            class="py-2.5 px-3 flex items-start gap-3 backdrop-blur-sm border border-secondary-200 bg-white rounded-lg shadow-sm transition-all duration-300"
+          >
+            <div class="relative">
               <div
-                *ngIf="shouldShowSpinner(event)"
-                class="inline-block w-3 h-3 border-2 border-t-transparent rounded-full animate-spin"
+                class="absolute inset-0 rounded-full blur-md opacity-30"
                 [ngClass]="{
-                  'border-primary-500': event.type === 'thinking',
-                  'border-success-500': event.type === 'action',
-                  'border-amber-500': event.type === 'mcp',
+                  'bg-primary-400': event.type === 'thinking',
+                  'bg-success-400': event.type === 'action',
+                  'bg-amber-400': event.type === 'mcp',
                 }"
-                role="status"
-                aria-label="Executing"
-              >
+              ></div>
+              <ng-icon
+                [name]="
+                  event.type === 'thinking'
+                    ? 'heroSparkles'
+                    : event.type === 'action'
+                      ? 'heroCheckCircle'
+                      : 'heroWrenchScrewdriver'
+                "
+                class="h-5 w-5 mt-0.5 shrink-0 relative"
+                [class.text-primary-500]="event.type === 'thinking'"
+                [class.text-success-500]="event.type === 'action'"
+                [class.text-amber-500]="event.type === 'mcp'"
+              ></ng-icon>
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-sm leading-relaxed flex-1"
+                  [ngClass]="{
+                    'text-primary-700': event.type === 'thinking',
+                    'text-success-700': event.type === 'action',
+                    'text-amber-700': event.type === 'mcp',
+                  }"
+                  >{{ event.message.title }}</span
+                >
+                <div
+                  *ngIf="shouldShowSpinner(event)"
+                  class="inline-block w-3 h-3 border-2 border-t-transparent rounded-full animate-spin"
+                  [ngClass]="{
+                    'border-primary-500': event.type === 'thinking',
+                    'border-success-500': event.type === 'action',
+                    'border-amber-500': event.type === 'mcp',
+                  }"
+                  role="status"
+                  aria-label="Executing"
+                ></div>
               </div>
             </div>
           </div>
+
+          <app-custom-accordion
+            *ngIf="hasInputOutput(event)"
+            [id]="getAccordionId(event, i)"
+            [isOpen]="false"
+            triggerClassName="py-2.5 px-3 bg-transparent border-none hover:bg-white/20"
+            bodyClassName="px-3 pb-3 bg-transparent"
+          >
+            <div accordion-trigger class="flex items-start gap-3">
+              <div class="relative">
+                <div
+                  class="absolute inset-0 rounded-full blur-md opacity-30"
+                  [ngClass]="{
+                    'bg-primary-400': event.type === 'thinking',
+                    'bg-success-400': event.type === 'action',
+                    'bg-amber-400': event.type === 'mcp',
+                  }"
+                ></div>
+                <ng-icon
+                  [name]="
+                    event.type === 'thinking'
+                      ? 'heroSparkles'
+                      : event.type === 'action'
+                        ? 'heroCheckCircle'
+                        : 'heroWrenchScrewdriver'
+                  "
+                  class="h-5 w-5 mt-0.5 shrink-0 relative"
+                  [class.text-primary-500]="event.type === 'thinking'"
+                  [class.text-success-500]="event.type === 'action'"
+                  [class.text-amber-500]="event.type === 'mcp'"
+                ></ng-icon>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="text-sm leading-relaxed flex-1"
+                    [ngClass]="{
+                      'text-primary-700': event.type === 'thinking',
+                      'text-success-700': event.type === 'action',
+                      'text-amber-700': event.type === 'mcp',
+                    }"
+                    >{{ event.message.title }}</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div accordion-body class="space-y-3">
+              <div *ngIf="event.message.input" class="space-y-2">
+                <h4
+                  class="text-xs font-semibold text-gray-600 uppercase tracking-wide"
+                >
+                  Input
+                </h4>
+                <div class="bg-white/60 border border-gray-200 rounded-md p-3">
+                  <pre
+                    class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed"
+                    >{{ formatData(event.message.input) }}</pre
+                  >
+                </div>
+              </div>
+
+              <div *ngIf="event.message.output" class="space-y-2">
+                <h4
+                  class="text-xs font-semibold text-gray-600 uppercase tracking-wide"
+                >
+                  Output
+                </h4>
+                <div class="bg-white/60 border border-gray-200 rounded-md p-3">
+                  <pre
+                    class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed"
+                    >{{ formatData(event.message.output) }}</pre
+                  >
+                </div>
+              </div>
+            </div>
+          </app-custom-accordion>
         </li>
       </ul>
 
