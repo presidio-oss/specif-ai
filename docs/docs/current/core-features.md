@@ -22,7 +22,7 @@ Discover the powerful features that make Specifai your ultimate companion for SD
 ### Creating Your First Solution
 <div align="center">
 
-![Solution Creation](assets/gif/specifai-overview.gif)  
+![Solution Creation](/gif/specifai-overview.gif)
 *Transform your ideas into well-structured solutions in minutes*
 
 </div>
@@ -119,7 +119,7 @@ Specifai streamlines the creation of essential SDLC documents through AI-powered
 
 <div align="center">
 
-![Document Generation](assets/gif/specifai-sections.gif)  
+![Document Generation](/gif/specifai-sections.gif)
 *AI-powered document generation workflow*
 
 </div>
@@ -142,7 +142,7 @@ A **Business Requirements Document (BRD)** is a formal document that describes t
 #### Example BRD
 <div align="center">
 
-![BRD Details](assets/img/specifai-brd-details.png)  
+![BRD Details](/img/specifai-brd-details.png)
 *Business Requirements Document interface in Specifai*
 
 </div>
@@ -162,7 +162,7 @@ A **Product Requirements Document (PRD)** is a technical document that outlines 
 
 <div align="center">
 
-![PRD Details](assets/img/specifai-prd-details.png)
+![PRD Details](/img/specifai-prd-details.png)
 *Product Requirements Document interface in Specifai*
 
 </div>
@@ -188,7 +188,7 @@ A **Product Requirements Document (PRD)** is a technical document that outlines 
 
 <div align="center">
 
-![User Story Details](assets/img/specifai-user-story-details.png)
+![User Story Details](/img/specifai-user-story-details.png)
 *User Story details interface in Specifai*
 
 </div>
@@ -208,7 +208,7 @@ A **Product Requirements Document (PRD)** is a technical document that outlines 
 
 <div align="center">
 
-![Task Details](assets/img/specifai-task-details.png)
+![Task Details](/img/specifai-task-details.png)
 *Task details interface in Specifai*
 
 </div>
@@ -228,7 +228,7 @@ A **Product Requirements Document (PRD)** is a technical document that outlines 
 
 <div align="center">
 
-![NFR Details](assets/img/specifai-nfr-details.png)
+![NFR Details](/img/specifai-nfr-details.png)
 *Non-Functional Requirements interface in Specifai*
 
 </div>
@@ -248,7 +248,7 @@ A **Product Requirements Document (PRD)** is a technical document that outlines 
 
 <div align="center">
 
-![UIR Details](assets/img/specifai-uir-details.png)
+![UIR Details](/img/specifai-uir-details.png)
 *User Interface Requirements interface in Specifai*
 
 </div>
@@ -269,7 +269,7 @@ A **Business Process Flow (BP Flow)** is a visual representation of the steps, d
 
 <div align="center">
 
-![Business Process Flow Visualization](assets/gif/specifai-bp-visualisation.gif)  
+![Business Process Flow Visualization](/gif/specifai-bp-visualisation.gif)
 *Business process flow visualization in action within Specifai*
 
 </div>
@@ -280,22 +280,24 @@ A **Business Process Flow (BP Flow)** is a visual representation of the steps, d
     * Enter a descriptive title.
     * Provide a detailed process description.
     * Link relevant BRDs and PRDs for context.
-    <div align="center">
 
-    ![BP Flow Details Configuration](assets/img/specifai-bp-details.png)  
-    *Business process flow configuration interface*
+<div align="center">
 
-    </div>
+![BP Flow Details Configuration](/img/specifai-bp-details.png)
+*Business process flow configuration interface*
+
+</div>
 
 2.  **Automatic Flow Generation:**
     * Enjoy AI-powered flow diagram generation.
     * Benefit from intelligent process analysis based on your linked requirements and BP context.
-    <div align="center">
 
-    ![AI-powered flow diagram generation](assets/gif/specifai-bp-visualisation.gif)  
-    *AI-powered flow diagram generation in action*
+<div align="center">
 
-    </div>
+![AI-powered flow diagram generation](/gif/specifai-bp-visualisation.gif)
+*AI-powered flow diagram generation in action*
+
+</div>
 
 3.  **Flow Management:**
     * View generated process flows.
@@ -326,7 +328,7 @@ Once your initial documents are generated, Specifai provides robust tools to org
 
 <div align="center">
 
-![Adding a Requirement](assets/img/specifai-requirement-add-screen.png)  
+![Adding a Requirement](/img/specifai-requirement-add-screen.png)
 *Interface for adding a requirement (e.g., a BRD)*
 
 </div>
@@ -338,9 +340,10 @@ Once your initial documents are generated, Specifai provides robust tools to org
 * **AI Enhancement:**
     * Use "**Enhance with AI**" to improve existing content.
     * Review and apply AI suggestions as needed from the AI Chat Interface on the right side of the screen.
+
 <div align="center">
 
-![Requirement Update screen](assets/img/specifai-requirement-update.png)  
+![Requirement Update screen](/img/specifai-requirement-update.png)
 *Updating a requirement with AI assistance*
 
 </div>
@@ -349,7 +352,7 @@ Once your initial documents are generated, Specifai provides robust tools to org
 
 <div align="center">
 
-![AI Chat Interface](assets/gif/specifai-chat.gif)
+![AI Chat Interface](/gif/specifai-chat.gif)
 *The AI Chat Interface assisting with requirement updates*
 
 </div>
@@ -371,7 +374,7 @@ The AI Chat Interface is your on-demand SDLC assistant within Specifai. It uses 
 
 <div align="center">
 
-![Chat Interface](assets/gif/specifai-chat.gif)  
+![Chat Interface](/gif/specifai-chat.gif)
 *Your AI-powered chat for real-time assistance*
 
 </div>
@@ -381,10 +384,10 @@ The AI Chat Interface is your on-demand SDLC assistant within Specifai. It uses 
 1.  **Natural Language Understanding:**
     * Engage with the AI using everyday language. The chat interprets your intent and context to perform relevant actions.
     * Ask questions like:
-        * *“Can you refine the BRD for authentication based on SSO?”*
-        * *“Add NFR data privacy guidelines.”*
-        * *“What are the UI constraints for the login module?”*
-        * *“Explain the requirement for the checkout process.”*
+        * *"Can you refine the BRD for authentication based on SSO?"*
+        * *"Add NFR data privacy guidelines."*
+        * *"What are the UI constraints for the login module?"*
+        * *"Explain the requirement for the checkout process."*
 
 2.  **Smart Suggestions:**
     * Receive intelligent recommendations, clarifications, and industry best practices. It identifies vague inputs for improved quality.
@@ -393,9 +396,9 @@ The AI Chat Interface is your on-demand SDLC assistant within Specifai. It uses 
 3.  **Context-Aware Actions:**
     * The chat uses solution metadata and linked requirement documents (like BRDs, PRDs for User Story context) to tailor responses.
         * Ask questions like:
-        * *“What are the relevant BRDs for the current PRD?”*
-        * *“What are the linked User Stories?”*
-        * *“What are the linked Tasks for the current User Story?”*
+        * *"What are the relevant BRDs for the current PRD?"*
+        * *"What are the linked User Stories?"*
+        * *"What are the linked Tasks for the current User Story?"*
     * Gathers additional context from **MCP Servers** (like AWS Bedrock Knowledge Base or Custom File System MCP Server) to enhance chat suggestions and guides conversation.
 
 4.  **Iterative Conversations:**
@@ -414,7 +417,7 @@ This feature enables the seamless generation of user stories and associated task
 
 <div align="center">
 
-![User Story Generation](assets/gif/specifai-user-stories.gif)  
+![User Story Generation](/gif/specifai-user-stories.gif)
 *AI-powered user story generation in action*
 
 </div>
@@ -442,7 +445,7 @@ You can regenerate user stories and tasks at any time. When this action is trigg
 
 <div align="center">
 
-![User Story Regeneration Interface](assets/img/specifai-regenerate-stories.png)  
+![User Story Regeneration Interface](/img/specifai-regenerate-stories.png)
 *Story regeneration interface with archival support*
 
 </div>
@@ -462,7 +465,7 @@ Specifai offers flexible AI model configuration, allowing you to choose and conn
 
 <div align="center">
 
-![Model Switching in Settings](assets/gif/specifai-settings.gif)  
+![Model Switching in Settings](/gif/specifai-settings.gif)
 *Easily configurable multi-provider AI model support*
 
 </div>
@@ -487,7 +490,7 @@ Specifai provides seamless options to share and integrate your generated require
 
 <div align="center">
 
-![Export Options for User Stories](assets/img/specifai-stories-export.png)  
+![Export Options for User Stories](/img/specifai-stories-export.png)
 *Export interface for requirements and user stories*
 
 </div>

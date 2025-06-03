@@ -2,7 +2,7 @@
 
 Specifai is your AI-powered companion for revolutionizing project requirements management! This comprehensive guide will help you master all features of Specifai and transform your SDLC process.
 
-![Specifai Overview](assets/gif/specifai-overview.gif)
+![Specifai Overview](/gif/specifai-overview.gif)
 
 ## 📘 What is Specifai?
 
@@ -30,7 +30,7 @@ Get real-time requirement edits and context-specific suggestions.
 
 <div align="center">
 
-![AI powered chat feature in action](assets/gif/specifai-chat.gif)  
+![AI powered chat feature in action](/gif/specifai-chat.gif)  
 *AI powered chat feature in action*
 
 </div>
@@ -44,7 +44,7 @@ Efficiently manage your project requirements with Specifai's robust tools, inclu
 
 <div align="center">
 
-![User story and task generation](assets/gif/specifai-user-stories.gif)  
+![User story and task generation](/gif/specifai-user-stories.gif)  
 *User story and task generation*
 
 </div>
@@ -100,7 +100,7 @@ Choose the AI model that best suits your needs from a variety of providers. Spec
 
 <div align="center">
 
-![Model Switching in Settings](assets/gif/specifai-settings.gif)  
+![Model Switching in Settings](/gif/specifai-settings.gif)  
 *Easily configurable multi-provider AI model support*
 
 </div>

@@ -1,4 +1,4 @@
-# 🔌 Solution Integrations Setup Guide
+# Solution Integrations Setup Guide
 
 Connect powerful external tools and services to enhance your Specifai workflows.
 
@@ -10,7 +10,7 @@ Integrate JIRA to transform Specifai-generated requirements into actionable JIRA
 
 <div align="center">
 
-![JIRA Integration](assets/img/specifai-jira-integration.png)  
+![JIRA Integration](/img/specifai-jira-integration.png)
 *Manage JIRA integrations within Specifai*
 
 </div>
@@ -25,14 +25,14 @@ Integrate JIRA to transform Specifai-generated requirements into actionable JIRA
 
 1.  **Prerequisites:** You'll need an active JIRA instance, administrator access (or relevant permissions) to create JIRA OAuth apps, and the Specifai desktop application.
 
-2.  **Detailed Setup:** For comprehensive OAuth configuration and permissions, refer to our [Jira OAuth 2.0 Integration Guide](./JIRA-README.md).
+2.  **Detailed Setup:** For comprehensive OAuth configuration and permissions, refer to our [Jira OAuth 2.0 Integration Guide](JIRA-README.md).
 
 3.  **Sync to JIRA:**
     * From the **PRD** page in Specifai, select your PRD and go to its **Stories** tab.
     * Click **Export** and choose **Sync to JIRA**.
         <div align="center">
 
-        ![Sync to JIRA Option](assets/img/specifai-sync-with-jira-option.png)  
+        ![Sync to JIRA Option](/img/specifai-sync-with-jira-option.png)
         *Initiate sync to JIRA from the Export menu*
 
         </div>
@@ -43,7 +43,7 @@ Integrate JIRA to transform Specifai-generated requirements into actionable JIRA
     * You'll receive a notification upon sync completion. JIRA Ticket IDs are displayed in Specifai next to corresponding requirements for easy reference and search.
         <div align="center">
 
-        ![After Successful JIRA Sync](assets/img/specifai-post-jira-sync.png)  
+        ![After Successful JIRA Sync](/img/specifai-post-jira-sync.png)
         *Synced JIRA tickets displayed in Specifai*
 
         </div>
@@ -65,7 +65,7 @@ Connect your enterprise knowledge base to Specifai's AI chat, enhancing suggesti
 1.  **Prerequisites:** You'll need an AWS Knowledge Base containing relevant context (domain info, past requirements) and an IAM key with `bedrock:ListKnowledgeBases`, `bedrock:GetKnowledgeBase`, `bedrock:Retrieve` permissions.
     <div align="center">
 
-    ![AWS Bedrock Configuration](assets/img/specifai-aws-bedrock-kb-integration.png)  
+    ![AWS Bedrock Configuration](/img/specifai-aws-bedrock-kb-integration.png)
     *Configure your AWS Bedrock Knowledge Base connection*
 
     </div>
@@ -95,11 +95,11 @@ Connect your enterprise knowledge base to Specifai's AI chat, enhancing suggesti
 
 ### 🛠 Built-in MCP Server Integration
 
-Specifai natively supports **AWS Bedrock Knowledge Base (KB)** as a built-in MCP server, leveraging your organizational data for requirements. Configuration is straightforward via the UI. For detailed setup, refer to our [AWS Bedrock KB Configuration Guide](docs/aws-bedrock-kb-configuration.md).
+Specifai natively supports **AWS Bedrock Knowledge Base (KB)** as a built-in MCP server, leveraging your organizational data for requirements. Configuration is straightforward via the UI. For detailed setup, refer to our [AWS Bedrock KB Configuration Guide](aws-bedrock-kb-configuration.md).
 
 <div align="center">
 
-![AWS Bedrock KB Configuration](assets/img/mcp/aws-bedrock-kb-config.png)  
+![AWS Bedrock KB Configuration](/img/mcp/aws-bedrock-kb-config.png)
 *Interface for AWS Bedrock KB configuration*
 
 </div>
@@ -114,7 +114,7 @@ Beyond built-in options, Specifai enables custom MCP server integration, extendi
 
     <div align="center">
 
-    ![MCP Server Integration in Create Solution](assets/img/mcp/mcp-integration-create-solution.png)  
+    ![MCP Server Integration in Create Solution](/img/mcp/custom-server-management.png)
     *Access MCP server integrations during solution creation*
 
     </div>
@@ -123,7 +123,7 @@ Beyond built-in options, Specifai enables custom MCP server integration, extendi
 
     <div align="center">
 
-    ![MCP Server Integration in Solution](assets/img/mcp/custom-server-management.png)  
+    ![MCP Server Integration in Solution](/img/mcp/custom-server-management.png)
     *Manage MCP server integrations for an existing solution*
 
     </div>
@@ -146,7 +146,7 @@ Beyond built-in options, Specifai enables custom MCP server integration, extendi
 
     <div align="center">
 
-    ![Custom MCP Server Configuration](assets/img/mcp/custom-mcp-config.png)  
+    ![Custom MCP Server Configuration](/img/mcp/custom-mcp-config.png)
     *Interface for configuring custom MCP server integrations*
 
     </div>
@@ -163,7 +163,7 @@ All MCP integrations are managed from a single **Integrations** page, providing 
 
 <div align="center">
 
-![Custom Server Management Interface](assets/img/mcp/custom-server-management.png)  
+![Custom Server Management Interface](/img/mcp/custom-server-management.png)
 *Manage all MCP integrations from a single, centralized location*
 
 </div>

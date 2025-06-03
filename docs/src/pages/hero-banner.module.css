@@ -1,0 +1,261 @@
+/**
+ * Hero banner styles
+ * Main landing page hero section with animations and interactions
+ */
+
+.hero-banner {
+  padding: 4rem 0;
+  position: relative;
+  overflow: hidden;
+  background: var(--ifm-background-color);
+  font-family: var(--ifm-font-family-base);
+}
+
+.hero-banner__gradient {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hero-banner__gradient--top {
+  top: 0;
+  right: 0;
+  background: radial-gradient(circle at top right, #E0E7FF, transparent 60%);
+  opacity: 0.6;
+}
+
+.hero-banner__gradient--bottom {
+  top: 0;
+  right: 0;
+  background: radial-gradient(circle at bottom right, #C7D2FE, transparent 60%);
+  opacity: 0.4;
+}
+
+.hero-banner__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-banner__text {
+  flex: 1;
+  text-align: left;
+  max-width: 600px;
+}
+
+.hero-banner__product-name {
+  font-size: 5rem;
+  margin-bottom: 0;
+  font-family: var(--ifm-font-family-base);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  background: linear-gradient(to right, #818CF8, #6366F1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+  transform: translateY(-40px);
+  animation: slideInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.hero-banner__title {
+  font-size: 2.2rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+  color: var(--hero-text-color, #1F2937);
+  font-family: var(--ifm-font-family-base);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1.2;
+}
+
+.hero-banner__description {
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: var(--hero-subtitle-color, #4B5563);
+  font-family: var(--ifm-font-family-base);
+  font-weight: 400;
+  max-width: 540px;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+}
+
+.hero-banner__buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+}
+
+.hero-banner__button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 1rem 1.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  font-family: var(--ifm-font-family-base);
+  font-size: 1rem;
+}
+
+.hero-banner__button--primary {
+  background: #6366F1;
+  color: white;
+  border: 1px solid #4F46E5;
+}
+
+.hero-banner__button--primary:hover {
+  background: #4F46E5;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.hero-banner__button--secondary {
+  background: transparent;
+  color: #6366F1;
+  border: 1px solid #6366F1;
+}
+
+.hero-banner__button--secondary:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: #4F46E5;
+  border-color: #4F46E5;
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.hero-banner__button-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+  pointer-events: none;
+}
+
+.hero-banner__button:hover .hero-banner__button-shine {
+  left: 100%;
+}
+
+.hero-banner__image-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  opacity: 0;
+  transform: translateX(40px);
+  animation: slideInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
+}
+
+.hero-banner__image-glow {
+  position: absolute;
+  width: 25vw;
+  height: 25vw;
+  border-radius: 50%;
+  background-image: linear-gradient(-45deg, #bd34fe 50%, #47caff 50%);;
+  opacity: 0.8;
+  z-index: 0;
+  filter: blur(68px);
+}
+
+.hero-banner__image {
+  max-width: 320px;
+  height: auto;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 30px var(--ifm-color-primary-dark));
+  transition: filter 0.3s ease;
+}
+
+.hero-banner__image:hover {
+  filter: drop-shadow(0 0 40px var(--ifm-color-primary));
+}
+
+/* Animations */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive design */
+@media screen and (max-width: 996px) {
+  .hero-banner__content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .hero-banner__text {
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .hero-banner__buttons {
+    justify-content: center;
+  }
+
+  .hero-banner {
+    padding: 2rem;
+  }
+
+  .hero-banner__image-wrapper {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .hero-banner {
+    padding: 1.5rem;
+  }
+
+  .hero-banner__image-wrapper {
+    max-width: 100%;
+  }
+}
