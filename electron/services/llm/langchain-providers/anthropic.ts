@@ -10,6 +10,8 @@ enum AnthropicModel {
   CLAUDE_3_5_HAIKU_20241022 = "claude-3-5-haiku-20241022",
   CLAUDE_3_5_HAIKU_20240307 = "claude-3-haiku-20240307",
   CLAUDE_3_OPUS_20240229 = "claude-3-opus-20240229",
+  CLAUDE_OPUS_4_20250514 = 'claude-opus-4-20250514',
+  CLAUDE_SONNET_4_20250514 = 'claude-sonnet-4-20250514',
 }
 
 const MODEL_CONFIGS: Record<AnthropicModel, ModelInfoV1> = {
@@ -30,6 +32,14 @@ const MODEL_CONFIGS: Record<AnthropicModel, ModelInfoV1> = {
     contextWindow: 200_000,
   },
   [AnthropicModel.CLAUDE_3_5_HAIKU_20240307]: {
+    maxTokens: 4096,
+    contextWindow: 200_000,
+  },
+  [AnthropicModel.CLAUDE_OPUS_4_20250514]: {
+    maxTokens: 4096,
+    contextWindow: 200_000,
+  },
+  [AnthropicModel.CLAUDE_SONNET_4_20250514]: {
     maxTokens: 4096,
     contextWindow: 200_000,
   },
