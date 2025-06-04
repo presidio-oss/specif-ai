@@ -7,6 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import confetti from 'canvas-confetti';
 import mermaid from 'mermaid';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
@@ -64,7 +65,11 @@ import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { McpServersListComponent } from '../../components/mcp/mcp-servers-list/mcp-servers-list.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
+import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
+import { SolutionCreationProgressComponent } from '../../components/solution-creation-progress/solution-creation-progress.component';
 import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
+import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
+import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 
 @Component({
   selector: 'app-info',
@@ -85,6 +90,8 @@ import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
     NgForOf,
     McpServersListComponent,
     McpIntegrationConfiguratorComponent,
+    ThinkingProcessComponent,
+    SolutionCreationProgressComponent,
   ],
   providers: [
     provideIcons({
@@ -157,6 +164,23 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
+  solutionCreationProgress: WorkflowProgressEvent[] = [];
+  isCreatingSolution: boolean = false;
+  solutionCreationComplete: boolean = false;
+  solutionCreationStatus$ = this.store.select(ProjectsState.getSolutionCreationStatus);
+  
+  private workflowProgressListener = (
+    _: any,
+    data: WorkflowProgressEvent,
+  ) => {
+      if (this.projectId) {
+        this.workflowProgressService.addProgressEvent(
+          this.projectId,
+          WorkflowType.Solution,
+          data
+        );
+      }
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -166,6 +190,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private electronService: ElectronService,
     private featureService: FeatureService,
     private logger: NGXLogger,
+    private workflowProgressService: WorkflowProgressService,
   ) {
     const navigation = this.router.getCurrentNavigation();
     this.appInfo = navigation?.extras?.state?.['data'];
@@ -184,6 +209,22 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       this.isBedrockConfigPresent =
         this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
     });
+
+    if (this.projectId) {
+      this.solutionCreationStatus$.subscribe((getSolutionStatus) => {
+        const status = getSolutionStatus(this.projectId!);
+        
+        const wasCreating = this.isCreatingSolution;
+        this.isCreatingSolution = status.isCreating;
+        this.solutionCreationComplete = status.isComplete;
+        
+        if (wasCreating && !status.isCreating && status.isComplete) {
+          this.store.dispatch(new GetProjectFiles(this.projectId as string));
+          this.triggerSuccessConfetti();
+          this.clearSolutionProgress();
+        }
+      });
+    }
     this.store
       .select(ProjectsState.getProjects)
       .pipe(first())
@@ -311,6 +352,26 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.isBedrockConnected && this.bedrockForm.disable();
 
     this.initMcpForm();
+
+    if (this.projectId) {
+      this.solutionCreationProgress = this.workflowProgressService.getProgressEvents(
+        this.projectId,
+        WorkflowType.Solution
+      );
+
+      this.workflowProgressService
+        .getProgressEvents$(this.projectId, WorkflowType.Solution)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((events) => {
+          this.solutionCreationProgress = events;
+        });
+
+      this.electronService.listenWorkflowProgress(
+        WorkflowType.Solution,
+        this.projectId,
+        this.workflowProgressListener,
+      );
+    }
   }
 
   isTokenValid(): boolean {
@@ -714,7 +775,87 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       });
   }
 
+
+  clearSolutionProgress(): void {
+    if (this.projectId) {
+      this.workflowProgressService.clearProgressEvents(
+        this.projectId,
+        WorkflowType.Solution
+      );
+      this.logger.debug('Solution creation progress cleared for project:', this.projectId);
+    }
+  }
+
+  private triggerSuccessConfetti(): void {
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { x: 0.5, y: 0.6 },
+      colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42'],
+      shapes: ['circle', 'square'],
+      scalar: 1.2,
+      gravity: 0.8,
+      drift: 0.2,
+      ticks: 300,
+      startVelocity: 45,
+    });
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 80,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.65 },
+        colors: ['#ff5e7e', '#a25afd', '#fcff42'],
+        shapes: ['star'],
+        scalar: 1.2,
+        gravity: 0.6,
+        drift: 0.2,
+        ticks: 300,
+        startVelocity: 35,
+      });
+
+      confetti({
+        particleCount: 80,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.65 },
+        colors: ['#26ccff', '#88ff5a', '#fcff42'],
+        shapes: ['star'],
+        scalar: 1.2,
+        gravity: 0.6,
+        drift: 0.2,
+        ticks: 300,
+        startVelocity: 35,
+      });
+    }, 250);
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 120,
+        spread: 180,
+        origin: { x: 0.5, y: 0.3 },
+        colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42'],
+        shapes: ['circle', 'square', 'star'],
+        scalar: 0.9,
+        gravity: 0.8,
+        drift: 0.1,
+        ticks: 400,
+        decay: 0.94,
+        startVelocity: 30,
+      });
+    }, 500);
+  }
+
   ngOnDestroy() {
+    if (this.projectId) {
+      this.electronService.removeWorkflowProgressListener(
+        WorkflowType.Solution,
+        this.projectId,
+        this.workflowProgressListener,
+      );
+    }
+
     this.destroy$.next(true);
     this.destroy$.complete();
   }

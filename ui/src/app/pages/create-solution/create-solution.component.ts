@@ -1,5 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, NgZone } from '@angular/core';
-import confetti from 'canvas-confetti';
+import { Component, inject, OnInit, NgZone } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -35,8 +34,7 @@ import { provideIcons } from '@ng-icons/core';
 import { heroChevronDown } from '@ng-icons/heroicons/outline';
 import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
-import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
-import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
+
 
 @Component({
   selector: 'app-create-solution',
@@ -56,15 +54,13 @@ import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/work
     AppSliderComponent,
     CustomAccordionComponent,
     McpIntegrationConfiguratorComponent,
-    ThinkingProcessComponent
   ],
   viewProviders: [provideIcons({ heroChevronDown })],
 })
-export class CreateSolutionComponent implements OnInit, OnDestroy {
+export class CreateSolutionComponent implements OnInit {
   solutionForm!: FormGroup;
   loading: boolean = false;
   addOrUpdate: boolean = false;
-  solutionCreationProgress: WorkflowProgressEvent[] = [];
   
   logger = inject(NGXLogger);
   appSystemService = inject(AppSystemService);
@@ -74,15 +70,6 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
   router = inject(Router);
   store = inject(Store);
   zone = inject(NgZone);
-
-  private workflowProgressListener = (
-    event: any,
-    data: WorkflowProgressEvent,
-  ) => {
-    this.zone.run(() => {
-      this.solutionCreationProgress = [...this.solutionCreationProgress, data];
-    });
-  };
 
   ngOnInit() {
     this.solutionForm = this.createSolutionForm();
@@ -94,26 +81,6 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
         },
       ]),
     );
-
-    const solutionId = this.solutionForm.get('id')?.value;
-    if (solutionId) {
-      this.electronService.listenWorkflowProgress(
-        WorkflowType.Solution,
-        solutionId,
-        this.workflowProgressListener,
-      );
-    }
-  }
-
-  ngOnDestroy() {
-    const solutionId = this.solutionForm.get('id')?.value;
-    if (solutionId) {
-      this.electronService.removeWorkflowProgressListener(
-        WorkflowType.Solution,
-        solutionId,
-        this.workflowProgressListener,
-      );
-    }
   }
 
   showGenerationPreferencesTab(): boolean {
@@ -204,7 +171,6 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
 
       this.store.dispatch(new CreateProject(data.name, data)).subscribe({
         next: () => {
-          this.triggerSuccessConfetti();
           this.toast.showSuccess('All set! Your solution is ready to roll.');
         },
         error: (error) => {
@@ -262,67 +228,6 @@ export class CreateSolutionComponent implements OnInit, OnDestroy {
   }
 
   protected readonly FormControl = FormControl;
-
-  private triggerSuccessConfetti(): void {
-    confetti({
-      particleCount: 150,
-      spread: 100,
-      origin: { x: 0.5, y: 0.6 },
-      colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42'],
-      shapes: ['circle', 'square'],
-      scalar: 1.2,
-      gravity: 0.8,
-      drift: 0.2,
-      ticks: 300,
-      startVelocity: 45,
-    });
-
-    setTimeout(() => {
-      confetti({
-        particleCount: 80,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0, y: 0.65 },
-        colors: ['#ff5e7e', '#a25afd', '#fcff42'],
-        shapes: ['star'],
-        scalar: 1.2,
-        gravity: 0.6,
-        drift: 0.2,
-        ticks: 300,
-        startVelocity: 35,
-      });
-
-      confetti({
-        particleCount: 80,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1, y: 0.65 },
-        colors: ['#26ccff', '#88ff5a', '#fcff42'],
-        shapes: ['star'],
-        scalar: 1.2,
-        gravity: 0.6,
-        drift: 0.2,
-        ticks: 300,
-        startVelocity: 35,
-      });
-    }, 250);
-
-    setTimeout(() => {
-      confetti({
-        particleCount: 120,
-        spread: 180,
-        origin: { x: 0.5, y: 0.3 },
-        colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42'],
-        shapes: ['circle', 'square', 'star'],
-        scalar: 0.9,
-        gravity: 0.8,
-        drift: 0.1,
-        ticks: 400,
-        decay: 0.94,
-        startVelocity: 30,
-      });
-    }, 500);
-  }
 
   get isMcpSettingsInvalid(): boolean {
     const field = this.solutionForm?.get('mcpSettings');
