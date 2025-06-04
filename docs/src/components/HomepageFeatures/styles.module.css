@@ -149,7 +149,11 @@
   .features-section > div {
     gap: 1.5rem;
   }
-  
+
+  .feature-section__column {
+    margin: 1rem;
+  }
+
   .feature-card {
     padding: 2rem;
   }

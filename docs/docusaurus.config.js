@@ -1,7 +1,10 @@
 // @ts-check
 const config = {
   title: 'Specifai',
-  tagline: 'Accelerate your SDLC process with AI-powered intelligence. From ideas to actionable tasks in minutes.',
+  tagline: 'Accelerate your SDLC process with AI-powered intelligence.',
+  customFields: {
+    subTagline: 'From ideas to actionable tasks in minutes.',
+  },
   url: 'https://specifai.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',

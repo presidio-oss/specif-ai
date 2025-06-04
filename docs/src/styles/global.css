@@ -121,9 +121,9 @@
   --hero-button-secondary-border: #818CF8;
   --hero-button-secondary-hover-bg: rgba(129, 140, 248, 0.1);
   --hero-button-secondary-hover-text: #A5B4FC;
-  --hero-button-shine: rgba(255, 255, 255, 0.15);
-  --hero-image-glow-start: #6366F1;
-  --hero-image-glow-end: #818CF8;
+  --hero-button-shine: rgba(255, 255, 255, 0.15); 
+  --hero-image-glow-start: #bd34fe;
+  --hero-image-glow-end: #47caff;
 
   /* Feature cards - dark mode */
   --feature-bg: #0D1117;

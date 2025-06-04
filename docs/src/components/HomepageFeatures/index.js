@@ -82,7 +82,7 @@ const FeatureList = [
 
 function Feature({ title, description, icon }) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx('col col--4', styles['feature-section__column'])}>
       <div className={styles['feature-card']}>
         <div className={styles['feature-card__shine']}></div>
         <div className='text--center'>

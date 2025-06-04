@@ -20,14 +20,22 @@
 .hero-banner__gradient--top {
   top: 0;
   right: 0;
-  background: radial-gradient(circle at top right, var(--hero-gradient-top-color), transparent 60%);
+  background: radial-gradient(
+    circle at top right,
+    var(--hero-gradient-top-color),
+    transparent 60%
+  );
   opacity: 0.6;
 }
 
 .hero-banner__gradient--bottom {
   top: 0;
   right: 0;
-  background: radial-gradient(circle at bottom right, var(--hero-gradient-bottom-color), transparent 60%);
+  background: radial-gradient(
+    circle at bottom right,
+    var(--hero-gradient-bottom-color),
+    transparent 60%
+  );
   opacity: 0.4;
 }
 
@@ -35,6 +43,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-direction: row-reverse;
   gap: 4rem;
   position: relative;
   z-index: 1;
@@ -48,40 +57,45 @@
 
 .hero-banner__product-name {
   font-size: 5rem;
-  margin-bottom: 0;
+  margin-bottom: 0.75rem;
   font-family: var(--ifm-font-family-base);
   font-weight: 800;
   letter-spacing: -1.5px;
   line-height: 1;
-  background: linear-gradient(to right, var(--hero-product-name-gradient-start), var(--hero-product-name-gradient-end));
+  background: linear-gradient(
+    to right,
+    var(--hero-product-name-gradient-start),
+    var(--hero-product-name-gradient-end)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   opacity: 0;
   transform: translateY(-40px);
-  animation: slideInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: slideInDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .hero-banner__title {
   font-size: 2.2rem;
   margin-top: 0.75rem;
   margin-bottom: 1rem;
-  color: var(--hero-text-color, #1F2937);
+  color: var(--hero-text-color, #1f2937);
   font-family: var(--ifm-font-family-base);
   font-weight: 800;
   letter-spacing: -1.5px;
   line-height: 1.2;
+  animation: slideInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
 }
 
 .hero-banner__description {
   font-size: 1.4rem;
   line-height: 1.5;
-  color: var(--hero-subtitle-color, #4B5563);
+  color: var(--hero-subtitle-color, #4b5563);
   font-family: var(--ifm-font-family-base);
   font-weight: 400;
   max-width: 540px;
   opacity: 0;
   transform: translateY(40px);
-  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+  animation: slideInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
 }
 
 .hero-banner__buttons {
@@ -91,7 +105,7 @@
   margin-top: 2rem;
   opacity: 0;
   transform: translateY(40px);
-  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+  animation: slideInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
 }
 
 .hero-banner__button {
@@ -166,22 +180,33 @@
 
 .hero-banner__image-glow {
   position: absolute;
-  width: 25vw;
-  height: 25vw;
   border-radius: 50%;
-  background-image: linear-gradient(-45deg, var(--hero-image-glow-start) 50%, var(--hero-image-glow-end) 50%);
+  background-image: linear-gradient(
+    -45deg,
+    var(--hero-image-glow-start) 50%,
+    var(--hero-image-glow-end) 50%
+  );
   opacity: 0.8;
   z-index: 0;
   filter: blur(68px);
 }
 
 .hero-banner__image {
-  max-width: 320px;
   height: auto;
   position: relative;
   z-index: 1;
   filter: drop-shadow(0 0 30px var(--ifm-color-primary-dark));
   transition: filter 0.3s ease;
+}
+
+.hero-banner__image-glow {
+  width: 340px;
+  height: 340px;
+}
+
+.hero-banner__image {
+  width: 320px;
+  height: auto;
 }
 
 .hero-banner__image:hover {
@@ -226,16 +251,22 @@
 @media screen and (max-width: 996px) {
   .hero-banner__content {
     flex-direction: column;
-    gap: 2rem;
+    gap: 5rem;
+    padding-top: 2rem;
   }
 
-  .hero-banner__text {
+  .hero-banner__text, .hero-banner__description {
     text-align: center;
     max-width: 100%;
   }
 
   .hero-banner__buttons {
     justify-content: center;
+  }
+
+  .hero-banner__buttons .hero-banner__button {
+    line-height: 1.2;
+    padding: 1rem;
   }
 
   .hero-banner {
@@ -247,6 +278,16 @@
     max-width: 500px;
     margin: 0 auto;
   }
+
+  .hero-banner__image-glow {
+    width: 256px;
+    height: 256px;
+  }
+
+  .hero-banner__image {
+    width: 240px;
+    height: auto;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -254,7 +295,30 @@
     padding: 1.5rem;
   }
 
+  .hero-banner__product-name {
+    font-size: 4rem;
+  }
+
+  .hero-banner__title {
+    font-size: 1.8rem;
+  }
+
+  .hero-banner__description {
+    font-size: 1.2rem;
+  }
+
   .hero-banner__image-wrapper {
     max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .hero-banner__buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .hero-banner__buttons .hero-banner__button {
+    width: 80%;
+    text-align: center;
   }
 }

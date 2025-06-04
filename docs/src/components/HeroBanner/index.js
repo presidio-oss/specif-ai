@@ -10,15 +10,23 @@ export default function HeroBanner() {
     <header className={clsx('hero hero--primary', styles['hero-banner'])}>
       <div className="container">
         <div className={styles['hero-banner__content']}>
+          <div className={styles['hero-banner__image-wrapper']}>
+            <div className={styles['hero-banner__image-glow']}></div>
+            <img 
+              src="/img/hai-human-ai-logo.svg"
+              alt="HAI Human-AI Logo"
+              className={styles['hero-banner__image']}
+            />
+          </div>
           <div className={styles['hero-banner__text']}>
             <h1>
-              <span className={styles['hero-banner__product-name']}>{siteConfig.title}</span>
+              <div className={styles['hero-banner__product-name']}>{siteConfig.title}</div>
               <div className={styles['hero-banner__title']}>
                 {siteConfig.tagline}
               </div>
             </h1>
             <p className={styles['hero-banner__description']}>
-              {siteConfig.description}
+              {siteConfig.customFields.subTagline}
             </p>
             <div className={styles['hero-banner__buttons']}>
               <Link
@@ -37,14 +45,7 @@ export default function HeroBanner() {
               </Link>
             </div>
           </div>
-          <div className={styles['hero-banner__image-wrapper']}>
-            <div className={styles['hero-banner__image-glow']}></div>
-            <img 
-              src={require('@site/static/img/hai-human-ai-logo.png').default} 
-              alt="HAI Human-AI Logo"
-              className={styles['hero-banner__image']}
-            />
-          </div>
+          
         </div>
       </div>
     </header>
