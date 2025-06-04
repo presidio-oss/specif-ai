@@ -109,7 +109,7 @@ export default function Home() {
       title={siteConfig.title}
       description="Accelerate your SDLC process with AI-powered intelligence">
       <HomepageHeader />
-      <main>
+      <main className={styles['main-content']}>
         <HomepageFeatures />
       </main>
       <BackToTopButton />

@@ -2,6 +2,9 @@
  * Hero banner styles
  * Main landing page hero section with animations and interactions
  */
+.main-content {
+  padding: 0;
+}
 
 .hero-banner {
   padding: 4rem 0;

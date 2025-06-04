@@ -37,6 +37,7 @@
   background: var(--feature-bg);
   position: relative;
   overflow: hidden;
+  margin: 0;
 }
 
 .features-section__border {
