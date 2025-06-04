@@ -3,32 +3,6 @@
  * Homepage feature section with interactive cards and animations
  */
 
-:root {
-  --feature-bg: #F8FAFC;
-  --card-bg: rgba(255, 255, 255, 0.9);
-  --card-border: rgba(124, 58, 237, 0.2);
-  --card-shadow: rgba(124, 58, 237, 0.1);
-  --title-color: #1E293B;
-  --desc-color: #475569;
-  --shine-color: rgba(124, 58, 237, 0.1);
-  --hover-shadow: rgba(124, 58, 237, 0.15);
-  --hover-border: rgba(124, 58, 237, 0.4);
-  --hover-bg: rgba(255, 255, 255, 1);
-}
-
-[data-theme='dark'] {
-  --feature-bg: #0D1117;
-  --card-bg: rgba(30, 41, 59, 0.7);
-  --card-border: rgba(124, 58, 237, 0.6);
-  --card-shadow: rgba(124, 58, 237, 0.5);
-  --title-color: #fff;
-  --desc-color: #CBD5E1;
-  --shine-color: rgba(255, 255, 255, 0.2);
-  --hover-shadow: rgba(124, 58, 237, 0.9);
-  --hover-border: rgba(124, 58, 237, 1);
-  --hover-bg: rgba(30, 41, 59, 0.9);
-}
-
 .features-section {
   display: flex;
   align-items: center;

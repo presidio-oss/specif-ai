@@ -1,14 +1,12 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Global styles and theme variables
  */
 
 /* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* Custom properties for enhanced UI */
+/* Theme variables */
 :root {
   --ifm-color-primary: #4f46e5;
   --ifm-color-primary-dark: #4338ca;
@@ -25,6 +23,8 @@
   --ifm-spacing-horizontal: 2rem;
   --ifm-leading: 2;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  
+  /* Component variables */
   --feature-card-bg: #ffffff;
   --feature-card-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   --hero-text-color: #1e1b4b;
@@ -40,9 +40,43 @@
   --button-hover-shadow: rgba(79, 70, 229, 0.2);
   --navbar-background: rgba(248, 250, 252, 0.9);
   --navbar-border: rgba(229, 231, 235, 0.5);
+  
+  /* Back to top button */
+  --back-to-top-text-color: white;
+  --back-to-top-shadow-color: rgba(0, 0, 0, 0.15);
+  --back-to-top-shadow-color-hover: rgba(0, 0, 0, 0.2);
+
+  /* Hero banner gradients */
+  --hero-gradient-top-color: #E0E7FF;
+  --hero-gradient-bottom-color: #C7D2FE;
+  --hero-product-name-gradient-start: #818CF8;
+  --hero-product-name-gradient-end: #6366F1;
+  --hero-button-primary-bg: #6366F1;
+  --hero-button-primary-border: #4F46E5;
+  --hero-button-primary-text: white;
+  --hero-button-primary-hover-bg: #4F46E5;
+  --hero-button-secondary-text: #6366F1;
+  --hero-button-secondary-border: #6366F1;
+  --hero-button-secondary-hover-bg: rgba(99, 102, 241, 0.1);
+  --hero-button-secondary-hover-text: #4F46E5;
+  --hero-button-shine: rgba(255, 255, 255, 0.2);
+  --hero-image-glow-start: #bd34fe;
+  --hero-image-glow-end: #47caff;
+
+  /* Feature cards */
+  --feature-bg: #F8FAFC;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border: rgba(124, 58, 237, 0.2);
+  --card-shadow: rgba(124, 58, 237, 0.1);
+  --title-color: #1E293B;
+  --desc-color: #475569;
+  --shine-color: rgba(124, 58, 237, 0.1);
+  --hover-shadow: rgba(124, 58, 237, 0.15);
+  --hover-border: rgba(124, 58, 237, 0.4);
+  --hover-bg: rgba(255, 255, 255, 1);
 }
 
-/* Dark mode enhancements */
+/* Dark mode theme */
 [data-theme='dark'] {
   --ifm-color-primary: #818cf8;
   --ifm-color-primary-dark: #6366f1;
@@ -68,8 +102,53 @@
   --button-hover-shadow: rgba(79, 70, 229, 0.3);
   --navbar-background: rgba(13, 17, 23, 0.9);
   --navbar-border: rgba(255, 255, 255, 0.05);
+  
+  /* Back to top button */
+  --back-to-top-text-color: white;
+  --back-to-top-shadow-color: rgba(0, 0, 0, 0.3);
+  --back-to-top-shadow-color-hover: rgba(0, 0, 0, 0.4);
+
+  /* Hero banner gradients - dark mode */
+  --hero-gradient-top-color: #4F46E5;
+  --hero-gradient-bottom-color: #6366F1;
+  --hero-product-name-gradient-start: #A5B4FC;
+  --hero-product-name-gradient-end: #818CF8;
+  --hero-button-primary-bg: #818CF8;
+  --hero-button-primary-border: #6366F1;
+  --hero-button-primary-text: white;
+  --hero-button-primary-hover-bg: #6366F1;
+  --hero-button-secondary-text: #818CF8;
+  --hero-button-secondary-border: #818CF8;
+  --hero-button-secondary-hover-bg: rgba(129, 140, 248, 0.1);
+  --hero-button-secondary-hover-text: #A5B4FC;
+  --hero-button-shine: rgba(255, 255, 255, 0.15);
+  --hero-image-glow-start: #6366F1;
+  --hero-image-glow-end: #818CF8;
+
+  /* Feature cards - dark mode */
+  --feature-bg: #0D1117;
+  --card-bg: rgba(30, 41, 59, 0.7);
+  --card-border: rgba(124, 58, 237, 0.6);
+  --card-shadow: rgba(124, 58, 237, 0.5);
+  --title-color: #fff;
+  --desc-color: #CBD5E1;
+  --shine-color: rgba(255, 255, 255, 0.2);
+  --hover-shadow: rgba(124, 58, 237, 0.9);
+  --hover-border: rgba(124, 58, 237, 1);
+  --hover-bg: rgba(30, 41, 59, 0.9);
 }
 
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography */
 .markdown {
   --ifm-heading-margin-top: 1.5rem;
   --ifm-heading-margin-bottom: 1rem;
@@ -81,183 +160,31 @@
   --ifm-h2-vertical-rhythm-bottom: 0.5rem;
   --ifm-h3-vertical-rhythm-bottom: 0.3rem;
   --ifm-code-font-size: 0.95rem;
-  --ifm-code-padding: 0.5rem 0.75rem;  
+  --ifm-code-padding: 0.5rem 0.75rem;
 }
 
-
-/* Hero Block */
-/* Base typography improvements */
-/* p {
-  margin-bottom: 1rem !important;
-  line-height: 1.8;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  margin: 2rem 0 1.5rem;
-  margin-bottom: 0.5rem !important;
-}
-
-h1 {
-  font-size: 2.5rem;
-  margin-top: 2rem !important;
-}
-
-h2 {
-  font-size: 2rem;
-  margin-top: 1.5rem !important;
-}
-
-h3 {
-  font-size: 1.25rem !important;
-}
-
-h4, h5, h6 {
-  font-size: 1rem !important;
-}
-
-/* List spacing improvements */
-/*ul, ol {
-  padding-left: 2.5rem;
-  margin: 1rem 0 !important;
-}
-
-li {
-  margin-bottom: 0.5rem 0 !important;
-  line-height: 1.6 !important;
-}
-
-li > ul, li > ol {
-  margin: 0.5rem 0 !important;
-  padding-left: 2rem;
-} */
-
-/* Content section spacing */
+/* Layout */
 .container {
   padding: 2rem var(--ifm-spacing-horizontal);
 }
 
-/* Main content spacing */
 main {
   padding: 1.5rem 0;
 }
 
-/* Section spacing */
 section {
   margin: 2.5rem 0;
 }
 
-/* Content block spacing */
 .content {
   margin-bottom: 2rem;
 }
 
-
-
-/* Article spacing */
 article {
   margin-bottom: 2rem;
 }
 
-.hero {
-  position: relative;
-  background: var(--hero-background);
-  color: var(--hero-text-color);
-  padding: 8rem 0;
-  overflow: hidden;
-  font-family: var(--ifm-font-family-base);
-}
-
-.hero__gradient {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.hero__gradient--top {
-  top: 0;
-  right: 0;
-  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent 60%);
-}
-
-.hero__gradient--bottom {
-  bottom: 0;
-  left: 0;
-  background: radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.05), transparent 60%);
-}
-
-.hero__title {
-  font-size: 4rem;
-  font-weight: 800;
-  letter-spacing: -1px;
-  margin-bottom: 1.5rem;
-  position: relative;
-  z-index: 1;
-  color: var(--hero-text-color);
-  font-family: var(--ifm-font-family-base);
-  line-height: 1.1;
-  background: linear-gradient(to right, var(--ifm-color-primary), var(--ifm-color-primary-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.2));
-}
-
-.hero__subtitle {
-  font-size: 1.8rem;
-  line-height: 1.4;
-  margin-bottom: 2.5rem;
-  max-width: 600px;
-  color: var(--hero-subtitle-color);
-  font-family: var(--ifm-font-family-base);
-  font-weight: 600;
-  transform: translateY(40px);
-  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
-}
-
-/* Button Block */
-.button {
-  position: relative;
-  overflow: hidden;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.button--secondary {
-  background-color: var(--button-background);
-  color: var(--ifm-color-primary-lighter);
-  border: none;
-  padding: 1rem 2rem;
-  box-shadow: 0 4px 14px var(--button-shadow);
-}
-
-.button--secondary:hover {
-  background-color: var(--button-hover-background);
-  color: var(--button-text-color);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--button-hover-shadow);
-}
-
-.button__ripple {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 120%;
-  height: 120%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%) scale(0);
-  border-radius: 50%;
-  transition: transform 0.5s;
-}
-
-.button--secondary:active .button__ripple {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 0;
-}
-
-/* Enhanced navigation */
+/* Navigation */
 .navbar {
   backdrop-filter: blur(10px);
   background-color: var(--navbar-background);
@@ -279,11 +206,7 @@ article {
   color: var(--ifm-color-primary);
 }
 
-[data-theme='dark'] .navbar__link:hover {
-  color: var(--ifm-color-primary-light);
-}
-
-/* Footer enhancements */
+/* Footer */
 .footer {
   background: var(--footer-background);
   padding: 4rem 0;
@@ -291,7 +214,6 @@ article {
 }
 
 [data-theme='dark'] .footer {
-  background: var(--footer-background);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -311,25 +233,16 @@ article {
   text-decoration: none;
 }
 
-[data-theme='dark'] .footer__link-item:hover {
-  color: var(--ifm-color-primary-light);
-}
-
 .footer__copyright {
   color: var(--hero-text-color);
   opacity: 0.7;
 }
 
-/* Code block improvements */
+/* Code blocks */
 .prism-code {
   font-size: 0.9rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
 }
 
 /* Back to top button */
@@ -364,56 +277,11 @@ html {
 }
 
 /* Responsive design */
-/* Table improvements */
-table {
-  margin: 2rem 0;
-  border-spacing: 0;
-  border-collapse: collapse;
-}
-
-td, th {
-  padding: 1rem;
-}
-
-/* Code block spacing */
-pre {
-  margin: 2rem 0;
-  padding: 1.5rem;
-}
-
-/* Blockquote spacing */
-blockquote {
-  margin: 2rem 0;
-  padding: 1rem 2rem;
-  border-left: 4px solid var(--ifm-color-primary);
-  background: var(--hero-gradient-start);
-}
-
-/* Horizontal rule spacing */
-hr {
-  margin: 3rem 0;
-}
-
 @media screen and (max-width: 996px) {
-  .hero__title {
-    font-size: 2.5rem;
+  .container {
+    padding: 1.5rem var(--ifm-spacing-horizontal);
   }
-
-  .hero__subtitle {
-    font-size: 1.2rem;
-    padding: 0 1rem;
-  }
-
-  .hero {
-    padding: 2rem 0;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .hero__title {
-    font-size: 2rem;
-  }
-
+  
   .back-to-top {
     bottom: 10px;
     right: 10px;

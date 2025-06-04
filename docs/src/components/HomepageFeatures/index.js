@@ -1,6 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import styles from './feature-cards.module.css';
+import styles from './styles.module.css';
 
 const FeatureList = [
   {

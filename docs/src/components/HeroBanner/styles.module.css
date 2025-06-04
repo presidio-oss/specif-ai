@@ -2,10 +2,6 @@
  * Hero banner styles
  * Main landing page hero section with animations and interactions
  */
-.main-content {
-  padding: 0;
-}
-
 .hero-banner {
   padding: 4rem 0;
   position: relative;
@@ -24,14 +20,14 @@
 .hero-banner__gradient--top {
   top: 0;
   right: 0;
-  background: radial-gradient(circle at top right, #E0E7FF, transparent 60%);
+  background: radial-gradient(circle at top right, var(--hero-gradient-top-color), transparent 60%);
   opacity: 0.6;
 }
 
 .hero-banner__gradient--bottom {
   top: 0;
   right: 0;
-  background: radial-gradient(circle at bottom right, #C7D2FE, transparent 60%);
+  background: radial-gradient(circle at bottom right, var(--hero-gradient-bottom-color), transparent 60%);
   opacity: 0.4;
 }
 
@@ -57,7 +53,7 @@
   font-weight: 800;
   letter-spacing: -1.5px;
   line-height: 1;
-  background: linear-gradient(to right, #818CF8, #6366F1);
+  background: linear-gradient(to right, var(--hero-product-name-gradient-start), var(--hero-product-name-gradient-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   opacity: 0;
@@ -111,28 +107,28 @@
 }
 
 .hero-banner__button--primary {
-  background: #6366F1;
-  color: white;
-  border: 1px solid #4F46E5;
+  background: var(--hero-button-primary-bg);
+  color: var(--hero-button-primary-text);
+  border: 1px solid var(--hero-button-primary-border);
 }
 
 .hero-banner__button--primary:hover {
-  background: #4F46E5;
-  color: white;
+  background: var(--hero-button-primary-hover-bg);
+  color: var(--hero-button-primary-text);
   text-decoration: none;
   transform: translateY(-2px);
 }
 
 .hero-banner__button--secondary {
   background: transparent;
-  color: #6366F1;
-  border: 1px solid #6366F1;
+  color: var(--hero-button-secondary-text);
+  border: 1px solid var(--hero-button-secondary-border);
 }
 
 .hero-banner__button--secondary:hover {
-  background: rgba(99, 102, 241, 0.1);
-  color: #4F46E5;
-  border-color: #4F46E5;
+  background: var(--hero-button-secondary-hover-bg);
+  color: var(--hero-button-secondary-hover-text);
+  border-color: var(--hero-button-secondary-hover-text);
   text-decoration: none;
   transform: translateY(-2px);
 }
@@ -146,7 +142,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    var(--hero-button-shine),
     transparent
   );
   transition: 0.5s;
@@ -173,7 +169,7 @@
   width: 25vw;
   height: 25vw;
   border-radius: 50%;
-  background-image: linear-gradient(-45deg, #bd34fe 50%, #47caff 50%);;
+  background-image: linear-gradient(-45deg, var(--hero-image-glow-start) 50%, var(--hero-image-glow-end) 50%);
   opacity: 0.8;
   z-index: 0;
   filter: blur(68px);
