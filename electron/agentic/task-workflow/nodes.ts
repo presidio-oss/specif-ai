@@ -1,6 +1,8 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { BaseCheckpointSaver } from "@langchain/langgraph-checkpoint";
 import { z } from "zod";
+import { v4 as uuid } from "uuid";
+import { WorkflowEventsService } from "../../services/events/workflow-events.service";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { ITool } from "../common/types";
 import { buildReactAgent } from "../react-agent";
@@ -10,6 +12,8 @@ import { ITaskWorkflowStateAnnotation } from "./state";
 import { TaskWorkflowRunnableConfig } from "./types";
 import { createTaskResearchInformationPrompt } from "./prompts/research-information";
 import { createSummarizeTaskResearchPrompt } from "./prompts/summarize-research";
+
+const workflowEvents = new WorkflowEventsService("task");
 
 type BuildResearchNodeParams = {
   model: LangChainModelProvider;
@@ -32,16 +36,35 @@ export const buildResearchNode = ({
       name: "research",
     });
 
+    const researchCorrelationId = uuid();
+
     if (tools.length === 0) {
       const message = "No tools are passed so skipping research phase";
       span?.end({
         statusMessage: message,
       });
 
+      await workflowEvents.dispatchThinking(
+        "research",
+        {
+          title: "Skipping research phase - no tools available",
+        },
+        runnableConfig
+      );
+
       return {
         referenceInformation: "",
       };
     }
+
+    await workflowEvents.dispatchThinking(
+      "research",
+      {
+        title: "Researching relevant context for task generation",
+      },
+      runnableConfig,
+      researchCorrelationId
+    );
 
     const agent = buildReactAgent({
       model: model,
@@ -92,6 +115,16 @@ export const buildResearchNode = ({
       }
     );
 
+    await workflowEvents.dispatchAction(
+      "research",
+      {
+        title: "Research completed - context gathered for task generation",
+        output: response.structuredResponse.referenceInformation,
+      },
+      runnableConfig,
+      researchCorrelationId
+    );
+
     span?.end({
       statusMessage: "Research completed successfully!",
     });
@@ -116,7 +149,18 @@ export const buildGenerateTasksNode = (
       name: "generate-tasks",
     });
 
+    const generateCorrelationId = uuid();
+
     try {
+      await workflowEvents.dispatchThinking(
+        "generate-tasks",
+        {
+          title: "Generating detailed tasks based on requirements and context",
+        },
+        runnableConfig,
+        generateCorrelationId
+      );
+
       // Use existing createTaskPrompt
       const prompt = createTaskPrompt({
         name: state.name,
@@ -162,6 +206,19 @@ export const buildGenerateTasksNode = (
         throw new Error("Invalid response format from LLM");
       }
 
+      await workflowEvents.dispatchAction(
+        "generate-tasks",
+        {
+          title: `Successfully generated ${
+            parsedTasks.tasks?.length || 0
+          } tasks`,
+          input: prompt,
+          output: parsedTasks,
+        },
+        runnableConfig,
+        generateCorrelationId
+      );
+
       span?.end({
         statusMessage: "Successfully generated tasks",
       });
@@ -179,6 +236,15 @@ export const buildGenerateTasksNode = (
         level: "ERROR",
         statusMessage: message,
       });
+
+      await workflowEvents.dispatchAction(
+        "generate-tasks",
+        {
+          title: "Error occurred during task generation",
+        },
+        runnableConfig,
+        generateCorrelationId
+      );
 
       // Return current state to avoid breaking the workflow
       return {

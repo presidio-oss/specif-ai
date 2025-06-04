@@ -11,7 +11,7 @@ import { getMcpToolsForActiveProvider } from '../../../mcp';
 import { MCPHub } from '../../../mcp/mcp-hub';
 import { isLangfuseDetailedTracesEnabled } from '../../../services/observability/observability.util';
 
-export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
+export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
     const o11y = ObservabilityManager.getInstance();
@@ -77,7 +77,42 @@ export async function createStories(_: IpcMainInvokeEvent, data: unknown): Promi
       ...config,
     });
     
-    for await (const event of stream) {}
+    for await (const { event: evt, name, data, run_id } of stream) {
+      const channel = `story:${appId}-workflow-progress`;
+      const timestamp = Date.now();
+
+      switch (evt) {
+        case "on_tool_start":
+          event.sender.send(channel, {
+            node: "tools",
+            type: "mcp",
+            message: {
+              title: `Tool call started: ${name}`
+            },
+            correlationId: run_id,
+            timestamp,
+          });
+          break;
+
+        case "on_tool_end":
+          event.sender.send(channel, {
+            node: "tools_end",
+            type: "mcp",
+            message: {
+              title: `Tool call completed: ${name}`,
+              input: data?.input,
+              output: data?.output?.content,
+            },
+            timestamp,
+            correlationId: run_id,
+          });
+          break;
+
+        case "on_custom_event":
+          event.sender.send(channel, data);
+          break;
+      }
+    }
     
     const response = await userStoryWorkflow.getState({
       ...config

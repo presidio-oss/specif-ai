@@ -4,9 +4,15 @@ import { LangfuseObservationClient } from "../../types/o11y";
 export interface WorkflowProgressEvent {
   node: string;
   type: "thinking" | "action" | "mcp";
-  message: string;
+  message: WorkflowProgressEventData;
   timestamp: number;
 }
+
+type WorkflowProgressEventData = {
+  title: string;
+  input?: string;
+  output?: string | object;
+};
 
 export interface CreateSolutionWorkflowRunnableConfig extends LangGraphRunnableConfig {
   configurable?: {
