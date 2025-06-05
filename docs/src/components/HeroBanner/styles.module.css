@@ -1,0 +1,324 @@
+/**
+ * Hero banner styles
+ * Main landing page hero section with animations and interactions
+ */
+.hero-banner {
+  padding: 4rem 0;
+  position: relative;
+  overflow: hidden;
+  background: var(--ifm-background-color);
+  font-family: var(--ifm-font-family-base);
+}
+
+.hero-banner__gradient {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hero-banner__gradient--top {
+  top: 0;
+  right: 0;
+  background: radial-gradient(
+    circle at top right,
+    var(--hero-gradient-top-color),
+    transparent 60%
+  );
+  opacity: 0.6;
+}
+
+.hero-banner__gradient--bottom {
+  top: 0;
+  right: 0;
+  background: radial-gradient(
+    circle at bottom right,
+    var(--hero-gradient-bottom-color),
+    transparent 60%
+  );
+  opacity: 0.4;
+}
+
+.hero-banner__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row-reverse;
+  gap: 4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-banner__text {
+  flex: 1;
+  text-align: left;
+  max-width: 600px;
+}
+
+.hero-banner__product-name {
+  font-size: 5rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--ifm-font-family-base);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  background: linear-gradient(
+    to right,
+    var(--hero-product-name-gradient-start),
+    var(--hero-product-name-gradient-end)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+  transform: translateY(-40px);
+  animation: slideInDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.hero-banner__title {
+  font-size: 2.2rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+  color: var(--hero-text-color, #1f2937);
+  font-family: var(--ifm-font-family-base);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1.2;
+  animation: slideInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
+}
+
+.hero-banner__description {
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: var(--hero-subtitle-color, #4b5563);
+  font-family: var(--ifm-font-family-base);
+  font-weight: 400;
+  max-width: 540px;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: slideInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+}
+
+.hero-banner__buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: slideInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+}
+
+.hero-banner__button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 1rem 1.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  font-family: var(--ifm-font-family-base);
+  font-size: 1rem;
+}
+
+.hero-banner__button--primary {
+  background: var(--hero-button-primary-bg);
+  color: var(--hero-button-primary-text);
+  border: 1px solid var(--hero-button-primary-border);
+}
+
+.hero-banner__button--primary:hover {
+  background: var(--hero-button-primary-hover-bg);
+  color: var(--hero-button-primary-text);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.hero-banner__button--secondary {
+  background: transparent;
+  color: var(--hero-button-secondary-text);
+  border: 1px solid var(--hero-button-secondary-border);
+}
+
+.hero-banner__button--secondary:hover {
+  background: var(--hero-button-secondary-hover-bg);
+  color: var(--hero-button-secondary-hover-text);
+  border-color: var(--hero-button-secondary-hover-text);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.hero-banner__button-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--hero-button-shine),
+    transparent
+  );
+  transition: 0.5s;
+  pointer-events: none;
+}
+
+.hero-banner__button:hover .hero-banner__button-shine {
+  left: 100%;
+}
+
+.hero-banner__image-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  opacity: 0;
+  transform: translateX(40px);
+  animation: slideInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
+}
+
+.hero-banner__image-glow {
+  position: absolute;
+  border-radius: 50%;
+  background-image: linear-gradient(
+    -45deg,
+    var(--hero-image-glow-start) 50%,
+    var(--hero-image-glow-end) 50%
+  );
+  opacity: 0.8;
+  z-index: 0;
+  filter: blur(68px);
+}
+
+.hero-banner__image {
+  height: auto;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 30px var(--ifm-color-primary-dark));
+  transition: filter 0.3s ease;
+}
+
+.hero-banner__image-glow {
+  width: 340px;
+  height: 340px;
+}
+
+.hero-banner__image {
+  width: 320px;
+  height: auto;
+}
+
+.hero-banner__image:hover {
+  filter: drop-shadow(0 0 40px var(--ifm-color-primary));
+}
+
+/* Animations */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive design */
+@media screen and (max-width: 996px) {
+  .hero-banner__content {
+    flex-direction: column;
+    gap: 5rem;
+    padding-top: 2rem;
+  }
+
+  .hero-banner__text, .hero-banner__description {
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .hero-banner__buttons {
+    justify-content: center;
+  }
+
+  .hero-banner__buttons .hero-banner__button {
+    line-height: 1.2;
+    padding: 1rem;
+  }
+
+  .hero-banner {
+    padding: 2rem;
+  }
+
+  .hero-banner__image-wrapper {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .hero-banner__image-glow {
+    width: 256px;
+    height: 256px;
+  }
+
+  .hero-banner__image {
+    width: 240px;
+    height: auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .hero-banner {
+    padding: 1.5rem;
+  }
+
+  .hero-banner__product-name {
+    font-size: 4rem;
+  }
+
+  .hero-banner__title {
+    font-size: 1.8rem;
+  }
+
+  .hero-banner__description {
+    font-size: 1.2rem;
+  }
+
+  .hero-banner__image-wrapper {
+    max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .hero-banner__buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .hero-banner__buttons .hero-banner__button {
+    width: 80%;
+    text-align: center;
+  }
+}

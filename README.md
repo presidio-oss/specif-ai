@@ -189,7 +189,7 @@ The stories and tasks generated as part of the solutions can be used to create a
 - Automatic story and task creation in Jira.
 - Bulk export capabilities.
 
-For Jira setup instructions, please refer to our [Jira Setup Guide](/ui/JIRA-README.md).
+For Jira setup instructions, please refer to our [Jira Setup Guide](docs/JIRA-README.md).
 
 #### AWS Bedrock Knowledge Base
 The enterprise knowledge base is integrated with AI-powered chat to enhance suggestions and enable iterative conversations for Business Requirement Documents (BRDs), Product Requirement Documents (PRDs), Non-functional Requirements, User Stories, and Tasks. Features include: 

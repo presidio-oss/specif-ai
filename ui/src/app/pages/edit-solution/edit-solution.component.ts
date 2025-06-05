@@ -33,7 +33,7 @@ import { DialogService } from '../../services/dialog/dialog.service';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { MultiUploadComponent } from '../../components/multi-upload/multi-upload.component';
-import { provideIcons } from '@ng-icons/core';
+import { provideIcons, NgIconComponent } from '@ng-icons/core';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import {
   CONFIRMATION_DIALOG,
@@ -72,7 +72,8 @@ import { PillComponent } from "../../components/pill/pill.component";
     RichTextEditorComponent,
     CommonModule,
     CheckboxCardComponent,
-    PillComponent
+    PillComponent,
+    NgIconComponent
 ],
   providers: [
     provideIcons({

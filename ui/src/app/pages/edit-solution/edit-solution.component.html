@@ -178,9 +178,10 @@
             <ng-container
               [ngTemplateOutlet]="TabTrigger"
               [ngTemplateOutletContext]="{
-                label: 'Chat',
+                label: 'Talk to HAI',
                 isTabActive: activeTab === 'chat',
                 tabId: 'chat',
+                icon: 'heroSparklesSolid'
               }"
             ></ng-container>
           </ng-container>
@@ -200,6 +201,7 @@
             let-label="label"
             let-isTabActive="isTabActive"
             let-tabId="tabId"
+            let-icon="icon"
           >
             <button
               (click)="activeTab = tabId"
@@ -211,7 +213,11 @@
                   !isTabActive,
               }"
             >
-              {{ label }}
+              <span *ngIf="icon" class="flex items-center justify-center gap-2">
+                <ng-icon [name]="icon" class="text-lg"></ng-icon>
+                <span>{{ label }}</span>
+              </span>
+              <span *ngIf="!icon">{{ label }}</span>
             </button>
           </ng-template>
         </div>

@@ -5,20 +5,11 @@
   ]"
 >
   <!-- Fixed Header -->
-  <div
-    *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)"
-    class="border-b border-secondary-200 p-1.5"
-  >
-    <div
-      class="flex-none border border-secondary-300 bg-indigo-50 text-sm font-medium rounded-lg text-center py-2.5 border-secondary-300 bg-primary-50 text-primary-600"
-    >
-      <p
-        *ngIf="
-          !isKbAvailable && !['BP', 'PRD'].includes(requirementAbbrivation)
-        "
-        class="text-md font-medium"
-      >
-        AI Chat
+  <div *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)" class="border-b border-secondary-200 p-1.5">
+    <div class="flex-none border border-secondary-300 bg-indigo-50 text-sm font-medium rounded-lg text-center py-2.5 border-secondary-300 bg-primary-50 text-primary-600">
+      <p *ngIf="!isKbAvailable && !['BP', 'PRD'].includes(requirementAbbrivation)" class="text-md font-medium flex items-center justify-center gap-2">
+        <ng-icon name="heroSparklesSolid" class="text-lg"></ng-icon>
+        <span>Talk to HAI</span>
       </p>
       <div
         *ngIf="isKbAvailable"
