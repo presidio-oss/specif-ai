@@ -100,6 +100,14 @@ export interface ElectronAPI {
   removeFullscreenListener: () => void;
   getFullscreenState: () => Promise<boolean>;
   getPlatform: () => string;
+
+  // Content Generation Process Management
+  setStatus(type: string, isInProgress: boolean): Promise<void>;
+  getStatus(type: string): Promise<boolean>;
+  getActiveProcesses(): Promise<any[]>;
+  isAnyInProgress(): Promise<boolean>;
+  getActiveProcessNames(): Promise<string[]>;
+  clearAll(): Promise<void>;
 }
 
 declare global {

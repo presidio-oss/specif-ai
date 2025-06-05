@@ -166,13 +166,18 @@ export class CreateSolutionComponent implements OnInit {
       const data = this.solutionForm.getRawValue();
       data.createReqt = !data.cleanSolution;
 
+      await this.electronService.setContentGenerationStatus('solution', true);
       this.store.dispatch(new CreateProject(data.name, data)).subscribe({
-        next: () => {
-          this.toast.showSuccess('All set! Your solution is ready to roll.');
+        next: async () => {
+          this.toast.showSuccess(
+            `All set! Your ${data.name} solution is ready to roll.`,
+          );
+          await this.electronService.setContentGenerationStatus('solution', false);
         },
-        error: (error) => {
+        error: async (error) => {
           this.addOrUpdate = false;
           this.toast.showError(error.message);
+          await this.electronService.setContentGenerationStatus('solution', false);
         },
       });
     }

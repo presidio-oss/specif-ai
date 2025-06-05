@@ -75,6 +75,21 @@ const solutionListeners = {
     ipcRenderer.invoke("solution:createSolution", data),
 };
 
+const contentGenerationListeners = {
+  setStatus: (type: string, isInProgress: boolean) =>
+    ipcRenderer.invoke("content-generation:setStatus", type, isInProgress),
+  getStatus: (type: string) =>
+    ipcRenderer.invoke("content-generation:getStatus", type),
+  getActiveProcesses: () =>
+    ipcRenderer.invoke("content-generation:getActiveProcesses"),
+  isAnyInProgress: () =>
+    ipcRenderer.invoke("content-generation:isAnyInProgress"),
+  getActiveProcessNames: () =>
+    ipcRenderer.invoke("content-generation:getActiveProcessNames"),
+  clearAll: () =>
+    ipcRenderer.invoke("content-generation:clearAll"),
+};
+
 const appAutoUpdaterListeners = {
   checkForUpdates: () =>
     ipcRenderer.invoke("app-updater:check-for-updates"),
@@ -105,6 +120,7 @@ const electronAPI = {
   ...coreListeners,
   ...requirementListeners,
   ...solutionListeners,
+  ...contentGenerationListeners,
   ...visualizationListeners,
   ...featureListeners,
   ...appAutoUpdaterListeners,

@@ -8,6 +8,11 @@ import { setupRequirementHandlers } from "./handlers/requirement-handler";
 import { setupVisualizationHandlers } from "./handlers/visualization-handler";
 import { setupFeatureHandlers } from "./handlers/feature-handler";
 import { setupSolutionHandlers } from "./handlers/solution-handler";
+import {
+  setupContentGenerationHandlers,
+  isAnyContentGenerationInProgress,
+  getActiveContentGenerationProcessNames,
+} from "./handlers/content-generation-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
 import { setupMcpHandlers } from "./handlers/mcp-handler";
@@ -76,6 +81,18 @@ function createWindow(indexPath: string, themeConfiguration: any) {
         console.error("Failed to load welcome page:", error);
       });
   }
+
+  mainWindow.on("close", async (event) => {
+    if (isAnyContentGenerationInProgress()) {
+      event.preventDefault();
+
+      const shouldQuit = await confirmQuitDuringActiveProcesses();
+      if (shouldQuit) {
+        mainWindow = null;
+        app.exit(0);
+      }
+    }
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -190,6 +207,34 @@ function isValidUrl(url: string): boolean {
   }
 }
 
+async function confirmQuitDuringActiveProcesses(): Promise<boolean> {
+  const activeProcesses = getActiveContentGenerationProcessNames();
+
+  try {
+    const { dialog } = require("electron");
+    const processText =
+      activeProcesses.length === 1
+        ? activeProcesses[0]
+        : `${activeProcesses.length} processes (${activeProcesses.join(", ")})`;
+
+    const choice = await dialog.showMessageBox(mainWindow!, {
+      type: "warning",
+      buttons: ["Cancel", "Quit Anyway"],
+      defaultId: 0,
+      title: "Content Generation in Progress",
+      message: `${processText} ${
+        activeProcesses.length === 1 ? "is" : "are"
+      } currently in progress. Quitting now may result in incomplete or corrupted data.`,
+      detail: "Are you sure you want to quit?",
+    });
+
+    return choice.response === 1;
+  } catch (error) {
+    console.error("Error showing quit dialog:", error);
+    return false;
+  }
+}
+
 // ========================
 // MAIN APPLICATION LOGIC
 // ========================
@@ -213,6 +258,19 @@ app.whenReady().then(async () => {
 
   app.on("window-all-closed", () => app.quit());
 
+  app.on("before-quit", async (event) => {
+    console.log("App before quit...", isAnyContentGenerationInProgress());
+
+    if (isAnyContentGenerationInProgress()) {
+      event.preventDefault();
+
+      const shouldQuit = await confirmQuitDuringActiveProcesses();
+      if (shouldQuit) {
+        app.exit(0);
+      }
+    }
+  });
+
   if (mainWindow) {
     // Setup window event handlers
     setupWindowHandlers(mainWindow, indexPath);
@@ -227,6 +285,7 @@ app.whenReady().then(async () => {
     setupVisualizationHandlers();
     setupFeatureHandlers();
     setupSolutionHandlers();
+    setupContentGenerationHandlers();
     setupMcpHandlers();
 
     // start mcp servers in the background

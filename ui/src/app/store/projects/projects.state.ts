@@ -1,4 +1,7 @@
-import { IProject, ISolutionResponseRequirementItem } from '../../model/interfaces/projects.interface';
+import {
+  IProject,
+  ISolutionResponseRequirementItem,
+} from '../../model/interfaces/projects.interface';
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 import {
@@ -48,6 +51,12 @@ export class ProjectStateModel {
     bpIds: string[];
   };
   exportingData!: boolean;
+  solutionCreationStatus!: {
+    [projectId: string]: {
+      isCreating: boolean;
+      isComplete: boolean;
+    };
+  };
 }
 
 @State<ProjectStateModel>({
@@ -66,6 +75,7 @@ export class ProjectStateModel {
       bpIds: [],
     },
     exportingData: false,
+    solutionCreationStatus: {},
   },
 })
 @Injectable()
@@ -130,6 +140,11 @@ export class ProjectsState {
     return state.exportingData;
   }
 
+  @Selector()
+  static getSolutionCreationStatus(state: ProjectStateModel) {
+    return (projectId: string) => state.solutionCreationStatus[projectId] || { isCreating: false, isComplete: false };
+  }
+
   @Action(GetProjectListAction)
   async getProjectList({
     getState,
@@ -161,31 +176,39 @@ export class ProjectsState {
         throw new Error('Project already exists, please retry with another unique project name');
       }
 
-      const response = await this.solutionService.generateDocumentsFromLLM({
-        id: metadata.id,
-        createReqt: metadata.createReqt,
-        name: projectName,
-        description: metadata.description,
-        cleanSolution: metadata.cleanSolution,
-        brdPreferences: {
-          minCount: metadata.BRD.minCount,
-          isEnabled: metadata.BRD.enabled,
-        },
-        prdPreferences: {
-          minCount: metadata.PRD.minCount,
-          isEnabled: metadata.PRD.enabled,
-        },
-        uirPreferences: {
-          minCount: metadata.UIR.minCount,
-          isEnabled: metadata.UIR.enabled,
-        },
-        nfrPreferences: {
-          minCount: metadata.NFR.minCount,
-          isEnabled: metadata.NFR.enabled,
-        },
-        mcpSettings: metadata.mcpSettings
-      });
+      await this.appSystemService.createProject(metadata, projectName);
 
+      let projectList = [
+        ...state.projects,
+        {
+          project: projectName,
+          projectKey: metadata.jiraProjectKey,
+          metadata: {
+            ...metadata,
+          },
+        },
+      ];
+      const sortedProjectList = projectList.sort(
+        (a, b) =>
+          new Date(b.metadata.createdAt).getTime() -
+          new Date(a.metadata.createdAt).getTime(),
+      );
+
+      patchState({
+        ...state,
+        projects: sortedProjectList,
+        solutionCreationStatus: {
+          ...state.solutionCreationStatus,
+          [metadata.id]: {
+            isCreating: true,
+            isComplete: false,
+          },
+        },
+      });
+      
+      this.router.navigate([`apps/${metadata.id}`]);
+
+      const response = await this.generateSolution(metadata, projectName);
       const responseMap = {
         [REQUIREMENT_TYPE.BRD]: response?.brd?.length || 0,
         [REQUIREMENT_TYPE.PRD]: response?.prd?.length || 0,
@@ -209,64 +232,85 @@ export class ProjectsState {
         ),
       };
 
-      await this.appSystemService.createProject(metadata, projectName);
-
-      if (response && !metadata.cleanSolution) {
-        response.brd?.forEach((brd) =>
-          this.generateFiles(brd, projectName, 'BRD'),
-        );
-        response.prd?.forEach((prd) => {
-          // since the IDs of requirements are padded (length 2) when saved to fs
-          const updatedPRD = {
-            ...prd,
-            linkedBRDIds: prd['linkedBRDIds']
-              ?.map((brdId) => {
-                try {
-                  return `BRD${brdId.split('BRD')[1].padStart(2, '0')}`;
-                } catch (error) {
-                  this.logger.error('Error padding the linked brd id', error);
-                  return null;
-                }
-              })
-              .filter(Boolean),
-          };
-
-          this.generateFiles(updatedPRD, projectName, 'PRD');
-          this.generatePRDFeatureFiles(projectName, 'PRD', prd['id']);
-        });
-        response.uir?.forEach((uir) =>
-          this.generateFiles(uir, projectName, 'UIR'),
-        );
-        response.nfr?.forEach((nfr) =>
-          this.generateFiles(nfr, projectName, 'NFR'),
-        );
-      }
-
-      let projectList = [
-        ...state.projects,
-        {
-          project: projectName,
-          projectKey: metadata.jiraProjectKey,
-          metadata: {
-            ...metadata,
-          },
-        },
-      ];
-      const sortedProjectList = projectList.sort(
-        (a, b) =>
-          new Date(b.metadata.createdAt).getTime() -
-          new Date(a.metadata.createdAt).getTime(),
+      await this.appSystemService.createFileWithContent(
+        `${projectName}/.metadata.json`,
+        JSON.stringify(metadata),
       );
 
+      const currentState = getState();
       patchState({
-        ...state,
-        projects: sortedProjectList,
+        solutionCreationStatus: {
+          ...currentState.solutionCreationStatus,
+          [metadata.id]: {
+            isCreating: false,
+            isComplete: true,
+          },
+        },
       });
-      this.router.navigate([`apps/${metadata.id}`]);
     } catch (e) {
       this.logger.error('Error creating project', e);
       throw e;
     }
+  }
+
+  private async generateSolution(metadata: any, projectName: string) {
+    const response = await this.solutionService.generateDocumentsFromLLM({
+      id: metadata.id,
+      createReqt: metadata.createReqt,
+      name: projectName,
+      description: metadata.description,
+      cleanSolution: metadata.cleanSolution,
+      brdPreferences: {
+        minCount: metadata.BRD.minCount,
+        isEnabled: metadata.BRD.enabled,
+      },
+      prdPreferences: {
+        minCount: metadata.PRD.minCount,
+        isEnabled: metadata.PRD.enabled,
+      },
+      uirPreferences: {
+        minCount: metadata.UIR.minCount,
+        isEnabled: metadata.UIR.enabled,
+      },
+      nfrPreferences: {
+        minCount: metadata.NFR.minCount,
+        isEnabled: metadata.NFR.enabled,
+      },
+      mcpSettings: metadata.mcpSettings,
+    });
+
+    if (response && !metadata.cleanSolution) {
+      response.brd?.forEach((brd) =>
+        this.generateFiles(brd, projectName, 'BRD'),
+      );
+      response.prd?.forEach((prd) => {
+        // since the IDs of requirements are padded (length 2) when saved to fs
+        const updatedPRD = {
+          ...prd,
+          linkedBRDIds: prd['linkedBRDIds']
+            ?.map((brdId) => {
+              try {
+                return `BRD${brdId.split('BRD')[1].padStart(2, '0')}`;
+              } catch (error) {
+                this.logger.error('Error padding the linked brd id', error);
+                return null;
+              }
+            })
+            .filter(Boolean),
+        };
+
+        this.generateFiles(updatedPRD, projectName, 'PRD');
+        this.generatePRDFeatureFiles(projectName, 'PRD', prd['id']);
+      });
+      response.uir?.forEach((uir) =>
+        this.generateFiles(uir, projectName, 'UIR'),
+      );
+      response.nfr?.forEach((nfr) =>
+        this.generateFiles(nfr, projectName, 'NFR'),
+      );
+    }
+
+    return response;
   }
 
   @Action(GetProjectFiles)

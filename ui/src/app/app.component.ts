@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  HostListener,
+} from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Router } from '@angular/router';
 import { ElectronService } from './electron-bridge/electron.service';
@@ -14,6 +20,7 @@ import { AnalyticsTracker } from './services/analytics/analytics.interface';
 import { geoAzimuthalEquidistantRaw } from 'd3';
 import { ANALYTICS_TOGGLE_KEY } from './services/analytics/utils/analytics.utils';
 import { APP_CONSTANTS } from './constants/app.constants';
+import { WorkflowProgressService } from './services/workflow-progress/workflow-progress.service';
 
 @Component({
   selector: 'app-root',
@@ -28,8 +35,20 @@ export class AppComponent implements OnInit, OnDestroy {
   store = inject(Store);
   dialogService = inject(DialogService);
   analyticsTracker = inject(AnalyticsTracker);
+  workflowProgressService = inject(WorkflowProgressService);
 
   private subscriptions: Subscription[] = [];
+
+  @HostListener('window:keydown', ['$event'])
+  keydownHandler(event: KeyboardEvent): void {
+    if (event.key === 'F5') {
+      event.preventDefault();
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+      event.preventDefault();
+    }
+  }
 
   ngOnInit() {
     // Check authentication state immediately
@@ -79,6 +98,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.workflowProgressService.removeAllGlobalListeners(this.electronService);
   }
 
   private async initializeLLMConfig() {
