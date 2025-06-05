@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-current/integrations-setup" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.8.0">
+<title data-rh="true">Solution Integrations Setup Guide | Specifai</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://specifai.io/img/specifai-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://specifai.io/img/specifai-social-card.jpg"><meta data-rh="true" property="og:url" content="https://specifai.io/current/integrations-setup"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Solution Integrations Setup Guide | Specifai"><meta data-rh="true" name="description" content="Connect powerful external tools and services to enhance your Specifai workflows."><meta data-rh="true" property="og:description" content="Connect powerful external tools and services to enhance your Specifai workflows."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://specifai.io/current/integrations-setup"><link data-rh="true" rel="alternate" href="https://specifai.io/current/integrations-setup" hreflang="en"><link data-rh="true" rel="alternate" href="https://specifai.io/current/integrations-setup" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Solution Integrations","item":"https://specifai.io/current/integrations-setup"}]}</script><link rel="stylesheet" href="/assets/css/styles.a3efeea6.css">
+<script src="/assets/js/runtime~main.96d209c5.js" defer="defer"></script>
+<script src="/assets/js/main.0ff393eb.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t="light";var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",e||t),document.documentElement.setAttribute("data-theme-choice",e||t)}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><link rel="preload" as="image" href="/img/hai-specif-ai-theme.svg"><link rel="preload" as="image" href="/img/hai-specif-ai-light.svg"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/hai-specif-ai-theme.svg" alt="Specifai Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/hai-specif-ai-light.svg" alt="Specifai Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate"></b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/current/">Documentation</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/hai/specif-ai" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/current/">Introduction</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/current/getting-started">Getting Started</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/current/core-features">Core Features</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/current/integrations-setup">Integrations</a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/current/integrations-setup">Solution Integrations</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/current/JIRA-README">Detailed JIRA Setup</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/current/aws-bedrock-kb-configuration">Detailed AWS Bedrock KB MCP Setup</a></li></ul></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/current/advanced-features">Advanced</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/current/troubleshooting">Troubleshooting</a></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Integrations</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Solution Integrations</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Solution Integrations Setup Guide</h1></header>
+<p>Connect powerful external tools and services to enhance your Specifai workflows.</p>
+<hr>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-jira-integration">🎯 JIRA Integration<a href="#-jira-integration" class="hash-link" aria-label="Direct link to 🎯 JIRA Integration" title="Direct link to 🎯 JIRA Integration">​</a></h2>
+<p>Integrate JIRA to transform Specifai-generated requirements into actionable JIRA tickets, streamlining your development pipeline.</p>
+<div align="center"><p><img decoding="async" loading="lazy" alt="JIRA Integration" src="/assets/images/specifai-jira-integration-3287546bdbb39c08102d7d8aba29a193.png" width="1193" height="842" class="img_ev3q">
+<em>Manage JIRA integrations within Specifai</em></p></div>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-features-and-benefits">✨ Features and Benefits<a href="#-features-and-benefits" class="hash-link" aria-label="Direct link to ✨ Features and Benefits" title="Direct link to ✨ Features and Benefits">​</a></h3>
+<ul>
+<li><strong>Automated Ticket Creation:</strong> Convert PRDs, User Stories, and Tasks into JIRA epics, stories, and tasks, maintaining hierarchy.</li>
+<li><strong>Bulk Export:</strong> Export multiple stories and tasks at once, saving manual creation time.</li>
+<li><strong>Seamless Synchronization:</strong> Create and update JIRA tickets based on Specifai changes, ensuring data consistency.</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-quick-start-guide">⚡ Quick Start Guide<a href="#-quick-start-guide" class="hash-link" aria-label="Direct link to ⚡ Quick Start Guide" title="Direct link to ⚡ Quick Start Guide">​</a></h3>
+<ol>
+<li>
+<p><strong>Prerequisites:</strong> You&#x27;ll need an active JIRA instance, administrator access (or relevant permissions) to create JIRA OAuth apps, and the Specifai desktop application.</p>
+</li>
+<li>
+<p><strong>Detailed Setup:</strong> For comprehensive OAuth configuration and permissions, refer to our <a href="/current/JIRA-README">Jira OAuth 2.0 Integration Guide</a>.</p>
+</li>
+<li>
+<p><strong>Sync to JIRA:</strong></p>
+<ul>
+<li>
+<p>From the <strong>PRD</strong> page in Specifai, select your PRD and go to its <strong>Stories</strong> tab.</p>
+</li>
+<li>
+<p>Click <strong>Export</strong> and choose <strong>Sync to JIRA</strong>.</p>
+<div align="center"><p><img decoding="async" loading="lazy" alt="Sync to JIRA Option" src="/assets/images/specifai-sync-with-jira-option-7d6f6ce89da31d0b3a360b95fc1a0d58.png" width="1188" height="839" class="img_ev3q">
+<em>Initiate sync to JIRA from the Export menu</em></p></div>
+</li>
+<li>
+<p>Tickets are automatically created in JIRA with these mappings:</p>
+<ul>
+<li><strong>Epic</strong>: PRD</li>
+<li><strong>Story</strong>: User Story</li>
+<li><strong>Task</strong>: Task</li>
+</ul>
+</li>
+<li>
+<p>You&#x27;ll receive a notification upon sync completion. JIRA Ticket IDs are displayed in Specifai next to corresponding requirements for easy reference and search.</p>
+<div align="center"><p><img decoding="async" loading="lazy" alt="After Successful JIRA Sync" src="/assets/images/specifai-post-jira-sync-8ba5fb3a1030a486b29347e89de96618.png" width="1190" height="837" class="img_ev3q">
+<em>Synced JIRA tickets displayed in Specifai</em></p></div>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-aws-bedrock-knowledge-base-direct-solution-integration">🚀 AWS Bedrock Knowledge Base Direct Solution Integration<a href="#-aws-bedrock-knowledge-base-direct-solution-integration" class="hash-link" aria-label="Direct link to 🚀 AWS Bedrock Knowledge Base Direct Solution Integration" title="Direct link to 🚀 AWS Bedrock Knowledge Base Direct Solution Integration">​</a></h2>
+<p>Connect your enterprise knowledge base to Specifai&#x27;s AI chat, enhancing suggestions and enabling context-aware requirement generation for all document types.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-benefits--features">✨ Benefits &amp; Features<a href="#-benefits--features" class="hash-link" aria-label="Direct link to ✨ Benefits &amp; Features" title="Direct link to ✨ Benefits &amp; Features">​</a></h3>
+<ul>
+<li><strong>Enhanced Chat Suggestions:</strong> Leverage organizational knowledge for insightful AI chat assistance.</li>
+<li><strong>Context-Aware Generation:</strong> Create precise requirements using context from your knowledge base (e.g., domain info).</li>
+<li><strong>Historical Data Integration:</strong> Integrate past data (e.g., previous requirements) for informed creation.</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-setup-instructions">🛠 Setup Instructions<a href="#-setup-instructions" class="hash-link" aria-label="Direct link to 🛠 Setup Instructions" title="Direct link to 🛠 Setup Instructions">​</a></h3>
+<ol>
+<li>
+<p><strong>Prerequisites:</strong> You&#x27;ll need an AWS Knowledge Base containing relevant context (domain info, past requirements) and an IAM key with <code>bedrock:ListKnowledgeBases</code>, <code>bedrock:GetKnowledgeBase</code>, <code>bedrock:Retrieve</code> permissions.</p>
+<div align="center"><p><img decoding="async" loading="lazy" alt="AWS Bedrock Configuration" src="/assets/images/specifai-aws-bedrock-kb-integration-29f6e74d6c2b289996b234e07f5c345f.png" width="1192" height="843" class="img_ev3q">
+<em>Configure your AWS Bedrock Knowledge Base connection</em></p></div>
+</li>
+<li>
+<p><strong>Existing Bedrock LLM Config (Optional):</strong> If your existing AWS Bedrock LLM configuration has the necessary permissions, simply check <strong>&quot;Use existing Bedrock configuration from LLM settings&quot;</strong>.</p>
+</li>
+<li>
+<p><strong>Direct API Key Config:</strong> Alternatively, configure AWS API Keys directly using the provided form fields.</p>
+</li>
+<li>
+<p><strong>Knowledge Base ID:</strong> Accurately enter your AWS Knowledge Base ID.</p>
+</li>
+<li>
+<p><strong>Connect:</strong> Click &quot;<strong>Connect</strong>&quot; to establish the link between Specifai and your AWS Knowledge Base.</p>
+</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-verification-steps">✅ Verification Steps<a href="#-verification-steps" class="hash-link" aria-label="Direct link to ✅ Verification Steps" title="Direct link to ✅ Verification Steps">​</a></h3>
+<ul>
+<li><strong>Verify KB Access:</strong> Confirm Specifai can access and retrieve data from your AWS KB.</li>
+<li><strong>Test Chat Suggestions:</strong> Verify AI chat suggestions are enhanced and relevant, drawing from the KB.</li>
+</ul>
+<hr>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-model-context-protocol-mcp-integration">🧠 Model Context Protocol (MCP) Integration<a href="#-model-context-protocol-mcp-integration" class="hash-link" aria-label="Direct link to 🧠 Model Context Protocol (MCP) Integration" title="Direct link to 🧠 Model Context Protocol (MCP) Integration">​</a></h2>
+<p><strong>MCP</strong> is Specifai&#x27;s extensible framework for integrating external tools and knowledge bases. It enhances AI relevance and accuracy for all generated requirements.</p>
+<div align="center"><p><em>Supercharge your development workflow with powerful tools and knowledge bases through the flexible Model Context Protocol (MCP)</em></p></div>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-built-in-mcp-server-integration">🛠 Built-in MCP Server Integration<a href="#-built-in-mcp-server-integration" class="hash-link" aria-label="Direct link to 🛠 Built-in MCP Server Integration" title="Direct link to 🛠 Built-in MCP Server Integration">​</a></h3>
+<p>Specifai natively supports <strong>AWS Bedrock Knowledge Base (KB)</strong> as a built-in MCP server, leveraging your organizational data for requirements. Configuration is straightforward via the UI. For detailed setup, refer to our <a href="/current/aws-bedrock-kb-configuration">AWS Bedrock KB Configuration Guide</a>.</p>
+<div align="center"><p><img decoding="async" loading="lazy" alt="AWS Bedrock KB Configuration" src="/assets/images/aws-bedrock-kb-config-ec152cc6bdf516b8df6d8742317c6fce.png" width="3024" height="1964" class="img_ev3q">
+<em>Interface for AWS Bedrock KB configuration</em></p></div>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-custom-mcp-server-integration">🛠 Custom MCP Server Integration<a href="#-custom-mcp-server-integration" class="hash-link" aria-label="Direct link to 🛠 Custom MCP Server Integration" title="Direct link to 🛠 Custom MCP Server Integration">​</a></h3>
+<p>Beyond built-in options, Specifai enables custom MCP server integration, extending functionality with proprietary data or specialized applications (e.g., a file system MCP server).</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="configuring-custom-mcp-servers">Configuring Custom MCP Servers<a href="#configuring-custom-mcp-servers" class="hash-link" aria-label="Direct link to Configuring Custom MCP Servers" title="Direct link to Configuring Custom MCP Servers">​</a></h4>
+<ol>
+<li>
+<p><strong>Navigate to MCP Integrations:</strong> Access <strong>MCP Integrations</strong> during <strong>Solution Creation</strong> or in <strong>Settings &gt; Integrations</strong>.</p>
+<div align="center"><p><img decoding="async" loading="lazy" alt="MCP Server Integration in Create Solution" src="/assets/images/custom-server-management-be67ade826b189ec50dac5be1a33cf93.png" width="3024" height="1964" class="img_ev3q">
+<em>Access MCP server integrations during solution creation</em></p></div>
+<hr>
+<div align="center"><p><img decoding="async" loading="lazy" alt="MCP Server Integration in Solution" src="/assets/images/custom-server-management-be67ade826b189ec50dac5be1a33cf93.png" width="3024" height="1964" class="img_ev3q">
+<em>Manage MCP server integrations for an existing solution</em></p></div>
+<hr>
+</li>
+<li>
+<p><strong>Add New MCP Server:</strong> From the <strong>&quot;MCP Integrations&quot;</strong> tab, select <strong>&quot;New MCP Server&quot;</strong>.</p>
+</li>
+<li>
+<p><strong>Provide Details:</strong></p>
+<ul>
+<li><strong>Server ID:</strong> A unique identifier (e.g., <code>filesystem</code>).</li>
+<li><strong>Server Configuration (JSON):</strong> Define communication parameters.<!-- -->
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;command&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;npm&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;transportType&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;stdio&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;args&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token string" style="color:#e3116c">&quot;run&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;@modelcontextprotocol/server-filesystem&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;/your/path/to/Mcp&quot;</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;id&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;filesystem&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+</li>
+</ul>
+<div align="center"><p><img decoding="async" loading="lazy" alt="Custom MCP Server Configuration" src="/assets/images/custom-mcp-config-1a9ebf6bfa4caa654005641631252de8.png" width="3024" height="1964" class="img_ev3q">
+<em>Interface for configuring custom MCP server integrations</em></p></div>
+</li>
+<li>
+<p><strong>Validate &amp; Submit:</strong> Click &quot;<strong>Validate</strong>&quot; to confirm connectivity, then &quot;<strong>Submit</strong>&quot; to save.</p>
+</li>
+<li>
+<p><strong>Save Integration:</strong> Click &quot;<strong>Save</strong>&quot; to finalize the integration.</p>
+</li>
+</ol>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-centralized-integration-management">🌐 Centralized Integration Management<a href="#-centralized-integration-management" class="hash-link" aria-label="Direct link to 🌐 Centralized Integration Management" title="Direct link to 🌐 Centralized Integration Management">​</a></h3>
+<p>All MCP integrations are managed from a single <strong>Integrations</strong> page, providing a unified hub to add, configure, monitor, and remove servers.</p>
+<div align="center"><p><img decoding="async" loading="lazy" alt="Custom Server Management Interface" src="/assets/images/custom-server-management-be67ade826b189ec50dac5be1a33cf93.png" width="3024" height="1964" class="img_ev3q">
+<em>Manage all MCP integrations from a single, centralized location</em></p></div>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-how-mcp-enhances-requirement-workflows">💡 How MCP Enhances Requirement Workflows<a href="#-how-mcp-enhances-requirement-workflows" class="hash-link" aria-label="Direct link to 💡 How MCP Enhances Requirement Workflows" title="Direct link to 💡 How MCP Enhances Requirement Workflows">​</a></h3>
+<p>MCP tools are dynamically invoked during the <strong>research step</strong> within Specifai&#x27;s agentic workflows, gathering crucial information that directly impacts output quality.</p>
+<p>MCP specifically enhances:</p>
+<ol>
+<li><strong>Solution Generation:</strong> Improves <strong>BRD, PRD, NFR, and UIR</strong> accuracy by providing contextual information.</li>
+<li><strong>User Story &amp; Task Generation:</strong> Contributes to the research phase for relevant and actionable <strong>User Stories and Tasks</strong>.</li>
+<li><strong>AI Chat Assistance:</strong> Refines <strong>AI chat suggestions</strong> with real-time contextual information.</li>
+</ol>
+<hr>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="next-steps">Next Steps<a href="#next-steps" class="hash-link" aria-label="Direct link to Next Steps" title="Direct link to Next Steps">​</a></h2>
+<p>Now that you&#x27;ve set up your integrations, you&#x27;re ready to enhance your Specifai experience! Explore the following:</p>
+<ul>
+<li><strong><a href="/current/advanced-features">Advanced Features Guide</a></strong> for deeper insights into Specifai&#x27;s capabilities.</li>
+<li><strong><a href="/current/troubleshooting">Troubleshooting Guide</a></strong> for common issues and solutions.</li>
+</ul>
+<hr>
+<p>Need more help?</p>
+<ul>
+<li>Contact us at <a href="mailto:hai-feedback@presidio.com" target="_blank" rel="noopener noreferrer">hai-feedback@presidio.com</a></li>
+<li>Visit our <a href="https://github.com/presidio-oss/specif-ai/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a> page.</li>
+</ul>
+<p>Specifai is continuously evolving—check our <a href="https://github.com/presidio-oss/specif-ai/releases" target="_blank" rel="noopener noreferrer">release notes</a> for updates!</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col"><a href="https://github.com/presidio-oss/specif-ai/tree/main/docs/docs/current/integrations-setup.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/current/core-features"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Core Features</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/current/JIRA-README"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Detailed JIRA Setup</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#-jira-integration" class="table-of-contents__link toc-highlight">🎯 JIRA Integration</a><ul><li><a href="#-features-and-benefits" class="table-of-contents__link toc-highlight">✨ Features and Benefits</a></li><li><a href="#-quick-start-guide" class="table-of-contents__link toc-highlight">⚡ Quick Start Guide</a></li></ul></li><li><a href="#-aws-bedrock-knowledge-base-direct-solution-integration" class="table-of-contents__link toc-highlight">🚀 AWS Bedrock Knowledge Base Direct Solution Integration</a><ul><li><a href="#-benefits--features" class="table-of-contents__link toc-highlight">✨ Benefits &amp; Features</a></li><li><a href="#-setup-instructions" class="table-of-contents__link toc-highlight">🛠 Setup Instructions</a></li><li><a href="#-verification-steps" class="table-of-contents__link toc-highlight">✅ Verification Steps</a></li></ul></li><li><a href="#-model-context-protocol-mcp-integration" class="table-of-contents__link toc-highlight">🧠 Model Context Protocol (MCP) Integration</a><ul><li><a href="#-built-in-mcp-server-integration" class="table-of-contents__link toc-highlight">🛠 Built-in MCP Server Integration</a></li><li><a href="#-custom-mcp-server-integration" class="table-of-contents__link toc-highlight">🛠 Custom MCP Server Integration</a></li><li><a href="#-centralized-integration-management" class="table-of-contents__link toc-highlight">🌐 Centralized Integration Management</a></li><li><a href="#-how-mcp-enhances-requirement-workflows" class="table-of-contents__link toc-highlight">💡 How MCP Enhances Requirement Workflows</a></li></ul></li><li><a href="#next-steps" class="table-of-contents__link toc-highlight">Next Steps</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Documentation</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/current/getting-started">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/current/core-features">Core Features</a></li><li class="footer__item"><a class="footer__link-item" href="/current/integrations-setup">Integrations</a></li><li class="footer__item"><a class="footer__link-item" href="/current/advanced-features">Advanced Features</a></li><li class="footer__item"><a class="footer__link-item" href="/current/troubleshooting">Troubleshooting</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/hai/specif-ai" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="mailto:hai-feedback@presidio.com" target="_blank" rel="noopener noreferrer" class="footer__link-item">Support<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 Hai, Inc. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
