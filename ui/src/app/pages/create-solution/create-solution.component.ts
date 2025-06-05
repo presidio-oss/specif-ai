@@ -34,6 +34,8 @@ import { provideIcons } from '@ng-icons/core';
 import { heroChevronDown } from '@ng-icons/heroicons/outline';
 import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
+import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
+import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 
 @Component({
   selector: 'app-create-solution',
@@ -67,6 +69,7 @@ export class CreateSolutionComponent implements OnInit {
   readonly dialogService = inject(DialogService);
   router = inject(Router);
   store = inject(Store);
+  workflowProgressService = inject(WorkflowProgressService);
 
   ngOnInit() {
     this.solutionForm = this.createSolutionForm();
@@ -166,18 +169,22 @@ export class CreateSolutionComponent implements OnInit {
       const data = this.solutionForm.getRawValue();
       data.createReqt = !data.cleanSolution;
 
-      await this.electronService.setContentGenerationStatus('solution', true);
+      // Set solution creation status using WorkflowProgressService
+      this.workflowProgressService.setCreating(data.id, WorkflowType.Solution);
+
       this.store.dispatch(new CreateProject(data.name, data)).subscribe({
-        next: async () => {
+        next: () => {
           this.toast.showSuccess(
             `All set! Your ${data.name} solution is ready to roll.`,
           );
-          await this.electronService.setContentGenerationStatus('solution', false);
+          // Set solution creation as complete
+          this.workflowProgressService.setComplete(data.id, WorkflowType.Solution);
         },
-        error: async (error) => {
+        error: (error) => {
           this.addOrUpdate = false;
           this.toast.showError(error.message);
-          await this.electronService.setContentGenerationStatus('solution', false);
+          // Set solution creation as failed
+          this.workflowProgressService.setFailed(data.id, WorkflowType.Solution);
         },
       });
     }

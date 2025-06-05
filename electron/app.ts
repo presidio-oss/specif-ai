@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow, shell } from "electron";
+import { app, ipcMain, BrowserWindow, shell, dialog } from "electron";
 import path from "path";
 import dotenv from "dotenv";
 import { setupFileSystemHandlers } from "./handlers/fs-handler";
@@ -209,9 +209,7 @@ function isValidUrl(url: string): boolean {
 
 async function confirmQuitDuringActiveProcesses(): Promise<boolean> {
   const activeProcesses = getActiveContentGenerationProcessNames();
-
   try {
-    const { dialog } = require("electron");
     const processText =
       activeProcesses.length === 1
         ? activeProcesses[0]

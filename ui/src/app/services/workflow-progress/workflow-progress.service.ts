@@ -8,9 +8,20 @@ import {
 } from '../../model/interfaces/workflow-progress.interface';
 import { ElectronService } from '../../electron-bridge/electron.service';
 
+export interface WorkflowStatus {
+  isCreating: boolean;
+  isComplete: boolean;
+}
+
 interface WorkflowProgressState {
   [projectId: string]: {
     [workflowType: string]: WorkflowProgressEvent[];
+  };
+}
+
+interface WorkflowStatusState {
+  [projectId: string]: {
+    [workflowType: string]: WorkflowStatus;
   };
 }
 
@@ -48,10 +59,16 @@ export class WorkflowProgressService implements OnDestroy {
   private readonly progressSubject = new BehaviorSubject<WorkflowProgressState>(
     {},
   );
+  private readonly statusState: WorkflowStatusState = {};
+  private readonly statusSubject = new BehaviorSubject<WorkflowStatusState>({});
   private readonly activeListeners = new Map<string, ActiveListener>();
   private readonly destroy$ = new Subject<void>();
 
   public readonly progressState$ = this.progressSubject
+    .asObservable()
+    .pipe(distinctUntilChanged(), shareReplay(1));
+
+  public readonly statusState$ = this.statusSubject
     .asObservable()
     .pipe(distinctUntilChanged(), shareReplay(1));
 
@@ -402,11 +419,204 @@ export class WorkflowProgressService implements OnDestroy {
     }
   }
 
+  /**
+   * Set creation status for a specific project and workflow type
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow (Solution, Story, Task)
+   * @param status - Creation status with isCreating and isComplete flags
+   */
+  public setCreationStatus(
+    projectId: string,
+    workflowType: WorkflowType,
+    status: WorkflowStatus,
+  ): void {
+    this.validateInputs({ projectId, workflowType, status });
+
+    try {
+      const updatedState = { ...this.statusState };
+
+      if (!updatedState[projectId]) {
+        updatedState[projectId] = {};
+      }
+
+      updatedState[projectId][workflowType] = { ...status };
+
+      Object.assign(this.statusState, updatedState);
+      this.statusSubject.next(updatedState);
+    } catch (error) {
+      this.handleError('Failed to set creation status', 'SET_STATUS_ERROR', {
+        projectId,
+        workflowType,
+        status,
+        error,
+      });
+    }
+  }
+
+  /**
+   * Get creation status for a specific project and workflow type
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   * @returns WorkflowStatus or default status if not found
+   */
+  public getCreationStatus(
+    projectId: string,
+    workflowType: WorkflowType,
+  ): WorkflowStatus {
+    this.validateInputs({ projectId, workflowType });
+
+    try {
+      return (
+        this.statusState[projectId]?.[workflowType] || this.getDefaultStatus()
+      );
+    } catch (error) {
+      this.handleError('Failed to get creation status', 'GET_STATUS_ERROR', {
+        projectId,
+        workflowType,
+        error,
+      });
+    }
+  }
+
+  /**
+   * Get observable stream for creation status of a specific project and workflow type
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   * @returns Observable stream of WorkflowStatus
+   */
+  public getCreationStatusObservable(
+    projectId: string,
+    workflowType: WorkflowType,
+  ): Observable<WorkflowStatus> {
+    this.validateInputs({ projectId, workflowType });
+
+    return this.statusState$.pipe(
+      map(
+        (state) => state[projectId]?.[workflowType] || this.getDefaultStatus(),
+      ),
+      distinctUntilChanged(
+        (prev, curr) =>
+          prev.isCreating === curr.isCreating &&
+          prev.isComplete === curr.isComplete,
+      ),
+      takeUntil(this.destroy$),
+    );
+  }
+
+  /**
+   * Clear creation status for a specific project and workflow type
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   */
+  public clearCreationStatus(
+    projectId: string,
+    workflowType: WorkflowType,
+  ): void {
+    this.validateInputs({ projectId, workflowType });
+
+    try {
+      if (this.statusState[projectId]?.[workflowType]) {
+        const updatedState = { ...this.statusState };
+        delete updatedState[projectId][workflowType];
+
+        if (Object.keys(updatedState[projectId]).length === 0) {
+          delete updatedState[projectId];
+        }
+
+        Object.assign(this.statusState, updatedState);
+        this.statusSubject.next(updatedState);
+      }
+    } catch (error) {
+      this.handleError(
+        'Failed to clear creation status',
+        'CLEAR_STATUS_ERROR',
+        {
+          projectId,
+          workflowType,
+          error,
+        },
+      );
+    }
+  }
+
+  /**
+   * Check if a workflow is currently being created
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   * @returns True if workflow is being created, false otherwise
+   */
+  public isCreating(projectId: string, workflowType: WorkflowType): boolean {
+    return this.getCreationStatus(projectId, workflowType).isCreating;
+  }
+
+  /**
+   * Check if a workflow creation is complete
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   * @returns True if workflow creation is complete, false otherwise
+   */
+  public isComplete(projectId: string, workflowType: WorkflowType): boolean {
+    return this.getCreationStatus(projectId, workflowType).isComplete;
+  }
+
+  /**
+   * Set workflow as creating
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   */
+  public setCreating(projectId: string, workflowType: WorkflowType): void {
+    this.setCreationStatus(projectId, workflowType, {
+      isCreating: true,
+      isComplete: false,
+    });
+  }
+
+  /**
+   * Set workflow as complete
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   */
+  public setComplete(projectId: string, workflowType: WorkflowType): void {
+    this.setCreationStatus(projectId, workflowType, {
+      isCreating: false,
+      isComplete: true,
+    });
+  }
+
+  /**
+   * Set workflow as failed/stopped
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   */
+  public setFailed(projectId: string, workflowType: WorkflowType): void {
+    this.setCreationStatus(projectId, workflowType, {
+      isCreating: false,
+      isComplete: false,
+    });
+  }
+
+  /**
+   * Get all creation statuses for a specific project
+   * @param projectId - Unique identifier for the project
+   * @returns Object with all statuses for the project
+   */
+  public getAllCreationStatusForProject(projectId: string): {
+    [workflowType: string]: WorkflowStatus;
+  } {
+    this.validateInputs({ projectId });
+    return this.statusState[projectId] || {};
+  }
+
+  private getDefaultStatus(): WorkflowStatus {
+    return { isCreating: false, isComplete: false };
+  }
+
   public ngOnDestroy(): void {
     try {
       this.destroy$.next();
       this.destroy$.complete();
       this.progressSubject.complete();
+      this.statusSubject.complete();
       this.activeListeners.clear();
     } catch (error) {
       console.error('Error during WorkflowProgressService cleanup:', error);

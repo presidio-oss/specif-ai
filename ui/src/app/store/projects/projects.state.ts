@@ -51,12 +51,6 @@ export class ProjectStateModel {
     bpIds: string[];
   };
   exportingData!: boolean;
-  solutionCreationStatus!: {
-    [projectId: string]: {
-      isCreating: boolean;
-      isComplete: boolean;
-    };
-  };
 }
 
 @State<ProjectStateModel>({
@@ -75,7 +69,6 @@ export class ProjectStateModel {
       bpIds: [],
     },
     exportingData: false,
-    solutionCreationStatus: {},
   },
 })
 @Injectable()
@@ -140,10 +133,6 @@ export class ProjectsState {
     return state.exportingData;
   }
 
-  @Selector()
-  static getSolutionCreationStatus(state: ProjectStateModel) {
-    return (projectId: string) => state.solutionCreationStatus[projectId] || { isCreating: false, isComplete: false };
-  }
 
   @Action(GetProjectListAction)
   async getProjectList({
@@ -197,13 +186,6 @@ export class ProjectsState {
       patchState({
         ...state,
         projects: sortedProjectList,
-        solutionCreationStatus: {
-          ...state.solutionCreationStatus,
-          [metadata.id]: {
-            isCreating: true,
-            isComplete: false,
-          },
-        },
       });
       
       this.router.navigate([`apps/${metadata.id}`]);
@@ -236,17 +218,6 @@ export class ProjectsState {
         `${projectName}/.metadata.json`,
         JSON.stringify(metadata),
       );
-
-      const currentState = getState();
-      patchState({
-        solutionCreationStatus: {
-          ...currentState.solutionCreationStatus,
-          [metadata.id]: {
-            isCreating: false,
-            isComplete: true,
-          },
-        },
-      });
     } catch (e) {
       this.logger.error('Error creating project', e);
       throw e;

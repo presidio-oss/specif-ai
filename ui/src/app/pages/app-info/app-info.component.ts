@@ -166,9 +166,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
   solutionCreationComplete: boolean = false;
-  solutionCreationStatus$ = this.store.select(
-    ProjectsState.getSolutionCreationStatus,
-  );
 
   constructor(
     private route: ActivatedRoute,
@@ -199,18 +196,19 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     });
 
     if (this.projectId) {
-      this.solutionCreationStatus$.subscribe((getSolutionStatus) => {
-        const status = getSolutionStatus(this.projectId!);
+      this.workflowProgressService
+        .getCreationStatusObservable(this.projectId, WorkflowType.Solution)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((status) => {
+          const wasCreating = this.isCreatingSolution;
+          this.isCreatingSolution = status.isCreating;
+          this.solutionCreationComplete = status.isComplete;
 
-        const wasCreating = this.isCreatingSolution;
-        this.isCreatingSolution = status.isCreating;
-        this.solutionCreationComplete = status.isComplete;
-
-        if (wasCreating && !status.isCreating && status.isComplete) {
-          this.store.dispatch(new GetProjectFiles(this.projectId as string));
-          this.resetSolutionProgress();
-        }
-      });
+          if (wasCreating && !status.isCreating && status.isComplete) {
+            this.store.dispatch(new GetProjectFiles(this.projectId as string));
+            this.resetSolutionProgress();
+          }
+        });
     }
     this.store
       .select(ProjectsState.getProjects)
