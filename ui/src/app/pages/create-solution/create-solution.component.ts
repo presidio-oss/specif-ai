@@ -169,22 +169,34 @@ export class CreateSolutionComponent implements OnInit {
       const data = this.solutionForm.getRawValue();
       data.createReqt = !data.cleanSolution;
 
-      // Set solution creation status using WorkflowProgressService
+      await this.electronService.setContentGenerationStatus('solution', true);
       this.workflowProgressService.setCreating(data.id, WorkflowType.Solution);
 
       this.store.dispatch(new CreateProject(data.name, data)).subscribe({
-        next: () => {
+        next: async () => {
           this.toast.showSuccess(
             `All set! Your ${data.name} solution is ready to roll.`,
           );
-          // Set solution creation as complete
-          this.workflowProgressService.setComplete(data.id, WorkflowType.Solution);
+          await this.electronService.setContentGenerationStatus(
+            'solution',
+            false,
+          );
+          this.workflowProgressService.setComplete(
+            data.id,
+            WorkflowType.Solution,
+          );
         },
-        error: (error) => {
+        error: async (error) => {
           this.addOrUpdate = false;
           this.toast.showError(error.message);
-          // Set solution creation as failed
-          this.workflowProgressService.setFailed(data.id, WorkflowType.Solution);
+          await this.electronService.setContentGenerationStatus(
+            'solution',
+            false,
+          );
+          this.workflowProgressService.setFailed(
+            data.id,
+            WorkflowType.Solution,
+          );
         },
       });
     }
