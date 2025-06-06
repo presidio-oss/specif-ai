@@ -98,13 +98,13 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  async setContentGenerationStatus(type: 'solution' | 'story' | 'task' | 'requirement', isInProgress: boolean): Promise<void> {
+  async setContentGenerationStatus(type: 'solution' | 'story' | 'task', isInProgress: boolean): Promise<void> {
     if (this.electronAPI) {
       await this.electronAPI.setStatus(type, isInProgress);
     }
   }
 
-  async getContentGenerationStatus(type: 'solution' | 'story' | 'task' | 'requirement'): Promise<boolean> {
+  async getContentGenerationStatus(type: 'solution' | 'story' | 'task'): Promise<boolean> {
     if (this.electronAPI) {
       return await this.electronAPI.getStatus(type);
     }
