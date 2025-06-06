@@ -98,6 +98,55 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  
+  async setContentGenerationStatus(
+    solutionId: string,
+    type: WorkflowType,
+    isInProgress: boolean,
+  ): Promise<void> {
+    if (this.electronAPI) {
+      await this.electronAPI.setContentGenerationStatus(
+        solutionId,
+        type,
+        isInProgress,
+      );
+    }
+  }
+
+  async getContentGenerationStatus(type: WorkflowType): Promise<boolean> {
+    if (this.electronAPI) {
+      return await this.electronAPI.getContentGenerationStatus(type);
+    }
+    return false;
+  }
+
+  async getActiveContentGenerationProcesses(): Promise<any[]> {
+    if (this.electronAPI) {
+      return await this.electronAPI.getActiveContentGenerationProcesses();
+    }
+    return [];
+  }
+
+  async isAnyContentGenerationInProgress(): Promise<boolean> {
+    if (this.electronAPI) {
+      return await this.electronAPI.isAnyContentGenerationInProgress();
+    }
+    return false;
+  }
+
+  async getActiveContentGenerationProcessNames(): Promise<string[]> {
+    if (this.electronAPI) {
+      return await this.electronAPI.getActiveContentGenerationProcessNames();
+    }
+    return [];
+  }
+
+  async clearAllContentGenerationProcesses(): Promise<void> {
+    if (this.electronAPI) {
+      await this.electronAPI.clearAllContentGenerationProcesses();
+    }
+  }
+
   async validateBedrock(config: BedrockValidationPayload): Promise<boolean> {
     if (this.electronAPI) {
       const response = await this.ipc.request({

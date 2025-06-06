@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+import { ContentGenerationType } from "./types/content-generation.types";
 
 type IpcListener = (event: IpcRendererEvent, ...args: any[]) => void;
 
@@ -75,6 +76,30 @@ const solutionListeners = {
     ipcRenderer.invoke("solution:createSolution", data),
 };
 
+const contentGenerationListeners = {
+  setContentGenerationStatus: (
+    solutionId: string,
+    type: ContentGenerationType,
+    isInProgress: boolean
+  ) =>
+    ipcRenderer.invoke(
+      "content-generation:setStatus",
+      solutionId,
+      type,
+      isInProgress
+    ),
+  getContentGenerationStatus: (type: ContentGenerationType) =>
+    ipcRenderer.invoke("content-generation:getStatus", type),
+  getActiveContentGenerationProcesses: () =>
+    ipcRenderer.invoke("content-generation:getActiveProcesses"),
+  isAnyContentGenerationInProgress: () =>
+    ipcRenderer.invoke("content-generation:isAnyInProgress"),
+  getActiveContentGenerationProcessNames: () =>
+    ipcRenderer.invoke("content-generation:getActiveProcessNames"),
+  clearAllContentGenerationProcesses: () =>
+    ipcRenderer.invoke("content-generation:clearAll"),
+};
+
 const appAutoUpdaterListeners = {
   checkForUpdates: () =>
     ipcRenderer.invoke("app-updater:check-for-updates"),
@@ -105,6 +130,7 @@ const electronAPI = {
   ...coreListeners,
   ...requirementListeners,
   ...solutionListeners,
+  ...contentGenerationListeners,
   ...visualizationListeners,
   ...featureListeners,
   ...appAutoUpdaterListeners,

@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow, shell } from "electron";
+import { app, ipcMain, BrowserWindow, shell, dialog } from "electron";
 import path from "path";
 import dotenv from "dotenv";
 import { setupFileSystemHandlers } from "./handlers/fs-handler";
@@ -8,6 +8,11 @@ import { setupRequirementHandlers } from "./handlers/requirement-handler";
 import { setupVisualizationHandlers } from "./handlers/visualization-handler";
 import { setupFeatureHandlers } from "./handlers/feature-handler";
 import { setupSolutionHandlers } from "./handlers/solution-handler";
+import {
+  setupContentGenerationHandlers,
+  isAnyContentGenerationInProgress,
+  getActiveContentGenerationProcessNames,
+} from "./handlers/content-generation-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
 import { setupMcpHandlers } from "./handlers/mcp-handler";
@@ -76,6 +81,18 @@ function createWindow(indexPath: string, themeConfiguration: any) {
         console.error("Failed to load welcome page:", error);
       });
   }
+
+  mainWindow.on("close", async (event) => {
+    if (isAnyContentGenerationInProgress()) {
+      event.preventDefault();
+
+      const shouldQuit = await confirmQuitDuringActiveProcesses();
+      if (shouldQuit) {
+        mainWindow = null;
+        app.exit(0);
+      }
+    }
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -190,6 +207,57 @@ function isValidUrl(url: string): boolean {
   }
 }
 
+async function confirmQuitDuringActiveProcesses(): Promise<boolean> {
+  const activeProcesses = getActiveContentGenerationProcessNames();
+  try {
+    const processCount = activeProcesses.length;
+    const isPlural = processCount > 1;
+
+    const displayProcesses = activeProcesses.map((name) =>
+      name.length > 30 ? `${name.substring(0, 27)}...` : name
+    );
+
+    const processListText =
+      processCount <= 3
+        ? displayProcesses.join(", ")
+        : `${displayProcesses.slice(0, 2).join(", ")} and ${
+            processCount - 2
+          } more`;
+
+    const choice = await dialog.showMessageBox(mainWindow!, {
+      type: "warning",
+      buttons: ["Wait for Completion", "Quit Anyway"],
+      defaultId: 0,
+      cancelId: 0,
+      title: `${processCount} Active ${
+        isPlural ? "Processes" : "Process"
+      } Running`,
+      message: `You have ${
+        isPlural ? "processes" : "a process"
+      } currently running that ${
+        isPlural ? "haven't" : "hasn't"
+      } finished yet.`,
+      detail: [
+        `📋 Active ${isPlural ? "processes" : "process"}: ${processListText}`,
+        "",
+        "💡 What happens if you quit now:",
+        "• Your work in progress may be lost",
+        "• Generated content might be incomplete",
+        "• You may need to restart these tasks",
+        "",
+        "🔒 Recommended: Let the processes finish, then quit safely.",
+      ].join("\n"),
+      noLink: true,
+      normalizeAccessKeys: false,
+    });
+
+    return choice.response === 1;
+  } catch (error) {
+    console.error("Error showing quit dialog:", error);
+    return false;
+  }
+}
+
 // ========================
 // MAIN APPLICATION LOGIC
 // ========================
@@ -213,6 +281,19 @@ app.whenReady().then(async () => {
 
   app.on("window-all-closed", () => app.quit());
 
+  app.on("before-quit", async (event) => {
+    console.log("App before quit...", isAnyContentGenerationInProgress());
+
+    if (isAnyContentGenerationInProgress()) {
+      event.preventDefault();
+
+      const shouldQuit = await confirmQuitDuringActiveProcesses();
+      if (shouldQuit) {
+        app.exit(0);
+      }
+    }
+  });
+
   if (mainWindow) {
     // Setup window event handlers
     setupWindowHandlers(mainWindow, indexPath);
@@ -227,6 +308,7 @@ app.whenReady().then(async () => {
     setupVisualizationHandlers();
     setupFeatureHandlers();
     setupSolutionHandlers();
+    setupContentGenerationHandlers();
     setupMcpHandlers();
 
     // start mcp servers in the background
