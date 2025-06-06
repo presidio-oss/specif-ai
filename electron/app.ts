@@ -210,20 +210,45 @@ function isValidUrl(url: string): boolean {
 async function confirmQuitDuringActiveProcesses(): Promise<boolean> {
   const activeProcesses = getActiveContentGenerationProcessNames();
   try {
-    const processText =
-      activeProcesses.length === 1
-        ? activeProcesses[0]
-        : `${activeProcesses.length} processes (${activeProcesses.join(", ")})`;
+    const processCount = activeProcesses.length;
+    const isPlural = processCount > 1;
+
+    const displayProcesses = activeProcesses.map((name) =>
+      name.length > 30 ? `${name.substring(0, 27)}...` : name
+    );
+
+    const processListText =
+      processCount <= 3
+        ? displayProcesses.join(", ")
+        : `${displayProcesses.slice(0, 2).join(", ")} and ${
+            processCount - 2
+          } more`;
 
     const choice = await dialog.showMessageBox(mainWindow!, {
-      type: "warning",
-      buttons: ["Cancel", "Quit Anyway"],
+      type: "question",
+      buttons: ["Wait for Completion", "Quit Anyway"],
       defaultId: 0,
-      title: "Content Generation in Progress",
-      message: `${processText} ${
-        activeProcesses.length === 1 ? "is" : "are"
-      } currently in progress. Quitting now may result in incomplete or corrupted data.`,
-      detail: "Are you sure you want to quit?",
+      cancelId: 0,
+      title: `${processCount} Active ${
+        isPlural ? "Processes" : "Process"
+      } Running`,
+      message: `You have ${
+        isPlural ? "processes" : "a process"
+      } currently running that ${
+        isPlural ? "haven't" : "hasn't"
+      } finished yet.`,
+      detail: [
+        `📋 Active ${isPlural ? "processes" : "process"}: ${processListText}`,
+        "",
+        "💡 What happens if you quit now:",
+        "• Your work in progress may be lost",
+        "• Generated content might be incomplete",
+        "• You may need to restart these tasks",
+        "",
+        "🔒 Recommended: Let the processes finish, then quit safely.",
+      ].join("\n"),
+      noLink: true,
+      normalizeAccessKeys: false,
     });
 
     return choice.response === 1;
