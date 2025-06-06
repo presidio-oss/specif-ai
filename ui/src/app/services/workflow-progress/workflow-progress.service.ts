@@ -172,6 +172,23 @@ export class WorkflowProgressService implements OnDestroy {
   }
 
   /**
+   * Observable that emits `true` if any content (Solution, Story, or Task)
+   * is currently being generated across any project and workflow type.
+   *
+   * @returns Observable that emits a boolean indicating if any content generation is in progress
+   */
+  public isAnyContentGenerationInProgress$(): Observable<boolean> {
+    return this.statusState$.pipe(
+      map((statusMap) => {
+        return Object.values(statusMap).some((project) =>
+          Object.values(project).some((status) => status.isCreating),
+        );
+      }),
+      distinctUntilChanged(),
+    );
+  }
+
+  /**
    * Clear progress events for a specific project and workflow type
    *
    * @param projectId - Unique identifier for the project

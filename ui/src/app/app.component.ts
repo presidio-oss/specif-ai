@@ -38,14 +38,11 @@ export class AppComponent implements OnInit, OnDestroy {
   workflowProgressService = inject(WorkflowProgressService);
 
   private subscriptions: Subscription[] = [];
+  private isCreating: boolean = false;
 
-  @HostListener('window:keydown', ['$event'])
-  keydownHandler(event: KeyboardEvent): void {
-    if (event.key === 'F5') {
-      event.preventDefault();
-    }
-
-    if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.isCreating) {
       event.preventDefault();
     }
   }
@@ -82,6 +79,12 @@ export class AppComponent implements OnInit, OnDestroy {
           this.checkAnalyticsPermission();
         }),
     );
+
+    this.workflowProgressService
+      .isAnyContentGenerationInProgress$()
+      .subscribe((status) => {
+        this.isCreating = status;
+      });
   }
 
   private checkAuthAndRedirect() {

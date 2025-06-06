@@ -58,7 +58,7 @@ export class WorkflowProgressComponent implements OnInit {
   hasInputOutput(event: WorkflowProgressEvent): boolean {
     return (
       (event.type === 'mcp' || event.type === 'action') &&
-      (!!event.message.input || !!event.message.output)
+      (!!event.message?.input || !!event.message?.output)
     );
   }
 
