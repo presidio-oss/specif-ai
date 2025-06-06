@@ -72,7 +72,10 @@ export class WorkflowProgressService implements OnDestroy {
     .asObservable()
     .pipe(distinctUntilChanged(), shareReplay(1));
 
-  constructor(private readonly ngZone: NgZone) {
+  constructor(
+    private readonly ngZone: NgZone,
+    private readonly electronService: ElectronService,
+  ) {
     this.initializeService();
   }
 
@@ -581,11 +584,24 @@ export class WorkflowProgressService implements OnDestroy {
    * @param projectId - Unique identifier for the project
    * @param workflowType - Type of workflow
    */
-  public setCreating(projectId: string, workflowType: WorkflowType): void {
+  public async setCreating(
+    projectId: string,
+    workflowType: WorkflowType,
+  ): Promise<void> {
     this.setCreationStatus(projectId, workflowType, {
       isCreating: true,
       isComplete: false,
     });
+
+    try {
+      await this.electronService.setContentGenerationStatus(
+        projectId,
+        workflowType,
+        true,
+      );
+    } catch (error) {
+      console.error('Failed to set content generation status:', error);
+    }
   }
 
   /**
@@ -593,11 +609,24 @@ export class WorkflowProgressService implements OnDestroy {
    * @param projectId - Unique identifier for the project
    * @param workflowType - Type of workflow
    */
-  public setComplete(projectId: string, workflowType: WorkflowType): void {
+  public async setComplete(
+    projectId: string,
+    workflowType: WorkflowType,
+  ): Promise<void> {
     this.setCreationStatus(projectId, workflowType, {
       isCreating: false,
       isComplete: true,
     });
+
+    try {
+      await this.electronService.setContentGenerationStatus(
+        projectId,
+        workflowType,
+        false,
+      );
+    } catch (error) {
+      console.error('Failed to set content generation status:', error);
+    }
   }
 
   /**
@@ -605,11 +634,24 @@ export class WorkflowProgressService implements OnDestroy {
    * @param projectId - Unique identifier for the project
    * @param workflowType - Type of workflow
    */
-  public setFailed(projectId: string, workflowType: WorkflowType): void {
+  public async setFailed(
+    projectId: string,
+    workflowType: WorkflowType,
+  ): Promise<void> {
     this.setCreationStatus(projectId, workflowType, {
       isCreating: false,
       isComplete: false,
     });
+
+    try {
+      await this.electronService.setContentGenerationStatus(
+        projectId,
+        workflowType,
+        false,
+      );
+    } catch (error) {
+      console.error('Failed to set content generation status:', error);
+    }
   }
 
   /**

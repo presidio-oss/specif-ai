@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+import { ContentGenerationType } from "./types/content-generation.types";
 
 type IpcListener = (event: IpcRendererEvent, ...args: any[]) => void;
 
@@ -76,17 +77,26 @@ const solutionListeners = {
 };
 
 const contentGenerationListeners = {
-  setStatus: (type: string, isInProgress: boolean) =>
-    ipcRenderer.invoke("content-generation:setStatus", type, isInProgress),
-  getStatus: (type: string) =>
+  setContentGenerationStatus: (
+    solutionId: string,
+    type: ContentGenerationType,
+    isInProgress: boolean
+  ) =>
+    ipcRenderer.invoke(
+      "content-generation:setStatus",
+      solutionId,
+      type,
+      isInProgress
+    ),
+  getContentGenerationStatus: (type: ContentGenerationType) =>
     ipcRenderer.invoke("content-generation:getStatus", type),
-  getActiveProcesses: () =>
+  getActiveContentGenerationProcesses: () =>
     ipcRenderer.invoke("content-generation:getActiveProcesses"),
-  isAnyInProgress: () =>
+  isAnyContentGenerationInProgress: () =>
     ipcRenderer.invoke("content-generation:isAnyInProgress"),
-  getActiveProcessNames: () =>
+  getActiveContentGenerationProcessNames: () =>
     ipcRenderer.invoke("content-generation:getActiveProcessNames"),
-  clearAll: () =>
+  clearAllContentGenerationProcesses: () =>
     ipcRenderer.invoke("content-generation:clearAll"),
 };
 

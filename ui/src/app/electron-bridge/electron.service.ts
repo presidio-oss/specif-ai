@@ -98,44 +98,54 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  async setContentGenerationStatus(type: 'solution' | 'story' | 'task', isInProgress: boolean): Promise<void> {
+  
+  async setContentGenerationStatus(
+    solutionId: string,
+    type: WorkflowType,
+    isInProgress: boolean,
+  ): Promise<void> {
     if (this.electronAPI) {
-      await this.electronAPI.setStatus(type, isInProgress);
+      await this.electronAPI.setContentGenerationStatus(
+        solutionId,
+        type,
+        isInProgress,
+      );
     }
   }
 
-  async getContentGenerationStatus(type: 'solution' | 'story' | 'task'): Promise<boolean> {
+  async getContentGenerationStatus(type: WorkflowType): Promise<boolean> {
     if (this.electronAPI) {
-      return await this.electronAPI.getStatus(type);
+      return await this.electronAPI.getContentGenerationStatus(type);
     }
     return false;
   }
 
   async getActiveContentGenerationProcesses(): Promise<any[]> {
     if (this.electronAPI) {
-      return await this.electronAPI.getActiveProcesses();
+      return await this.electronAPI.getActiveContentGenerationProcesses();
     }
     return [];
   }
 
   async isAnyContentGenerationInProgress(): Promise<boolean> {
     if (this.electronAPI) {
-      return await this.electronAPI.isAnyInProgress();
+      return await this.electronAPI.isAnyContentGenerationInProgress();
     }
     return false;
   }
 
   async getActiveContentGenerationProcessNames(): Promise<string[]> {
     if (this.electronAPI) {
-      return await this.electronAPI.getActiveProcessNames();
+      return await this.electronAPI.getActiveContentGenerationProcessNames();
     }
     return [];
   }
 
-  async clearAllContentGenerationStatuses(): Promise<void> {
+  async clearAllContentGenerationProcesses(): Promise<void> {
     if (this.electronAPI) {
-      await this.electronAPI.clearAll();
+      await this.electronAPI.clearAllContentGenerationProcesses();
     }
+    throw new Error('Electron is not available');
   }
 
   async validateBedrock(config: BedrockValidationPayload): Promise<boolean> {

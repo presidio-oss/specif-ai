@@ -32,6 +32,7 @@ import {
   IUserStoriesRequest,
   IUserStoryResponse,
 } from 'src/app/model/interfaces/IUserStory';
+import { WorkflowType } from '../model/interfaces/workflow-progress.interface';
 
 export interface ElectronAPI {
   openFile: () => Promise<string[]>;
@@ -102,12 +103,16 @@ export interface ElectronAPI {
   getPlatform: () => string;
 
   // Content Generation Process Management
-  setStatus(type: string, isInProgress: boolean): Promise<void>;
-  getStatus(type: string): Promise<boolean>;
-  getActiveProcesses(): Promise<any[]>;
-  isAnyInProgress(): Promise<boolean>;
-  getActiveProcessNames(): Promise<string[]>;
-  clearAll(): Promise<void>;
+  setContentGenerationStatus(
+    solutionId: string,
+    type: WorkflowType,
+    isInProgress: boolean,
+  ): Promise<void>;
+  getContentGenerationStatus(type: WorkflowType): Promise<boolean>;
+  getActiveContentGenerationProcesses(): Promise<any[]>;
+  isAnyContentGenerationInProgress(): Promise<boolean>;
+  getActiveContentGenerationProcessNames(): Promise<string[]>;
+  clearAllContentGenerationProcesses(): Promise<void>;
 }
 
 declare global {

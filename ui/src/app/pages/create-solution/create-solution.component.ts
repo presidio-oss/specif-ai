@@ -182,19 +182,17 @@ export class CreateSolutionComponent implements OnInit {
           this.electronService,
         );
       }
-      await this.electronService.setContentGenerationStatus('solution', true);
-      this.workflowProgressService.setCreating(data.id, WorkflowType.Solution);
+      await this.workflowProgressService.setCreating(
+        data.id,
+        WorkflowType.Solution,
+      );
 
       this.store.dispatch(new CreateProject(data.name, data)).subscribe({
         next: async () => {
           this.toast.showSuccess(
             `All set! Your ${data.name} solution is ready to roll.`,
           );
-          await this.electronService.setContentGenerationStatus(
-            'solution',
-            false,
-          );
-          this.workflowProgressService.setComplete(
+          await this.workflowProgressService.setComplete(
             data.id,
             WorkflowType.Solution,
           );
@@ -202,11 +200,7 @@ export class CreateSolutionComponent implements OnInit {
         error: async (error) => {
           this.addOrUpdate = false;
           this.toast.showError(error.message);
-          await this.electronService.setContentGenerationStatus(
-            'solution',
-            false,
-          );
-          this.workflowProgressService.setFailed(
+          await this.workflowProgressService.setFailed(
             data.id,
             WorkflowType.Solution,
           );

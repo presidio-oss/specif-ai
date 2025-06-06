@@ -1,53 +1,59 @@
 import { ipcMain } from "electron";
+import { contentGenerationManager } from "../services/content-generation/content-generation.service";
 import {
-  contentGenerationManager,
   ContentGenerationProcess,
-} from "../utils/content-generation-manager";
+  ContentGenerationType,
+} from "../types/content-generation.types";
 
 export function setupContentGenerationHandlers() {
   ipcMain.handle(
     "content-generation:setStatus",
     async (
       _event,
-      type: ContentGenerationProcess["type"],
+      solutionId: string,
+      type: ContentGenerationType,
       isInProgress: boolean
     ) => {
-      contentGenerationManager.setProcessStatus(type, isInProgress);
+      contentGenerationManager.setContentGenerationStatus(
+        solutionId,
+        type,
+        isInProgress
+      );
       return { success: true };
     }
   );
 
   ipcMain.handle(
     "content-generation:getStatus",
-    async (_event, type: ContentGenerationProcess["type"]) => {
+    async (_event, type: ContentGenerationType) => {
       return contentGenerationManager
-        .getActiveProcesses()
-        .some((p) => p.type === type);
+        .getActiveContentGenerationProcesses()
+        .some((p: ContentGenerationProcess) => p.type === type);
     }
   );
 
   ipcMain.handle("content-generation:getActiveProcesses", async () => {
-    return contentGenerationManager.getActiveProcesses();
+    return contentGenerationManager.getActiveContentGenerationProcesses();
   });
 
   ipcMain.handle("content-generation:isAnyInProgress", async () => {
-    return contentGenerationManager.isAnyProcessInProgress();
+    return contentGenerationManager.isAnyContentGenerationInProgress();
   });
 
   ipcMain.handle("content-generation:getActiveProcessNames", async () => {
-    return contentGenerationManager.getActiveProcessNames();
+    return contentGenerationManager.getActiveContentGenerationProcessNames();
   });
 
   ipcMain.handle("content-generation:clearAll", async () => {
-    contentGenerationManager.clear();
+    contentGenerationManager.clearAllContentGenerationProcesses();
     return { success: true };
   });
 }
 
 export function isAnyContentGenerationInProgress(): boolean {
-  return contentGenerationManager.isAnyProcessInProgress();
+  return contentGenerationManager.isAnyContentGenerationInProgress();
 }
 
 export function getActiveContentGenerationProcessNames(): string[] {
-  return contentGenerationManager.getActiveProcessNames();
+  return contentGenerationManager.getActiveContentGenerationProcessNames();
 }
