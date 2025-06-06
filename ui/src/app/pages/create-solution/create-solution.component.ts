@@ -169,6 +169,19 @@ export class CreateSolutionComponent implements OnInit {
       const data = this.solutionForm.getRawValue();
       data.createReqt = !data.cleanSolution;
 
+      if (
+        data?.id &&
+        !this.workflowProgressService.hasGlobalListener(
+          data?.id,
+          WorkflowType.Solution,
+        )
+      ) {
+        this.workflowProgressService.registerGlobalListener(
+          data?.id,
+          WorkflowType.Solution,
+          this.electronService,
+        );
+      }
       await this.electronService.setContentGenerationStatus('solution', true);
       this.workflowProgressService.setCreating(data.id, WorkflowType.Solution);
 

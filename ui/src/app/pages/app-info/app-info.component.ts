@@ -337,21 +337,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.isBedrockConnected && this.bedrockForm.disable();
 
     this.initMcpForm();
-
-    if (this.projectId) {
-      if (
-        !this.workflowProgressService.hasGlobalListener(
-          this.projectId,
-          WorkflowType.Solution,
-        )
-      ) {
-        this.workflowProgressService.registerGlobalListener(
-          this.projectId,
-          WorkflowType.Solution,
-          this.electronService,
-        );
-      }
-    }
   }
 
   isTokenValid(): boolean {
