@@ -225,7 +225,7 @@ async function confirmQuitDuringActiveProcesses(): Promise<boolean> {
           } more`;
 
     const choice = await dialog.showMessageBox(mainWindow!, {
-      type: "question",
+      type: "warning",
       buttons: ["Wait for Completion", "Quit Anyway"],
       defaultId: 0,
       cancelId: 0,
