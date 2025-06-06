@@ -165,7 +165,7 @@
     <!-- chat/include brds section for prd -->
     <div
       *ngIf="isPRD()"
-      class="flex flex-col bg-white border border-secondary-200 rounded-lg h-full lg:col-span-1"
+      class="flex flex-col bg-white border rounded lg:col-span-1 h-[calc(100vh-80px)]"
     >
       <div
         class="flex justify-center rounded-lg bg-white w-full border-b-[0.5px] border-secondary-300 rounded-b-none"
@@ -226,7 +226,7 @@
       <ng-container *ngIf="activeTab === 'includeFiles'">
         <ng-container *ngIf="documentList.length > 0; else noDocuments">
           <div
-            class="grow flex flex-col gap-4 w-full p-4 overflow-y-auto h-full doc-section-height"
+            class="grow flex flex-col gap-4 w-full p-4 overflow-y-auto h-full"
           >
             <div *ngFor="let item of documentList" class="flex w-full">
               <app-checkbox-card
@@ -271,10 +271,7 @@
         </ng-template>
       </ng-container>
 
-      <div
-        *ngIf="activeTab === 'chat'"
-        class="space-y-4 doc-section-height h-full grow"
-      >
+      <div *ngIf="activeTab === 'chat'" class="h-full">
         <app-chat
           class="h-full block"
           chatType="requirement"
@@ -294,22 +291,20 @@
     <!-- for non prd requirements -->
     <div
       *ngIf="mode === 'edit' && !isPRD()"
-      class="flex flex-col bg-white border border-secondary-200 rounded-lg h-full lg:col-span-1"
+      class="flex flex-col bg-white border rounded lg:col-span-1 h-[calc(100vh-80px)]"
     >
-      <div class="space-y-4 doc-section-height h-full grow">
-        <app-chat
-          class="h-full block"
-          chatType="requirement"
-          [name]="name"
-          [description]="description"
-          [fileName]="fileName"
-          [chatHistory]="chatHistory"
-          [baseContent]="requirementForm.getRawValue().content"
-          (getContent)="appendRequirement($event)"
-          (updateChatHistory)="updateChatHistory($event)"
-          [containerClass]="'border-none h-full'"
-        />
-      </div>
+      <app-chat
+        class="h-full block"
+        chatType="requirement"
+        [name]="name"
+        [description]="description"
+        [fileName]="fileName"
+        [chatHistory]="chatHistory"
+        [baseContent]="requirementForm.getRawValue().content"
+        (getContent)="appendRequirement($event)"
+        (updateChatHistory)="updateChatHistory($event)"
+        [containerClass]="'border-none h-full'"
+      />
     </div>
   </div>
 </div>

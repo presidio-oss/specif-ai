@@ -202,8 +202,11 @@
         </ul>
       </div>
     </section>
-    <section aria-labelledby="Main Content" class="col-span-2 h-full">
-      <div class="overflow-hidden rounded-lg bg-white border h-full">
+    <section
+      aria-labelledby="Main Content"
+      class="col-span-2 h-[calc(100vh-80px)] overflow-hidden"
+    >
+      <div class="overflow-auto rounded-lg bg-white border h-full">
         <div
           *ngIf="
             selectedFolder?.title !== 'solution' &&
