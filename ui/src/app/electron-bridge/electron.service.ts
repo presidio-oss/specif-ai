@@ -145,7 +145,6 @@ export class ElectronService {
     if (this.electronAPI) {
       await this.electronAPI.clearAllContentGenerationProcesses();
     }
-    throw new Error('Electron is not available');
   }
 
   async validateBedrock(config: BedrockValidationPayload): Promise<boolean> {
