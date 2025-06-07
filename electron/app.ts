@@ -17,6 +17,7 @@ import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
 import { setupMcpHandlers } from "./handlers/mcp-handler";
 import { MCPHub } from "./mcp/mcp-hub";
+import { APP_MESSAGES } from "./constants/message.constants";
 
 // ========================
 // CONFIGURATION
@@ -207,50 +208,54 @@ function isValidUrl(url: string): boolean {
   }
 }
 
-async function confirmQuitDuringActiveProcesses(): Promise<boolean> {
-  const activeProcesses = getActiveContentGenerationProcessNames();
-  try {
-    const processCount = activeProcesses.length;
-    const isPlural = processCount > 1;
+function formatProcessList(processes: string[]): string {
+  const counts = processes.reduce((acc, name) => {
+    acc[name] = (acc[name] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-    const displayProcesses = activeProcesses.map((name) =>
-      name.length > 30 ? `${name.substring(0, 27)}...` : name
+  const formatted = Object.entries(counts).map(([name, count]) => {
+    const display = count > 1 ? `${name} (${count})` : name;
+    return display.length > 30 ? `${display.substring(0, 27)}...` : display;
+  });
+
+  return formatted.length <= 3
+    ? formatted.join(", ")
+    : `${formatted.slice(0, 2).join(", ")} and ${formatted.length - 2} more`;
+}
+
+function createQuitDialogOptions(
+  processCount: number,
+  processListText: string
+) {
+  const isPlural = processCount > 1;
+
+  return {
+    type: "warning" as const,
+    buttons: [
+      APP_MESSAGES.QUIT_DIALOG.BUTTONS.CANCEL,
+      APP_MESSAGES.QUIT_DIALOG.BUTTONS.QUIT_ANYWAY,
+    ],
+    defaultId: 1,
+    cancelId: 0,
+    title: APP_MESSAGES.QUIT_DIALOG.TITLE(processCount, isPlural),
+    message: APP_MESSAGES.QUIT_DIALOG.MESSAGE(isPlural),
+    detail: APP_MESSAGES.QUIT_DIALOG.DETAIL(processListText),
+    noLink: true,
+    normalizeAccessKeys: false,
+  };
+}
+
+async function confirmQuitDuringActiveProcesses(): Promise<boolean> {
+  try {
+    const activeProcesses = getActiveContentGenerationProcessNames();
+    const processListText = formatProcessList(activeProcesses);
+    const dialogOptions = createQuitDialogOptions(
+      activeProcesses.length,
+      processListText
     );
 
-    const processListText =
-      processCount <= 3
-        ? displayProcesses.join(", ")
-        : `${displayProcesses.slice(0, 2).join(", ")} and ${
-            processCount - 2
-          } more`;
-
-    const choice = await dialog.showMessageBox(mainWindow!, {
-      type: "warning",
-      buttons: ["Wait for Completion", "Quit Anyway"],
-      defaultId: 0,
-      cancelId: 0,
-      title: `${processCount} Active ${
-        isPlural ? "Processes" : "Process"
-      } Running`,
-      message: `You have ${
-        isPlural ? "processes" : "a process"
-      } currently running that ${
-        isPlural ? "haven't" : "hasn't"
-      } finished yet.`,
-      detail: [
-        `📋 Active ${isPlural ? "processes" : "process"}: ${processListText}`,
-        "",
-        "💡 What happens if you quit now:",
-        "• Your work in progress may be lost",
-        "• Generated content might be incomplete",
-        "• You may need to restart these tasks",
-        "",
-        "🔒 Recommended: Let the processes finish, then quit safely.",
-      ].join("\n"),
-      noLink: true,
-      normalizeAccessKeys: false,
-    });
-
+    const choice = await dialog.showMessageBox(mainWindow!, dialogOptions);
     return choice.response === 1;
   } catch (error) {
     console.error("Error showing quit dialog:", error);
@@ -282,8 +287,6 @@ app.whenReady().then(async () => {
   app.on("window-all-closed", () => app.quit());
 
   app.on("before-quit", async (event) => {
-    console.log("App before quit...", isAnyContentGenerationInProgress());
-
     if (isAnyContentGenerationInProgress()) {
       event.preventDefault();
 
