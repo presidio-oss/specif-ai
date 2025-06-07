@@ -1,17 +1,11 @@
 <div
-  class="divide-y divide-secondary-200 overflow-hidden rounded-lg bg-white border w-full"
+  class="divide-y divide-secondary-200 overflow-hidden rounded-lg bg-white border w-full h-[calc(100vh-80px)]"
 >
-  <div class="px-4 py-4">
-    <h1
-      class="text-xl font-medium leading-tight tracking-tight text-secondary-900"
-    >
-      Settings
-    </h1>
-  </div>
-  <div class="doc-section-height grid grid-cols-[minmax(0,1fr)_minmax(0,3fr)]">
+  <div
+    class="overflow-auto h-full grid grid-cols-[minmax(0,1fr)_minmax(0,3fr)]"
+  >
     <!-- Left-side tabs navigation -->
     <div class="border-r border-secondary-200 overflow-auto h-full">
-      <h2 id="settings-tabs" class="sr-only">Settings sections</h2>
       <div role="tablist" aria-labelledby="settings-tabs">
         <button
           id="tab-general"
@@ -27,7 +21,7 @@
           "
           class="w-full px-3 py-3 text-sm font-medium text-left focus:outline-none border-l-2"
         >
-          General
+          Settings
         </button>
         <button
           id="tab-about"
@@ -211,7 +205,11 @@
                   <span class="text-sm text-secondary-900"
                     >Use Custom Langfuse Account</span
                   >
-                  <label class="relative inline-flex items-center" [class.cursor-not-allowed]="!analyticsEnabled.value" [class.cursor-pointer]="analyticsEnabled.value">
+                  <label
+                    class="relative inline-flex items-center"
+                    [class.cursor-not-allowed]="!analyticsEnabled.value"
+                    [class.cursor-pointer]="analyticsEnabled.value"
+                  >
                     <input
                       type="checkbox"
                       id="langfuseToggle"
@@ -226,9 +224,11 @@
                   </label>
                 </div>
 
-
-
-                <form [formGroup]="langfuseForm" class="space-y-4 mt-4" *ngIf="useLangfuseCustomConfig.value">
+                <form
+                  [formGroup]="langfuseForm"
+                  class="space-y-4 mt-4"
+                  *ngIf="useLangfuseCustomConfig.value"
+                >
                   <!-- Error Message -->
                   <div
                     *ngIf="langfuseErrorMessage && hasChanges"
@@ -451,6 +451,30 @@
               getAboutContent().version
             }}</span>
           </div>
+          <!-- <button
+            class="w-full px-4 py-3 text-sm text-secondary-600 flex items-center justify-between hover:bg-secondary-50"
+            role="button"
+            tabindex="0"
+            (click)="electronService.openExternalUrl('https://github.com/presidio-oss/specif-ai/wiki')"
+          >
+            <span>Specifai User Guide</span>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              class="text-secondary-400"
+            >
+              <path
+                d="M7.5 15L12.5 10L7.5 5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button> -->
           <button
             class="w-full px-4 py-3 text-sm text-danger-600 flex items-center justify-between hover:bg-danger-50"
             role="button"

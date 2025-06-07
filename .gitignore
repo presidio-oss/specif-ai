@@ -79,5 +79,8 @@ release/
 *.mov
 *.wmv
 
+/docs/.docusaurus/
+
 # Miscellaneous
 .hai/
+.hai.config

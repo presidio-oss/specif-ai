@@ -1,0 +1,289 @@
+/**
+ * Global styles and theme variables
+ */
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Theme variables */
+:root {
+  --ifm-color-primary: #4f46e5;
+  --ifm-color-primary-dark: #4338ca;
+  --ifm-color-primary-darker: #3730a3;
+  --ifm-color-primary-darkest: #312e81;
+  --ifm-color-primary-light: #6366f1;
+  --ifm-color-primary-lighter: #818cf8;
+  --ifm-color-primary-lightest: #a5b4fc;
+  --ifm-background-surface-color: #ffffff;
+  --footer-background: #f1f5f9;
+  --ifm-font-family-base: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --ifm-code-font-size: 95%;
+  --ifm-spacing-horizontal: 2rem;
+  --ifm-leading: 2;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  
+  /* Component variables */
+  --feature-card-bg: #ffffff;
+  --feature-card-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  --hero-text-color: #1e1b4b;
+  --hero-background: #f8fafc;
+  --hero-subtitle-color: #7b7c96;
+  --hero-gradient-start: #f8fafc;
+  --hero-gradient-end: #f1f5f9;
+  --hero-border-color: rgba(99, 102, 241, 0.1);
+  --button-background: rgba(79, 70, 229, 0.1);
+  --button-hover-background: rgba(79, 70, 229, 0.15);
+  --button-text-color: #4f46e5;
+  --button-shadow: rgba(79, 70, 229, 0.1);
+  --button-hover-shadow: rgba(79, 70, 229, 0.2);
+  --navbar-background: rgba(248, 250, 252, 0.9);
+  --navbar-border: rgba(229, 231, 235, 0.5);
+  
+  /* Back to top button */
+  --back-to-top-text-color: white;
+  --back-to-top-shadow-color: rgba(0, 0, 0, 0.15);
+  --back-to-top-shadow-color-hover: rgba(0, 0, 0, 0.2);
+
+  /* Hero banner gradients */
+  --hero-gradient-top-color: #E0E7FF;
+  --hero-gradient-bottom-color: #C7D2FE;
+  --hero-product-name-gradient-start: #818CF8;
+  --hero-product-name-gradient-end: #6366F1;
+  --hero-button-primary-bg: #6366F1;
+  --hero-button-primary-border: #4F46E5;
+  --hero-button-primary-text: white;
+  --hero-button-primary-hover-bg: #4F46E5;
+  --hero-button-secondary-text: #6366F1;
+  --hero-button-secondary-border: #6366F1;
+  --hero-button-secondary-hover-bg: rgba(99, 102, 241, 0.1);
+  --hero-button-secondary-hover-text: #4F46E5;
+  --hero-button-shine: rgba(255, 255, 255, 0.2);
+  --hero-image-glow-start: #bd34fe;
+  --hero-image-glow-end: #47caff;
+
+  /* Feature cards */
+  --feature-bg: #F8FAFC;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border: rgba(124, 58, 237, 0.2);
+  --card-shadow: rgba(124, 58, 237, 0.1);
+  --title-color: #1E293B;
+  --desc-color: #475569;
+  --shine-color: rgba(124, 58, 237, 0.1);
+  --hover-shadow: rgba(124, 58, 237, 0.15);
+  --hover-border: rgba(124, 58, 237, 0.4);
+  --hover-bg: rgba(255, 255, 255, 1);
+}
+
+/* Dark mode theme */
+[data-theme='dark'] {
+  --ifm-color-primary: #818cf8;
+  --ifm-color-primary-dark: #6366f1;
+  --ifm-color-primary-darker: #4f46e5;
+  --ifm-color-primary-darkest: #4338ca;
+  --ifm-color-primary-light: #a5b4fc;
+  --ifm-color-primary-lighter: #c7d2fe;
+  --ifm-color-primary-lightest: #e0e7ff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --footer-background: #161b22;
+  --feature-card-bg: #1c1c1c;
+  --feature-card-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --hero-text-color: #ffffff;
+  --hero-background: #0D1117;
+  --hero-subtitle-color: #94A3B8;
+  --hero-gradient-start: #0D1117;
+  --hero-gradient-end: #171923;
+  --hero-border-color: rgba(255, 255, 255, 0.05);
+  --button-background: rgba(99, 102, 241, 0.1);
+  --button-hover-background: rgba(99, 102, 241, 0.2);
+  --button-text-color: #a5b4fc;
+  --button-shadow: rgba(79, 70, 229, 0.2);
+  --button-hover-shadow: rgba(79, 70, 229, 0.3);
+  --navbar-background: rgba(13, 17, 23, 0.9);
+  --navbar-border: rgba(255, 255, 255, 0.05);
+  
+  /* Back to top button */
+  --back-to-top-text-color: white;
+  --back-to-top-shadow-color: rgba(0, 0, 0, 0.3);
+  --back-to-top-shadow-color-hover: rgba(0, 0, 0, 0.4);
+
+  /* Hero banner gradients - dark mode */
+  --hero-gradient-top-color: #4F46E5;
+  --hero-gradient-bottom-color: #6366F1;
+  --hero-product-name-gradient-start: #A5B4FC;
+  --hero-product-name-gradient-end: #818CF8;
+  --hero-button-primary-bg: #818CF8;
+  --hero-button-primary-border: #6366F1;
+  --hero-button-primary-text: white;
+  --hero-button-primary-hover-bg: #6366F1;
+  --hero-button-secondary-text: #818CF8;
+  --hero-button-secondary-border: #818CF8;
+  --hero-button-secondary-hover-bg: rgba(129, 140, 248, 0.1);
+  --hero-button-secondary-hover-text: #A5B4FC;
+  --hero-button-shine: rgba(255, 255, 255, 0.15); 
+  --hero-image-glow-start: #bd34fe;
+  --hero-image-glow-end: #47caff;
+
+  /* Feature cards - dark mode */
+  --feature-bg: #0D1117;
+  --card-bg: rgba(30, 41, 59, 0.7);
+  --card-border: rgba(124, 58, 237, 0.6);
+  --card-shadow: rgba(124, 58, 237, 0.5);
+  --title-color: #fff;
+  --desc-color: #CBD5E1;
+  --shine-color: rgba(255, 255, 255, 0.2);
+  --hover-shadow: rgba(124, 58, 237, 0.9);
+  --hover-border: rgba(124, 58, 237, 1);
+  --hover-bg: rgba(30, 41, 59, 0.9);
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography */
+.markdown {
+  --ifm-heading-margin-top: 1.5rem;
+  --ifm-heading-margin-bottom: 1rem;
+  --ifm-h1-vertical-rhythm-top: 1rem;
+  --ifm-h2-vertical-rhythm-top: 0.75rem;
+  --ifm-h3-vertical-rhythm-top: 0.5rem;
+  --ifm-heading-vertical-rhythm-bottom: 0.5rem;
+  --ifm-h1-vertical-rhythm-bottom: 0.75rem;
+  --ifm-h2-vertical-rhythm-bottom: 0.5rem;
+  --ifm-h3-vertical-rhythm-bottom: 0.3rem;
+  --ifm-code-font-size: 0.95rem;
+  --ifm-code-padding: 0.5rem 0.75rem;
+}
+
+/* Layout */
+.container {
+  padding: 2rem var(--ifm-spacing-horizontal);
+}
+
+main {
+  padding: 1.5rem 0;
+}
+
+section {
+  margin: 2.5rem 0;
+}
+
+.content {
+  margin-bottom: 2rem;
+}
+
+article {
+  margin-bottom: 2rem;
+}
+
+/* Navigation */
+.navbar {
+  backdrop-filter: blur(10px);
+  background-color: var(--navbar-background);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--navbar-border);
+  transition: all 0.3s ease;
+}
+
+.navbar__brand {
+  font-family: var(--ifm-font-family-base);
+}
+
+.navbar__link {
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navbar__link:hover {
+  color: var(--ifm-color-primary);
+}
+
+/* Footer */
+.footer {
+  background: var(--footer-background);
+  padding: 4rem 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+[data-theme='dark'] .footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer__title {
+  color: var(--hero-text-color);
+  font-weight: 600;
+}
+
+.footer__link-item {
+  color: var(--hero-text-color);
+  opacity: 0.8;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.footer__link-item:hover {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.footer__copyright {
+  color: var(--hero-text-color);
+  opacity: 0.7;
+}
+
+/* Code blocks */
+.prism-code {
+  font-size: 0.9rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Back to top button */
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--ifm-color-primary);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-to-top:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive design */
+@media screen and (max-width: 996px) {
+  .container {
+    padding: 1.5rem var(--ifm-spacing-horizontal);
+  }
+  
+  .back-to-top {
+    bottom: 10px;
+    right: 10px;
+  }
+}
