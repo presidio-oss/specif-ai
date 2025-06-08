@@ -22,6 +22,7 @@ import { ObservabilityManager } from '../../services/observability/observability
 import { MCPHub } from '../../mcp/mcp-hub';
 import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
 import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
+import { OperationRegistry } from '../../services/operation-registry';
 
 // types
 
@@ -97,6 +98,9 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
 }
 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
+  const operationRegistry = OperationRegistry.getInstance();
+  let operationId: string | null = null;
+
   try {
     const o11y = ObservabilityManager.getInstance();
     const trace = o11y.createTrace('create-solution');
@@ -112,6 +116,11 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     const validationSpan = trace.span({name: "input-validation"})
     const validatedData = await createSolutionSchema.parseAsync(data);
     validationSpan.end();
+
+    operationId = `create-solution-${validatedData.id}`;
+    const abortController = operationRegistry.createController(operationId);
+    
+    console.log(`[create-solution] Created AbortController for operation: ${operationId}`);
 
     const results: SolutionResponse = {
       createReqt: validatedData.createReqt ?? false,
@@ -186,49 +195,63 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
           trace: trace,
           sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
         },
+        signal: abortController.signal,
       };
 
-      const stream = createSolutionWorkflow.streamEvents(initialState, {
-        version: "v2",
-        streamMode: "messages",
-        ...config,
-      })
+      try {
+        const stream = createSolutionWorkflow.streamEvents(initialState, {
+          version: "v2",
+          streamMode: "messages",
+          ...config,
+        });
 
-      for await (const streamEvent of stream) {
-        const channel = `solution:${validatedData.id}-workflow-progress`;
-        const timestamp = Date.now();
-
-        switch (streamEvent.event) {
-          case "on_tool_start":
-            event.sender.send(channel, {
-              node: "tools",
-              type: "mcp",
-              message: {
-                title: `Tool call started: ${streamEvent.name}`,
-              },
-              correlationId: streamEvent.run_id,
-              timestamp,
-            });
+        for await (const streamEvent of stream) {
+          if (abortController.signal.aborted) {
+            console.log("[create-solution] Workflow streaming cancelled");
             break;
+          }
 
-          case "on_tool_end":
-            event.sender.send(channel, {
-              node: "tools_end",
-              type: "mcp",
-              message: {
-                title: `Tool call completed: ${streamEvent.name}`,
-                input: streamEvent.data?.input,
-                output: streamEvent.data?.output?.content,
-              },
-              correlationId: streamEvent.run_id,
-              timestamp,
-            });
-            break;
+          const channel = `solution:${validatedData.id}-workflow-progress`;
+          const timestamp = Date.now();
 
-          case "on_custom_event":
-            event.sender.send(channel, streamEvent.data);
-            break;
+          switch (streamEvent.event) {
+            case "on_tool_start":
+              event.sender.send(channel, {
+                node: "tools",
+                type: "mcp",
+                message: {
+                  title: `Tool call started: ${streamEvent.name}`,
+                },
+                correlationId: streamEvent.run_id,
+                timestamp,
+              });
+              break;
+
+            case "on_tool_end":
+              event.sender.send(channel, {
+                node: "tools_end",
+                type: "mcp",
+                message: {
+                  title: `Tool call completed: ${streamEvent.name}`,
+                  input: streamEvent.data?.input,
+                  output: streamEvent.data?.output?.content,
+                },
+                correlationId: streamEvent.run_id,
+                timestamp,
+              });
+              break;
+
+            case "on_custom_event":
+              event.sender.send(channel, streamEvent.data);
+              break;
+          }
         }
+      } catch {
+        console.error("[create-solution] Error during workflow streaming");
+      }
+
+      if (abortController.signal.aborted) {
+        throw new Error('Operation cancelled before retrieving results');
       }
 
       const response = await createSolutionWorkflow.getState({
@@ -291,6 +314,51 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     return results;
   } catch (error) {
     console.error('Error in createSolution:', error);
+    throw error;
+  } finally {
+    if (operationId) {
+      operationRegistry.remove(operationId);
+    }
+  }
+}
+
+export async function abortSolutionCreation(
+  event: IpcMainInvokeEvent,
+  data: { projectId: string }
+): Promise<boolean> {
+  try {
+    const operationRegistry = OperationRegistry.getInstance();
+    const operationId = `create-solution-${data.projectId}`;
+
+    console.log(
+      `[abort-solution] Attempting to abort operation: ${operationId}`
+    );
+
+    const success = operationRegistry.cancel(operationId);
+
+    if (success) {
+      event.sender.send(`solution:${data.projectId}-workflow-progress`, {
+        node: "abort_requested",
+        type: "system",
+        message: {
+          title: "Cancellation requested",
+          description: "Solution creation is being cancelled...",
+        },
+        timestamp: Date.now(),
+      });
+
+      console.log(
+        `[abort-solution] Successfully requested abort for operation: ${operationId}`
+      );
+    } else {
+      console.log(
+        `[abort-solution] No active operation found for: ${operationId}`
+      );
+    }
+
+    return success;
+  } catch (error) {
+    console.error("Error in abortSolutionCreation:", error);
     throw error;
   }
 }

@@ -655,6 +655,53 @@ export class WorkflowProgressService implements OnDestroy {
   }
 
   /**
+   * Abort a workflow operation
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   */
+  public async abortWorkflow(
+    projectId: string,
+    workflowType: WorkflowType,
+  ): Promise<boolean> {
+    try {
+      let success = false;
+
+      switch (workflowType) {
+        case 'solution':
+          success = await this.electronService.abortSolutionCreation(projectId);
+          break;
+        default:
+          console.warn(
+            `Abort not implemented for workflow type: ${workflowType}`,
+          );
+          return false;
+      }
+
+      if (success) {
+        this.setCreationStatus(projectId, workflowType, {
+          isCreating: false,
+          isComplete: false,
+        });
+
+        await this.electronService.setContentGenerationStatus(
+          projectId,
+          workflowType,
+          false,
+        );
+
+        console.log(
+          `Successfully aborted ${workflowType} workflow for project: ${projectId}`,
+        );
+      }
+
+      return success;
+    } catch (error) {
+      console.error(`Failed to abort ${workflowType} workflow:`, error);
+      return false;
+    }
+  }
+
+  /**
    * Get all creation statuses for a specific project
    * @param projectId - Unique identifier for the project
    * @returns Object with all statuses for the project

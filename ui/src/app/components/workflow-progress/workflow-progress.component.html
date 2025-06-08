@@ -1,13 +1,30 @@
 <div *ngIf="isVisible" class="p-4 max-w-4xl mx-auto">
   <div class="flex items-center justify-between mb-4">
     <h1 class="font-semibold text-gray-900 truncate">{{ title }}</h1>
-    <div
-      class="flex items-center text-xs font-medium bg-gray-50 rounded-full px-3 py-1.5 border border-gray-200 shadow-sm"
-    >
+    <div class="flex items-center gap-3">
+      <button
+        *ngIf="showCancelButton && (workflowStatus$ | async)?.isCreating"
+        (click)="onCancelClick()"
+        [disabled]="isAborting"
+        class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-full hover:bg-red-100 hover:border-red-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        type="button"
+      >
+        <div
+          *ngIf="isAborting"
+          class="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"
+        ></div>
+        <ng-icon *ngIf="!isAborting" name="heroXMark" class="w-3 h-3"></ng-icon>
+        <span>{{ isAborting ? "Cancelling..." : "Cancel" }}</span>
+      </button>
+
       <div
-        class="w-1.5 h-1.5 bg-primary-600 rounded-full mr-2 animate-pulse"
-      ></div>
-      <span class="whitespace-nowrap">{{ subtitle }}</span>
+        class="flex items-center text-xs font-medium bg-gray-50 rounded-full px-3 py-1.5 border border-gray-200 shadow-sm"
+      >
+        <div
+          class="w-1.5 h-1.5 bg-primary-600 rounded-full mr-2 animate-pulse"
+        ></div>
+        <span class="whitespace-nowrap">{{ subtitle }}</span>
+      </div>
     </div>
   </div>
 
