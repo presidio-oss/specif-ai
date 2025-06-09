@@ -119,10 +119,10 @@
         </div>
       </form>
     </div>
-    <div *ngIf="mode !== 'add'" class="space-y-4 h-full lg:col-span-1">
+    <div *ngIf="mode !== 'add'" class="flex flex-col h-[calc(100vh-140px)] lg:col-span-1">
       <app-chat
         chatType="userstory"
-        class="h-[inherit]"
+        class="h-full block"
         [name]="projectMetadata?.name"
         [description]="projectMetadata?.description"
         [baseContent]="description"
