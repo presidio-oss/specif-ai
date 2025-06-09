@@ -38,8 +38,11 @@ export class WorkflowProgressComponent implements OnInit {
   @Input() projectId!: string;
   @Input() workflowType!: WorkflowType;
   @Input() isVisible: boolean = false;
+  @Input() isCompleted: boolean = false;
   @Input() title: string = 'Creating Solution...';
   @Input() subtitle: string = 'Relax while SpecifAI takes care of the rest...';
+  @Input() completedTitle: string = 'Process Completed Successfully!';
+  @Input() completedSubtitle: string = 'Workflow completed successfully';
   @Input() maxHeight: string = '24rem';
 
   progress$!: Observable<WorkflowProgressEvent[]>;

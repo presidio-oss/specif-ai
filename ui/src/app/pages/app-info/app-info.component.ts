@@ -742,11 +742,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
   resetSolutionProgress(): void {
     if (this.projectId) {
-      this.workflowProgressService.clearProgressEvents(
-        this.projectId,
-        WorkflowType.Solution,
-      );
-
       this.workflowProgressService.removeGlobalListener(
         this.projectId,
         WorkflowType.Solution,

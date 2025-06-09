@@ -238,9 +238,12 @@
           <app-workflow-progress
             [projectId]="projectId!"
             [workflowType]="WorkflowType.Solution"
-            [isVisible]="isCreatingSolution"
+            [isVisible]="isCreatingSolution || solutionCreationComplete"
+            [isCompleted]="solutionCreationComplete"
             title="Creating Solution..."
             subtitle="Relax while SpecifAI takes care of the rest..."
+            completedTitle="Solution Created Successfully!"
+            completedSubtitle="Your solution has been generated and is ready to view"
           >
           </app-workflow-progress>
 
