@@ -19,6 +19,9 @@
   ]"
   [type]="type"
   [disabled]="disabled"
+  [matTooltip]="disabled ? (tooltipDisabled || '') : (tooltip || '')"
+  [matTooltipDisabled]="!tooltip && !tooltipDisabled"
+  matTooltipPosition="above"
 >
   <ng-container *ngIf="icon">
     <ng-icon
