@@ -215,13 +215,11 @@ function formatProcessList(processes: string[]): string {
   }, {} as Record<string, number>);
 
   const formatted = Object.entries(counts).map(([name, count]) => {
-    const display = count > 1 ? `${name} (${count})` : name;
+    const display = count > 1 ? `${count} x ${name}` : `1 x ${name}`;
     return display.length > 30 ? `${display.substring(0, 27)}...` : display;
   });
 
-  return formatted.length <= 3
-    ? formatted.join(", ")
-    : `${formatted.slice(0, 2).join(", ")} and ${formatted.length - 2} more`;
+  return formatted.map((item) => `• ${item}`).join("\n");
 }
 
 function createQuitDialogOptions(

@@ -14,7 +14,7 @@ export const APP_MESSAGES = {
         isPlural ? "haven't" : "hasn't"
       } finished yet.`,
     DETAIL: (processListText: string) =>
-      `Running: ${processListText}`,
+      `Active Processes:\n${processListText}\n\nLeaving now might stop these processes and discard any unsaved progress.`,
     BUTTONS: {
       CANCEL: "Cancel",
       QUIT_ANYWAY: "Quit Anyway",
