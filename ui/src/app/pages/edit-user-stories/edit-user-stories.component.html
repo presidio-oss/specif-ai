@@ -2,15 +2,15 @@
   <div
     [ngClass]="
       mode === 'add'
-        ? 'grid grid-cols-1 gap-4'
-        : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
+        ? 'grid grid-cols-1 gap-4 h-full'
+        : 'grid grid-cols-1 lg:grid-cols-3 gap-4 h-full'
     "
   >
     <div
       [ngClass]="
         mode === 'add'
-          ? 'bg-white border border-secondary-200 rounded-lg flex flex-col'
-          : 'bg-white border border-secondary-200 rounded-lg flex flex-col lg:col-span-2'
+          ? 'bg-white border border-secondary-200 rounded-lg flex flex-col h-[calc(100vh-80px)]'
+          : 'bg-white border border-secondary-200 rounded-lg flex flex-col lg:col-span-2 h-[calc(100vh-80px)]'
       "
     >
       <header
@@ -67,7 +67,7 @@
               <div class="flex flex-col gap-1.5">
                 <app-rich-text-editor
                   formControlName="description"
-                  editorClass="h-80 overflow-y-auto"
+                  editorClass="h-96 overflow-y-auto"
                   mode="edit"
                 ></app-rich-text-editor>
                 <ng-container *ngIf="userStoryForm.get('description')?.touched">
@@ -119,7 +119,7 @@
         </div>
       </form>
     </div>
-    <div *ngIf="mode !== 'add'" class="flex flex-col h-[calc(100vh-140px)] lg:col-span-1">
+    <div *ngIf="mode !== 'add'" class="flex flex-col h-[calc(100vh-80px)] lg:col-span-1">
       <app-chat
         chatType="userstory"
         class="h-full block"
