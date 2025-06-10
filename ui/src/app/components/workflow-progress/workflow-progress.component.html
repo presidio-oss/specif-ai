@@ -1,13 +1,21 @@
 <div *ngIf="isVisible" class="p-4 max-w-4xl mx-auto">
   <div class="flex items-center justify-between mb-4">
-    <h1 class="font-semibold text-gray-900 truncate">{{ title }}</h1>
+    <h1 class="font-semibold text-gray-900 truncate">
+      {{ isCompleted ? completedTitle : title }}
+    </h1>
     <div
       class="flex items-center text-xs font-medium bg-gray-50 rounded-full px-3 py-1.5 border border-gray-200 shadow-sm"
     >
       <div
-        class="w-1.5 h-1.5 bg-primary-600 rounded-full mr-2 animate-pulse"
+        class="w-1.5 h-1.5 rounded-full mr-2"
+        [ngClass]="{
+          'bg-success-600': isCompleted,
+          'bg-primary-600 animate-pulse': !isCompleted,
+        }"
       ></div>
-      <span class="whitespace-nowrap">{{ subtitle }}</span>
+      <span class="whitespace-nowrap">
+        {{ isCompleted ? completedSubtitle : subtitle }}
+      </span>
     </div>
   </div>
 
