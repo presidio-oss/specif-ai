@@ -2,7 +2,7 @@ import {
   IProject,
   ISolutionResponseRequirementItem,
 } from '../../model/interfaces/projects.interface';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 import {
   BulkReadFiles,
@@ -81,6 +81,7 @@ export class ProjectsState {
     private toast: ToasterService,
     private requirementExportService: RequirementExportService,
     private requirementIdService: RequirementIdService,
+    private ngZone: NgZone,
   ) {}
 
   @Selector()
@@ -156,12 +157,12 @@ export class ProjectsState {
   @Action(CreateProject)
   async createProject(
     { getState, patchState }: StateContext<ProjectStateModel>,
-    { projectName, metadata }: CreateProject,
+    { projectName, metadata, isRetry }: CreateProject,
   ) {
     try {
       const state = getState();
       const projectExists = await this.appSystemService.fileExists(projectName);
-      if (projectExists) {
+      if (projectExists && !isRetry) {
         throw new Error('Project already exists, please retry with another unique project name');
       }
 
@@ -188,7 +189,9 @@ export class ProjectsState {
         projects: sortedProjectList,
       });
       
-      this.router.navigate([`apps/${metadata.id}`]);
+      this.ngZone.run(() => {
+        this.router.navigate([`apps/${metadata.id}`]);
+      });
 
       const response = await this.generateSolution(metadata, projectName);
       const responseMap = {

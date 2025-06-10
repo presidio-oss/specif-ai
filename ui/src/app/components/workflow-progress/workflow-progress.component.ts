@@ -10,12 +10,10 @@ import {
 import {
   WorkflowProgressEvent,
   WorkflowType,
+  WorkflowStatus,
 } from '../../model/interfaces/workflow-progress.interface';
 import { CustomAccordionComponent } from '../custom-accordion/custom-accordion.component';
-import {
-  WorkflowProgressService,
-  WorkflowStatus,
-} from '../../services/workflow-progress/workflow-progress.service';
+import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { Observable, Subject, takeUntil } from 'rxjs';

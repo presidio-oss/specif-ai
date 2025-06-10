@@ -5,51 +5,15 @@ import { IpcRendererEvent } from 'electron';
 import {
   WorkflowProgressEvent,
   WorkflowType,
+  WorkflowErrorEvent,
+  WorkflowStatus,
+  WorkflowProgressState,
+  WorkflowStatusState,
+  ActiveListener,
+  WORKFLOW_PROGRESS_CONFIG,
+  WorkflowProgressError,
 } from '../../model/interfaces/workflow-progress.interface';
 import { ElectronService } from '../../electron-bridge/electron.service';
-
-export interface WorkflowStatus {
-  isCreating: boolean;
-  isComplete: boolean;
-}
-
-interface WorkflowProgressState {
-  [projectId: string]: {
-    [workflowType: string]: WorkflowProgressEvent[];
-  };
-}
-
-interface WorkflowStatusState {
-  [projectId: string]: {
-    [workflowType: string]: WorkflowStatus;
-  };
-}
-
-interface ActiveListener {
-  readonly projectId: string;
-  readonly workflowType: WorkflowType;
-  readonly callback: (
-    event: IpcRendererEvent,
-    data: WorkflowProgressEvent,
-  ) => void;
-}
-
-const WORKFLOW_PROGRESS_CONFIG = {
-  MAX_EVENTS_PER_WORKFLOW: 1000,
-  LISTENER_KEY_SEPARATOR: '-',
-  DEFAULT_TIMEOUT: 5000,
-} as const;
-
-class WorkflowProgressError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-    public readonly context?: Record<string, unknown>,
-  ) {
-    super(message);
-    this.name = 'WorkflowProgressError';
-  }
-}
 
 @Injectable({
   providedIn: 'root',
@@ -637,10 +601,16 @@ export class WorkflowProgressService implements OnDestroy {
   public async setFailed(
     projectId: string,
     workflowType: WorkflowType,
+    failureInfo?: Partial<WorkflowErrorEvent>,
   ): Promise<void> {
     this.setCreationStatus(projectId, workflowType, {
       isCreating: false,
       isComplete: false,
+      isFailed: true,
+      failureInfo: {
+        timestamp: failureInfo?.timestamp || new Date().toISOString(),
+        reason: failureInfo?.reason || 'Unknown error occurred',
+      },
     });
 
     try {
@@ -678,19 +648,10 @@ export class WorkflowProgressService implements OnDestroy {
       }
 
       if (success) {
-        this.setCreationStatus(projectId, workflowType, {
-          isCreating: false,
-          isComplete: false,
-        });
-
         await this.electronService.setContentGenerationStatus(
           projectId,
           workflowType,
           false,
-        );
-
-        console.log(
-          `Successfully aborted ${workflowType} workflow for project: ${projectId}`,
         );
       }
 

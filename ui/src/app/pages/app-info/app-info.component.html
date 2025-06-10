@@ -235,6 +235,13 @@
           </div>
         </div>
         <div *ngIf="selectedFolder?.title === 'solution'">
+          <app-project-failure-message
+            *ngIf="isProjectFailed && !isCreatingSolution"
+            [failureInfo]="projectFailureInfo"
+            [projectName]="appName"
+            (retryClicked)="retryProjectCreation()"
+          ></app-project-failure-message>
+
           <app-workflow-progress
             [projectId]="projectId!"
             [workflowType]="WorkflowType.Solution"
