@@ -1,6 +1,8 @@
 <div *ngIf="isVisible" class="p-4 max-w-4xl mx-auto">
   <div class="flex items-center justify-between mb-4">
-    <h1 class="font-semibold text-gray-900 truncate">{{ title }}</h1>
+    <h1 class="font-semibold text-gray-900 truncate">
+      {{ isCompleted ? completedTitle : title }}
+    </h1>
     <div class="flex items-center gap-3">
       <button
         *ngIf="showCancelButton && (workflowStatus$ | async)?.isCreating"
@@ -23,7 +25,9 @@
         <div
           class="w-1.5 h-1.5 bg-primary-600 rounded-full mr-2 animate-pulse"
         ></div>
-        <span class="whitespace-nowrap">{{ subtitle }}</span>
+        <span class="whitespace-nowrap">
+          {{ isCompleted ? completedSubtitle : subtitle }}
+        </span>
       </div>
     </div>
   </div>
@@ -126,7 +130,7 @@
           <div class="flex-1 min-w-0 flex items-center justify-between">
             <div class="flex items-center space-x-2">
               <p
-                class="text-sm font-medium text-gray-900 truncate max-w-md"
+                class="text-sm leading-relaxed flex-1"
                 [ngClass]="{
                   'text-primary-700': step.type === 'thinking',
                   'text-success-700': step.type === 'action',
