@@ -315,10 +315,6 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
   } catch (error) {
     console.error('Error in createSolution:', error);
     throw error;
-  } finally {
-    if (operationId) {
-      operationRegistry.remove(operationId);
-    }
   }
 }
 

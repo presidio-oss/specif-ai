@@ -17,7 +17,10 @@ class OperationRegistry {
    * @returns AbortController instance
    */
   public createController(operationId: string): AbortController {
-    // Clean up existing controller if it exists
+    const previous = this.getController(operationId);
+    if (previous && !previous.signal.aborted) {
+      previous.abort("superseded");
+    }
     this.remove(operationId);
 
     const controller = new AbortController();
@@ -62,6 +65,7 @@ class OperationRegistry {
         }`
       );
       controller.abort(reason);
+      this.operations.delete(operationId);
       return true;
     }
     return false;
