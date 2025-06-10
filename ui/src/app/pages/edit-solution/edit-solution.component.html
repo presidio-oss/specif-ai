@@ -8,7 +8,7 @@
     ]"
   >
     <div
-      class="flex flex-col h-max bg-white border border-secondary-200 rounded-lg lg:col-span-2"
+      class="flex flex-col h-[calc(100vh-80px)] bg-white border border-secondary-200 rounded-lg lg:col-span-2"
     >
       <header
         class="flex justify-between items-center p-4 border-b border-secondary-200"
@@ -271,7 +271,7 @@
         </ng-template>
       </ng-container>
 
-      <div *ngIf="activeTab === 'chat'" class="h-full">
+      <div *ngIf="activeTab === 'chat'" class="flex-1 min-h-0">
         <app-chat
           class="h-full block"
           chatType="requirement"

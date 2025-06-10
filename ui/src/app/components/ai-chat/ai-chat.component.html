@@ -5,26 +5,35 @@
   ]"
 >
   <!-- Fixed Header -->
-  <div *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)" class="border-b border-secondary-200 p-1.5">
-    <div class="flex-none border border-secondary-300 bg-indigo-50 text-sm font-medium rounded-lg text-center py-2.5 border-secondary-300 bg-primary-50 text-primary-600">
-      <p *ngIf="!isKbAvailable && !['BP', 'PRD'].includes(requirementAbbrivation)" class="text-md font-medium flex items-center justify-center gap-2">
+  <div *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)" class="border-b border-secondary-200 p-1.5 space-y-1">
+    <div 
+      *ngIf="!['BP', 'PRD'].includes(requirementAbbrivation)" 
+      class="bg-primary-50 border border-primary-200 rounded-lg p-2 text-center"
+    >
+      <div class="flex items-center justify-center gap-2 text-primary-600">
         <ng-icon name="heroSparklesSolid" class="text-lg"></ng-icon>
-        <span>Talk to HAI</span>
-      </p>
-      <div
-        *ngIf="isKbAvailable"
-        class="kb-container flex justify-between items-center"
-      >
-        <div class="flex items-center space-x-2">
+        <span class="text-md font-semibold">Talk to HAI</span>
+      </div>
+    </div>
+
+    <div
+      *ngIf="isKbAvailable"
+      class="bg-secondary-50 border border-secondary-200 rounded-lg p-2"
+    >
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
           <img
             src="./assets/img/logo/aws_dark_bg_white_logo.svg"
-            class="h-[30px]"
+            class="h-6 w-auto"
             alt="AWS logo"
           />
-          <p class="text-sm text-secondary-600">AWS Bedrock Knowledge Base</p>
+          <div class="flex flex-col">
+            <span class="text-sm font-semibold text-secondary-800">AWS Bedrock</span>
+            <span class="text-xs text-secondary-600">Knowledge Base</span>
+          </div>
           <ng-icon
             name="heroInformationCircle"
-            class="text-lg cursor-pointer"
+            class="text-lg cursor-pointer text-secondary-500 hover:text-secondary-700"
             matTooltip="{{ APP_MESSAGES.AWS_BEDROCK_TOOLTIP_MESSAGE }}"
           ></ng-icon>
         </div>
