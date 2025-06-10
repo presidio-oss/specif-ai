@@ -1,13 +1,14 @@
 import { Component, Input } from '@angular/core';
 import { NgClass, NgIf } from '@angular/common';
 import { NgIconComponent } from '@ng-icons/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-button',
   templateUrl: './button.component.html',
   styleUrls: ['./button.component.scss'],
   standalone: true,
-  imports: [NgClass, NgIconComponent, NgIf],
+  imports: [NgClass, NgIconComponent, NgIf, MatTooltipModule],
 })
 export class ButtonComponent {
   @Input() buttonContent: string = '';
@@ -27,6 +28,9 @@ export class ButtonComponent {
   @Input() type: string = 'button';
   @Input() isIconButton: boolean = false;
   @Input() isFullWidth: boolean = false;
+  @Input() tooltip?: string;
+  @Input() tooltipDisabled?: string;
+  @Input() showTooltip: boolean = false;
 
   get themeClasses() {
     const styles = {
