@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow, shell } from "electron";
+import { app, ipcMain, BrowserWindow, shell, dialog } from "electron";
 import path from "path";
 import dotenv from "dotenv";
 import { setupFileSystemHandlers } from "./handlers/fs-handler";
@@ -8,10 +8,16 @@ import { setupRequirementHandlers } from "./handlers/requirement-handler";
 import { setupVisualizationHandlers } from "./handlers/visualization-handler";
 import { setupFeatureHandlers } from "./handlers/feature-handler";
 import { setupSolutionHandlers } from "./handlers/solution-handler";
+import {
+  setupContentGenerationHandlers,
+  isAnyContentGenerationInProgress,
+  getActiveContentGenerationProcessNames,
+} from "./handlers/content-generation-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
 import { setupMcpHandlers } from "./handlers/mcp-handler";
 import { MCPHub } from "./mcp/mcp-hub";
+import { APP_MESSAGES } from "./constants/message.constants";
 
 // ========================
 // CONFIGURATION
@@ -76,6 +82,18 @@ function createWindow(indexPath: string, themeConfiguration: any) {
         console.error("Failed to load welcome page:", error);
       });
   }
+
+  mainWindow.on("close", async (event) => {
+    if (isAnyContentGenerationInProgress()) {
+      event.preventDefault();
+
+      const shouldQuit = await confirmQuitDuringActiveProcesses();
+      if (shouldQuit) {
+        mainWindow = null;
+        app.exit(0);
+      }
+    }
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -190,6 +208,59 @@ function isValidUrl(url: string): boolean {
   }
 }
 
+function formatProcessList(processes: string[]): string {
+  const counts = processes.reduce((acc, name) => {
+    acc[name] = (acc[name] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const formatted = Object.entries(counts).map(([name, count]) => {
+    const display = count > 1 ? `${count} x ${name}` : `1 x ${name}`;
+    return display.length > 30 ? `${display.substring(0, 27)}...` : display;
+  });
+
+  return formatted.map((item) => `• ${item}`).join("\n");
+}
+
+function createQuitDialogOptions(
+  processCount: number,
+  processListText: string
+) {
+  const isPlural = processCount > 1;
+
+  return {
+    type: "warning" as const,
+    buttons: [
+      APP_MESSAGES.QUIT_DIALOG.BUTTONS.CANCEL,
+      APP_MESSAGES.QUIT_DIALOG.BUTTONS.QUIT_ANYWAY,
+    ],
+    defaultId: 1,
+    cancelId: 0,
+    title: APP_MESSAGES.QUIT_DIALOG.TITLE(processCount, isPlural),
+    message: APP_MESSAGES.QUIT_DIALOG.MESSAGE(isPlural),
+    detail: APP_MESSAGES.QUIT_DIALOG.DETAIL(processListText),
+    noLink: true,
+    normalizeAccessKeys: false,
+  };
+}
+
+async function confirmQuitDuringActiveProcesses(): Promise<boolean> {
+  try {
+    const activeProcesses = getActiveContentGenerationProcessNames();
+    const processListText = formatProcessList(activeProcesses);
+    const dialogOptions = createQuitDialogOptions(
+      activeProcesses.length,
+      processListText
+    );
+
+    const choice = await dialog.showMessageBox(mainWindow!, dialogOptions);
+    return choice.response === 1;
+  } catch (error) {
+    console.error("Error showing quit dialog:", error);
+    return false;
+  }
+}
+
 // ========================
 // MAIN APPLICATION LOGIC
 // ========================
@@ -213,6 +284,17 @@ app.whenReady().then(async () => {
 
   app.on("window-all-closed", () => app.quit());
 
+  app.on("before-quit", async (event) => {
+    if (isAnyContentGenerationInProgress()) {
+      event.preventDefault();
+
+      const shouldQuit = await confirmQuitDuringActiveProcesses();
+      if (shouldQuit) {
+        app.exit(0);
+      }
+    }
+  });
+
   if (mainWindow) {
     // Setup window event handlers
     setupWindowHandlers(mainWindow, indexPath);
@@ -227,6 +309,7 @@ app.whenReady().then(async () => {
     setupVisualizationHandlers();
     setupFeatureHandlers();
     setupSolutionHandlers();
+    setupContentGenerationHandlers();
     setupMcpHandlers();
 
     // start mcp servers in the background

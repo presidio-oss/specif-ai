@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.6.0]
+
+### Added
+- Integrated thinking process visualization for generate/re-generate workflows in stories and tasks, providing better transparency into AI decision-making
+- Added support for Claude 4 models in LLM configurations, expanding available AI model options
+
+### Enhancements
+- Improved thinking progress events with structured message format for better input/output handling and traceability
+- Enhanced login screen UX by adding window drag functionality, allowing users to reposition the application window
+
 ## [2.5.0]
 
 ### Added
@@ -10,13 +20,14 @@
 ## [2.4.0]
 
 ### Added
+
 - Upgraded the AI chat experience to be more interactive and responsive, including MCP tool integration and real-time streaming capabilities.
 - Added agent-based workflow for better chat suggestions.
 - Integrated HAI-Guardrails for enhanced security.
 
 ### Enhancements
-- Applied consistent styling across the Single Solution page, header, input fields, and solution creation components for a cleaner and more polished UI experience.
 
+- Applied consistent styling across the Single Solution page, header, input fields, and solution creation components for a cleaner and more polished UI experience.
 
 ## [2.3.0]
 

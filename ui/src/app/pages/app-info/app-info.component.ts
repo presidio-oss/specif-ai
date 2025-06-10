@@ -64,7 +64,11 @@ import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { McpServersListComponent } from '../../components/mcp/mcp-servers-list/mcp-servers-list.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
+import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
+import { WorkflowProgressComponent } from '../../components/workflow-progress/workflow-progress.component';
 import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
+import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
+import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 
 @Component({
   selector: 'app-info',
@@ -85,6 +89,8 @@ import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
     NgForOf,
     McpServersListComponent,
     McpIntegrationConfiguratorComponent,
+    ThinkingProcessComponent,
+    WorkflowProgressComponent,
   ],
   providers: [
     provideIcons({
@@ -103,6 +109,7 @@ import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
 })
 export class AppInfoComponent implements OnInit, OnDestroy {
   protected readonly APP_MESSAGES = APP_MESSAGES;
+  protected readonly WorkflowType = WorkflowType;
   @ViewChild(MultiUploadComponent) multiUploadComponent!: MultiUploadComponent;
   @ViewChild('mermaidContainer') mermaidContainer!: ElementRef;
   fileContent: string = '';
@@ -157,6 +164,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
+  isCreatingSolution: boolean = false;
+  solutionCreationComplete: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -166,6 +175,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private electronService: ElectronService,
     private featureService: FeatureService,
     private logger: NGXLogger,
+    private workflowProgressService: WorkflowProgressService,
   ) {
     const navigation = this.router.getCurrentNavigation();
     this.appInfo = navigation?.extras?.state?.['data'];
@@ -184,6 +194,22 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       this.isBedrockConfigPresent =
         this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
     });
+
+    if (this.projectId) {
+      this.workflowProgressService
+        .getCreationStatusObservable(this.projectId, WorkflowType.Solution)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((status) => {
+          const wasCreating = this.isCreatingSolution;
+          this.isCreatingSolution = status.isCreating;
+          this.solutionCreationComplete = status.isComplete;
+
+          if (wasCreating && !status.isCreating && status.isComplete) {
+            this.store.dispatch(new GetProjectFiles(this.projectId as string));
+            this.resetSolutionProgress();
+          }
+        });
+    }
     this.store
       .select(ProjectsState.getProjects)
       .pipe(first())
@@ -712,6 +738,16 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.logger.error('Error loading MCP settings:', error);
         this.toast.showError('Failed to load MCP settings');
       });
+  }
+
+  resetSolutionProgress(): void {
+    if (this.projectId) {
+      this.workflowProgressService.removeGlobalListener(
+        this.projectId,
+        WorkflowType.Solution,
+        this.electronService,
+      );
+    }
   }
 
   ngOnDestroy() {
