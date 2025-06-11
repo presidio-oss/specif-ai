@@ -10,9 +10,10 @@ import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../toaster/toaster.service';
 import { AppSystemService } from '../app-system/app-system.service';
 import { APP_CONSTANTS } from '../../constants/app.constants';
+import { ICreateSolutionRequest } from 'src/app/model/interfaces/projects.interface';
 
 export interface ProjectCreationOptions {
-  projectData: any;
+  projectData: ICreateSolutionRequest;
   projectName: string;
   isRetry?: boolean;
   onSuccess?: () => void;

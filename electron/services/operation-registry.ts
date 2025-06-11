@@ -26,6 +26,12 @@ class OperationRegistry {
     const controller = new AbortController();
     this.operations.set(operationId, controller);
 
+    controller.signal.addEventListener(
+      "abort",
+      () => this.operations.delete(operationId),
+      { once: true }
+    );
+
     console.log(
       `[OperationRegistry] Created AbortController for operation: ${operationId}`
     );

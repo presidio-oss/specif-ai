@@ -791,6 +791,10 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           this.projectId,
           WorkflowType.Solution,
         );
+        this.workflowProgressService.clearCreationStatus(
+          this.projectId,
+          WorkflowType.Solution,
+        );
       }
       await this.projectCreationService.createProject({
         projectData: this.appInfo,

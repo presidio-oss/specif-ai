@@ -648,6 +648,11 @@ export class WorkflowProgressService implements OnDestroy {
       }
 
       if (success) {
+        this.setCreationStatus(projectId, workflowType, {
+          isCreating: false,
+          isComplete: false,
+          isFailed: false,
+        });
         await this.electronService.setContentGenerationStatus(
           projectId,
           workflowType,
@@ -675,7 +680,7 @@ export class WorkflowProgressService implements OnDestroy {
   }
 
   private getDefaultStatus(): WorkflowStatus {
-    return { isCreating: false, isComplete: false };
+    return { isCreating: false, isComplete: false, isFailed: false };
   }
 
   public ngOnDestroy(): void {
