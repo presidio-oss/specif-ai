@@ -10,7 +10,7 @@ import { distinctUntilChanged, Observable, Subscription } from 'rxjs';
 import { LLMConfigModel } from '../../model/interfaces/ILLMConfig';
 import { Store } from '@ngxs/store';
 import { AvailableProviders } from '../../constants/llm.models.constants';
-import { SetBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
+import { AddBreadcrumbs } from '../../store/breadcrumb/breadcrumb.actions';
 import {
   SetLLMConfig,
   SyncLLMConfig,
@@ -212,12 +212,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.store.dispatch(
-      new SetBreadcrumb(
+      new AddBreadcrumbs([
         {
           label: 'Settings',
           url: '/settings'
         }
-      )
+      ])
     );
 
     this.loadLangfuseConfig();
