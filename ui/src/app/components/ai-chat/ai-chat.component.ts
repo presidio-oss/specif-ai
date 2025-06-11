@@ -212,6 +212,9 @@ export class AiChatComponent implements OnInit {
     } else if (this.chatType == CHAT_TYPES.TASK) {
       this.type = 'Task for User Story';
       this.requirementAbbrivation = REQUIREMENT_TYPE.TASK;
+    } else if (this.chatType == CHAT_TYPES.SOLUTION) {
+      this.type = 'Solution';
+      this.requirementAbbrivation = 'SOLUTION';
     }
     this.smoothScroll();
     setTimeout(() => {
