@@ -9,8 +9,8 @@
     <div
       [ngClass]="
         mode === 'add'
-          ? 'bg-white border border-secondary-200 rounded-lg flex flex-col'
-          : 'bg-white border border-secondary-200 rounded-lg flex flex-col lg:col-span-2'
+          ? 'bg-white border border-secondary-200 rounded-lg flex flex-col h-[calc(100vh-80px)]'
+          : 'bg-white border border-secondary-200 rounded-lg flex flex-col lg:col-span-2 h-[calc(100vh-80px)]'
       "
     >
       <header
@@ -36,8 +36,9 @@
       <form
         [formGroup]="taskForm"
         (ngSubmit)="mode === 'add' ? addTask() : updateTask()"
+        class="flex flex-col h-full overflow-hidden"
       >
-        <div class="p-4 flex flex-col gap-1.5">
+        <div class="p-4 flex flex-col gap-1.5 flex-1 overflow-y-auto">
           <div class="flex flex-col">
             <app-input-field
               [required]="true"
@@ -66,7 +67,7 @@
             <div class="flex flex-col gap-1.5">
               <app-rich-text-editor
                 formControlName="acceptance"
-                editorClass="h-80 overflow-y-auto"
+                editorClass="h-[calc(100vh-460px)] min-h-24 overflow-y-auto"
               ></app-rich-text-editor>
               <ng-container *ngIf="taskForm.get('acceptance')?.touched">
                 <span
@@ -115,7 +116,7 @@
         </div>
       </form>
     </div>
-    <div *ngIf="mode !== 'add'" class="space-y-4 h-full lg:col-span-1">
+    <div *ngIf="mode !== 'add'" class="lg:col-span-1 h-[calc(100vh-80px)]">
       <app-chat
         chatType="task"
         [name]="projectMetadata?.name"

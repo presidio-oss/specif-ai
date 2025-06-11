@@ -1,9 +1,9 @@
 <div
   *ngIf="documentList$ | async as projectList; else noProjectList"
-  class="mx-auto max-w-6xl px-4 py-2"
+  class="mx-auto max-w-6xl px-4 pb-4"
 >
-  <div class="mb-4">
-    <div class="flex items-center mt-2 justify-between">
+  <div class="py-4 sticky top-0 z-10 bg-white">
+    <div class="flex items-center justify-between">
       <div class="flex items-center">
         <h1 class="text-normal font-semibold text-secondary-700">
           {{ getDescription(projectList[0].folderName) }}
@@ -33,85 +33,80 @@
       (searchChange)="onSearch($event)"
     ></app-search-input>
   </div>
-  <div class="doc-section-height">
-    <ng-container *ngIf="filteredDocumentList$ | async as filteredProjectList">
-      <div
-        *ngIf="projectList.length > 0; else noDocuments"
-        class="grid grid-cols-1 gap-3 sm:gap-4 lg:gap-4 overflow-y-auto"
+  <ng-container *ngIf="filteredDocumentList$ | async as filteredProjectList">
+    <div
+      *ngIf="projectList.length > 0; else noDocuments"
+      class="grid grid-cols-1 gap-3 sm:gap-4 lg:gap-4"
+    >
+      <ng-container
+        *ngIf="filteredProjectList.length > 0; else noSearchResults"
       >
-        <ng-container
-          *ngIf="filteredProjectList.length > 0; else noSearchResults"
+        <div
+          *ngFor="let item of filteredProjectList"
+          class="col-span-1 flex rounded-md shadow-sm relative"
         >
           <div
-            *ngFor="let item of filteredProjectList"
-            class="col-span-1 flex rounded-md shadow-sm relative"
+            class="flex flex-1 items-center justify-between truncate rounded-lg border bg-white hover:bg-secondary-50 transition-colors"
           >
             <div
-              class="flex flex-1 items-center justify-between truncate rounded-lg border bg-white hover:bg-secondary-50 transition-colors"
+              class="flex-1 truncate p-4 text-sm rounded-lg flex flex-col gap-2"
+              (click)="navigateToEdit(item)"
+              (keydown.enter)="navigateToEdit(item)"
+              (keydown.space)="navigateToEdit(item); $event.preventDefault()"
+              role="button"
+              tabindex="0"
             >
+              <a class="font-semibold text-secondary-500">
+                {{ item.fileName.replace("-base.json", "") }}
+                <span *ngIf="item.content?.epicTicketId">
+                  &bull; {{ item.content.epicTicketId }}
+                </span>
+              </a>
+              <div class="flex flex-col gap-1">
+                <h1
+                  class="doc-section__item-title text-base font-medium truncate pr-[80px]"
+                >
+                  {{ item.content.title }}
+                </h1>
+                <ng-container *ngIf="item.content.requirement as requirement">
+                  <app-rich-text-editor
+                    editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs"
+                    mode="view"
+                    [content]="item.formattedRequirement ?? ''"
+                    [editable]="false"
+                  >
+                  </app-rich-text-editor>
+                </ng-container>
+              </div>
+            </div>
+            <div class="absolute top-4 right-4 flex space-x-2">
+              <app-button
+                *ngIf="item.folderName === requirementTypes.PRD"
+                (click)="navigateToUserStories(item)"
+                buttonContent="Stories"
+                theme="secondary_outline"
+                size="sm"
+                rounded="lg"
+              />
               <div
-                class="flex-1 truncate p-4 text-sm rounded-lg flex flex-col gap-2"
-                (click)="navigateToEdit(item)"
-                (keydown.enter)="navigateToEdit(item)"
-                (keydown.space)="navigateToEdit(item); $event.preventDefault()"
+                *ngIf="item.folderName === 'BP'"
+                (click)="navigateToBPFlow(item)"
+                (keydown.enter)="navigateToBPFlow(item)"
+                (keydown.space)="
+                  navigateToBPFlow(item); $event.preventDefault()
+                "
                 role="button"
                 tabindex="0"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent bg-white text-secondary-400 hover:bg-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               >
-                <a class="font-semibold text-secondary-500">
-                  {{ item.fileName.replace("-base.json", "") }}
-                  <span *ngIf="item.content?.epicTicketId">
-                    &bull; {{ item.content.epicTicketId }}
-                  </span>
-                </a>
-                <div class="flex flex-col gap-1">
-                  <h1
-                    class="doc-section__item-title text-base font-medium truncate pr-[80px]"
-                  >
-                    {{ item.content.title }}
-                  </h1>
-                  <ng-container *ngIf="item.content.requirement as requirement">
-                    <app-rich-text-editor
-                      editorClass="prose-secondary-view text-wrap overflow-y-hidden prose-xs"
-                      mode="view"
-                      [content]="item.formattedRequirement ?? ''"
-                      [editable]="false"
-                    >
-                    </app-rich-text-editor>
-                  </ng-container>
-                </div>
-              </div>
-              <div class="absolute top-4 right-4 flex space-x-2">
-                <app-button
-                  *ngIf="item.folderName === requirementTypes.PRD"
-                  (click)="navigateToUserStories(item)"
-                  buttonContent="Stories"
-                  theme="secondary_outline"
-                  size="sm"
-                  rounded="lg"
-                />
-                <div
-                  *ngIf="item.folderName === 'BP'"
-                  (click)="navigateToBPFlow(item)"
-                  (keydown.enter)="navigateToBPFlow(item)"
-                  (keydown.space)="
-                    navigateToBPFlow(item); $event.preventDefault()
-                  "
-                  role="button"
-                  tabindex="0"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent bg-white text-secondary-400 hover:bg-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                >
-                  <ng-icon
-                    class="text-xl"
-                    name="heroArrowsPointingOut"
-                  ></ng-icon>
-                </div>
+                <ng-icon class="text-xl" name="heroArrowsPointingOut"></ng-icon>
               </div>
             </div>
           </div>
-        </ng-container>
-      </div>
-    </ng-container>
-  </div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
 </div>
 
 <ng-template #noProjectList>

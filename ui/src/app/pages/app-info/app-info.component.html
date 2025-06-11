@@ -146,6 +146,9 @@
                 theme="secondary"
                 size="xs"
                 rounded="lg"
+                [disabled]="isCreatingSolution"
+                tooltip="Add new document"
+                tooltipDisabled="Generating your solution. Please wait..."
                 (click)="
                   folder.key === 'BP'
                     ? navigateToBPAdd()
@@ -155,12 +158,17 @@
             </li>
           </ng-container>
           <li
-            (click)="selectFolder({ name: 'app-integrations', children: [] })"
+            (click)="
+              !isCreatingSolution &&
+                selectFolder({ name: 'app-integrations', children: [] })
+            "
             (keydown.enter)="
-              selectFolder({ name: 'app-integrations', children: [] })
+              !isCreatingSolution &&
+                selectFolder({ name: 'app-integrations', children: [] })
             "
             (keydown.space)="
-              selectFolder({ name: 'app-integrations', children: [] });
+              !isCreatingSolution &&
+                selectFolder({ name: 'app-integrations', children: [] });
               $event.preventDefault()
             "
             role="button"
@@ -170,6 +178,7 @@
                 selectedFolder?.title === 'app-integrations',
               'bg-white border-transparent':
                 selectedFolder?.title !== 'app-integrations',
+              'cursor-not-allowed': isCreatingSolution,
             }"
             class="flex cursor-pointer items-center justify-between px-2 py-2 rounded-lg bg-white hover:bg-secondary-50 border"
           >
@@ -201,8 +210,11 @@
         </ul>
       </div>
     </section>
-    <section aria-labelledby="Main Content" class="col-span-5 h-full min-h-0">
-      <div class="overflow-hidden rounded-lg bg-white border h-full">
+    <section
+      aria-labelledby="Main Content"
+      class="col-span-2 h-[calc(100vh-80px)] overflow-hidden"
+    >
+      <div class="overflow-auto rounded-lg bg-white border h-full">
         <div
           *ngIf="
             selectedFolder?.title !== 'solution' &&
@@ -221,10 +233,24 @@
             No documents available.
           </div>
         </div>
-        <div
-          class="divide-y h-[calc(100vh-200px)] overflow-auto"
-          *ngIf="selectedFolder?.title === 'solution'"
-        >
+        <div *ngIf="selectedFolder?.title === 'solution'">
+          <app-workflow-progress
+            [projectId]="projectId!"
+            [workflowType]="WorkflowType.Solution"
+            [isVisible]="isCreatingSolution || solutionCreationComplete"
+            [isCompleted]="solutionCreationComplete"
+            title="Creating Solution..."
+            subtitle="Relax while SpecifAI takes care of the rest..."
+            completedTitle="Solution Created Successfully!"
+            completedSubtitle="Your solution has been generated and is ready to view"
+          >
+          </app-workflow-progress>
+
+          <div
+            class="flex-grow h-px bg-gray-300 ml-6 mr-6"
+            *ngIf="isCreatingSolution"
+          ></div>
+
           <h1 class="text-title font-semibold p-4">Solution Information</h1>
           <div class="grid grid-cols-3 gap-4 p-4">
             <p class="text-secondary-500">Title</p>

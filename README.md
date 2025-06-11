@@ -7,9 +7,9 @@
 <br />
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/img/hai-specif-ai-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="assets/img/hai-specif-ai-theme.svg">
-    <img alt="HAI Logo" src="assets/img/hai-specif-ai-theme.svg" height="auto">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/static/img/hai-specif-ai-light.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/static/img/hai-specif-ai-theme.svg">
+    <img alt="HAI Logo" src="docs/static/img/hai-specif-ai-theme.svg" height="auto">
   </picture>
 </div>
 <br />  
@@ -23,7 +23,7 @@
 
 **Specifai** is an AI-powered platform that transforms the project requirements management. It combines AI technology with intuitive workflows to automate documentation, generate and manage tasks - all while adapting to your team's specific needs.
 <div align="center">
-    <img src="assets/gifs/specif-ai-overview.gif" alt="Specifai in Action" width="900">
+    <img src="docs/static/gif/specifai-overview.gif" alt="Specifai in Action" width="900">
 </div>
 
 ## Table of Contents
@@ -51,12 +51,12 @@ By simply providing a solution name, description, and tech stack details, Specif
 - 🔄 Business Process Flows
 
 <div align="center">
-    <img src="assets/gifs/specif-ai-sections.gif" alt="Document Generation Demo" width="900">
+    <img src="docs/static/gif/specifai-sections.gif" alt="Document Generation Demo" width="900">
 </div>
 
 ## 📥 Getting Started
 
-<img src="assets/img/specif-ai-welcome-page.png" alt="Welcome Page" width="900" />
+<img src="docs/static/img/welcome-page.png" alt="Welcome Page" width="900" />
 
 1. **Download the Specifai desktop application** from the [releases page](https://github.com/presidio-oss/specif-ai/releases).
 2. **Start** the Desktop Application
@@ -79,7 +79,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 <div align="center">
 
-![AI powered chat feature in action](assets/gifs/specif-ai-chat.gif)  
+![AI powered chat feature in action](docs/static/gif/specifai-chat.gif)  
 *AI powered chat feature in action*
 
 </div>
@@ -90,7 +90,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 <div align="center">
 
-![User story and task generation](assets/gifs/specif-ai-user-stories.gif)  
+![User story and task generation](docs/static/gif/specifai-user-stories.gif)  
 *User story and task generation*
 </div>
 
@@ -140,7 +140,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 <div align="center">
 
-![Model Switch](assets/gifs/specif-ai-settings.gif)  
+![Model Switch](docs/static/gif/specifai-settings.gif)  
 *Easily configurable multi provider support*
 
 </div>
@@ -150,7 +150,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 Specifai supports custom Langfuse configuration for enhanced observability and analytics:
 
 <div align="center">
-  <img src="assets/img/specifai-custom-langfuse-settings.png" alt="Custom Langfuse Configuration" width="800">
+  <img src="docs/static/img/specifai-custom-langfuse-settings.png" alt="Custom Langfuse Configuration" width="800">
   <em>Custom Langfuse configuration settings</em>
 </div>
 
@@ -176,7 +176,7 @@ Specif AI utilises the Langgraph framework to deliver an efficient agentic workf
 
 This Agentic architecture ensures seamless task orchestration and accelerates the solution  creation process.
 
-![Agentic Flow](assets/img/specif-ai-create-solution-agentic-flow.png)  
+![Agentic Flow](docs/static/img/specifai-create-solution-agentic-flow.png)  
 
 
 
@@ -189,7 +189,7 @@ The stories and tasks generated as part of the solutions can be used to create a
 - Automatic story and task creation in Jira.
 - Bulk export capabilities.
 
-For Jira setup instructions, please refer to our [Jira Setup Guide](/ui/JIRA-README.md).
+For Jira setup instructions, please refer to our [Jira Setup Guide](docs/docs/current/JIRA-README.md).
 
 #### AWS Bedrock Knowledge Base
 The enterprise knowledge base is integrated with AI-powered chat to enhance suggestions and enable iterative conversations for Business Requirement Documents (BRDs), Product Requirement Documents (PRDs), Non-functional Requirements, User Stories, and Tasks. Features include: 
@@ -210,10 +210,10 @@ The Model Context Protocol (MCP) is a powerful integration framework that enable
 
 ### 📚 Built-in Integration: AWS Bedrock Knowledge Base
 
-Specifai includes native support for **AWS Bedrock Knowledge Base (KB)**. Configuration is available directly in the UI. For detailed setup instructions, see our [AWS Bedrock KB Configuration Guide](docs/aws-bedrock-kb-configuration.md).
+Specifai includes native support for **AWS Bedrock Knowledge Base (KB)**. Configuration is available directly in the UI. For detailed setup instructions, see our [AWS Bedrock KB Configuration Guide](docs/docs/current/aws-bedrock-kb-configuration.md).
 
 <div align="center">
-  <img src="assets/img/mcp/aws-bedrock-kb-config.png" alt="AWS Bedrock KB Configuration" width="800">
+  <img src="docs/static/img/mcp/aws-bedrock-kb-config.png" alt="AWS Bedrock KB Configuration" width="800">
   <em>AWS Bedrock KB visual configuration</em>
 </div>
 
@@ -224,7 +224,7 @@ Specifai includes native support for **AWS Bedrock Knowledge Base (KB)**. Config
 Specifai also supports integration with custom MCP-compatible tools and services. For example, you can connect a file system MCP server, which will automatically surface its tools and resources in the UI.
 
 <div align="center">
-  <img src="assets/img/mcp/custom-mcp-config.png" alt="Custom MCP Server Configuration" width="800">
+  <img src="docs/static/img/mcp/custom-mcp-config.png" alt="Custom MCP Server Configuration" width="800">
   <em>UI for managing custom MCP server integrations</em>
 </div>
 
@@ -233,7 +233,7 @@ Specifai also supports integration with custom MCP-compatible tools and services
 All MCP integrations can be managed from the **Integrations** page, where you can easily add, configure, or remove both built-in and custom servers.
 
 <div align="center">
-  <img src="assets/img/mcp/custom-server-management.png" alt="Custom Server Management Interface" width="800">
+  <img src="docs/static/img/mcp/custom-server-management.png" alt="Custom Server Management Interface" width="800">
   <em>Manage all MCP integrations from a single place</em>
 </div>
 
@@ -243,7 +243,7 @@ Specifai follows a modern, scalable architecture designed for optimal performanc
 
 <div align="center">
 
-![Specifai Architecture](assets/gifs/specif-ai-architecture.gif)  
+![Specifai Architecture](docs/static/gif/specifai-architecture.gif)  
 *Specifai Architecture*
 
 </div>

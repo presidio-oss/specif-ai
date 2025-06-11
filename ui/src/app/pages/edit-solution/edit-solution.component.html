@@ -8,7 +8,7 @@
     ]"
   >
     <div
-      class="flex flex-col h-max bg-white border border-secondary-200 rounded-lg lg:col-span-2"
+      class="flex flex-col h-[calc(100vh-80px)] bg-white border border-secondary-200 rounded-lg lg:col-span-2"
     >
       <header
         class="flex justify-between items-center p-4 border-b border-secondary-200"
@@ -36,8 +36,9 @@
       <form
         [formGroup]="requirementForm"
         (ngSubmit)="mode === 'edit' ? updateRequirement() : addRequirement()"
+        class="flex flex-col h-full overflow-hidden"
       >
-        <div class="p-4 flex flex-col gap-1.5">
+        <div class="p-4 flex flex-col gap-1.5 flex-1 overflow-y-auto">
           <div class="flex flex-col">
             <app-input-field
               [required]="true"
@@ -67,7 +68,7 @@
             <div class="flex flex-col gap-1.5">
               <app-rich-text-editor
                 formControlName="content"
-                editorClass="h-80 overflow-y-auto"
+                editorClass="h-[calc(100vh-460px)] min-h-24 overflow-y-auto"
               ></app-rich-text-editor>
               <ng-container *ngIf="requirementForm.get('content')?.touched">
                 <span
@@ -84,48 +85,48 @@
             *ngIf="mode === 'add'"
             (fileContent)="handleFileContent($event)"
           ></app-multi-upload>
-        </div>
 
-        <!-- Selected BRDs Section -->
-        <div
-          *ngIf="
-            isPRD() && requirementForm.get('linkedBRDIds')?.value?.length > 0
-          "
-          class="flex flex-col gap-1.5 px-4 mb-4"
-        >
-          <h2 class="text-sm font-medium text-secondary-500">Included BRDs</h2>
-          <div class="flex flex-wrap gap-1.5">
-            <div
-              *ngFor="let brdId of requirementForm.get('linkedBRDIds')?.value"
-            >
-              <app-pill
-                (clear)="removeLinkedBRDForPRD(brdId)"
-                [showClear]="true"
+          <!-- Selected BRDs Section -->
+          <div
+            *ngIf="
+              isPRD() && requirementForm.get('linkedBRDIds')?.value?.length > 0
+            "
+            class="flex flex-col gap-1.5 mt-4"
+          >
+            <h2 class="text-sm font-medium text-secondary-500">Included BRDs</h2>
+            <div class="flex flex-wrap gap-1.5">
+              <div
+                *ngFor="let brdId of requirementForm.get('linkedBRDIds')?.value"
               >
-                {{ brdId }}
-              </app-pill>
+                <app-pill
+                  (clear)="removeLinkedBRDForPRD(brdId)"
+                  [showClear]="true"
+                >
+                  {{ brdId }}
+                </app-pill>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Linked PRDs Section -->
-        <div
-          *ngIf="
-            isBRD() && requirementForm.get('linkedToPRDIds')?.value?.length > 0
-          "
-          class="flex flex-col gap-1.5 px-4 mb-4"
-        >
-          <h2 class="text-sm font-medium text-secondary-900">Linked PRDs</h2>
-          <div class="flex flex-wrap gap-1.5">
-            <div
-              *ngFor="let prdId of requirementForm.get('linkedToPRDIds')?.value"
-            >
-              <app-pill
-                (clear)="removeLinkedPRDFromBRD(prdId)"
-                [showClear]="true"
+          <!-- Linked PRDs Section -->
+          <div
+            *ngIf="
+              isBRD() && requirementForm.get('linkedToPRDIds')?.value?.length > 0
+            "
+            class="flex flex-col gap-1.5 mt-4"
+          >
+            <h2 class="text-sm font-medium text-secondary-900">Linked PRDs</h2>
+            <div class="flex flex-wrap gap-1.5">
+              <div
+                *ngFor="let prdId of requirementForm.get('linkedToPRDIds')?.value"
               >
-                {{ prdId }}
-              </app-pill>
+                <app-pill
+                  (clear)="removeLinkedPRDFromBRD(prdId)"
+                  [showClear]="true"
+                >
+                  {{ prdId }}
+                </app-pill>
+              </div>
             </div>
           </div>
         </div>
@@ -165,7 +166,7 @@
     <!-- chat/include brds section for prd -->
     <div
       *ngIf="isPRD()"
-      class="flex flex-col bg-white border border-secondary-200 rounded-lg h-full lg:col-span-1"
+      class="flex flex-col bg-white border rounded lg:col-span-1 h-[calc(100vh-80px)]"
     >
       <div
         class="flex justify-center rounded-lg bg-white w-full border-b-[0.5px] border-secondary-300 rounded-b-none"
@@ -226,7 +227,7 @@
       <ng-container *ngIf="activeTab === 'includeFiles'">
         <ng-container *ngIf="documentList.length > 0; else noDocuments">
           <div
-            class="grow flex flex-col gap-4 w-full p-4 overflow-y-auto h-full doc-section-height"
+            class="grow flex flex-col gap-4 w-full p-4 overflow-y-auto h-full"
           >
             <div *ngFor="let item of documentList" class="flex w-full">
               <app-checkbox-card
@@ -271,10 +272,7 @@
         </ng-template>
       </ng-container>
 
-      <div
-        *ngIf="activeTab === 'chat'"
-        class="space-y-4 doc-section-height h-full grow"
-      >
+      <div *ngIf="activeTab === 'chat'" class="flex-1 min-h-0">
         <app-chat
           class="h-full block"
           chatType="requirement"
@@ -294,22 +292,20 @@
     <!-- for non prd requirements -->
     <div
       *ngIf="mode === 'edit' && !isPRD()"
-      class="flex flex-col bg-white border border-secondary-200 rounded-lg h-full lg:col-span-1"
+      class="flex flex-col bg-white border rounded lg:col-span-1 h-[calc(100vh-80px)]"
     >
-      <div class="space-y-4 doc-section-height h-full grow">
-        <app-chat
-          class="h-full block"
-          chatType="requirement"
-          [name]="name"
-          [description]="description"
-          [fileName]="fileName"
-          [chatHistory]="chatHistory"
-          [baseContent]="requirementForm.getRawValue().content"
-          (getContent)="appendRequirement($event)"
-          (updateChatHistory)="updateChatHistory($event)"
-          [containerClass]="'border-none h-full'"
-        />
-      </div>
+      <app-chat
+        class="h-full block"
+        chatType="requirement"
+        [name]="name"
+        [description]="description"
+        [fileName]="fileName"
+        [chatHistory]="chatHistory"
+        [baseContent]="requirementForm.getRawValue().content"
+        (getContent)="appendRequirement($event)"
+        (updateChatHistory)="updateChatHistory($event)"
+        [containerClass]="'border-none h-full'"
+      />
     </div>
   </div>
 </div>
