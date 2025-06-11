@@ -9,7 +9,6 @@ import {
   heroInformationCircle,
   heroPlus,
   heroDocumentText,
-  heroChevronDown,
   heroChevronUp,
 } from '@ng-icons/heroicons/outline';
 import { ButtonComponent } from '../core/button/button.component';
@@ -33,7 +32,6 @@ import { WorkflowProgressService } from 'src/app/services/workflow-progress/work
       heroInformationCircle,
       heroPlus,
       heroDocumentText,
-      heroChevronDown,
       heroChevronUp,
     }),
   ],
