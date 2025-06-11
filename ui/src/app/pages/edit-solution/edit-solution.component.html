@@ -36,8 +36,9 @@
       <form
         [formGroup]="requirementForm"
         (ngSubmit)="mode === 'edit' ? updateRequirement() : addRequirement()"
+        class="flex flex-col h-full overflow-hidden"
       >
-        <div class="p-4 flex flex-col gap-1.5">
+        <div class="p-4 flex flex-col gap-1.5 flex-1 overflow-y-auto">
           <div class="flex flex-col">
             <app-input-field
               [required]="true"
@@ -67,7 +68,7 @@
             <div class="flex flex-col gap-1.5">
               <app-rich-text-editor
                 formControlName="content"
-                editorClass="h-80 overflow-y-auto"
+                editorClass="h-[calc(100vh-460px)] min-h-24 overflow-y-auto"
               ></app-rich-text-editor>
               <ng-container *ngIf="requirementForm.get('content')?.touched">
                 <span
@@ -84,48 +85,48 @@
             *ngIf="mode === 'add'"
             (fileContent)="handleFileContent($event)"
           ></app-multi-upload>
-        </div>
 
-        <!-- Selected BRDs Section -->
-        <div
-          *ngIf="
-            isPRD() && requirementForm.get('linkedBRDIds')?.value?.length > 0
-          "
-          class="flex flex-col gap-1.5 px-4 mb-4"
-        >
-          <h2 class="text-sm font-medium text-secondary-500">Included BRDs</h2>
-          <div class="flex flex-wrap gap-1.5">
-            <div
-              *ngFor="let brdId of requirementForm.get('linkedBRDIds')?.value"
-            >
-              <app-pill
-                (clear)="removeLinkedBRDForPRD(brdId)"
-                [showClear]="true"
+          <!-- Selected BRDs Section -->
+          <div
+            *ngIf="
+              isPRD() && requirementForm.get('linkedBRDIds')?.value?.length > 0
+            "
+            class="flex flex-col gap-1.5 mt-4"
+          >
+            <h2 class="text-sm font-medium text-secondary-500">Included BRDs</h2>
+            <div class="flex flex-wrap gap-1.5">
+              <div
+                *ngFor="let brdId of requirementForm.get('linkedBRDIds')?.value"
               >
-                {{ brdId }}
-              </app-pill>
+                <app-pill
+                  (clear)="removeLinkedBRDForPRD(brdId)"
+                  [showClear]="true"
+                >
+                  {{ brdId }}
+                </app-pill>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Linked PRDs Section -->
-        <div
-          *ngIf="
-            isBRD() && requirementForm.get('linkedToPRDIds')?.value?.length > 0
-          "
-          class="flex flex-col gap-1.5 px-4 mb-4"
-        >
-          <h2 class="text-sm font-medium text-secondary-900">Linked PRDs</h2>
-          <div class="flex flex-wrap gap-1.5">
-            <div
-              *ngFor="let prdId of requirementForm.get('linkedToPRDIds')?.value"
-            >
-              <app-pill
-                (clear)="removeLinkedPRDFromBRD(prdId)"
-                [showClear]="true"
+          <!-- Linked PRDs Section -->
+          <div
+            *ngIf="
+              isBRD() && requirementForm.get('linkedToPRDIds')?.value?.length > 0
+            "
+            class="flex flex-col gap-1.5 mt-4"
+          >
+            <h2 class="text-sm font-medium text-secondary-900">Linked PRDs</h2>
+            <div class="flex flex-wrap gap-1.5">
+              <div
+                *ngFor="let prdId of requirementForm.get('linkedToPRDIds')?.value"
               >
-                {{ prdId }}
-              </app-pill>
+                <app-pill
+                  (clear)="removeLinkedPRDFromBRD(prdId)"
+                  [showClear]="true"
+                >
+                  {{ prdId }}
+                </app-pill>
+              </div>
             </div>
           </div>
         </div>
