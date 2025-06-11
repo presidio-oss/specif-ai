@@ -1,10 +1,9 @@
-<div *ngIf="directories$ | async as directories">
+<div *ngIf="directories$ | async as directories" class="h-full w-full">
   <!-- Main 3 column grid -->
-  <div class="grid items-start gap-4 grid-cols-3 h-full">
-    <section aria-labelledby="navigation" class="h-full">
-      <div
-        class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4"
-      >
+  <div class="grid items-start gap-3 grid-cols-12 h-full min-h-0">
+    <!-- Navigation Section -->
+    <section aria-labelledby="navigation" class="col-span-3 h-full min-h-0">
+      <div class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4">
         <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
         <ul role="list" class="min-h space-y-1.5">
           <li
@@ -202,7 +201,7 @@
         </ul>
       </div>
     </section>
-    <section aria-labelledby="Main Content" class="col-span-2 h-full">
+    <section aria-labelledby="Main Content" class="col-span-5 h-full min-h-0">
       <div class="overflow-hidden rounded-lg bg-white border h-full">
         <div
           *ngIf="
@@ -492,6 +491,20 @@
             </ng-template>
           </app-accordion>
         </div>
+      </div>
+    </section>
+
+    <!-- AI Chat Section -->
+    <section aria-labelledby="AI Chat" class="col-span-4 h-full min-h-0">
+      <div class="overflow-hidden rounded-lg bg-white border h-full">
+        <app-chat
+          [id]="appInfo.id"
+          [name]="appInfo.name"
+          [description]="appInfo.description"
+          [chatType]="CHAT_TYPES.SOLUTION"
+          [chatHistory]="appInfo.chatHistory || []"
+          (updateChatHistory)="onChatHistoryUpdate($event)"
+        ></app-chat>
       </div>
     </section>
   </div>

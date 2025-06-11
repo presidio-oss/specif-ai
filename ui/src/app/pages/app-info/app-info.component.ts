@@ -42,7 +42,7 @@ import {
   heroServerStack,
 } from '@ng-icons/heroicons/outline';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
-import { APP_MESSAGES, FILTER_STRINGS } from '../../constants/app.constants';
+import { APP_MESSAGES, CHAT_TYPES, FILTER_STRINGS } from '../../constants/app.constants';
 import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
 import { AccordionComponent } from '../../components/accordion/accordion.component';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -65,6 +65,8 @@ import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { McpServersListComponent } from '../../components/mcp/mcp-servers-list/mcp-servers-list.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
 import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
+import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
+import { SolutionChatService } from '../../services/solution-chat';
 
 @Component({
   selector: 'app-info',
@@ -85,6 +87,7 @@ import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
     NgForOf,
     McpServersListComponent,
     McpIntegrationConfiguratorComponent,
+    AiChatComponent,
   ],
   providers: [
     provideIcons({
@@ -103,6 +106,7 @@ import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
 })
 export class AppInfoComponent implements OnInit, OnDestroy {
   protected readonly APP_MESSAGES = APP_MESSAGES;
+  protected readonly CHAT_TYPES = CHAT_TYPES;
   @ViewChild(MultiUploadComponent) multiUploadComponent!: MultiUploadComponent;
   @ViewChild('mermaidContainer') mermaidContainer!: ElementRef;
   fileContent: string = '';
@@ -166,11 +170,14 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private electronService: ElectronService,
     private featureService: FeatureService,
     private logger: NGXLogger,
+    private solutionChatService: SolutionChatService
   ) {
     const navigation = this.router.getCurrentNavigation();
-    this.appInfo = navigation?.extras?.state?.['data'];
+    this.appInfo = navigation?.extras?.state?.['data'] || {};
     this.navigationState = navigation?.extras?.state;
     this.appName = this.appInfo?.name;
+    
+    this.appInfo.chatHistory = [];
   }
 
   @HostListener('window:focus')
@@ -187,12 +194,22 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.store
       .select(ProjectsState.getProjects)
       .pipe(first())
-      .subscribe((projects) => {
+      .subscribe(async (projects) => {
         const project = projects.find((p) => p.metadata.id === this.projectId);
 
         if (project) {
           this.appInfo = project.metadata;
           this.appName = project.project;
+
+          if (this.projectId) {
+            try {
+              const chatHistory = await this.solutionChatService.loadChatHistory(this.projectId);
+              this.appInfo.chatHistory = chatHistory;
+              this.logger.debug('Loaded chat history:', chatHistory);
+            } catch (error) {
+              this.logger.error('Error loading chat history:', error);
+            }
+          }
 
           this.store.dispatch(new GetProjectFiles(this.projectId as string));
 
@@ -712,6 +729,18 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.logger.error('Error loading MCP settings:', error);
         this.toast.showError('Failed to load MCP settings');
       });
+  }
+
+  async onChatHistoryUpdate(chatHistory: any[]): Promise<void> {
+    if (this.projectId) {
+      try {
+        await this.solutionChatService.saveChatHistory(this.projectId, chatHistory);
+        this.appInfo.chatHistory = chatHistory;
+      } catch (error) {
+        this.logger.error('Error saving chat history:', error);
+        this.toast.showError('Failed to save chat history');
+      }
+    }
   }
 
   ngOnDestroy() {

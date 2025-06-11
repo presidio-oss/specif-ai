@@ -15,6 +15,7 @@ export const CHAT_TYPES = {
   REQUIREMENT: 'requirement',
   USERSTORY: 'userstory',
   TASK: 'task',
+  SOLUTION: 'solution',
 };
 
 export const BP_FILE_KEYS = {
