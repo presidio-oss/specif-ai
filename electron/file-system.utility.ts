@@ -32,6 +32,11 @@ interface FileChunkParams extends FileParams {
   filterString: string;
 }
 
+interface ISelectedRequirement {
+  requirement: string;
+  fileName: string;
+}
+
 export const utilityFunctionMap = {
   createDirectoryWithMetadata: createDirectoryWithMetadata,
   readDirectoryMetadata: readDirectoryMetadata,
@@ -241,6 +246,8 @@ type FileChunk = {
   message?: string;
   linkedBRDIds?: Array<string>;
   epicTicketId?: string | null;
+  selectedBRDs?: Array<ISelectedRequirement>;
+  selectedPRDs?: Array<ISelectedRequirement>;
 };
 
 function readFileChunk(
@@ -283,6 +290,12 @@ function readFileChunk(
           // populated linked brd ids in prd base files
           if (parsed.linkedBRDIds && !dataExtracted.linkedBRDIds) {
             dataExtracted.linkedBRDIds = parsed.linkedBRDIds;
+          }
+          if (parsed.selectedBRDs && !dataExtracted.selectedBRDs) {
+            dataExtracted.selectedBRDs = parsed.selectedBRDs;
+          }
+          if (parsed.selectedPRDs && !dataExtracted.selectedPRDs) {
+            dataExtracted.selectedPRDs = parsed.selectedPRDs;
           }
           if (dataExtracted.requirement && dataExtracted.title) {
             fs.close(fd, () => {});

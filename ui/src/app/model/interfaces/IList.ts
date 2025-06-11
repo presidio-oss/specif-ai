@@ -4,12 +4,19 @@ export interface IList{
   content: IProjectDocument
 }
 
+export interface SelectedDocument {
+  requirement: string;
+  fileName: string;
+}
+
 export interface IProjectDocument {
   requirement?: string;
   title?: string;
   epicTicketId?: string;
   features?: IFeature[];
   linkedBRDIds?: string[];
+  selectedBRDs?: SelectedDocument[];
+  selectedPRDs?: SelectedDocument[];
   chatHistory?: [];
 }
 

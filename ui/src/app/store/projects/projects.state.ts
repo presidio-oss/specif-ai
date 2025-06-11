@@ -502,13 +502,7 @@ export class ProjectsState {
     );
 
     const nonNullFileContents = fileContents.filter(
-      (
-        file,
-      ): file is {
-        folderName: string;
-        fileName: string;
-        content: { requirement: string; title: string; epicTicketId: string };
-      } => file !== null,
+      (file): file is IList => file !== null,
     );
 
     patchState({

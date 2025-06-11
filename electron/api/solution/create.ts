@@ -214,32 +214,19 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
           const channel = `solution:${validatedData.id}-workflow-progress`;
           const timestamp = Date.now();
 
-          switch (streamEvent.event) {
-            case "on_tool_start":
-              event.sender.send(channel, {
-                node: "tools",
-                type: "mcp",
-                message: {
-                  title: `Tool call started: ${streamEvent.name}`,
-                },
-                correlationId: streamEvent.run_id,
-                timestamp,
-              });
-              break;
-
-            case "on_tool_end":
-              event.sender.send(channel, {
-                node: "tools_end",
-                type: "mcp",
-                message: {
-                  title: `Tool call completed: ${streamEvent.name}`,
-                  input: streamEvent.data?.input,
-                  output: streamEvent.data?.output?.content,
-                },
-                correlationId: streamEvent.run_id,
-                timestamp,
-              });
-              break;
+        switch (streamEvent.event) {
+          case "on_tool_end":
+            event.sender.send(channel, {
+              node: "tools_end",
+              type: "mcp",
+              message: {
+                title: `Completed tool execution: ${streamEvent.name}`,
+                input: streamEvent.data?.input,
+                output: streamEvent.data?.output?.content,
+              },
+              timestamp,
+            });
+            break;
 
             case "on_custom_event":
               event.sender.send(channel, streamEvent.data);

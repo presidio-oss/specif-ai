@@ -6,7 +6,7 @@ import { BulkReadFiles, ExportRequirementData } from '../../store/projects/proje
 import { getDescriptionFromInput } from '../../utils/common.utils';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { IList } from '../../model/interfaces/IList';
+import { IList, SelectedDocument } from '../../model/interfaces/IList';
 import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BadgeComponent } from '../core/badge/badge.component';
@@ -239,7 +239,17 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
         id: item.id,
         folderName: item.folderName,
         fileName: item.fileName,
-        req: item.content,
+        req: {
+          ...item.content,
+          selectedBRDs:
+            item?.content?.selectedBRDs?.map(
+              (brd: SelectedDocument) => brd?.requirement || brd,
+            ) || [],
+          selectedPRDs:
+            item?.content?.selectedPRDs?.map(
+              (prd: SelectedDocument) => prd?.requirement || prd,
+            ) || [],
+        },
         selectedFolder: {
           title: item.folderName,
           id: this.appInfo.id,
