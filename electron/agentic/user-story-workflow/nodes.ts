@@ -45,10 +45,10 @@ export const buildResearchNode = ({
         statusMessage: message,
       });
 
-      await workflowEvents.dispatchThinking(
+      await workflowEvents.dispatchAction(
         "research",
         {
-          title: "Skipping research phase - no tools available",
+          title: "Skipped research phase — no tools were available",
         },
         runnableConfig
       );
