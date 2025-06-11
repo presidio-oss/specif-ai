@@ -68,7 +68,7 @@ import { ThinkingProcessComponent } from '../../components/thinking-process/thin
 import { WorkflowProgressComponent } from '../../components/workflow-progress/workflow-progress.component';
 import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
-import { SolutionChatService } from '../../services/solution-chat';
+import { SolutionChatService } from '../../services/solution-chat/solution-chat.service';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 
@@ -768,7 +768,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       }
     }
   }
-  
+
   resetSolutionProgress(): void {
     if (this.projectId) {
       this.workflowProgressService.removeGlobalListener(
