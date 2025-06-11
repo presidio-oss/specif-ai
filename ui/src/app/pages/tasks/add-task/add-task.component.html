@@ -9,8 +9,8 @@
     <div
       [ngClass]="
         mode === 'add'
-          ? 'bg-white border border-secondary-200 rounded-lg flex flex-col'
-          : 'bg-white border border-secondary-200 rounded-lg flex flex-col lg:col-span-2'
+          ? 'bg-white border border-secondary-200 rounded-lg flex flex-col h-[calc(100vh-80px)]'
+          : 'bg-white border border-secondary-200 rounded-lg flex flex-col lg:col-span-2 h-[calc(100vh-80px)]'
       "
     >
       <header
@@ -36,8 +36,9 @@
       <form
         [formGroup]="taskForm"
         (ngSubmit)="mode === 'add' ? addTask() : updateTask()"
+        class="flex flex-col h-full overflow-hidden"
       >
-        <div class="p-4 flex flex-col gap-1.5">
+        <div class="p-4 flex flex-col gap-1.5 flex-1 overflow-y-auto">
           <div class="flex flex-col">
             <app-input-field
               [required]="true"

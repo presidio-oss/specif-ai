@@ -1,8 +1,7 @@
 <div class="mx-auto max-w-6xl h-full">
   <div class="grid grid-cols-12 gap-4 h-full">
     <div
-      [formGroup]="businessProcessForm"
-      class="bg-white border rounded-lg flex flex-col col-span-12 lg:col-span-7 h-[calc(100vh-80px)] overflow-y-auto"
+      class="bg-white border rounded-lg flex flex-col col-span-12 lg:col-span-7 h-[calc(100vh-80px)]"
     >
       <header
         class="flex justify-between items-center p-4 border-b border-secondary-200"
@@ -37,8 +36,11 @@
           </div>
         </div>
       </header>
-      <div>
-        <div class="p-4 flex flex-col gap-1.5">
+      <form
+        [formGroup]="businessProcessForm"
+        class="flex flex-col h-full overflow-hidden"
+      >
+        <div class="p-4 flex flex-col gap-1.5 flex-1 overflow-y-auto">
           <div class="flex flex-col">
             <app-input-field
               elementPlaceHolder="Title"
@@ -80,6 +82,68 @@
               </ng-container>
             </div>
           </div>
+
+          <div class="flex flex-col gap-3 mt-4">
+            <div>
+              <h2 class="text-sm font-medium text-secondary-900">Included BRDs</h2>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                <div *ngFor="let brd of selectedBRDs">
+                  <app-pill
+                    (clear)="removeBRD(brd)"
+                    [showClear]="true"
+                    variant="secondary"
+                  >
+                    {{ brd.fileName.split("-")[0] }}
+                  </app-pill>
+                </div>
+                <button
+                  (click)="
+                    switchTab('includeFiles'); selectTab(requirementTypes.BRD)
+                  "
+                >
+                  <app-pill variant="primary" contentContainerClass="select-none">
+                    Add ->
+                  </app-pill>
+                </button>
+              </div>
+            </div>
+            <div>
+              <h2 class="text-sm font-medium text-secondary-900">Included PRDs</h2>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                <div *ngFor="let prd of selectedPRDs">
+                  <app-pill
+                    (clear)="removePRD(prd)"
+                    [showClear]="true"
+                    variant="secondary"
+                  >
+                    {{ prd.fileName.split("-")[0] }}
+                  </app-pill>
+                </div>
+                <button
+                  (click)="
+                    switchTab('includeFiles'); selectTab(requirementTypes.PRD)
+                  "
+                >
+                  <app-pill variant="primary" contentContainerClass="select-none">
+                    Add ->
+                  </app-pill>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Display empty message if no documents are present -->
+          <div
+            *ngIf="selectedPRDs.length === 0 && selectedBRDs.length === 0"
+            class="pb-4"
+          >
+            <div
+              *ngIf="businessProcessForm.errors?.['noPrdOrBrd']"
+              class="text-danger-500 text-center text-xs mt-1"
+            >
+              Please select at least one PRD or BRD.
+            </div>
+          </div>
         </div>
 
         <div class="flex justify-end gap-2 p-4 border-t border-secondary-200">
@@ -115,67 +179,7 @@
             (click)="addBusinessProcess()"
           />
         </div>
-      </div>
-      <div class="p-4 flex flex-col gap-3">
-        <div>
-          <h2 class="text-sm font-medium text-secondary-900">Included BRDs</h2>
-          <div class="mt-2 flex flex-wrap gap-1.5">
-            <div *ngFor="let brd of selectedBRDs">
-              <app-pill
-                (clear)="removeBRD(brd)"
-                [showClear]="true"
-                variant="secondary"
-              >
-                {{ brd.fileName.split("-")[0] }}
-              </app-pill>
-            </div>
-            <button
-              (click)="
-                switchTab('includeFiles'); selectTab(requirementTypes.BRD)
-              "
-            >
-              <app-pill variant="primary" contentContainerClass="select-none">
-                Add ->
-              </app-pill>
-            </button>
-          </div>
-        </div>
-        <div>
-          <h2 class="text-sm font-medium text-secondary-900">Included PRDs</h2>
-          <div class="mt-2 flex flex-wrap gap-1.5">
-            <div *ngFor="let prd of selectedPRDs">
-              <app-pill
-                (clear)="removePRD(prd)"
-                [showClear]="true"
-                variant="secondary"
-              >
-                {{ prd.fileName.split("-")[0] }}
-              </app-pill>
-            </div>
-            <button
-              (click)="
-                switchTab('includeFiles'); selectTab(requirementTypes.PRD)
-              "
-            >
-              <app-pill variant="primary" contentContainerClass="select-none">
-                Add ->
-              </app-pill>
-            </button>
-          </div>
-        </div>
-      </div>
-      <!-- Display empty message if no documents are present -->
-      <div
-        *ngIf="selectedPRDs.length === 0 && selectedBRDs.length === 0"
-        class="pb-10"
-      >
-        <div
-          *ngIf="businessProcessForm.errors?.['noPrdOrBrd']"
-          class="text-danger-500 text-center text-xs mt-1"
-        >
-          Please select at least one PRD or BRD.
-        </div>
-      </div>
+      </form>
     </div>
 
     <div class="bg-white border rounded-lg col-span-12 lg:col-span-5 h-[calc(100vh-80px)] flex flex-col">
