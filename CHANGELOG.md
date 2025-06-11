@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.7.0]
+
+### Added
+
+- Documentation for Specifai is now available via Docusaurus, providing comprehensive usage guidance and architecture insights.
+
+### Enhancements
+
+- Redirected users to the Solution View with real-time progress indicators immediately after clicking "Create Solution" for a smoother transition experience.
+- Refactored layout components to ensure consistent card height across all pages, improving visual uniformity.
+- Standardized the chat header to display “Talk to HAI” with updated branding across the application.
+
+### Fixed
+
+- Minor UI inconsistencies and layout alignment issues across key components.
+
 ## [2.6.0]
 
 ### Added
