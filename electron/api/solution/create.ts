@@ -251,7 +251,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       }
 
       if (abortController.signal.aborted) {
-        throw new Error('Operation cancelled before retrieving results');
+        throw new Error('Project creation was cancelled by the user.');
       }
 
       const response = await createSolutionWorkflow.getState({
@@ -335,10 +335,9 @@ export async function abortSolutionCreation(
     if (success) {
       event.sender.send(`solution:${data.projectId}-workflow-progress`, {
         node: "abort_requested",
-        type: "system",
+        type: "action",
         message: {
-          title: "Cancellation requested",
-          description: "Solution creation is being cancelled...",
+          title: "Abort requested for solution creation",
         },
         timestamp: Date.now(),
       });
