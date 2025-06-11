@@ -50,6 +50,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
   @Input() completedSubtitle: string = 'Workflow completed successfully';
   @Input() maxHeight: string = '24rem';
   @Input() showCancelButton: boolean = true;
+  @Input() showHeader: boolean = true;
 
   progress$!: Observable<WorkflowProgressEvent[]>;
   workflowStatus$!: Observable<WorkflowStatus>;
@@ -174,7 +175,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
     event: WorkflowProgressEvent,
     progress: WorkflowProgressEvent[],
   ): boolean {
-    if (event.type === 'action') {
+    if (event.type === 'action' || this.isCompleted) {
       return false;
     }
 

@@ -239,6 +239,8 @@
             *ngIf="isProjectFailed && !isCreatingSolution"
             [failureInfo]="projectFailureInfo"
             [projectName]="appName"
+            [projectId]="projectId!"
+            [workflowType]="WorkflowType.Solution"
             (retryClicked)="retryProjectCreation()"
           ></app-project-failure-message>
 

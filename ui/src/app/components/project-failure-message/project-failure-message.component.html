@@ -8,53 +8,6 @@
     aria-labelledby="failure-title"
     aria-describedby="failure-description"
   >
-    <div class="absolute inset-0 opacity-[0.02]">
-      <svg
-        class="h-full w-full"
-        viewBox="0 0 100 100"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <pattern
-            id="failure-pattern-enhanced"
-            x="0"
-            y="0"
-            width="20"
-            height="20"
-            patternUnits="userSpaceOnUse"
-          >
-            <circle cx="10" cy="10" r="1.2" fill="currentColor" opacity="0.6" />
-            <circle
-              cx="10"
-              cy="10"
-              r="4"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="0.3"
-              opacity="0.2"
-            />
-            <path
-              d="M5,5 L15,15 M15,5 L5,15"
-              stroke="currentColor"
-              stroke-width="0.2"
-              opacity="0.1"
-            />
-          </pattern>
-          <radialGradient id="failure-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="rgba(239, 68, 68, 0.1)" />
-            <stop offset="100%" stop-color="rgba(239, 68, 68, 0)" />
-          </radialGradient>
-        </defs>
-        <rect
-          width="100"
-          height="100"
-          fill="url(#failure-pattern-enhanced)"
-          class="text-red-400"
-        />
-        <rect width="100" height="100" fill="url(#failure-glow)" />
-      </svg>
-    </div>
-
     <div class="absolute inset-0 pointer-events-none">
       <div
         class="absolute top-4 left-8 w-1 h-1 bg-red-300/30 rounded-full animate-bounce"
@@ -223,6 +176,17 @@
               />
 
               <app-button
+                *ngIf="hasLogs"
+                [buttonContent]="logsButtonText"
+                theme="secondary"
+                size="sm"
+                rounded="lg"
+                [icon]="logsButtonIcon"
+                (click)="toggleLogs()"
+                class="shadow-lg shadow-red-100/50 font-semibold border-red-200 text-red-700 hover:bg-red-50"
+              />
+
+              <app-button
                 buttonContent="Create New Project"
                 theme="secondary"
                 size="sm"
@@ -239,6 +203,71 @@
       <div
         class="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-red-100/20 to-transparent rounded-tl-full pointer-events-none"
       ></div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="showLogs && hasLogs"
+    class="mt-4 animate-in slide-in-from-top-4 duration-500 ease-out"
+  >
+    <div
+      class="relative overflow-hidden rounded-xl border border-red-200/40 bg-gradient-to-br from-red-50/60 via-rose-50/40 to-pink-50/30 shadow-lg shadow-red-100/20 backdrop-blur-md"
+    >
+      <div class="relative px-4 py-3 border-b border-red-200/30">
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-red-100/20 to-rose-100/20"
+        ></div>
+        <div class="relative flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-100/80 via-red-50/60 to-rose-50/40 ring-1 ring-red-200/50 shadow-sm"
+            >
+              <ng-icon
+                class="h-4 w-4 text-red-600"
+                name="heroDocumentText"
+                strokeWidth="2"
+              ></ng-icon>
+            </div>
+            <div>
+              <h4 class="text-sm font-semibold text-red-900 leading-tight">
+                Workflow Execution Logs
+              </h4>
+              <p class="text-xs text-red-700/80 mt-0.5">
+                Detailed execution steps for {{ projectName || "this project" }}
+              </p>
+            </div>
+          </div>
+
+          <button
+            (click)="toggleLogs()"
+            class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50/80 border border-red-200/50 rounded-lg hover:bg-red-100/80 hover:border-red-300/50 transition-all duration-200 shadow-sm"
+            type="button"
+          >
+            <ng-icon
+              class="h-3 w-3"
+              name="heroChevronUp"
+              strokeWidth="2"
+            ></ng-icon>
+            <span>Collapse</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="relative p-4">
+        <div class="relative">
+          <div class="workflow-logs-container">
+            <app-workflow-progress
+              [projectId]="projectId"
+              [workflowType]="workflowType"
+              [isVisible]="true"
+              [isCompleted]="true"
+              [maxHeight]="'20rem'"
+              [showCancelButton]="false"
+              [showHeader]="false"
+            ></app-workflow-progress>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

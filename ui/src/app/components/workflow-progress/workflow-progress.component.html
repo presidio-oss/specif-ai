@@ -1,5 +1,5 @@
 <div *ngIf="isVisible" class="p-4 max-w-4xl mx-auto">
-  <div class="flex items-center justify-between mb-4">
+  <div *ngIf="showHeader" class="flex items-center justify-between mb-4">
     <h1 class="font-semibold text-gray-900 truncate">
       {{ isCompleted ? completedTitle : title }}
     </h1>
