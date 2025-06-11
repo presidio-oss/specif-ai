@@ -99,13 +99,10 @@ export class WorkflowProgressComponent implements OnInit {
     }
 
     if (event.correlationId) {
-      const hasCorrespondingCompletion = progress.some(
-        (e: WorkflowProgressEvent) =>
-          e.correlationId === event.correlationId &&
-          (e.type === 'action' || e.type === 'mcp') &&
-          e !== event,
+      const hasCorrespondingAction = progress.some(
+        (e) => e.correlationId === event.correlationId && e.type === 'action',
       );
-      return !hasCorrespondingCompletion;
+      return !hasCorrespondingAction;
     }
 
     const currentIndex = progress.indexOf(event);
