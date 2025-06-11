@@ -68,7 +68,7 @@
             <div class="flex flex-col gap-1.5">
               <app-rich-text-editor
                 formControlName="content"
-                editorClass="h-80 overflow-y-auto"
+                editorClass="h-[calc(100vh-460px)] min-h-24 overflow-y-auto"
               ></app-rich-text-editor>
               <ng-container *ngIf="businessProcessForm.get('content')?.touched">
                 <span
