@@ -24,3 +24,7 @@ export const COMPONENT = {
   SOLUTION: "solution",
   FLOWCHART: "flowchart",
 };
+
+export const OPERATION_ID = {
+  CREATE_SOLUTION: (projectId: string) => `create-solution-${projectId}`,
+};

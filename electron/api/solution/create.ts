@@ -10,7 +10,7 @@ import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
-import { OPERATIONS } from '../../helper/constants';
+import { OPERATIONS, OPERATION_ID } from '../../helper/constants';
 import { buildCreateSolutionWorkflow } from '../../agentic/create-solution-workflow';
 import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
 import { ICreateSolutionWorkflowStateAnnotation } from '../../agentic/create-solution-workflow/state';
@@ -22,7 +22,7 @@ import { ObservabilityManager } from '../../services/observability/observability
 import { MCPHub } from '../../mcp/mcp-hub';
 import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
 import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
-import { OperationRegistry } from '../../services/operation-registry';
+import { OperationRegistry } from '../../services/content-generation/operation-registry';
 
 // types
 
@@ -117,10 +117,8 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     const validatedData = await createSolutionSchema.parseAsync(data);
     validationSpan.end();
 
-    operationId = `create-solution-${validatedData.id}`;
+    operationId = OPERATION_ID.CREATE_SOLUTION(validatedData.id);
     const abortController = operationRegistry.createController(operationId);
-    
-    console.log(`[create-solution] Created AbortController for operation: ${operationId}`);
 
     const results: SolutionResponse = {
       createReqt: validatedData.createReqt ?? false,
@@ -302,6 +300,10 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
   } catch (error) {
     console.error('Error in createSolution:', error);
     throw error;
+  } finally {
+    if (operationId) {
+      operationRegistry.remove(operationId);
+    }
   }
 }
 
@@ -311,7 +313,7 @@ export async function abortSolutionCreation(
 ): Promise<boolean> {
   try {
     const operationRegistry = OperationRegistry.getInstance();
-    const operationId = `create-solution-${data.projectId}`;
+    const operationId = OPERATION_ID.CREATE_SOLUTION(data.projectId);
 
     console.log(
       `[abort-solution] Attempting to abort operation: ${operationId}`
