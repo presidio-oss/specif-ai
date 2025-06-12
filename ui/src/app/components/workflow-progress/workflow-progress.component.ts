@@ -120,11 +120,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
         this.workflowType,
       );
 
-      if (success) {
-        this.toasterService.showSuccess(
-          `${this.workflowType.charAt(0).toUpperCase() + this.workflowType.slice(1)} creation has been cancelled successfully.`,
-        );
-      } else {
+      if (!success) {
         this.toasterService.showWarning(
           `Unable to cancel ${this.workflowType} creation. The process may have already completed.`,
         );
