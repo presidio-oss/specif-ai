@@ -93,19 +93,23 @@ export class ProjectCreationService {
           onSuccess?.();
         },
         error: async (error) => {
+          const rawMessage = error?.message || '';
+          const match = rawMessage.match(/Error: .*/);
+          const cleanedMessage = match ? match[0] : rawMessage;
+
+          const errorMessage = isRetry
+            ? `Failed to retry project creation: ${cleanedMessage}`
+            : cleanedMessage;
+
           this.store.dispatch(
             new UpdateMetadata(projectData.id, {
               isFailed: true,
               failureInfo: {
                 timestamp: new Date().toISOString(),
-                reason: error.message,
+                reason: errorMessage,
               },
             }),
           );
-
-          const errorMessage = isRetry
-            ? `Failed to retry project creation: ${error.message}`
-            : error.message;
 
           this.toast.showError(errorMessage);
 
@@ -114,7 +118,7 @@ export class ProjectCreationService {
             WorkflowType.Solution,
             {
               timestamp: new Date().toISOString(),
-              reason: error.message,
+              reason: errorMessage,
             },
           );
 
