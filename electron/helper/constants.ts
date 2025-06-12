@@ -28,3 +28,7 @@ export const COMPONENT = {
 export const OPERATION_ID = {
   CREATE_SOLUTION: (projectId: string) => `create-solution-${projectId}`,
 };
+
+export const WORKFLOW_CHANNEL = {
+  SOLUTION_PROGRESS: (projectId: string) => `solution:${projectId}-workflow-progress`,
+};

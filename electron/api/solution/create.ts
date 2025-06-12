@@ -10,7 +10,7 @@ import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
-import { OPERATIONS, OPERATION_ID } from '../../helper/constants';
+import { OPERATIONS, OPERATION_ID, WORKFLOW_CHANNEL } from '../../helper/constants';
 import { buildCreateSolutionWorkflow } from '../../agentic/create-solution-workflow';
 import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
 import { ICreateSolutionWorkflowStateAnnotation } from '../../agentic/create-solution-workflow/state';
@@ -23,6 +23,7 @@ import { MCPHub } from '../../mcp/mcp-hub';
 import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
 import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
 import { OperationRegistry } from '../../services/content-generation/operation-registry';
+import { WorkflowEventsService } from '../../services/events/workflow-events.service';
 
 // types
 
@@ -51,6 +52,8 @@ const requirementTypes: Array<RequirementTypeMeta> = [
 const prdRequirementType = { key: 'prd', generatePrompt: createPRDPrompt, preferencesKey: 'prdPreferences' } as const;
 
 // constants
+
+const workflowEvents = new WorkflowEventsService("create-solution");
 
 const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, llmHandler, brds }: GenerateRequirementParams) => {
   console.log(`[create-solution] Generating ${key.toUpperCase()} requirements...`);
@@ -100,6 +103,7 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
   const operationRegistry = OperationRegistry.getInstance();
   let operationId: string | null = null;
+  let validatedData: CreateSolutionRequest | null = null;
 
   try {
     const o11y = ObservabilityManager.getInstance();
@@ -114,7 +118,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     console.log("[create-solution] Using LLM config:", llmConfig);
 
     const validationSpan = trace.span({name: "input-validation"})
-    const validatedData = await createSolutionSchema.parseAsync(data);
+    validatedData = await createSolutionSchema.parseAsync(data);
     validationSpan.end();
 
     operationId = OPERATION_ID.CREATE_SOLUTION(validatedData.id);
@@ -209,21 +213,19 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
             break;
           }
 
-          const channel = `solution:${validatedData.id}-workflow-progress`;
-          const timestamp = Date.now();
-
+          const channel = WORKFLOW_CHANNEL.SOLUTION_PROGRESS(validatedData.id);
           switch (streamEvent.event) {
             case "on_tool_end":
-              event.sender.send(channel, {
-                node: "tools_end",
-                type: "mcp",
-                message: {
+              const toolEndEvent = workflowEvents.createEvent(
+                "tools_end",
+                "mcp",
+                {
                   title: `Completed tool execution: ${streamEvent.name}`,
                   input: streamEvent.data?.input,
                   output: streamEvent.data?.output?.content,
-                },
-                timestamp,
-              });
+                }
+              );
+              event.sender.send(channel, toolEndEvent);
               break;
 
             case "on_custom_event":
@@ -231,12 +233,9 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
               break;
           }
         }
-      } catch {
+      } catch(error) {
         console.error("[create-solution] Error during workflow streaming");
-      }
-
-      if (abortController.signal.aborted) {
-        throw new Error('Project creation was cancelled by the user.');
+        throw error;
       }
 
       const response = await createSolutionWorkflow.getState({
@@ -298,7 +297,29 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
     return results;
   } catch (error) {
-    console.error('Error in createSolution:', error);
+    if (validatedData && validatedData.id) {
+      const channel = WORKFLOW_CHANNEL.SOLUTION_PROGRESS(validatedData.id);
+
+      let title = "Error occurred during solution creation";
+      if (
+        error instanceof Error &&
+        (error.name === "AbortError" || error.message === "Aborted")
+      ) {
+        title = "Solution creation was aborted by user";
+      } 
+
+      const errorEvent = workflowEvents.createEvent(
+        "error_occurred",
+        "action",
+        {
+          title,
+          output: error instanceof Error ? error.message : String(error),
+        }
+      );
+
+      event.sender.send(channel, errorEvent);
+    }
+
     throw error;
   } finally {
     if (operationId) {
@@ -315,34 +336,17 @@ export async function abortSolutionCreation(
     const operationRegistry = OperationRegistry.getInstance();
     const operationId = OPERATION_ID.CREATE_SOLUTION(data.projectId);
 
-    console.log(
-      `[abort-solution] Attempting to abort operation: ${operationId}`
-    );
-
-    const success = operationRegistry.cancel(operationId);
-
-    if (success) {
-      event.sender.send(`solution:${data.projectId}-workflow-progress`, {
-        node: "abort_requested",
-        type: "action",
-        message: {
-          title: "Abort requested for solution creation",
-        },
-        timestamp: Date.now(),
-      });
-
-      console.log(
-        `[abort-solution] Successfully requested abort for operation: ${operationId}`
-      );
-    } else {
-      console.log(
-        `[abort-solution] No active operation found for: ${operationId}`
-      );
-    }
-
-    return success;
+    return operationRegistry.cancel(operationId);
   } catch (error) {
     console.error("Error in abortSolutionCreation:", error);
+    const channel = WORKFLOW_CHANNEL.SOLUTION_PROGRESS(data.projectId);
+
+    const errorEvent = workflowEvents.createEvent("abort_failed", "action", {
+      title: "Failed to abort solution creation",
+      output: error instanceof Error ? error.message : String(error),
+    });
+    event.sender.send(channel, errorEvent);
+
     throw error;
   }
 }
