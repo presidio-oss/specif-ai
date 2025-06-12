@@ -648,10 +648,9 @@ export class WorkflowProgressService implements OnDestroy {
       }
 
       if (success) {
-        this.setCreationStatus(projectId, workflowType, {
-          isCreating: false,
-          isComplete: false,
-          isFailed: false,
+        this.setFailed(projectId, workflowType, {
+          timestamp: new Date().toISOString(),
+          reason: 'Request aborted by user',
         });
         await this.electronService.setContentGenerationStatus(
           projectId,
