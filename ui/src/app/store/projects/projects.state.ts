@@ -1,5 +1,6 @@
 import {
   IProject,
+  IProjectMetadata,
   ISolutionResponseRequirementItem,
 } from '../../model/interfaces/projects.interface';
 import { Injectable, NgZone } from '@angular/core';
@@ -163,17 +164,19 @@ export class ProjectsState {
       const state = getState();
       const projectExists = await this.appSystemService.fileExists(projectName);
       if (projectExists && !isRetry) {
-        throw new Error('Project already exists, please retry with another unique project name');
+        throw new Error(
+          'Project already exists, please retry with another unique project name',
+        );
       }
 
       await this.appSystemService.createProject(metadata, projectName);
 
       let projectList;
       if (isRetry) {
-        projectList = state.projects.map(project => 
-          project.metadata.id === metadata.id 
+        projectList = state.projects.map((project) =>
+          project.metadata.id === metadata.id
             ? { ...project, metadata: { ...metadata } }
-            : project
+            : project,
         );
       } else {
         projectList = [
@@ -187,7 +190,7 @@ export class ProjectsState {
           },
         ];
       }
-      
+
       const sortedProjectList = projectList.sort(
         (a, b) =>
           new Date(b.metadata.createdAt).getTime() -
@@ -198,7 +201,7 @@ export class ProjectsState {
         ...state,
         projects: sortedProjectList,
       });
-      
+
       this.ngZone.run(() => {
         this.router.navigate([`apps/${metadata.id}`]);
       });
@@ -231,8 +234,12 @@ export class ProjectsState {
 
       await this.appSystemService.createFileWithContent(
         `${projectName}/.metadata.json`,
-        JSON.stringify(metadata),
+        JSON.stringify(metadata, null, 2),
       );
+
+      patchState({
+        projects: this.getUpdatedProjectsList(getState(), metadata),
+      });
     } catch (e) {
       this.logger.error('Error creating project', e);
       const updatedMetadata = {
@@ -248,8 +255,12 @@ export class ProjectsState {
       };
       await this.appSystemService.createFileWithContent(
         `${projectName}/.metadata.json`,
-        JSON.stringify(updatedMetadata),
+        JSON.stringify(updatedMetadata, null, 2),
       );
+
+      patchState({
+        projects: this.getUpdatedProjectsList(getState(), updatedMetadata),
+      });
 
       throw e;
     }
@@ -313,6 +324,21 @@ export class ProjectsState {
     }
 
     return response;
+  }
+
+  private getUpdatedProjectsList(
+    state: ProjectStateModel,
+    metadata: IProjectMetadata,
+  ): IProject[] {
+    const updatedProjects = state.projects.map((p) =>
+      p.metadata.id === metadata.id ? { ...p, metadata } : p,
+    );
+
+    return updatedProjects.sort(
+      (a, b) =>
+        new Date(b.metadata.createdAt).getTime() -
+        new Date(a.metadata.createdAt).getTime(),
+    );
   }
 
   @Action(GetProjectFiles)
