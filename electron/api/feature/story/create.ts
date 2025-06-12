@@ -82,29 +82,16 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
       const timestamp = Date.now();
 
       switch (evt) {
-        case "on_tool_start":
-          event.sender.send(channel, {
-            node: "tools",
-            type: "mcp",
-            message: {
-              title: `Tool call started: ${name}`
-            },
-            correlationId: run_id,
-            timestamp,
-          });
-          break;
-
         case "on_tool_end":
           event.sender.send(channel, {
             node: "tools_end",
             type: "mcp",
             message: {
-              title: `Tool call completed: ${name}`,
+              title: `Completed tool execution: ${name}`,
               input: data?.input,
               output: data?.output?.content,
             },
             timestamp,
-            correlationId: run_id,
           });
           break;
 

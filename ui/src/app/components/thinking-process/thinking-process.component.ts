@@ -170,13 +170,10 @@ export class ThinkingProcessComponent
     }
 
     if (event.correlationId) {
-      const hasCorrespondingCompletion = this.progress.some(
-        (e) =>
-          e.correlationId === event.correlationId &&
-          (e.type === 'action' || e.type === 'mcp') &&
-          e !== event,
+      const hasCorrespondingAction = this.progress.some(
+        (e) => e.correlationId === event.correlationId && e.type === 'action',
       );
-      return !hasCorrespondingCompletion;
+      return !hasCorrespondingAction;
     }
 
     const currentIndex = this.progress.indexOf(event);
