@@ -1,9 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
-import {
-  CreateProject,
-  UpdateMetadata,
-} from '../../store/projects/projects.actions';
+import { CreateProject } from '../../store/projects/projects.actions';
 import { WorkflowProgressService } from '../workflow-progress/workflow-progress.service';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { ElectronService } from '../../electron-bridge/electron.service';
@@ -72,13 +69,6 @@ export class ProjectCreationService {
       .dispatch(new CreateProject(projectName, projectData, isRetry))
       .subscribe({
         next: async () => {
-          this.store.dispatch(
-            new UpdateMetadata(projectData.id, {
-              isFailed: false,
-              failureInfo: undefined,
-            }),
-          );
-
           const successMessage = isRetry
             ? `Great! Your ${projectName} solution has been successfully recreated.`
             : `All set! Your ${projectName} solution is ready to roll.`;
@@ -100,16 +90,6 @@ export class ProjectCreationService {
           const errorMessage = isRetry
             ? `Failed to retry project creation: ${cleanedMessage}`
             : cleanedMessage;
-
-          this.store.dispatch(
-            new UpdateMetadata(projectData.id, {
-              isFailed: true,
-              failureInfo: {
-                timestamp: new Date().toISOString(),
-                reason: errorMessage,
-              },
-            }),
-          );
 
           this.toast.showError(errorMessage);
 

@@ -168,16 +168,26 @@ export class ProjectsState {
 
       await this.appSystemService.createProject(metadata, projectName);
 
-      let projectList = [
-        ...state.projects,
-        {
-          project: projectName,
-          projectKey: metadata.jiraProjectKey,
-          metadata: {
-            ...metadata,
+      let projectList;
+      if (isRetry) {
+        projectList = state.projects.map(project => 
+          project.metadata.id === metadata.id 
+            ? { ...project, metadata: { ...metadata } }
+            : project
+        );
+      } else {
+        projectList = [
+          ...state.projects,
+          {
+            project: projectName,
+            projectKey: metadata.jiraProjectKey,
+            metadata: {
+              ...metadata,
+            },
           },
-        },
-      ];
+        ];
+      }
+      
       const sortedProjectList = projectList.sort(
         (a, b) =>
           new Date(b.metadata.createdAt).getTime() -
@@ -206,6 +216,8 @@ export class ProjectsState {
 
       metadata = {
         ...metadata,
+        isFailed: false,
+        failureInfo: null,
         ...Object.entries(REQUIREMENT_TYPE).reduce(
           (acc, [_, type]) => ({
             ...acc,
@@ -223,6 +235,22 @@ export class ProjectsState {
       );
     } catch (e) {
       this.logger.error('Error creating project', e);
+      const updatedMetadata = {
+        ...metadata,
+        isFailed: true,
+        failureInfo: {
+          timestamp: new Date().toISOString(),
+          reason:
+            e instanceof Error
+              ? e.message
+              : 'Unknown error occurred while creating project',
+        },
+      };
+      await this.appSystemService.createFileWithContent(
+        `${projectName}/.metadata.json`,
+        JSON.stringify(updatedMetadata),
+      );
+
       throw e;
     }
   }
@@ -644,6 +672,9 @@ export class ProjectsState {
         metadataFilePath,
         updatedFileContent,
       );
+
+      console.log('Metadata updated successfully in file:', updatedMetadata);
+      // Update the state with the new metadata
 
       const updatedProjects = state.projects.map((p) => {
         if (p.metadata.id === projectId) {
