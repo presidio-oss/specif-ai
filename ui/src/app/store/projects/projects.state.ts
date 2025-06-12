@@ -673,9 +673,6 @@ export class ProjectsState {
         updatedFileContent,
       );
 
-      console.log('Metadata updated successfully in file:', updatedMetadata);
-      // Update the state with the new metadata
-
       const updatedProjects = state.projects.map((p) => {
         if (p.metadata.id === projectId) {
           return {
