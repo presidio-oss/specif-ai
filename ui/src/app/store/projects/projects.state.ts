@@ -37,6 +37,7 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { Optional } from 'src/app/utils/types';
+import { PROJECT_ERROR_MESSAGES } from 'src/app/constants/messages.constants';
 
 export class ProjectStateModel {
   projects!: IProject[];
@@ -257,7 +258,9 @@ export class ProjectsState {
           isFailed: true,
           failureInfo: {
             timestamp: new Date().toISOString(),
-            reason: error.message,
+            reason: error.message.includes('Aborted')
+              ? PROJECT_ERROR_MESSAGES.PROJECT_CREATION_ABORTED
+              : error.message,
           },
         };
 

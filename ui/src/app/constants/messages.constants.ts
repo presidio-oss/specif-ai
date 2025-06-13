@@ -43,3 +43,7 @@ export const LOGIN_ERROR_MESSAGES = {
 export const FORM_ERROR_MESSAGES: { [key in string]: string } = {
   required: 'This is a required field',
 };
+
+export const PROJECT_ERROR_MESSAGES = {
+  PROJECT_CREATION_ABORTED: 'Solution creation was cancelled by user',
+};

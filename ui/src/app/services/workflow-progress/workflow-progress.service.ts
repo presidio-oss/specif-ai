@@ -14,6 +14,7 @@ import {
   WorkflowProgressError,
 } from '../../model/interfaces/workflow-progress.interface';
 import { ElectronService } from '../../electron-bridge/electron.service';
+import { PROJECT_ERROR_MESSAGES } from 'src/app/constants/messages.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -650,7 +651,7 @@ export class WorkflowProgressService implements OnDestroy {
       if (success) {
         this.setFailed(projectId, workflowType, {
           timestamp: new Date().toISOString(),
-          reason: 'Request aborted by user',
+          reason: PROJECT_ERROR_MESSAGES.PROJECT_CREATION_ABORTED,
         });
         await this.electronService.setContentGenerationStatus(
           projectId,
