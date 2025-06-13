@@ -4,7 +4,7 @@
       <h1
         class="text-lg font-bold text-gray-900 truncate leading-tight tracking-tight"
       >
-        {{ isCompleted ? completedTitle : title }}
+        {{ isCompleted ? completedTitle : initialTitle }}
       </h1>
       <button
         *ngIf="showCancelButton && (workflowStatus$ | async)?.isCreating"
@@ -22,23 +22,38 @@
         ></ng-icon>
       </button>
     </div>
-    <div class="flex items-center" *ngIf="!isCompleted">
-      <div
-        class="flex items-center text-xs font-medium bg-gray-50 rounded-full px-3 py-1.5 border border-gray-200 shadow-sm"
-      >
+    <div
+      class="flex items-center gap-2"
+      *ngIf="progress$ | async as progressForButton"
+    >
+      <app-button
+        *ngIf="hasAnyAccordionEvents(progressForButton)"
+        (click)="toggleExpandAll()"
+        [buttonContent]="isExpandedAll ? 'Collapse All' : 'Expand All'"
+        [icon]="isExpandedAll ? 'heroChevronDoubleUp' : 'heroChevronDoubleDown'"
+        theme="secondary_outline"
+        size="xs"
+        rounded="lg"
+        type="button"
+      ></app-button>
+      <div class="flex items-center" *ngIf="!isCompleted">
         <div
-          class="w-1.5 h-1.5 bg-primary-600 rounded-full mr-2 animate-pulse"
-        ></div>
-        <span class="whitespace-nowrap">
-          {{ subtitle }}
-        </span>
+          class="flex items-center text-xs font-medium bg-gray-50 rounded-lg px-2 py-1 border border-gray-200 shadow-sm"
+        >
+          <div
+            class="w-1.5 h-1.5 bg-primary-600 rounded-full mr-2 animate-pulse"
+          ></div>
+          <span class="whitespace-nowrap">
+            {{ subtitle }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
 
   <div
     class="space-y-1 overflow-y-auto"
-    [style.max-height]="maxHeight"
+    [style.max-height]="isExpandedAll ? 'none' : maxHeight"
     *ngIf="progress$ | async as progress"
   >
     <div *ngFor="let step of progress; let i = index" class="group">
@@ -102,7 +117,7 @@
       <app-custom-accordion
         *ngIf="hasInputOutput(step)"
         [id]="getAccordionId(step, i)"
-        [isOpen]="false"
+        [isOpen]="shouldAccordionBeOpen()"
         triggerClassName="py-2 px-3 rounded-md cursor-pointer transition-all duration-200"
         bodyClassName="px-3 pb-3 mt-2"
       >
@@ -161,7 +176,7 @@
               <div class="flex-1 h-px bg-gray-200"></div>
             </div>
             <div
-              class="bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto"
+              class="bg-gray-50 border border-gray-200 rounded-lg p-3 overflow-y-auto"
             >
               <pre
                 class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed"
@@ -180,7 +195,7 @@
               <div class="flex-1 h-px bg-gray-200"></div>
             </div>
             <div
-              class="bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto"
+              class="bg-gray-50 border border-gray-200 rounded-lg p-3 overflow-y-auto"
             >
               <pre
                 class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed"

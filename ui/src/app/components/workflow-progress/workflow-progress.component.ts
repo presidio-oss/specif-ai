@@ -6,6 +6,8 @@ import {
   heroCheckCircle,
   heroWrenchScrewdriver,
   heroStopCircle,
+  heroChevronDoubleUp,
+  heroChevronDoubleDown,
 } from '@ng-icons/heroicons/outline';
 import {
   WorkflowProgressEvent,
@@ -13,6 +15,7 @@ import {
   WorkflowStatus,
 } from '../../model/interfaces/workflow-progress.interface';
 import { CustomAccordionComponent } from '../custom-accordion/custom-accordion.component';
+import { ButtonComponent } from '../core/button/button.component';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -29,6 +32,7 @@ import { Observable, Subject, takeUntil } from 'rxjs';
     AsyncPipe,
     NgIconComponent,
     CustomAccordionComponent,
+    ButtonComponent,
   ],
   providers: [
     provideIcons({
@@ -36,6 +40,8 @@ import { Observable, Subject, takeUntil } from 'rxjs';
       heroCheckCircle,
       heroWrenchScrewdriver,
       heroStopCircle,
+      heroChevronDoubleUp,
+      heroChevronDoubleDown,
     }),
   ],
 })
@@ -44,16 +50,17 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
   @Input() workflowType!: WorkflowType;
   @Input() isVisible: boolean = false;
   @Input() isCompleted: boolean = false;
-  @Input() title: string = 'Creating Solution...';
+  @Input() initialTitle: string = 'Creating Solution...';
   @Input() subtitle: string = 'Relax while SpecifAI takes care of the rest...';
   @Input() completedTitle: string = 'Process Completed Successfully!';
-  @Input() maxHeight: string = '24rem';
+  @Input() maxHeight: string = 'none';
   @Input() showCancelButton: boolean = true;
   @Input() showHeader: boolean = true;
 
   progress$!: Observable<WorkflowProgressEvent[]>;
   workflowStatus$!: Observable<WorkflowStatus>;
   isAborting = false;
+  isExpandedAll = false;
 
   private destroy$ = new Subject<void>();
 
@@ -192,5 +199,17 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
     }
 
     return currentIndex > lastActionIndex;
+  }
+
+  toggleExpandAll(): void {
+    this.isExpandedAll = !this.isExpandedAll;
+  }
+
+  shouldAccordionBeOpen(): boolean {
+    return this.isExpandedAll;
+  }
+
+  hasAnyAccordionEvents(progress: WorkflowProgressEvent[]): boolean {
+    return progress.some((event) => this.hasInputOutput(event));
   }
 }

@@ -249,15 +249,15 @@
             [workflowType]="WorkflowType.Solution"
             [isVisible]="isCreatingSolution || solutionCreationComplete"
             [isCompleted]="solutionCreationComplete"
-            title="Creating Solution..."
-            subtitle="Relax while SpecifAI takes care of the rest..."
+            initialTitle="Creating Solution..."
             completedTitle="Solution Created Successfully!"
+            subtitle="Relax while SpecifAI takes care of the rest..."
           >
           </app-workflow-progress>
 
           <div
             class="flex-grow h-px bg-gray-300 ml-6 mr-6"
-            *ngIf="isCreatingSolution"
+            *ngIf="isCreatingSolution || solutionCreationComplete"
           ></div>
 
           <h1 class="text-title font-semibold p-4">Solution Information</h1>
