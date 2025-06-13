@@ -45,5 +45,5 @@ export const FORM_ERROR_MESSAGES: { [key in string]: string } = {
 };
 
 export const PROJECT_ERROR_MESSAGES = {
-  PROJECT_CREATION_ABORTED: 'Solution creation was cancelled by user',
+  PROJECT_CREATION_ABORTED: 'Solution requirements generation was cancelled',
 };
