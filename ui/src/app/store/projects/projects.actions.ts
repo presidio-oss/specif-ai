@@ -13,6 +13,7 @@ export class CreateProject {
   constructor(
     public projectName: string,
     public metadata: any,
+    public isRetry: boolean = false,
   ) {}
 }
 

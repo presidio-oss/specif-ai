@@ -5,51 +5,16 @@ import { IpcRendererEvent } from 'electron';
 import {
   WorkflowProgressEvent,
   WorkflowType,
+  WorkflowErrorEvent,
+  WorkflowStatus,
+  WorkflowProgressState,
+  WorkflowStatusState,
+  ActiveListener,
+  WORKFLOW_PROGRESS_CONFIG,
+  WorkflowProgressError,
 } from '../../model/interfaces/workflow-progress.interface';
 import { ElectronService } from '../../electron-bridge/electron.service';
-
-export interface WorkflowStatus {
-  isCreating: boolean;
-  isComplete: boolean;
-}
-
-interface WorkflowProgressState {
-  [projectId: string]: {
-    [workflowType: string]: WorkflowProgressEvent[];
-  };
-}
-
-interface WorkflowStatusState {
-  [projectId: string]: {
-    [workflowType: string]: WorkflowStatus;
-  };
-}
-
-interface ActiveListener {
-  readonly projectId: string;
-  readonly workflowType: WorkflowType;
-  readonly callback: (
-    event: IpcRendererEvent,
-    data: WorkflowProgressEvent,
-  ) => void;
-}
-
-const WORKFLOW_PROGRESS_CONFIG = {
-  MAX_EVENTS_PER_WORKFLOW: 1000,
-  LISTENER_KEY_SEPARATOR: '-',
-  DEFAULT_TIMEOUT: 5000,
-} as const;
-
-class WorkflowProgressError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-    public readonly context?: Record<string, unknown>,
-  ) {
-    super(message);
-    this.name = 'WorkflowProgressError';
-  }
-}
+import { PROJECT_ERROR_MESSAGES } from 'src/app/constants/messages.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -637,10 +602,16 @@ export class WorkflowProgressService implements OnDestroy {
   public async setFailed(
     projectId: string,
     workflowType: WorkflowType,
+    failureInfo?: Partial<WorkflowErrorEvent>,
   ): Promise<void> {
     this.setCreationStatus(projectId, workflowType, {
       isCreating: false,
       isComplete: false,
+      isFailed: true,
+      failureInfo: {
+        timestamp: failureInfo?.timestamp || new Date().toISOString(),
+        reason: failureInfo?.reason || 'Unknown error occurred',
+      },
     });
 
     try {
@@ -651,6 +622,48 @@ export class WorkflowProgressService implements OnDestroy {
       );
     } catch (error) {
       console.error('Failed to set content generation status:', error);
+    }
+  }
+
+  /**
+   * Abort a workflow operation
+   * @param projectId - Unique identifier for the project
+   * @param workflowType - Type of workflow
+   */
+  public async abortWorkflow(
+    projectId: string,
+    workflowType: WorkflowType,
+  ): Promise<boolean> {
+    try {
+      let success = false;
+
+      switch (workflowType) {
+        case 'solution':
+          success = await this.electronService.abortSolutionCreation(projectId);
+          break;
+        default:
+          console.warn(
+            `Abort not implemented for workflow type: ${workflowType}`,
+          );
+          return false;
+      }
+
+      if (success) {
+        this.setFailed(projectId, workflowType, {
+          timestamp: new Date().toISOString(),
+          reason: PROJECT_ERROR_MESSAGES.PROJECT_CREATION_ABORTED,
+        });
+        await this.electronService.setContentGenerationStatus(
+          projectId,
+          workflowType,
+          false,
+        );
+      }
+
+      return success;
+    } catch (error) {
+      console.error(`Failed to abort ${workflowType} workflow:`, error);
+      return false;
     }
   }
 
@@ -667,7 +680,7 @@ export class WorkflowProgressService implements OnDestroy {
   }
 
   private getDefaultStatus(): WorkflowStatus {
-    return { isCreating: false, isComplete: false };
+    return { isCreating: false, isComplete: false, isFailed: false };
   }
 
   public ngOnDestroy(): void {

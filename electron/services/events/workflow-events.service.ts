@@ -21,7 +21,7 @@ export class WorkflowEventsService {
     this.eventName = `${workflowName}-workflow-progress`;
   }
 
-  private createEvent(
+  public createEvent(
     node: string,
     type: WorkflowProgressEvent["type"],
     message: WorkflowProgressEventData,

@@ -109,6 +109,7 @@ export const buildResearchNode = ({
           thread_id: runnableConfig.configurable?.thread_id,
           sendMessagesInTelemetry: sendMessagesInTelemetry
         },
+        signal: runnableConfig.signal,
       }
     );
 
@@ -222,6 +223,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
           thread_id: runnableConfig.configurable?.thread_id,
           sendMessagesInTelemetry: sendMessagesInTelemetry
         },
+        signal: runnableConfig.signal,
       });
 
       await workflowEvents.dispatchAction(

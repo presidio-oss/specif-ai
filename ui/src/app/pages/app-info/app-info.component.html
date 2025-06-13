@@ -235,21 +235,28 @@
           </div>
         </div>
         <div *ngIf="selectedFolder?.title === 'solution'">
+          <app-project-failure-message
+            *ngIf="isProjectFailed && !isCreatingSolution"
+            [failureInfo]="projectFailureInfo"
+            [projectId]="projectId!"
+            [workflowType]="WorkflowType.Solution"
+            (retryClicked)="retryProjectCreation()"
+          ></app-project-failure-message>
+
           <app-workflow-progress
             [projectId]="projectId!"
             [workflowType]="WorkflowType.Solution"
             [isVisible]="isCreatingSolution || solutionCreationComplete"
             [isCompleted]="solutionCreationComplete"
-            title="Creating Solution..."
-            subtitle="Relax while SpecifAI takes care of the rest..."
+            initialTitle="Creating Solution..."
             completedTitle="Solution Created Successfully!"
-            completedSubtitle="Your solution has been generated and is ready to view"
+            subtitle="Relax while SpecifAI takes care of the rest..."
           >
           </app-workflow-progress>
 
           <div
             class="flex-grow h-px bg-gray-300 ml-6 mr-6"
-            *ngIf="isCreatingSolution"
+            *ngIf="isCreatingSolution || solutionCreationComplete"
           ></div>
 
           <h1 class="text-title font-semibold p-4">Solution Information</h1>
