@@ -38,7 +38,6 @@ import { WorkflowProgressService } from 'src/app/services/workflow-progress/work
 })
 export class ProjectFailureMessageComponent {
   @Input() failureInfo: WorkflowErrorEvent | null = null;
-  @Input() projectName: string = '';
   @Input() projectId: string = '';
   @Input() workflowType: WorkflowType = WorkflowType.Solution;
 
@@ -63,7 +62,14 @@ export class ProjectFailureMessageComponent {
     if (!this.failureInfo?.timestamp) return '';
 
     const date = new Date(this.failureInfo.timestamp);
-    return date.toLocaleString();
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
   }
 
   onRetryClick(): void {

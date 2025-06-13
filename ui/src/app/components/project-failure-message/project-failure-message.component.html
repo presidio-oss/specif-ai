@@ -2,50 +2,45 @@
   class="mx-2 mt-1 mb-2 animate-in slide-in-from-top-4 duration-700 ease-out"
 >
   <div
-    class="relative overflow-hidden rounded-lg border border-red-200/40 bg-gradient-to-br from-red-50/90 via-rose-50/70 to-pink-50/50 p-3 shadow-md shadow-red-100/30 backdrop-blur-md"
+    class="relative overflow-hidden rounded-lg border border-orange-200/50 bg-gradient-to-br from-orange-50/60 via-amber-50/40 to-yellow-50/30 p-3 shadow-md shadow-orange-100/20 backdrop-blur-sm"
     role="alert"
     aria-live="polite"
     aria-labelledby="failure-title"
     aria-describedby="failure-description"
   >
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent opacity-50"
+    ></div>
+
     <div class="relative">
-      <div class="flex items-start space-x-2">
+      <div class="flex items-start space-x-2.5">
         <div
           class="flex-shrink-0 animate-in zoom-in-50 duration-1000 delay-200"
         >
           <div
-            class="relative flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-red-100/80 via-red-50/60 to-rose-50/40 ring-1 ring-red-50/60 shadow-sm shadow-red-100/40"
+            class="relative flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-orange-100/90 via-amber-50/70 to-yellow-50/50 ring-1 ring-orange-200/40 shadow-sm"
           >
             <ng-icon
-              class="relative h-4 w-4 text-red-600 drop-shadow-sm"
+              class="relative h-4 w-4 text-orange-600 drop-shadow-sm"
               name="heroExclamationTriangle"
               strokeWidth="1.5"
             ></ng-icon>
           </div>
         </div>
 
-        <div class="flex-1 min-w-0 space-y-2">
+        <div class="flex-1 min-w-0 space-y-2.5">
           <div class="animate-in slide-in-from-left-4 duration-800 delay-300">
             <div class="flex items-center justify-between">
               <div>
                 <h3
                   id="failure-title"
-                  class="text-base font-bold text-red-900 mb-1 tracking-tight leading-tight bg-gradient-to-r from-red-900 to-red-700 bg-clip-text text-transparent"
+                  class="text-base font-semibold text-gray-900 mb-0.5 tracking-tight leading-tight"
                 >
-                  Project Creation Failed
+                  Solution Creation Unsuccessful
                 </h3>
-              </div>
-
-              <div
-                class="flex items-center gap-1 px-2 py-0.5 bg-red-100/70 rounded-full border border-red-200/50 backdrop-blur-sm"
-              >
-                <div
-                  class="h-1 w-1 rounded-full bg-red-500 animate-pulse"
-                ></div>
-                <span
-                  class="text-xs font-semibold text-red-800 uppercase tracking-wide"
-                  >Failed</span
-                >
+                <p class="text-xs text-gray-600 font-medium">
+                  We encountered an issue while setting up your solution
+                </p>
               </div>
             </div>
           </div>
@@ -53,31 +48,16 @@
           <div class="animate-in slide-in-from-left-4 duration-800 delay-400">
             <div class="flex flex-wrap items-center gap-1.5">
               <div
-                *ngIf="projectName"
-                class="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-100/80 to-rose-100/60 rounded-md border border-red-200/50 shadow-sm backdrop-blur-sm"
-              >
-                <ng-icon
-                  class="h-3 w-3 text-red-700"
-                  name="heroTag"
-                  strokeWidth="2"
-                ></ng-icon>
-                <span
-                  class="text-xs font-semibold text-red-900 tracking-wide"
-                  >{{ projectName }}</span
-                >
-              </div>
-
-              <div
-                class="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-100/80 to-rose-100/60 rounded-md border border-red-200/50 shadow-sm backdrop-blur-sm"
+                class="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-slate-100/90 to-gray-100/70 rounded-md border border-slate-200/60 shadow-sm backdrop-blur-sm"
                 *ngIf="formattedFailureTimestamp"
               >
                 <ng-icon
-                  class="h-3 w-3 text-red-700"
+                  class="h-3 w-3 text-slate-600"
                   name="heroClock"
                   strokeWidth="2"
                 ></ng-icon>
                 <span
-                  class="text-xs font-semibold text-red-900 tracking-wide"
+                  class="text-xs font-medium text-slate-700 tracking-wide"
                   >{{ formattedFailureTimestamp }}</span
                 >
               </div>
@@ -86,23 +66,41 @@
 
           <div class="animate-in slide-in-from-left-4 duration-800 delay-500">
             <div
-              class="relative overflow-hidden rounded-lg bg-white/80 p-2 border border-red-100/60 shadow-inner backdrop-blur-sm"
+              class="relative overflow-hidden rounded-xl bg-gradient-to-br from-white via-slate-50/20 to-white border border-slate-200/70 shadow-lg shadow-slate-100/30 backdrop-blur-sm"
             >
-              <div class="relative flex items-start gap-2">
-                <div class="flex-shrink-0 mt-0.5">
-                  <ng-icon
-                    class="h-4 w-4 text-red-600"
-                    name="heroInformationCircle"
-                    strokeWidth="2"
-                  ></ng-icon>
-                </div>
-                <div class="flex-1">
-                  <p
-                    id="failure-description"
-                    class="text-sm text-red-800 leading-relaxed font-medium"
-                  >
-                    {{ failureReason }}
-                  </p>
+              <div
+                class="absolute inset-0 bg-gradient-to-br from-blue-50/15 via-indigo-50/10 to-slate-50/15 rounded-xl"
+              ></div>
+              <div
+                class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-200/60 to-transparent"
+              ></div>
+
+              <div class="relative p-2">
+                <div class="flex items-start gap-2">
+                  <div class="flex-1 space-y-1">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="inline-flex items-center gap-1 px-1.5 py-1 rounded-lg bg-orange-100/80 border border-orange-200/60 text-xs font-semibold text-orange-800 shadow-sm"
+                      >
+                        <ng-icon
+                          class="h-2 w-2 text-orange-700"
+                          name="heroExclamationTriangle"
+                        ></ng-icon>
+                        Error Details
+                      </span>
+                      <div
+                        class="flex-1 h-px bg-gradient-to-r from-slate-200/60 to-transparent"
+                      ></div>
+                    </div>
+                    <div class="relative">
+                      <p
+                        id="failure-description"
+                        class="text-sm text-slate-700 leading-relaxed font-medium pl-1"
+                      >
+                        {{ failureReason }}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -116,7 +114,7 @@
                 size="sm"
                 rounded="lg"
                 (click)="onRetryClick()"
-                class="shadow-lg shadow-blue-100/50 font-semibold"
+                class="shadow-md shadow-blue-100/50 font-medium"
               />
 
               <app-button
@@ -127,7 +125,7 @@
                 rounded="lg"
                 [icon]="logsButtonIcon"
                 (click)="toggleLogs()"
-                class="shadow-lg shadow-red-100/50 font-semibold border-red-200 text-red-700 hover:bg-red-50"
+                class="shadow-md shadow-gray-100/50 font-medium border-gray-300 text-gray-700 hover:bg-gray-50"
               />
 
               <app-button
@@ -137,7 +135,7 @@
                 rounded="lg"
                 icon="heroPlus"
                 (click)="onCreateNewProjectClick()"
-                class="shadow-lg shadow-slate-100/50 font-semibold"
+                class="shadow-md shadow-gray-100/50 font-medium"
               />
             </div>
           </div>
