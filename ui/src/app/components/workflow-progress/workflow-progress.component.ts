@@ -5,7 +5,7 @@ import {
   heroSparkles,
   heroCheckCircle,
   heroWrenchScrewdriver,
-  heroXMark,
+  heroStopCircle,
 } from '@ng-icons/heroicons/outline';
 import {
   WorkflowProgressEvent,
@@ -35,7 +35,7 @@ import { Observable, Subject, takeUntil } from 'rxjs';
       heroSparkles,
       heroCheckCircle,
       heroWrenchScrewdriver,
-      heroXMark,
+      heroStopCircle,
     }),
   ],
 })
