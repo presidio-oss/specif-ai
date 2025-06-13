@@ -241,28 +241,37 @@ export class ProjectsState {
         projects: this.getUpdatedProjectsList(getState(), metadata),
       });
     } catch (e) {
-      this.logger.error('Error creating project', e);
-      const updatedMetadata = {
-        ...metadata,
-        isFailed: true,
-        failureInfo: {
-          timestamp: new Date().toISOString(),
-          reason:
-            e instanceof Error
-              ? e.message
-              : 'Unknown error occurred while creating project',
-        },
-      };
-      await this.appSystemService.createFileWithContent(
-        `${projectName}/.metadata.json`,
-        JSON.stringify(updatedMetadata, null, 2),
+      const error =
+        e instanceof Error
+          ? e
+          : new Error('Unknown error occurred while creating project');
+      this.logger.error('Error creating project', error);
+
+      const isProjectExistsError = error.message.includes(
+        'Project already exists',
       );
 
-      patchState({
-        projects: this.getUpdatedProjectsList(getState(), updatedMetadata),
-      });
+      if (!isProjectExistsError) {
+        const updatedMetadata = {
+          ...metadata,
+          isFailed: true,
+          failureInfo: {
+            timestamp: new Date().toISOString(),
+            reason: error.message,
+          },
+        };
 
-      throw e;
+        await this.appSystemService.createFileWithContent(
+          `${projectName}/.metadata.json`,
+          JSON.stringify(updatedMetadata, null, 2),
+        );
+
+        patchState({
+          projects: this.getUpdatedProjectsList(getState(), updatedMetadata),
+        });
+      }
+
+      throw error;
     }
   }
 
