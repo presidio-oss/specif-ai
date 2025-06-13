@@ -7,7 +7,6 @@ import { getDescriptionFromInput } from '../../utils/common.utils';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { IList, SelectedDocument } from '../../model/interfaces/IList';
-import { IList, SelectedDocument } from '../../model/interfaces/IList';
 import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BadgeComponent } from '../core/badge/badge.component';
