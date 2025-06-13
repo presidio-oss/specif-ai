@@ -242,13 +242,13 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
         req: {
           ...item.content,
           selectedBRDs:
-            item?.content?.selectedBRDs?.map(
-              (brd: SelectedDocument) => brd?.requirement || brd,
-            ) || [],
+            (item.content?.selectedBRDs ?? []).map(
+              ({ requirement }: SelectedDocument) => requirement,
+            ),
           selectedPRDs:
-            item?.content?.selectedPRDs?.map(
-              (prd: SelectedDocument) => prd?.requirement || prd,
-            ) || [],
+            (item.content?.selectedPRDs ?? []).map(
+              ({ requirement }: SelectedDocument) => requirement,
+            ),
         },
         selectedFolder: {
           title: item.folderName,
