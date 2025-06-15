@@ -466,74 +466,96 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   }
 
   syncRequirementWithJira(): void {
-    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
-      this.navigation.projectId,
-    );
-    const isJiraTokenValid =
-      token &&
-      tokenExpiration &&
-      new Date() < new Date(tokenExpiration) &&
-      this.isTokenAvailable;
+    this.dialogService
+      .confirm({
+        title: 'Push to JIRA',
+        description: 'This action will override the existing content in JIRA with your local changes. Any updates made directly in JIRA will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Push to JIRA',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
 
-    if (isJiraTokenValid) {
-      console.log('Token exists and is valid, making API call', token);
-      this.syncJira(token as string, jiraURL as string);
-    } else if (refreshToken) {
-      this.electronService
-        .refreshJiraToken(refreshToken)
-        .then((authResponse) => {
-          storeJiraToken(
-            authResponse,
-            this.metadata?.integration?.jira?.jiraProjectKey,
-            this.navigation.projectId,
-          );
-          console.debug(
-            'Token refreshed, making API call',
-            authResponse.accessToken,
-          );
-          this.syncJira(authResponse.accessToken, jiraURL as string);
-        })
-        .catch((error) => {
-          console.error('Error during token refresh:', error);
+        const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
+          this.navigation.projectId,
+        );
+        const isJiraTokenValid =
+          token &&
+          tokenExpiration &&
+          new Date() < new Date(tokenExpiration) &&
+          this.isTokenAvailable;
+
+        if (isJiraTokenValid) {
+          console.log('Token exists and is valid, making API call', token);
+          this.syncJira(token as string, jiraURL as string);
+        } else if (refreshToken) {
+          this.electronService
+            .refreshJiraToken(refreshToken)
+            .then((authResponse) => {
+              storeJiraToken(
+                authResponse,
+                this.metadata?.integration?.jira?.jiraProjectKey,
+                this.navigation.projectId,
+              );
+              console.debug(
+                'Token refreshed, making API call',
+                authResponse.accessToken,
+              );
+              this.syncJira(authResponse.accessToken, jiraURL as string);
+            })
+            .catch((error) => {
+              console.error('Error during token refresh:', error);
+              this.promptReauthentication();
+            });
+        } else {
           this.promptReauthentication();
-        });
-    } else {
-      this.promptReauthentication();
-    }
+        }
+      });
   }
 
   syncRequirementFromJira(): void {
-    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
-      this.navigation.projectId,
-    );
-    const isJiraTokenValid =
-      token &&
-      tokenExpiration &&
-      new Date() < new Date(tokenExpiration) &&
-      this.isTokenAvailable;
+    this.dialogService
+      .confirm({
+        title: 'Pull from JIRA',
+        description: 'This action will override your local content with the latest updates from JIRA. Any unsaved local changes will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Pull from JIRA',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
 
-    if (isJiraTokenValid) {
-      console.log('Token exists and is valid, syncing from JIRA', token);
-      this.syncFromJira(token as string, jiraURL as string);
-    } else if (refreshToken) {
-      this.electronService
-        .refreshJiraToken(refreshToken)
-        .then((authResponse) => {
-          storeJiraToken(
-            authResponse,
-            this.metadata?.integration?.jira?.jiraProjectKey,
-            this.navigation.projectId,
-          );
-          console.debug('Token refreshed, syncing from JIRA', authResponse.accessToken);
-          this.syncFromJira(authResponse.accessToken, jiraURL as string);
-        })
-        .catch((error) => {
-          console.error('Error during token refresh:', error);
+        const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
+          this.navigation.projectId,
+        );
+        const isJiraTokenValid =
+          token &&
+          tokenExpiration &&
+          new Date() < new Date(tokenExpiration) &&
+          this.isTokenAvailable;
+
+        if (isJiraTokenValid) {
+          console.log('Token exists and is valid, syncing from JIRA', token);
+          this.syncFromJira(token as string, jiraURL as string);
+        } else if (refreshToken) {
+          this.electronService
+            .refreshJiraToken(refreshToken)
+            .then((authResponse) => {
+              storeJiraToken(
+                authResponse,
+                this.metadata?.integration?.jira?.jiraProjectKey,
+                this.navigation.projectId,
+              );
+              console.debug('Token refreshed, syncing from JIRA', authResponse.accessToken);
+              this.syncFromJira(authResponse.accessToken, jiraURL as string);
+            })
+            .catch((error) => {
+              console.error('Error during token refresh:', error);
+              this.promptReauthentication();
+            });
+        } else {
           this.promptReauthentication();
-        });
-    } else {
-      this.promptReauthentication();
-    }
+        }
+      });
   }
 
   promptReauthentication(): void {
@@ -814,20 +836,30 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   exportOptions = [
     {
-      label: 'Copy JSON to Clipboard',
-      callback: () => this.exportUserStories('json')
+      groupName: 'Export',
+      options: [
+        {
+          label: 'Copy to Clipboard',
+          callback: () => this.exportUserStories('json')
+        },
+        {
+          label: 'Export to Excel (.xlsx)',
+          callback: () => this.exportUserStories('xlsx')
+        }
+      ]
     },
     {
-      label: 'Download as Excel (.xlsx)',
-      callback: () => this.exportUserStories('xlsx')
-    },
-    {
-      label: 'Sync with Jira',
-      callback: () => this.syncRequirementWithJira()
-    },
-    {
-      label: 'Sync from Jira',
-      callback: () => this.syncRequirementFromJira()
+      groupName: 'JIRA',
+      options: [
+        {
+          label: 'Push to JIRA',
+          callback: () => this.syncRequirementWithJira(),
+        },
+        {
+          label: 'Pull from JIRA',
+          callback: () => this.syncRequirementFromJira(),
+        }
+      ]
     }
   ];
 
