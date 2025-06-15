@@ -5,6 +5,12 @@ import { CommonModule } from '@angular/common';
 export interface DropdownOption {
   label: string;
   callback: () => void;
+  timestamp?: string;
+}
+
+export interface DropdownOptionGroup {
+  groupName: string;
+  options: DropdownOption[];
 }
 
 @Component({
@@ -17,6 +23,7 @@ export interface DropdownOption {
 export class ExportDropdownComponent {
   @Input() disabled: boolean = false;
   @Input() options: DropdownOption[] = [];
+  @Input() groupedOptions: DropdownOptionGroup[] = [];
   @Input() buttonLabel: string = 'Export';  
 
   isOpen = false;

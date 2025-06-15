@@ -466,40 +466,96 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   }
 
   syncRequirementWithJira(): void {
-    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
-      this.navigation.projectId,
-    );
-    const isJiraTokenValid =
-      token &&
-      tokenExpiration &&
-      new Date() < new Date(tokenExpiration) &&
-      this.isTokenAvailable;
+    this.dialogService
+      .confirm({
+        title: 'Push to JIRA',
+        description: 'This action will override the existing content in JIRA with your local changes. Any updates made directly in JIRA will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Push to JIRA',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
 
-    if (isJiraTokenValid) {
-      console.log('Token exists and is valid, making API call', token);
-      this.syncJira(token as string, jiraURL as string);
-    } else if (refreshToken) {
-      this.electronService
-        .refreshJiraToken(refreshToken)
-        .then((authResponse) => {
-          storeJiraToken(
-            authResponse,
-            this.metadata?.integration?.jira?.jiraProjectKey,
-            this.navigation.projectId,
-          );
-          console.debug(
-            'Token refreshed, making API call',
-            authResponse.accessToken,
-          );
-          this.syncJira(authResponse.accessToken, jiraURL as string);
-        })
-        .catch((error) => {
-          console.error('Error during token refresh:', error);
+        const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
+          this.navigation.projectId,
+        );
+        const isJiraTokenValid =
+          token &&
+          tokenExpiration &&
+          new Date() < new Date(tokenExpiration) &&
+          this.isTokenAvailable;
+
+        if (isJiraTokenValid) {
+          console.log('Token exists and is valid, making API call', token);
+          this.syncJira(token as string, jiraURL as string);
+        } else if (refreshToken) {
+          this.electronService
+            .refreshJiraToken(refreshToken)
+            .then((authResponse) => {
+              storeJiraToken(
+                authResponse,
+                this.metadata?.integration?.jira?.jiraProjectKey,
+                this.navigation.projectId,
+              );
+              console.debug(
+                'Token refreshed, making API call',
+                authResponse.accessToken,
+              );
+              this.syncJira(authResponse.accessToken, jiraURL as string);
+            })
+            .catch((error) => {
+              console.error('Error during token refresh:', error);
+              this.promptReauthentication();
+            });
+        } else {
           this.promptReauthentication();
-        });
-    } else {
-      this.promptReauthentication();
-    }
+        }
+      });
+  }
+
+  syncRequirementFromJira(): void {
+    this.dialogService
+      .confirm({
+        title: 'Pull from JIRA',
+        description: 'This action will override your local content with the latest updates from JIRA. Any unsaved local changes will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Pull from JIRA',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
+          this.navigation.projectId,
+        );
+        const isJiraTokenValid =
+          token &&
+          tokenExpiration &&
+          new Date() < new Date(tokenExpiration) &&
+          this.isTokenAvailable;
+
+        if (isJiraTokenValid) {
+          console.log('Token exists and is valid, syncing from JIRA', token);
+          this.syncFromJira(token as string, jiraURL as string);
+        } else if (refreshToken) {
+          this.electronService
+            .refreshJiraToken(refreshToken)
+            .then((authResponse) => {
+              storeJiraToken(
+                authResponse,
+                this.metadata?.integration?.jira?.jiraProjectKey,
+                this.navigation.projectId,
+              );
+              console.debug('Token refreshed, syncing from JIRA', authResponse.accessToken);
+              this.syncFromJira(authResponse.accessToken, jiraURL as string);
+            })
+            .catch((error) => {
+              console.error('Error during token refresh:', error);
+              this.promptReauthentication();
+            });
+        } else {
+          this.promptReauthentication();
+        }
+      });
   }
 
   promptReauthentication(): void {
@@ -645,6 +701,53 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     });
   }
 
+  private syncFromJira(token: string, jiraUrl: string): void {
+    const requestPayload: any = {
+      epicName: '',
+      epicDescription: '',
+      epicTicketId: '',
+      jiraUrl: jiraUrl,
+      token: token,
+      projectKey: this.metadata.integration.jira.jiraProjectKey,
+      features: [],
+    };
+
+    requestPayload.epicName = this.requirementFile.title;
+    requestPayload.epicDescription = this.requirementFile.requirement;
+    requestPayload.epicTicketId = this.requirementFile.epicTicketId || '';
+
+    this.userStories = this.userStoriesInState;
+
+    requestPayload.features = this.userStories.map((story) => ({
+      id: story.id,
+      name: story.name,
+      description: story.description,
+      storyTicketId: story.storyTicketId || '',
+      tasks: story?.tasks?.map((task) => ({
+        id: task.id,
+        list: task.list,
+        acceptance: task.acceptance,
+        subTaskTicketId: task.subTaskTicketId || '',
+      })) || [],
+    }));
+
+    this.loadingService.setLoading(true);
+
+    this.jiraService.syncFromJira(requestPayload).subscribe({
+      next: (response) => {
+        console.debug('JIRA Sync Response:', response);
+        this.updateLocalContentFromJira(response);
+        this.loadingService.setLoading(false);
+        this.toast.showSuccess('Successfully synced from JIRA');
+      },
+      error: (error) => {
+        console.error('Error syncing from JIRA:', error);
+        this.loadingService.setLoading(false);
+        this.toast.showError('Failed to sync from JIRA');
+      },
+    });
+  }
+
   private formatDescriptionForView(
     description: string | undefined,
   ): string | null {
@@ -652,18 +755,111 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     return processUserStoryContentForView(description, 180);
   }
 
+  private updateLocalContentFromJira(syncResponse: any): void {
+    if (syncResponse.epic) {
+      const updatedRequirementFile = {
+        ...this.requirementFile,
+        title: syncResponse.epic.title,
+        requirement: syncResponse.epic.requirement,
+        epicTicketId: syncResponse.epic.epicTicketId,
+        lastSyncedFromJira: new Date().toISOString(),
+      };
+
+      this.store.dispatch(
+        new UpdateFile(
+          `${this.navigation.folderName}/${this.navigation.fileName}`,
+          updatedRequirementFile,
+        ),
+      );
+    }
+
+    if (syncResponse.features && syncResponse.features.length > 0) {
+      const updatedUserStories = this.userStories.map((existingStory) => {
+        const syncedStory = syncResponse.features.find(
+          (feature: any) =>
+            feature.storyTicketId === existingStory.storyTicketId ||
+            feature.id === existingStory.id
+        );
+
+        if (syncedStory) {
+          const updatedTasks = existingStory.tasks?.map((existingTask) => {
+            const syncedTask = syncedStory.tasks?.find(
+              (task: any) =>
+                task.subTaskTicketId === existingTask.subTaskTicketId ||
+                task.id === existingTask.id
+            );
+
+            if (syncedTask) {
+              return {
+                ...existingTask,
+                list: syncedTask.list || existingTask.list,
+                acceptance: syncedTask.acceptance || existingTask.acceptance,
+                subTaskTicketId: syncedTask.subTaskTicketId || existingTask.subTaskTicketId,
+                status: syncedTask.status,
+                lastUpdated: syncedTask.lastUpdated,
+                lastSyncedFromJira: new Date().toISOString(),
+              };
+            }
+            return existingTask;
+          }) || [];
+
+          return {
+            ...existingStory,
+            name: syncedStory.name,
+            description: syncedStory.description,
+            storyTicketId: syncedStory.storyTicketId,
+            status: syncedStory.status,
+            lastUpdated: syncedStory.lastUpdated,
+            lastSyncedFromJira: new Date().toISOString(),
+            tasks: updatedTasks,
+          };
+        }
+
+        return existingStory;
+      });
+
+      console.log('Updated user stories with JIRA data:', updatedUserStories);
+
+      this.store.dispatch(
+        new BulkEditUserStories(
+          `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
+          updatedUserStories,
+        ),
+      );
+
+      // Refresh the user stories view
+      setTimeout(() => {
+        this.getLatestUserStories();
+      }, 1000);
+    }
+  }
+
   exportOptions = [
     {
-      label: 'Copy JSON to Clipboard',
-      callback: () => this.exportUserStories('json')
+      groupName: 'Export',
+      options: [
+        {
+          label: 'Copy to Clipboard',
+          callback: () => this.exportUserStories('json')
+        },
+        {
+          label: 'Export to Excel (.xlsx)',
+          callback: () => this.exportUserStories('xlsx')
+        }
+      ]
     },
     {
-      label: 'Download as Excel (.xlsx)',
-      callback: () => this.exportUserStories('xlsx')
-    },
-    {
-      label: 'Sync with Jira',
-      callback: () => this.syncRequirementWithJira()
+      groupName: 'JIRA',
+      options: [
+        {
+          label: 'Push to JIRA',
+          callback: () => this.syncRequirementWithJira(),
+        },
+        {
+          label: 'Pull from JIRA',
+          callback: () => this.syncRequirementFromJira(),
+        }
+      ]
     }
   ];
 

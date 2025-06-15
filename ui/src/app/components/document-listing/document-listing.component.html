@@ -22,8 +22,8 @@
         <ng-container *ngIf="documentList$ | async as documentList">
           <app-export-dropdown
             [disabled]="projectList.length === 0"
-            [options]="getExportOptions(projectList[0].folderName)"
-          ></app-export-dropdown>
+            [groupedOptions]="getExportOptions(projectList[0].folderName)"
+          />
         </ng-container>
       </div>
     </div>
