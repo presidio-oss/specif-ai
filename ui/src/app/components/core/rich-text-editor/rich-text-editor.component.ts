@@ -27,17 +27,22 @@ import {
   heroItalic,
   heroListBullet,
   heroNumberedList,
+  heroLink,
+  heroLinkSlash,
 } from '@ng-icons/heroicons/outline';
 import { Editor } from '@tiptap/core';
 import type { Level as HeadingLevel } from '@tiptap/extension-heading';
 import { NGXLogger } from 'ngx-logger';
 import { debounce, Subject, Subscription, timer } from 'rxjs';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { htmlToMarkdown } from 'src/app/utils/html.utils';
 import {
   markdownToHtml,
   MarkdownToHtmlOptions,
 } from 'src/app/utils/markdown.utils';
 import { TiptapExtensions } from 'src/app/utils/tiptap.utils';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { LinkDialogComponent } from './link-dialog/link-dialog.component';
 
 // It could be markdown or plain text
 type ValueType = string;
@@ -62,8 +67,8 @@ type OnTouchedCallback = () => void;
       useExisting: RichTextEditorComponent,
     },
   ],
-  imports: [CdkMenuModule, NgClass, NgIf, NgIcon, MatTooltipModule],
-  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList })],
+  imports: [CdkMenuModule, NgClass, NgIf, NgIcon, MatTooltipModule, MatDialogModule],
+  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList, heroLink, heroLinkSlash })],
 })
 export class RichTextEditorComponent
   implements
@@ -97,7 +102,7 @@ export class RichTextEditorComponent
   @Output('change') onChange = new EventEmitter<ValueType>();
   @Output('touch') onTouched = new EventEmitter();
 
-  constructor(private logger: NGXLogger) {
+  constructor(private logger: NGXLogger, private electronService: ElectronService, private dialog: MatDialog) {
     this.setupEditorUpdateSubscription();
   }
 
@@ -160,6 +165,7 @@ export class RichTextEditorComponent
 
     this.isEmpty = this.editor.$doc.textContent.length === 0;
     this.onChange.emit(this.value);
+    this.setupLinkHandler();
   }
 
   toggleBold() {
@@ -177,6 +183,42 @@ export class RichTextEditorComponent
   toggleOrderedList() {
     this.editor?.chain().focus().toggleOrderedList().run();
   }
+
+  unsetLink() {
+    this.editor?.chain().focus().unsetLink().run();
+  }
+
+
+  toggleLink() {
+    const linkAttributes = this.editor?.getAttributes('link');
+    const isLinkActive = this.editor?.isActive('link');
+    const currentUrl = isLinkActive ? linkAttributes?.['href'] || '' : '';
+
+    const selectedText = this.editor?.state.doc.textBetween(
+      this.editor.state.selection.from,
+      this.editor.state.selection.to,
+      ' '
+    );
+
+    if (!selectedText && !isLinkActive) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(LinkDialogComponent, {
+      width: '500px',
+      data: {
+        url: currentUrl,
+        isEdit: isLinkActive
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.url) {
+        this.editor?.chain().focus().setLink({ href: result.url }).run();
+      }
+    });
+  }
+
 
   setHeadingLevel(level?: HeadingLevel) {
     if (level) {
@@ -254,6 +296,24 @@ export class RichTextEditorComponent
     } catch (error) {
       this.logger.error('Error', error);
       return '';
+    }
+  }
+
+  private setupLinkHandler() {
+    if (this.editor) {
+      const editorElement = this.editor.view.dom;
+
+      editorElement.addEventListener('click', (event) => {
+        const linkElement = (event.target as HTMLElement).closest('a');
+
+        if (linkElement && linkElement.href) {
+          event.preventDefault();
+          this.electronService.openExternalUrl(linkElement.href)
+            .catch(error => {
+              this.logger.error('Error opening link:', error);
+            });
+        }
+      });
     }
   }
 
