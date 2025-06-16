@@ -26,9 +26,12 @@
           (click)="onOptionClick(option, $event)"
           (mouseup)="$event.preventDefault()"
         >
-          <div class="flex flex-col">
-            <span>{{ option.label }}</span>
-            <span *ngIf="option.timestamp" class="text-xs text-secondary-500">Last synced: {{ option.timestamp }}</span>
+          <div class="flex items-center">
+            <ng-icon *ngIf="option.icon" [name]="option.icon" class="mr-2 text-secondary-500"></ng-icon>
+            <div class="flex flex-col">
+              <span>{{ option.label }}</span>
+              <span *ngIf="option.timestamp" class="text-xs text-secondary-500">Last synced: {{ option.timestamp }}</span>
+            </div>
           </div>
         </button>
         <div *ngIf="!last" class="border-t border-gray-200 my-1"></div>

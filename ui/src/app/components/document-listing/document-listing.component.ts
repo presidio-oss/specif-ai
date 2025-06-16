@@ -75,7 +75,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   // For Export Dropdown Options
-  exportOptions: { groupName: string; options: { label: string; callback: () => void }[] }[] = [];
+  exportOptions: { groupName: string; options: { label: string; callback: () => void; icon?: string }[] }[] = [];
   exportedFolderName: string = '';
 
   currentRoute: string;
@@ -303,11 +303,13 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
         options: [
           {
             label: 'Copy to Clipboard',
-            callback: exportJson.bind(this)
+            callback: exportJson.bind(this),
+            icon: 'heroPaperClip'
           },
           {
             label: 'Export to Excel (.xlsx)',
-            callback: exportExcel.bind(this)
+            callback: exportExcel.bind(this),
+            icon: 'heroDocumentText'
           }
         ]
       }

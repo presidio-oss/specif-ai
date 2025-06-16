@@ -840,11 +840,13 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       options: [
         {
           label: 'Copy to Clipboard',
-          callback: () => this.exportUserStories('json')
+          callback: () => this.exportUserStories('json'),
+          icon: 'heroPaperClip'
         },
         {
           label: 'Export to Excel (.xlsx)',
-          callback: () => this.exportUserStories('xlsx')
+          callback: () => this.exportUserStories('xlsx'),
+          icon: 'heroDocumentText'
         }
       ]
     },
@@ -854,10 +856,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         {
           label: 'Push to JIRA',
           callback: () => this.syncRequirementWithJira(),
+          icon: 'heroArrowUpTray'
         },
         {
           label: 'Pull from JIRA',
           callback: () => this.syncRequirementFromJira(),
+          icon: 'heroArrowDownTray'
         }
       ]
     }

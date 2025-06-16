@@ -1,11 +1,19 @@
-import { Component, Input, ElementRef, HostListener, ViewChild} from '@angular/core';
+import { Component, Input, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { ButtonComponent } from "../components/core/button/button.component";
 import { CommonModule } from '@angular/common';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroPaperClip,
+  heroDocumentText,
+  heroArrowUpTray,
+  heroArrowDownTray
+} from '@ng-icons/heroicons/outline';
 
 export interface DropdownOption {
   label: string;
   callback: () => void;
   timestamp?: string;
+  icon?: string;
 }
 
 export interface DropdownOptionGroup {
@@ -18,7 +26,15 @@ export interface DropdownOptionGroup {
   templateUrl: './export-dropdown.component.html',
   styleUrls: ['./export-dropdown.component.scss'],
   standalone: true,
-  imports: [ButtonComponent, CommonModule],
+  imports: [ButtonComponent, CommonModule, NgIconComponent],
+  providers: [
+    provideIcons({
+      heroPaperClip,
+      heroDocumentText,
+      heroArrowUpTray,
+      heroArrowDownTray
+    })
+  ]
 })
 export class ExportDropdownComponent {
   @Input() disabled: boolean = false;
