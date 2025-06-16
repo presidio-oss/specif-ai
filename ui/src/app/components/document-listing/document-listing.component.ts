@@ -22,7 +22,7 @@ import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
 import { processPRDContentForView } from '../../utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
-import { ExportDropdownComponent } from "../../export-dropdown/export-dropdown.component";
+import { DropdownOptionGroup, ExportDropdownComponent } from "../../export-dropdown/export-dropdown.component";
 
 @Component({
   selector: 'app-document-listing',
@@ -75,7 +75,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   // For Export Dropdown Options
-  exportOptions: { groupName: string; options: { label: string; callback: () => void; icon?: string }[] }[] = [];
+  exportOptions: DropdownOptionGroup[] = [];
   exportedFolderName: string = '';
 
   currentRoute: string;

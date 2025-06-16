@@ -55,7 +55,7 @@ import { ExportFileFormat } from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
-import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
+import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
 import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
 import { ThinkingProcessConfig } from '../../components/thinking-process/thinking-process.config';
@@ -236,6 +236,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     this.selectedFileContent$.subscribe((res: any) => {
       this.requirementFile = res;
+      this.updateExportOptionsTimestamps();
     });
 
     this.userStories$.subscribe((userStories: IUserStory[]) => {
@@ -328,12 +329,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         this.updateWithUserStories(this.userStories, regenerate);
       });
     })
-    .catch((error) => {
-      this.showThinkingProcess = false;
-      this.toast.showError(
-        TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
-      );
-    })
+      .catch((error) => {
+        this.showThinkingProcess = false;
+        this.toast.showError(
+          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+        );
+      })
     this.dialogService.closeAll();
   }
 
@@ -657,6 +658,10 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           this.requirementFile.epicTicketId = response.epicTicketId;
         }
 
+        this.requirementFile.lastPushToJiraTimestamp = new Date().toISOString();
+
+        this.updateExportOptionsTimestamps();
+
         const updatedFeatures = this.userStories.map((existingFeature: any) => {
           const matchedFeature = response.features.find(
             (responseFeature: any) =>
@@ -736,6 +741,8 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     this.jiraService.syncFromJira(requestPayload).subscribe({
       next: (response) => {
         console.debug('JIRA Sync Response:', response);
+        this.requirementFile.lastPullFromJiraTimestamp = new Date().toISOString();
+        this.updateExportOptionsTimestamps();
         this.updateLocalContentFromJira(response);
         this.loadingService.setLoading(false);
         this.toast.showSuccess('Successfully synced from JIRA');
@@ -762,7 +769,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         title: syncResponse.epic.title,
         requirement: syncResponse.epic.requirement,
         epicTicketId: syncResponse.epic.epicTicketId,
-        lastSyncedFromJira: new Date().toISOString(),
+        lastPullFromJiraTimestamp: this.requirementFile.lastPullFromJiraTimestamp
       };
 
       this.store.dispatch(
@@ -797,7 +804,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
                 subTaskTicketId: syncedTask.subTaskTicketId || existingTask.subTaskTicketId,
                 status: syncedTask.status,
                 lastUpdated: syncedTask.lastUpdated,
-                lastSyncedFromJira: new Date().toISOString(),
               };
             }
             return existingTask;
@@ -810,7 +816,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
             storyTicketId: syncedStory.storyTicketId,
             status: syncedStory.status,
             lastUpdated: syncedStory.lastUpdated,
-            lastSyncedFromJira: new Date().toISOString(),
             tasks: updatedTasks,
           };
         }
@@ -834,7 +839,31 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     }
   }
 
-  exportOptions = [
+  
+  private updateExportOptionsTimestamps(): void {
+  if (this.exportOptions && this.exportOptions.length > 1) {
+    const jiraOptions = this.exportOptions[1].options;
+    if (jiraOptions && jiraOptions.length > 1) {
+      if (this.requirementFile?.lastPushToJiraTimestamp) {
+        jiraOptions[0].timestamp = this.requirementFile.lastPushToJiraTimestamp;
+      } else {
+        jiraOptions[0].timestamp = undefined;
+        jiraOptions[0].syncStatus = 'Never';
+      }
+      
+      if (this.requirementFile?.lastPullFromJiraTimestamp) {
+        jiraOptions[1].timestamp = this.requirementFile.lastPullFromJiraTimestamp;
+      } else {
+        jiraOptions[1].timestamp = undefined;
+        jiraOptions[1].syncStatus = 'Never';
+      }
+    }
+  }
+}
+
+
+
+  exportOptions : DropdownOptionGroup[] = [
     {
       groupName: 'Export',
       options: [
@@ -856,12 +885,14 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         {
           label: 'Push to JIRA',
           callback: () => this.syncRequirementWithJira(),
-          icon: 'heroArrowUpTray'
+          icon: 'heroArrowUpTray',
+          timestamp: this.requirementFile?.lastPushToJiraTimestamp || 'Never'
         },
         {
           label: 'Pull from JIRA',
           callback: () => this.syncRequirementFromJira(),
-          icon: 'heroArrowDownTray'
+          icon: 'heroArrowDownTray',
+          timestamp: this.requirementFile?.lastPullFromJiraTimestamp || 'Never'
         }
       ]
     }

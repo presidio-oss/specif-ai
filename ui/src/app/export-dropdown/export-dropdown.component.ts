@@ -8,12 +8,14 @@ import {
   heroArrowUpTray,
   heroArrowDownTray
 } from '@ng-icons/heroicons/outline';
+import { TimeZonePipe } from '../pipes/timezone-pipe';
 
 export interface DropdownOption {
   label: string;
   callback: () => void;
   timestamp?: string;
   icon?: string;
+  syncStatus?: string;
 }
 
 export interface DropdownOptionGroup {
@@ -26,7 +28,7 @@ export interface DropdownOptionGroup {
   templateUrl: './export-dropdown.component.html',
   styleUrls: ['./export-dropdown.component.scss'],
   standalone: true,
-  imports: [ButtonComponent, CommonModule, NgIconComponent],
+  imports: [ButtonComponent, CommonModule, NgIconComponent, TimeZonePipe],
   providers: [
     provideIcons({
       heroPaperClip,
