@@ -51,6 +51,28 @@
       <ng-icon name="heroItalic"></ng-icon>
     </button>
 
+    <button
+      type="button"
+      [attr.data-state]="editor?.isActive('link') == true ? 'on' : 'off'"
+      [ngClass]="['size-8', toolbarButtonClass]"
+      (click)="toggleLink()"
+      matTooltip="Link"
+      matTooltipPosition="above"
+  >
+    <ng-icon name="heroLink"></ng-icon>
+    </button>
+
+    <button
+      type="button"
+      *ngIf="editor?.isActive('link')"
+      [ngClass]="['size-8', toolbarButtonClass]"
+      (click)="unsetLink()"
+      matTooltip="Remove Link"
+      matTooltipPosition="above"
+>
+    <ng-icon name="heroLinkSlash"></ng-icon>
+    </button>
+
     <div
       data-orientation="vertical"
       role="none"
