@@ -150,9 +150,11 @@
     <ng-icon
       [name]="step.iconName"
       class="h-5 w-5 mt-0.5 shrink-0 relative"
-      [ngClass]="
-        step.textColorClass.replace('text-', 'text-').replace('-700', '-500')
+      [class.text-primary-500]="
+        step.type === WorkflowProgressEventType.Thinking
       "
+      [class.text-success-500]="step.type === WorkflowProgressEventType.Action"
+      [class.text-amber-500]="step.type === WorkflowProgressEventType.Mcp"
     >
     </ng-icon>
   </div>
