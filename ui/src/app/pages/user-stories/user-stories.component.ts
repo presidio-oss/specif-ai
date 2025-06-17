@@ -719,7 +719,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         this.workflowProgressService.registerGlobalListener(
           this.navigation.projectId!,
           workflowType,
-          this.electronService,
         );
       }
 
@@ -739,7 +738,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       this.workflowProgressService.removeGlobalListener(
         this.navigation.projectId!,
         workflowType,
-        this.electronService,
       );
     });
   }

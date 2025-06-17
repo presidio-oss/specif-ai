@@ -41,7 +41,6 @@ import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { WorkflowProgressComponent } from '../../../components/workflow-progress/workflow-progress.component';
 import { WorkflowType } from '../../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../../services/workflow-progress/workflow-progress.service';
-import { ElectronService } from '../../../electron-bridge/electron.service';
 import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 import { provideIcons } from '@ng-icons/core';
 import { heroEye } from '@ng-icons/heroicons/outline';
@@ -129,7 +128,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private toastService: ToasterService,
     private requirementIdService: RequirementIdService,
     private workflowProgressService: WorkflowProgressService,
-    private electronService: ElectronService,
   ) {
     this.userStoryId = this.activatedRoute.snapshot.paramMap.get('userStoryId');
     this.logger.debug('userStoryId', this.userStoryId);
@@ -385,7 +383,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
       this.workflowProgressService.registerGlobalListener(
         this.config.projectId,
         WorkflowType.Task,
-        this.electronService,
       );
     }
 
@@ -401,7 +398,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.workflowProgressService.removeGlobalListener(
       this.config.projectId,
       WorkflowType.Task,
-      this.electronService,
     );
   }
 

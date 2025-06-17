@@ -769,7 +769,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       this.workflowProgressService.removeGlobalListener(
         this.projectId,
         WorkflowType.Solution,
-        this.electronService,
       );
     }
   }
