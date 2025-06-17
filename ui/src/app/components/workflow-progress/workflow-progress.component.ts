@@ -137,9 +137,17 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
               ),
             ]).pipe(
               map(([storyEvents, taskEvents]) => {
-                return [...storyEvents, ...taskEvents].sort(
-                  (a, b) => a.timestamp - b.timestamp,
-                );
+                const allEvents = [...storyEvents, ...taskEvents];
+
+                const uniqueEvents = allEvents.filter((event, index, array) => {
+                  return (
+                    array.findIndex(
+                      (e) => e.message.title === event.message.title,
+                    ) === index
+                  );
+                });
+
+                return uniqueEvents.sort((a, b) => a.timestamp - b.timestamp);
               }),
             )
           : this.workflowProgressService

@@ -339,7 +339,7 @@ export const buildEvaluateStoriesNode = (
         "evaluate-stories",
         {
           title: isApproved
-            ? "User stories approved and ready for use"
+            ? "User story generation completed successfully"
             : isComplete
             ? "Completing the evaluation since the maximum evaluation limit is reached."
             : "User stories need refinement - continuing iteration",
