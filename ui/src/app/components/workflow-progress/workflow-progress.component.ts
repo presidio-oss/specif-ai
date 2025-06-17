@@ -124,10 +124,19 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (this.projectId && this.workflowType) {
-      const progress$ = this.workflowProgressService.getProgressEvents$(
-        this.projectId,
-        this.workflowType,
-      );
+      const progress$ = this.workflowType === WorkflowType.Story
+        ? combineLatest([
+            this.workflowProgressService.getProgressEvents$(this.projectId, WorkflowType.Story),
+            this.workflowProgressService.getProgressEvents$(this.projectId, WorkflowType.Task)
+          ]).pipe(
+            map(([storyEvents, taskEvents]) => {
+              return [...storyEvents, ...taskEvents].sort((a, b) => a.timestamp - b.timestamp);
+            })
+          )
+        : this.workflowProgressService.getProgressEvents$(
+            this.projectId,
+            this.workflowType,
+          );
 
       this.workflowStatus$ =
         this.workflowProgressService.getCreationStatusObservable(
