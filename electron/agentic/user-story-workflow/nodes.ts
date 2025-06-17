@@ -39,25 +39,6 @@ export const buildResearchNode = ({
 
     const researchCorrelationId = uuid();
 
-    if (tools.length === 0) {
-      const message = "No tools are passed so skipping research phase";
-      span?.end({
-        statusMessage: message,
-      });
-
-      await workflowEvents.dispatchAction(
-        "research",
-        {
-          title: "Skipped research phase - no tools were available",
-        },
-        runnableConfig
-      );
-
-      return {
-        referenceInformation: "",
-      };
-    }
-
     await workflowEvents.dispatchThinking(
       "research",
       {
