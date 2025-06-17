@@ -711,7 +711,20 @@ export class WorkflowProgressService implements OnDestroy {
     }
 
     const currentEvents = [...updatedState[projectId][workflowType]];
-    currentEvents.push(event);
+
+    if (event.correlationId) {
+      const existingEventIndex = currentEvents.findIndex(
+        (existingEvent) => existingEvent.correlationId === event.correlationId,
+      );
+
+      if (existingEventIndex !== -1) {
+        currentEvents[existingEventIndex] = event;
+      } else {
+        currentEvents.push(event);
+      }
+    } else {
+      currentEvents.push(event);
+    }
 
     if (
       currentEvents.length > WORKFLOW_PROGRESS_CONFIG.MAX_EVENTS_PER_WORKFLOW

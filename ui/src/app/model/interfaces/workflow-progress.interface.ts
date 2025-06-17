@@ -1,8 +1,14 @@
 import { IpcRendererEvent } from 'electron';
 
+export enum WorkflowProgressEventType {
+  Thinking = 'thinking',
+  Action = 'action',
+  Mcp = 'mcp',
+}
+
 export interface WorkflowProgressEvent {
   node: string;
-  type: 'thinking' | 'action' | 'mcp';
+  type: WorkflowProgressEventType;
   message: WorkflowProgressEventData;
   timestamp: number;
   correlationId?: string;
