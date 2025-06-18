@@ -39,7 +39,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroEye } from '@ng-icons/heroicons/outline';
+import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
@@ -86,7 +86,7 @@ import { WorkflowProgressService } from '../../services/workflow-progress/workfl
   ],
   providers: [
     provideIcons({
-      heroEye,
+      heroArrowRight,
     }),
   ],
 })

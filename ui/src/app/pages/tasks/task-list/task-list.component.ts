@@ -43,7 +43,7 @@ import { WorkflowType } from '../../../model/interfaces/workflow-progress.interf
 import { WorkflowProgressService } from '../../../services/workflow-progress/workflow-progress.service';
 import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 import { provideIcons } from '@ng-icons/core';
-import { heroEye } from '@ng-icons/heroicons/outline';
+import { heroArrowRight } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-task-list',
@@ -65,7 +65,7 @@ import { heroEye } from '@ng-icons/heroicons/outline';
   ],
   providers: [
     provideIcons({
-      heroEye,
+      heroArrowRight,
     }),
   ],
 })
