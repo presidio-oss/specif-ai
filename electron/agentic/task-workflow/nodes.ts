@@ -60,7 +60,7 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchThinking(
       "research",
       {
-        title: "Researching based on user story context",
+        title: `Researching based on US: ${state.name} context`,
       },
       runnableConfig,
       researchCorrelationId
@@ -118,7 +118,7 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchAction(
       "research",
       {
-        title: "Research completed and prepared summary for task generation",
+        title: `Research completed for US: ${state.name}`,
         output: response.structuredResponse.referenceInformation,
       },
       runnableConfig,
@@ -155,7 +155,7 @@ export const buildGenerateTasksNode = (
       await workflowEvents.dispatchThinking(
         "generate-tasks",
         {
-          title: "Generating Tasks",
+          title: `Generating Tasks for US: ${state.name}`,
         },
         runnableConfig,
         generateCorrelationId
@@ -209,9 +209,9 @@ export const buildGenerateTasksNode = (
       await workflowEvents.dispatchAction(
         "generate-tasks",
         {
-          title: `Generated ${
-            parsedTasks.tasks?.length || 0
-          } tasks for user story: "${state.name}"`,
+          title: `Generated ${parsedTasks.tasks?.length || 0} tasks for US: ${
+            state.name
+          }`,
           input: prompt,
           output: parsedTasks,
         },

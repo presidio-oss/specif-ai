@@ -61,7 +61,7 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchThinking(
       "research",
       {
-        title: "Researching based on PRD context",
+        title: `Researching based on PRD: ${state.reqName} context`,
       },
       runnableConfig,
       researchCorrelationId
@@ -119,8 +119,7 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchAction(
       "research",
       {
-        title:
-          "Research completed and prepared summary for user story generation",
+        title: `Research completed for PRD: ${state.reqName}`,
         output: response.structuredResponse.referenceInformation,
       },
       runnableConfig,
@@ -158,7 +157,7 @@ export const buildGenerateStoriesNode = (
       await workflowEvents.dispatchThinking(
         "generate-stories",
         {
-          title: "Generating User Stories",
+          title: `Generating User Stories for PRD: ${state.reqName}`,
         },
         runnableConfig,
         generateCorrelationId
@@ -228,7 +227,7 @@ export const buildGenerateStoriesNode = (
         {
           title: `Generated ${
             parsedStories.features?.length || 0
-          } user stories successfully`,
+          } user stories for PRD: ${state.reqName}`,
           input: prompt,
           output: JSON.stringify(parsedStories.features || []),
         },
