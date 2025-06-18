@@ -261,7 +261,7 @@ export const buildGenerateStoriesNode = (
         statusMessage: message,
       });
 
-      await workflowEvents.dispatchAction(
+      await workflowEvents.dispatchError(
         "generate-stories",
         { title: `User story generation for PRD: ${state.reqName} failed` },
         runnableConfig,
@@ -395,7 +395,7 @@ export const buildEvaluateStoriesNode = (
         statusMessage: message,
       });
 
-      await workflowEvents.dispatchAction(
+      await workflowEvents.dispatchError(
         "evaluate-stories",
         {
           title: `User story evaluation for PRD: ${state.reqName} failed`,

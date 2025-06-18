@@ -4,6 +4,7 @@ export enum WorkflowProgressEventType {
   Thinking = 'thinking',
   Action = 'action',
   Mcp = 'mcp',
+  Error = 'error',
 }
 
 export interface WorkflowProgressEvent {

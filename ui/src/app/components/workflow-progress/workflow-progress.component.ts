@@ -21,6 +21,7 @@ import {
   heroStopCircle,
   heroChevronDoubleUp,
   heroChevronDoubleDown,
+  heroExclamationTriangle,
 } from '@ng-icons/heroicons/outline';
 import {
   WorkflowProgressEvent,
@@ -70,6 +71,7 @@ interface ProcessedProgressEvent extends WorkflowProgressEvent {
       heroStopCircle,
       heroChevronDoubleUp,
       heroChevronDoubleDown,
+      heroExclamationTriangle,
     }),
   ],
 })
@@ -113,6 +115,12 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
       colorClass: 'bg-amber-400',
       textColorClass: 'text-amber-700',
       borderColorClass: 'border-amber-500',
+    },
+    [WorkflowProgressEventType.Error]: {
+      iconName: 'heroExclamationTriangle',
+      colorClass: 'bg-red-400',
+      textColorClass: 'text-red-700',
+      borderColorClass: 'border-red-500',
     },
   };
 
@@ -225,8 +233,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
 
   private checkHasInputOutput(event: WorkflowProgressEvent): boolean {
     return (
-      (event.type === WorkflowProgressEventType.Mcp ||
-        event.type === WorkflowProgressEventType.Action) &&
+      event.type !== WorkflowProgressEventType.Thinking &&
       (!!event.message?.input || !!event.message?.output)
     );
   }
@@ -237,8 +244,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
     isCreating: boolean,
   ): boolean {
     if (
-      event.type === WorkflowProgressEventType.Action ||
-      event.type === WorkflowProgressEventType.Mcp ||
+      event.type !== WorkflowProgressEventType.Thinking ||
       this.isCompleted ||
       !isCreating
     ) {

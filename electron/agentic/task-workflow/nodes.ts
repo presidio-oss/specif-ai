@@ -237,7 +237,7 @@ export const buildGenerateTasksNode = (
         statusMessage: message,
       });
 
-      await workflowEvents.dispatchAction(
+      await workflowEvents.dispatchError(
         "generate-tasks",
         {
           title: `Task generation for US: ${state.name} failed`,
