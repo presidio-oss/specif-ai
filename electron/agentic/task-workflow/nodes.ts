@@ -240,7 +240,7 @@ export const buildGenerateTasksNode = (
       await workflowEvents.dispatchAction(
         "generate-tasks",
         {
-          title: "Error occurred during task generation",
+          title: `Task generation for US: ${state.name} failed`,
         },
         runnableConfig,
         generateCorrelationId

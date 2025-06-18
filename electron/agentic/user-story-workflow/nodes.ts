@@ -263,7 +263,7 @@ export const buildGenerateStoriesNode = (
 
       await workflowEvents.dispatchAction(
         "generate-stories",
-        { title: "Error occurred during user story generation" },
+        { title: `User story generation for PRD: ${state.reqName} failed` },
         runnableConfig,
         generateCorrelationId
       );
@@ -398,7 +398,7 @@ export const buildEvaluateStoriesNode = (
       await workflowEvents.dispatchAction(
         "evaluate-stories",
         {
-          title: "Error occurred during user story evaluation",
+          title: `User story evaluation for PRD: ${state.reqName} failed`,
         },
         runnableConfig,
         evaluateCorrelationId
