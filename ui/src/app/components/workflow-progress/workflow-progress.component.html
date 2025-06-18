@@ -71,7 +71,7 @@
 
         <div class="flex-1 min-w-0 flex items-center justify-between">
           <span
-            class="text-sm leading-relaxed flex-1"
+            class="text-sm leading-relaxed flex-1 truncate pr-2"
             [ngClass]="step.textColorClass"
           >
             {{ step.message.title }}
@@ -79,7 +79,7 @@
 
           <div
             *ngIf="step.shouldShowSpinner"
-            class="inline-block w-3 h-3 border-2 border-t-transparent rounded-full animate-spin ml-2"
+            class="inline-block w-3 h-3 border-2 border-t-transparent rounded-full animate-spin flex-shrink-0"
             [ngClass]="step.borderColorClass"
             role="status"
             aria-label="Executing"
@@ -94,7 +94,10 @@
         triggerClassName="py-2 px-3 rounded-md cursor-pointer transition-all duration-200"
         bodyClassName="px-3 pb-3 mt-2"
       >
-        <div accordion-trigger class="flex items-center space-x-3">
+        <div
+          accordion-trigger
+          class="flex items-center space-x-3 min-w-0 w-full"
+        >
           <ng-container
             [ngTemplateOutlet]="stepIconTemplate"
             [ngTemplateOutletContext]="{
@@ -104,7 +107,7 @@
 
           <div class="flex-1 min-w-0 flex items-center justify-between">
             <p
-              class="text-sm leading-relaxed flex-1"
+              class="text-sm leading-relaxed flex-1 truncate pr-2 min-w-0"
               [ngClass]="step.textColorClass"
             >
               {{ step.message.title }}
