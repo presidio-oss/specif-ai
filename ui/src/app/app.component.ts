@@ -101,7 +101,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
-    this.workflowProgressService.removeAllGlobalListeners(this.electronService);
+    this.workflowProgressService.removeAllGlobalListeners();
   }
 
   private async initializeLLMConfig() {

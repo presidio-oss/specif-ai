@@ -220,7 +220,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
                 "tools_end",
                 "mcp",
                 {
-                  title: `Completed tool execution: ${streamEvent.name}`,
+                  title: `Executed MCP Tool: ${streamEvent.name}`,
                   input: streamEvent.data?.input,
                   output: streamEvent.data?.output?.content,
                 }

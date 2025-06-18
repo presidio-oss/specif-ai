@@ -70,7 +70,6 @@ import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { McpServersListComponent } from '../../components/mcp/mcp-servers-list/mcp-servers-list.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
-import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
 import { WorkflowProgressComponent } from '../../components/workflow-progress/workflow-progress.component';
 import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
 import {
@@ -100,7 +99,6 @@ import { ProjectCreationService } from '../../services/project-creation/project-
     NgForOf,
     McpServersListComponent,
     McpIntegrationConfiguratorComponent,
-    ThinkingProcessComponent,
     WorkflowProgressComponent,
     ProjectFailureMessageComponent,
   ],
@@ -771,7 +769,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       this.workflowProgressService.removeGlobalListener(
         this.projectId,
         WorkflowType.Solution,
-        this.electronService,
       );
     }
   }

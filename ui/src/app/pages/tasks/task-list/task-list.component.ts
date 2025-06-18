@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, NgZone } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import {
@@ -38,11 +38,12 @@ import { RichTextEditorComponent } from '../../../components/core/rich-text-edit
 import { processTaskContentForView } from 'src/app/utils/task.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
-import { ThinkingProcessComponent } from '../../../components/thinking-process/thinking-process.component';
-import { WorkflowType, WorkflowProgressEvent } from '../../../model/interfaces/workflow-progress.interface';
-import { ThinkingProcessConfig } from '../../../components/thinking-process/thinking-process.config';
-import { environment } from '../../../../environments/environment';
-import { ElectronService } from '../../../electron-bridge/electron.service';
+import { WorkflowProgressComponent } from '../../../components/workflow-progress/workflow-progress.component';
+import { WorkflowType } from '../../../model/interfaces/workflow-progress.interface';
+import { WorkflowProgressService } from '../../../services/workflow-progress/workflow-progress.service';
+import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
+import { provideIcons } from '@ng-icons/core';
+import { heroEye } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-task-list',
@@ -60,10 +61,16 @@ import { ElectronService } from '../../../electron-bridge/electron.service';
     SearchInputComponent,
     MatTooltipModule,
     RichTextEditorComponent,
-    ThinkingProcessComponent,
+    WorkflowProgressComponent,
+  ],
+  providers: [
+    provideIcons({
+      heroEye,
+    }),
   ],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
+  protected readonly WorkflowType = WorkflowType;
   activatedRoute = inject(ActivatedRoute);
   store = inject(Store);
   logger = inject(NGXLogger);
@@ -78,6 +85,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
   currentLabel: string = '';
   entityType: string = 'TASK';
   private searchTerm$ = new BehaviorSubject<string>('');
+  private destroy$ = new Subject<void>();
+
+  isGeneratingTasks: boolean = false;
+  taskGenerationComplete: boolean = false;
+  showProgressDialog: boolean = false;
 
   config!: {
     fileName: string;
@@ -107,24 +119,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
   selectedUserStory$ = this.store.select(UserStoriesState.getSelectedUserStory);
   userStories$ = this.store.select(UserStoriesState.getUserStories);
 
-  taskCreationProgress: WorkflowProgressEvent[] = [];
-  showThinkingProcess: boolean = false;
-  thinkingProcessConfig: ThinkingProcessConfig = {
-    title: 'Creating Tasks',
-    subtitle: `Sit back & let the ${environment.ThemeConfiguration.appName} do its job...`,
-  };
-  zone = inject(NgZone);
-  electronService = inject(ElectronService);
-
-  private workflowProgressListener = (
-    event: any,
-    data: WorkflowProgressEvent,
-  ) => {
-    this.zone.run(() => {
-      this.taskCreationProgress = [...this.taskCreationProgress, data];
-    });
-  };
-
   onSearch(term: string) {
     this.searchTerm$.next(term);
   }
@@ -133,6 +127,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private featureService: FeatureService,
     private toastService: ToasterService,
     private requirementIdService: RequirementIdService,
+    private workflowProgressService: WorkflowProgressService,
   ) {
     this.userStoryId = this.activatedRoute.snapshot.paramMap.get('userStoryId');
     this.logger.debug('userStoryId', this.userStoryId);
@@ -165,11 +160,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.electronService.removeWorkflowProgressListener(
-      WorkflowType.Task,
-      this.config.projectId,
-      this.workflowProgressListener,
-    );
+    this.destroy$.next();
+    this.destroy$.complete();
     this.store.dispatch(new DeleteBreadcrumb(this.currentLabel));
   }
 
@@ -211,10 +203,16 @@ export class TaskListComponent implements OnInit, OnDestroy {
       });
   }
 
-  refineUserStoryIntoTasks(regenerate: boolean = false, extraContext: string) {
-    this.taskCreationProgress = [];
-    this.showThinkingProcess = true;
-    
+  async refineUserStoryIntoTasks(
+    regenerate: boolean = false,
+    extraContext: string,
+  ) {
+    this.setupTaskProgressListener();
+    await this.workflowProgressService.setCreating(
+      this.config.projectId,
+      WorkflowType.Task,
+    );
+
     let request: ITaskRequest = {
       appId: this.config.projectId,
       appName: this.metadata.name,
@@ -227,27 +225,35 @@ export class TaskListComponent implements OnInit, OnDestroy {
       technicalDetails: this.metadata.technicalDetails || '',
       extraContext: extraContext,
     };
-    this.featureService.generateTask(request)
-    .then((response: ITasksResponse) => {
-      let tasksResponse = this.featureService.parseTaskResponse(response);
-      const updatedUserStories = [...this.userStories];
-      updatedUserStories[this.config.i] = {
-        ...updatedUserStories[this.config.i],
-        tasks: tasksResponse,
-      };
-      this.userStories = updatedUserStories;
-      this.updateWithUserStories(
-        updatedUserStories[this.config.i],
-        regenerate,
-      );
-    })
-    .catch((error) => {
-      console.error('There was an error!', error);
-      this.showThinkingProcess = false;
-      this.toastService.showError(
-        TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
-      );
-    });
+    this.featureService
+      .generateTask(request)
+      .then((response: ITasksResponse) => {
+        let tasksResponse = this.featureService.parseTaskResponse(response);
+        const updatedUserStories = [...this.userStories];
+        updatedUserStories[this.config.i] = {
+          ...updatedUserStories[this.config.i],
+          tasks: tasksResponse,
+        };
+        this.userStories = updatedUserStories;
+        this.updateWithUserStories(
+          updatedUserStories[this.config.i],
+          regenerate,
+        );
+      })
+      .catch(async (error) => {
+        console.error('There was an error!', error);
+        await this.workflowProgressService.setFailed(
+          this.config.projectId,
+          WorkflowType.Task,
+          {
+            timestamp: new Date().toISOString(),
+            reason: error?.message || 'Failed to generate tasks',
+          },
+        );
+        this.toastService.showError(
+          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+        );
+      });
     this.dialogService.closeAll();
   }
 
@@ -277,9 +283,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
       })
       .then();
 
-    setTimeout(() => {
+    setTimeout(async () => {
       this.getLatestUserStories();
-      this.showThinkingProcess = false;
+      await this.workflowProgressService.setComplete(
+        this.config.projectId,
+        WorkflowType.Task,
+      );
       this.toastService.showSuccess(
         TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
       );
@@ -325,11 +334,29 @@ export class TaskListComponent implements OnInit, OnDestroy {
     );
     this.getLatestUserStories();
 
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.Task,
-      this.config.projectId,
-      this.workflowProgressListener,
-    );
+    if (this.config.projectId) {
+      this.workflowProgressService
+        .getCreationStatusObservable(this.config.projectId, WorkflowType.Task)
+        .pipe(
+          takeUntil(this.destroy$),
+          distinctUntilChanged(
+            (prev, curr) =>
+              prev.isCreating === curr.isCreating &&
+              prev.isComplete === curr.isComplete &&
+              prev.isFailed === curr.isFailed,
+          ),
+        )
+        .subscribe((status) => {
+          const wasGenerating = this.isGeneratingTasks;
+          this.isGeneratingTasks = status.isCreating;
+          this.taskGenerationComplete = status.isComplete;
+
+          this.showProgressDialog = status.isCreating || status.isComplete;
+          if (wasGenerating && !status.isCreating && status.isComplete) {
+            this.resetTaskProgress();
+          }
+        });
+    }
   }
 
   private formatTaskForView(acceptance: string | undefined): string | null {
@@ -342,5 +369,51 @@ export class TaskListComponent implements OnInit, OnDestroy {
   ): string | null {
     if (!description) return null;
     return processUserStoryContentForView(description);
+  }
+
+  private setupTaskProgressListener(): void {
+    if (!this.config.projectId) return;
+
+    if (
+      !this.workflowProgressService.hasGlobalListener(
+        this.config.projectId,
+        WorkflowType.Task,
+      )
+    ) {
+      this.workflowProgressService.registerGlobalListener(
+        this.config.projectId,
+        WorkflowType.Task,
+      );
+    }
+
+    this.workflowProgressService.clearProgressEvents(
+      this.config.projectId,
+      WorkflowType.Task,
+    );
+  }
+
+  private resetTaskProgress(): void {
+    if (!this.config.projectId) return;
+
+    this.workflowProgressService.removeGlobalListener(
+      this.config.projectId,
+      WorkflowType.Task,
+    );
+  }
+
+  closeProgressDialog(): void {
+    this.showProgressDialog = false;
+
+    if (this.config.projectId) {
+      this.workflowProgressService.clearCreationStatus(
+        this.config.projectId,
+        WorkflowType.Task,
+      );
+
+      this.workflowProgressService.clearProgressEvents(
+        this.config.projectId,
+        WorkflowType.Task,
+      );
+    }
   }
 }
