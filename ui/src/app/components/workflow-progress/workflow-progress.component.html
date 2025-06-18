@@ -90,7 +90,8 @@
       <app-custom-accordion
         *ngIf="step.hasInputOutput"
         [id]="step.accordionId"
-        [isOpen]="shouldAccordionBeOpen()"
+        [isOpen]="shouldAccordionBeOpen(step.accordionId)"
+        (toggleChange)="onAccordionToggle(step.accordionId, $event)"
         triggerClassName="py-2 px-3 rounded-md cursor-pointer transition-all duration-200"
         bodyClassName="px-3 pb-3 mt-2"
       >

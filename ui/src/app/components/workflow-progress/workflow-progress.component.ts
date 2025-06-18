@@ -93,6 +93,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
 
   isAborting = signal(false);
   isExpandedAll = signal(false);
+  private individualAccordionStates = signal<Set<string>>(new Set());
 
   readonly WorkflowProgressEventType = WorkflowProgressEventType;
   private destroy$ = new Subject<void>();
@@ -333,10 +334,35 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
   }
 
   toggleExpandAll(): void {
-    this.isExpandedAll.update((value) => !value);
+    this.isExpandedAll.update((value) => {
+      if (!value) {
+        this.individualAccordionStates.set(new Set());
+      }
+      return !value;
+    });
   }
 
-  shouldAccordionBeOpen(): boolean {
-    return this.isExpandedAll();
+  shouldAccordionBeOpen(accordionId?: string): boolean {
+    if (this.isExpandedAll()) {
+      return true;
+    }
+
+    if (accordionId) {
+      return this.individualAccordionStates().has(accordionId);
+    }
+
+    return false;
+  }
+
+  onAccordionToggle(accordionId: string, isOpen: boolean): void {
+    this.individualAccordionStates.update((states) => {
+      const newStates = new Set(states);
+      if (isOpen) {
+        newStates.add(accordionId);
+      } else {
+        newStates.delete(accordionId);
+      }
+      return newStates;
+    });
   }
 }
