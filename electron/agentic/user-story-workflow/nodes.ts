@@ -160,9 +160,7 @@ export const buildGenerateStoriesNode = (
           title:
             state.feedbackLoops === 0
               ? `Generating User Stories for PRD: ${state.reqName}`
-              : `Refining User Stories for PRD: ${state.reqName} (Attempt ${
-                  state.feedbackLoops + 1
-                })`,
+              : `Refining User Stories for PRD: ${state.reqName} (Attempt ${state.feedbackLoops})`,
         },
         runnableConfig,
         generateCorrelationId
@@ -238,7 +236,7 @@ export const buildGenerateStoriesNode = (
               : `Refined ${
                   parsedStories.features?.length || 0
                 } user stories for PRD: ${state.reqName} (Attempt ${
-                  state.feedbackLoops + 1
+                  state.feedbackLoops
                 })`,
           input: prompt,
           output: JSON.stringify(parsedStories.features || []),
