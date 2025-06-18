@@ -16,6 +16,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { TestCasesComponent } from './pages/test-cases/test-cases.component';
 
 const routes: Routes = [
   {
@@ -141,6 +142,11 @@ const routes: Routes = [
             icon: 'settings',
           },
         },
+      },
+      {
+        path: 'test-cases/:userStoryId',
+        component: TestCasesComponent,
+        canActivate: [UserGuard],
       },
     ],
   },

@@ -1,0 +1,83 @@
+<div
+  class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full"
+  *ngIf="testCases$ | async as testCases"
+>
+  <div class="mb-4">
+    <div class="flex items-center mt-2 justify-between">
+      <div class="flex flex-col gap-2 min-w-0">
+        <h1
+          class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
+        >
+          Test Cases for {{ navigation.selectedRequirement?.id }}:
+          {{ navigation.selectedRequirement?.name }}
+        </h1>
+
+        <div class="flex items-center">
+          <h2 class="text-md font-semibold text-secondary-600">Test Cases</h2>
+          <app-badge [badgeText]="testCases.length"></app-badge>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-3">
+        <app-button
+          [buttonContent]="
+            testCases.length === 0
+              ? 'Generate Test Cases'
+              : 'Regenerate Test Cases'
+          "
+          theme="secondary"
+          size="sm"
+          (click)="addMoreContext(testCases.length > 0)"
+          rounded="lg"
+        />
+        <app-export-dropdown
+          [disabled]="testCases.length === 0"
+          [options]="exportOptions"
+        />
+      </div>
+    </div>
+    <app-search-input
+      *ngIf="testCases.length > 0"
+      placeholder="Search..."
+      (searchChange)="onSearch($event)"
+    ></app-search-input>
+  </div>
+
+  <div class="h-full overflow-y-auto">
+    <app-list-item
+      [payload]="{
+        description: testCase.description,
+        name: testCase.title,
+        id: testCase.id
+      }"
+      *ngFor="let testCase of filteredTestCases$ | async; let i = index"
+      [tag]="testCase.id"
+      (click)="navigateToEditTestCase(testCase)"
+      class="relative"
+    >
+      <div class="absolute top-4 right-4 flex gap-2">
+        <app-button
+          theme="secondary_outline"
+          size="xs"
+          rounded="lg"
+          [isIconButton]="true"
+          icon="heroDocumentDuplicate"
+          (click)="copyTestCaseContent($event, testCase)"
+          matTooltip="Copy"
+        />
+      </div>
+    </app-list-item>
+    <h1
+      class="font-semibold text-secondary-700 mt-4 text-center"
+      *ngIf="(filteredTestCases$ | async)?.length === 0"
+    >
+      No Test Cases Available.
+    </h1>
+  </div>
+</div>
+
+<app-thinking-process
+  [show]="showThinkingProcess"
+  [progress]="testCaseCreationProgress"
+  [config]="thinkingProcessConfig"
+></app-thinking-process>

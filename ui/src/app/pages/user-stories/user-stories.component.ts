@@ -300,6 +300,18 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     });
   }
 
+  navigateToTestCases(userStory: IUserStory, index: number) {
+    this.router.navigate(['/test-cases', userStory.id], {
+      state: {
+        projectId: this.navigation.projectId,
+        folderName: this.navigation.folderName,
+        fileName: this.navigation.fileName,
+        selectedRequirement: userStory,
+        data: this.navigation.data,
+      },
+    });
+  }
+
   navigateToAppIntegrations() {
     this.router.navigate([`/apps/${this.navigation.projectId}`], {
       state: { openAppIntegrations: 'true' },

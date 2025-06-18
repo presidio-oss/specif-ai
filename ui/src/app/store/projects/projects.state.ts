@@ -216,6 +216,7 @@ export class ProjectsState {
         [REQUIREMENT_TYPE.US]: 0,
         [REQUIREMENT_TYPE.TASK]: 0,
         [REQUIREMENT_TYPE.BP]: 0,
+        [REQUIREMENT_TYPE.TC]: 0,
       };
 
       metadata = {
@@ -373,7 +374,7 @@ export class ProjectsState {
     }
 
     // Define the folder order
-    const folderOrder = ['solution', 'BRD', 'PRD', 'NFR', 'UIR', 'BP']; // Update as needed
+    const folderOrder = ['solution', 'BRD', 'PRD', 'NFR', 'UIR', 'BP', 'TC']; // Update as needed
 
     try {
       const files = await this.appSystemService.getFolders(
@@ -579,7 +580,7 @@ export class ProjectsState {
   @Action(CreateFile)
   async createFile(
     { getState, patchState }: StateContext<ProjectStateModel>,
-    { path, content, featureFile }: CreateFile,
+    { path, content, featureFile, customPrefix }: CreateFile,
   ) {
     const state = getState();
     this.logger.debug('Creating file:', path, content);
@@ -590,6 +591,7 @@ export class ProjectsState {
       fileContent,
       featureFile,
       state.metadata?.[path]?.count || -1,
+      customPrefix,
     );
 
     if (!featureFile) {
