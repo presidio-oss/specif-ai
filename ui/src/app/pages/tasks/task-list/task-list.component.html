@@ -5,9 +5,9 @@
     [class.animate-fadeIn]="showProgressDialog"
   >
     <div
-      class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 my-8 max-h-[90vh] border border-gray-200 workflow-dialog flex flex-col"
+      class="bg-white rounded-xl p-6 pb-0 shadow-2xl max-w-3xl w-full mx-4 my-8 max-h-[90vh] border border-gray-200 workflow-dialog flex flex-col overflow-hidden"
     >
-      <div class="p-6 flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-y-auto">
         <app-workflow-progress
           [projectId]="config.projectId"
           [workflowType]="WorkflowType.Task"
@@ -23,7 +23,7 @@
 
       <div
         *ngIf="taskGenerationComplete"
-        class="p-4 flex justify-center border-t border-gray-100"
+        class="p-4 flex justify-center border-t border-gray-300"
       >
         <app-button
           buttonContent="View Generated Tasks"
