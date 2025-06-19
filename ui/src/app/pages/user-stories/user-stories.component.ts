@@ -61,7 +61,7 @@ import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
-import { WorkflowProgressComponent } from '../../components/workflow-progress/workflow-progress.component';
+import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 
@@ -82,7 +82,7 @@ import { WorkflowProgressService } from '../../services/workflow-progress/workfl
     SearchInputComponent,
     ExportDropdownComponent,
     MatTooltipModule,
-    WorkflowProgressComponent,
+    WorkflowProgressDialogComponent,
   ],
   providers: [
     provideIcons({
