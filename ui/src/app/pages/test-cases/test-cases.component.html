@@ -8,8 +8,13 @@
         <h1
           class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
         >
-          Test Cases for {{ navigation.selectedRequirement?.id }}:
-          {{ navigation.selectedRequirement?.name }}
+          <ng-container
+            *ngIf="navigation.selectedRequirement?.id; else allTestCases"
+          >
+            Test Cases for {{ navigation.selectedRequirement?.id }}:
+            {{ navigation.selectedRequirement?.name }}
+          </ng-container>
+          <ng-template #allTestCases>All Test Cases </ng-template>
         </h1>
 
         <div class="flex items-center">
@@ -29,6 +34,7 @@
           size="sm"
           (click)="addMoreContext(testCases.length > 0)"
           rounded="lg"
+          matTooltip="Add screens and context information for test case generation"
         />
         <app-export-dropdown
           [disabled]="testCases.length === 0"
@@ -36,6 +42,7 @@
         />
       </div>
     </div>
+
     <app-search-input
       *ngIf="testCases.length > 0"
       placeholder="Search..."
@@ -44,35 +51,81 @@
   </div>
 
   <div class="h-full overflow-y-auto">
-    <app-list-item
-      [payload]="{
-        description: testCase.description,
-        name: testCase.title,
-        id: testCase.id
-      }"
-      *ngFor="let testCase of filteredTestCases$ | async; let i = index"
-      [tag]="testCase.id"
-      (click)="navigateToEditTestCase(testCase)"
-      class="relative"
-    >
-      <div class="absolute top-4 right-4 flex gap-2">
-        <app-button
-          theme="secondary_outline"
-          size="xs"
-          rounded="lg"
-          [isIconButton]="true"
-          icon="heroDocumentDuplicate"
-          (click)="copyTestCaseContent($event, testCase)"
-          matTooltip="Copy"
-        />
-      </div>
-    </app-list-item>
-    <h1
-      class="font-semibold text-secondary-700 mt-4 text-center"
-      *ngIf="(filteredTestCases$ | async)?.length === 0"
-    >
-      No Test Cases Available.
-    </h1>
+    <!-- User Story specific view -->
+    <ng-container *ngIf="route.snapshot.paramMap.get('userStoryId') as userStoryId; else groupedTestCases">
+      <ng-container *ngIf="((filteredTestCases$ | async)?.length ?? 0) > 0; else noTestCases">
+        <app-list-item
+          [payload]="{
+            description: testCase.description,
+            name: testCase.title,
+            id: testCase.id,
+          }"
+          *ngFor="let testCase of filteredTestCases$ | async"
+          [tag]="testCase.id"
+          (click)="navigateToEditTestCase(testCase)"
+          class="relative"
+        >
+          <div class="absolute top-4 right-4 flex gap-2">
+            <app-button
+              theme="secondary_outline"
+              size="xs"
+              rounded="lg"
+              [isIconButton]="true"
+              icon="heroDocumentDuplicate"
+              (click)="copyTestCaseContent($event, testCase)"
+              matTooltip="Copy"
+            />
+          </div>
+        </app-list-item>
+      </ng-container>
+    </ng-container>
+
+    <!-- Grouped test case view -->
+    <ng-template #groupedTestCases>
+      <ng-container *ngIf="filteredTestCases$ | async as filteredTestCases">
+        <ng-container *ngIf="filteredTestCases.length > 0; else noTestCases">
+          <ng-container *ngFor="let userStoryId of getUserStoryIds()">
+            <div class="bg-secondary-50 p-3 my-2 rounded-lg">
+              <h3 class="text-md font-semibold text-secondary-800">
+                User Story: {{ userStoryId }}
+              </h3>
+            </div>
+
+            <app-list-item
+              [payload]="{
+                description: testCase.description,
+                name: testCase.title,
+                id: testCase.id,
+              }"
+              *ngFor="let testCase of getTestCasesForUserStory(userStoryId)"
+              [tag]="testCase.id"
+              (click)="navigateToEditTestCase(testCase)"
+              class="relative"
+            >
+              <div class="absolute top-4 right-4 flex gap-2">
+                <app-button
+                  theme="secondary_outline"
+                  size="xs"
+                  rounded="lg"
+                  [isIconButton]="true"
+                  icon="heroDocumentDuplicate"
+                  (click)="copyTestCaseContent($event, testCase)"
+                  matTooltip="Copy"
+                />
+              </div>
+            </app-list-item>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </ng-template>
+
+    <!-- Empty State Message -->
+    <ng-template #noTestCases>
+      <h1 class="text-secondary-700 my-4 text-center">
+        No Test Cases Found. Generate test cases by clicking the
+        <strong>"Generate Test Cases"</strong> button.
+      </h1>
+    </ng-template>
   </div>
 </div>
 

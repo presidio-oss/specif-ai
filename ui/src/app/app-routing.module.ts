@@ -148,6 +148,11 @@ const routes: Routes = [
         component: TestCasesComponent,
         canActivate: [UserGuard],
       },
+       {
+        path: 'test-cases',
+        component: TestCasesComponent,
+        canActivate: [UserGuard],
+      },
     ],
   },
 ];

@@ -28,6 +28,10 @@ export const TestCaseWorkflowStateAnnotation = Annotation.Root({
     reducer: (_, val) => val,
     default: () => "",
   }),
+  userScreensInvolved: Annotation<string>({
+    reducer: (_, val) => val,
+    default: () => "",
+  }),
   referenceInformation: Annotation<string>({
     reducer: (_, val) => val,
     default: () => "",

@@ -28,6 +28,7 @@ export interface ITestCaseRequest {
   userStoryDescription: string;
   acceptanceCriteria?: string;
   technicalDetails?: string;
+  userScreensInvolved?: string;
   extraContext?: string;
   regenerate: boolean;
 }

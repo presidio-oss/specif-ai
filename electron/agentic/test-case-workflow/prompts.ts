@@ -1,0 +1,121 @@
+/**
+ * Prompts for the test case workflow
+ */
+
+/**
+ * Builds the research prompt for gathering information for test case generation
+ */
+export const buildResearchPrompt = (
+  userStoryTitle: string,
+  userStoryDescription: string,
+  acceptanceCriteria: string,
+  technicalDetails: string,
+  userScreensInvolved: string,
+  extraContext: string
+): string => {
+  return `Please analyze this user story and gather relevant information for test case generation:
+Story Title: ${userStoryTitle}
+Story Description: ${userStoryDescription}
+${acceptanceCriteria ? `Acceptance Criteria: ${acceptanceCriteria}` : ""}
+${technicalDetails ? `Technical Details: ${technicalDetails}` : ""}
+${userScreensInvolved ? `User Screens Involved: ${userScreensInvolved}` : ""}
+${extraContext ? `Additional Context: ${extraContext}` : ""}
+
+Consider the following aspects:
+1. Core functionality that needs testing
+2. User interactions and workflows
+3. Technical requirements and constraints
+4. Edge cases and potential failure scenarios
+5. Integration points with other system components`;
+};
+
+/**
+ * Builds the prompt for generating test cases
+ */
+export const buildGenerateTestCasesPrompt = (
+  userStoryTitle: string,
+  userStoryDescription: string,
+  acceptanceCriteria: string,
+  technicalDetails: string,
+  userScreensInvolved: string,
+  extraContext: string,
+  referenceInformation: string
+): string => {
+  return `Generate comprehensive test cases for the following user story following best practices from factifai.io:
+
+Story Title: ${userStoryTitle}
+Story Description: ${userStoryDescription}
+${acceptanceCriteria ? `Acceptance Criteria: ${acceptanceCriteria}` : ""}
+${technicalDetails ? `Technical Details: ${technicalDetails}` : ""}
+${userScreensInvolved ? `User Screens Involved: ${userScreensInvolved}` : ""}
+${extraContext ? `Additional Context: ${extraContext}` : ""}
+
+Research Information: ${referenceInformation}
+
+Follow these guidelines:
+1. Each test case should be specific and focused on a single aspect
+2. Include clear steps with expected results
+3. Consider positive and negative test scenarios
+4. Include edge cases and boundary conditions
+5. Consider different user roles and permissions if applicable
+6. Test error handling and validation
+7. Include integration test cases where relevant
+8. Consider performance and security aspects
+9. Ensure test cases are traceable to requirements
+10. Make test cases reusable and maintainable
+
+Return the test cases in the following JSON format:
+{
+  "testCases": [
+    {
+      "id": "TC-1",
+      "title": "Test case title",
+      "description": "Detailed description of what is being tested",
+      "preConditions": ["List of conditions that must be met before test execution"],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "action": "Specific action to take",
+          "expectedResult": "Expected outcome of the action"
+        }
+      ],
+      "priority": "High|Medium|Low",
+      "type": "Functional|Integration|UI/UX|Performance|Security",
+      "status": "Draft"
+    }
+  ]
+}`;
+};
+
+/**
+ * Builds the prompt for evaluating test cases
+ */
+export const buildEvaluateTestCasesPrompt = (
+  userStoryTitle: string,
+  userStoryDescription: string,
+  acceptanceCriteria: string,
+  userScreensInvolved: string,
+  testCases: any[]
+): string => {
+  return `Evaluate the following test cases for quality and completeness:
+
+Story Title: ${userStoryTitle}
+Story Description: ${userStoryDescription}
+${acceptanceCriteria ? `Acceptance Criteria: ${acceptanceCriteria}` : ""}
+${userScreensInvolved ? `User Screens Involved: ${userScreensInvolved}` : ""}
+
+Test Cases:
+${JSON.stringify(testCases, null, 2)}
+
+Evaluate based on these criteria:
+1. Coverage of all requirements and acceptance criteria
+2. Clarity and completeness of test steps
+3. Appropriate test types and priorities
+4. Edge cases and error scenarios coverage
+5. Integration testing coverage where needed
+6. Performance and security considerations
+7. Adherence to best practices
+
+If the test cases meet all criteria, respond with "APPROVED AND READY FOR REFINEMENT"
+Otherwise, provide specific feedback on what needs improvement.`;
+};

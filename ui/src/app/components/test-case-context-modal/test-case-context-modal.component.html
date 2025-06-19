@@ -1,0 +1,62 @@
+<div class="p-6 flex flex-col justify-start">
+  <div>
+    <h1 class="text-2xl font-semibold mb-6">{{ data.title }}</h1>
+  </div>
+  <div class="rounded-md" [formGroup]="testCaseForm">
+    <!-- User Story Selector (only shown in global view) -->
+    <div class="mb-4" *ngIf="isGlobalView">
+      <label class="block text-secondary-700 text-sm font-medium mb-2">
+        Select User Story <span class="text-danger-500 text-xs">*</span>
+      </label>
+      <app-select
+        [options]="userStoryOptions"
+        placeholder="Select a user story"
+        formControlName="selectedUserStoryId"
+        [required]="true"
+        [searchable]="true"
+      ></app-select>
+    </div>
+    <!-- User Screens Involved Field -->
+    <div class="mb-4">
+      <label class="block text-secondary-700 text-sm font-medium mb-2">
+        User Screens Involved <span class="text-secondary-400">(Optional)</span>
+      </label>
+      <app-textarea-field
+        [elementPlaceHolder]="'Enter screens that users will interact with'"
+        elementId="userScreensInvolved"
+        formControlName="userScreensInvolved"
+        [rows]="5"
+      />
+    </div>
+    
+    <!-- Extra Context Field -->
+    <div>
+      <label class="block text-secondary-700 text-sm font-medium mb-2">
+        Extra Context <span class="text-secondary-400">(Optional)</span>
+      </label>
+      <app-textarea-field
+        [elementPlaceHolder]="'Enter additional context for test case generation'"
+        elementId="extraContext"
+        formControlName="extraContext"
+        [rows]="5"
+      />
+    </div>
+  </div>
+  <div class="flex justify-between mt-6">
+    <app-button
+      buttonContent="Cancel"
+      theme="secondary"
+      size="sm"
+      rounded="lg"
+      (click)="onClose()"
+    />
+    <app-button
+      buttonContent="Generate"
+      theme="primary"
+      size="sm"
+      rounded="lg"
+      (click)="onGenerate()"
+      [disabled]="isGlobalView && testCaseForm.get('selectedUserStoryId')?.invalid === true"
+    />
+  </div>
+</div>

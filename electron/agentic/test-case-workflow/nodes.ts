@@ -9,6 +9,11 @@ import { buildReactAgent } from "../react-agent";
 import { repairJSON } from "../../utils/custom-json-parser";
 import { ITestCaseWorkflowStateAnnotation } from "./state";
 import { TestCaseWorkflowRunnableConfig } from "./types";
+import { 
+  buildResearchPrompt, 
+  buildGenerateTestCasesPrompt, 
+  buildEvaluateTestCasesPrompt 
+} from "./prompts";
 
 const workflowEvents = new WorkflowEventsService("test-case");
 
@@ -85,27 +90,18 @@ export const buildResearchNode = ({
       128
     );
 
+    const prompt = buildResearchPrompt(
+      state.userStoryTitle,
+      state.userStoryDescription,
+      state.acceptanceCriteria,
+      state.technicalDetails,
+      state.userScreensInvolved,
+      state.extraContext
+    );
+
     const response = await agent.invoke(
       {
-        messages: [
-          new HumanMessage(`Please analyze this user story and gather relevant information for test case generation:
-Story Title: ${state.userStoryTitle}
-Story Description: ${state.userStoryDescription}
-${
-  state.acceptanceCriteria
-    ? `Acceptance Criteria: ${state.acceptanceCriteria}`
-    : ""
-}
-${state.technicalDetails ? `Technical Details: ${state.technicalDetails}` : ""}
-${state.extraContext ? `Additional Context: ${state.extraContext}` : ""}
-
-Consider the following aspects:
-1. Core functionality that needs testing
-2. User interactions and workflows
-3. Technical requirements and constraints
-4. Edge cases and potential failure scenarios
-5. Integration points with other system components`),
-        ],
+        messages: [new HumanMessage(prompt)],
       },
       {
         recursionLimit: recursionLimit,
@@ -163,53 +159,15 @@ export const buildGenerateTestCasesNode = (
         generateCorrelationId
       );
 
-      const prompt = `Generate comprehensive test cases for the following user story following best practices from factifai.io:
-
-Story Title: ${state.userStoryTitle}
-Story Description: ${state.userStoryDescription}
-${
-  state.acceptanceCriteria
-    ? `Acceptance Criteria: ${state.acceptanceCriteria}`
-    : ""
-}
-${state.technicalDetails ? `Technical Details: ${state.technicalDetails}` : ""}
-${state.extraContext ? `Additional Context: ${state.extraContext}` : ""}
-
-Research Information: ${state.referenceInformation}
-
-Follow these guidelines:
-1. Each test case should be specific and focused on a single aspect
-2. Include clear steps with expected results
-3. Consider positive and negative test scenarios
-4. Include edge cases and boundary conditions
-5. Consider different user roles and permissions if applicable
-6. Test error handling and validation
-7. Include integration test cases where relevant
-8. Consider performance and security aspects
-9. Ensure test cases are traceable to requirements
-10. Make test cases reusable and maintainable
-
-Return the test cases in the following JSON format:
-{
-  "testCases": [
-    {
-      "id": "TC-1",
-      "title": "Test case title",
-      "description": "Detailed description of what is being tested",
-      "preConditions": ["List of conditions that must be met before test execution"],
-      "steps": [
-        {
-          "stepNumber": 1,
-          "action": "Specific action to take",
-          "expectedResult": "Expected outcome of the action"
-        }
-      ],
-      "priority": "High|Medium|Low",
-      "type": "Functional|Integration|UI/UX|Performance|Security",
-      "status": "Draft"
-    }
-  ]
-}`;
+      const prompt = buildGenerateTestCasesPrompt(
+        state.userStoryTitle,
+        state.userStoryDescription,
+        state.acceptanceCriteria,
+        state.technicalDetails,
+        state.userScreensInvolved,
+        state.extraContext,
+        state.referenceInformation
+      );
 
       const generation = span?.generation({
         name: "llm",
@@ -366,30 +324,13 @@ export const buildEvaluateTestCasesNode = (
         evaluateCorrelationId
       );
 
-      const prompt = `Evaluate the following test cases for quality and completeness:
-
-Story Title: ${state.userStoryTitle}
-Story Description: ${state.userStoryDescription}
-${
-  state.acceptanceCriteria
-    ? `Acceptance Criteria: ${state.acceptanceCriteria}`
-    : ""
-}
-
-Test Cases:
-${JSON.stringify(state.testCases, null, 2)}
-
-Evaluate based on these criteria:
-1. Coverage of all requirements and acceptance criteria
-2. Clarity and completeness of test steps
-3. Appropriate test types and priorities
-4. Edge cases and error scenarios coverage
-5. Integration testing coverage where needed
-6. Performance and security considerations
-7. Adherence to best practices
-
-If the test cases meet all criteria, respond with "APPROVED AND READY FOR REFINEMENT"
-Otherwise, provide specific feedback on what needs improvement.`;
+      const prompt = buildEvaluateTestCasesPrompt(
+        state.userStoryTitle,
+        state.userStoryDescription,
+        state.acceptanceCriteria,
+        state.userScreensInvolved,
+        state.testCases
+      );
 
       const generation = span?.generation({
         name: "llm",
