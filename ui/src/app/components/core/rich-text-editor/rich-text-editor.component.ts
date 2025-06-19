@@ -38,7 +38,12 @@ import {
   heroDocument,
   heroDocumentDuplicate,
   heroViewColumns,
-  heroRectangleGroup
+  heroRectangleGroup,
+  heroSquares2x2,
+  heroTableCells,
+  heroRectangleStack,
+  heroBars3,
+  heroFunnel
   
 } from '@ng-icons/heroicons/outline';
 import { Editor } from '@tiptap/core';
@@ -79,7 +84,7 @@ type OnTouchedCallback = () => void;
     },
   ],
   imports: [CdkMenuModule, NgClass, NgIf, NgIcon, MatTooltipModule, MatDialogModule],
-  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList, heroLink, heroLinkSlash, heroPlus, heroMinus, heroTrash, heroDocument, heroDocumentDuplicate, heroRectangleGroup, heroChevronUp, heroChevronLeft, heroChevronRight, heroViewColumns })],
+  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList, heroLink, heroLinkSlash, heroPlus, heroMinus, heroTrash, heroDocument, heroDocumentDuplicate, heroRectangleGroup, heroChevronUp, heroChevronLeft, heroChevronRight, heroViewColumns, heroSquares2x2, heroTableCells, heroRectangleStack, heroBars3, heroFunnel })],
 })
 export class RichTextEditorComponent
   implements

@@ -848,14 +848,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         jiraOptions[0].timestamp = this.requirementFile.lastPushToJiraTimestamp;
       } else {
         jiraOptions[0].timestamp = undefined;
-        jiraOptions[0].syncStatus = 'Never';
       }
       
       if (this.requirementFile?.lastPullFromJiraTimestamp) {
         jiraOptions[1].timestamp = this.requirementFile.lastPullFromJiraTimestamp;
       } else {
         jiraOptions[1].timestamp = undefined;
-        jiraOptions[1].syncStatus = 'Never';
       }
     }
   }
@@ -886,13 +884,13 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           label: 'Push to JIRA',
           callback: () => this.syncRequirementWithJira(),
           icon: 'heroArrowUpTray',
-          timestamp: this.requirementFile?.lastPushToJiraTimestamp || 'Never'
+          timestamp: this.requirementFile?.lastPushToJiraTimestamp || undefined
         },
         {
           label: 'Pull from JIRA',
           callback: () => this.syncRequirementFromJira(),
           icon: 'heroArrowDownTray',
-          timestamp: this.requirementFile?.lastPullFromJiraTimestamp || 'Never'
+          timestamp: this.requirementFile?.lastPullFromJiraTimestamp || undefined
         }
       ]
     }

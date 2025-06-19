@@ -15,7 +15,6 @@ export interface DropdownOption {
   callback: () => void;
   timestamp?: string;
   icon?: string;
-  syncStatus?: string;
 }
 
 export interface DropdownOptionGroup {
