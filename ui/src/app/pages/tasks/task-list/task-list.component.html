@@ -1,5 +1,43 @@
 <div class="max-w-6xl mx-auto">
   <div
+    *ngIf="showProgressDialog"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm overlay-enter overflow-y-auto"
+    [class.animate-fadeIn]="showProgressDialog"
+  >
+    <div
+      class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 my-8 max-h-[90vh] border border-gray-200 workflow-dialog flex flex-col"
+    >
+      <div class="p-6 flex-1 overflow-y-auto">
+        <app-workflow-progress
+          [projectId]="config.projectId"
+          [workflowType]="WorkflowType.Task"
+          [isVisible]="true"
+          [isCompleted]="taskGenerationComplete"
+          initialTitle="Generating Tasks..."
+          completedTitle="Tasks Generated Successfully!"
+          subtitle="Creating tasks for the user story..."
+          [showCancelButton]="false"
+        >
+        </app-workflow-progress>
+      </div>
+
+      <div
+        *ngIf="taskGenerationComplete"
+        class="p-4 flex justify-center border-t border-gray-100"
+      >
+        <app-button
+          buttonContent="View Generated Tasks"
+          theme="primary"
+          size="sm"
+          rounded="lg"
+          icon="heroEye"
+          (click)="closeProgressDialog()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div
     class="grid grid-cols-12 gap-4"
     *ngIf="selectedUserStory$ | async as selectedUserStory"
   >
@@ -106,9 +144,3 @@
     </div>
   </div>
 </div>
-
-<app-thinking-process
-  [show]="showThinkingProcess"
-  [progress]="taskCreationProgress"
-  [config]="thinkingProcessConfig"
-></app-thinking-process>

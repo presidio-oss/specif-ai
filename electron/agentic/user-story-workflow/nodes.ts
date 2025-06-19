@@ -61,7 +61,7 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchThinking(
       "research",
       {
-        title: "Researching relevant context for user story generation",
+        title: "Researching based on PRD context",
       },
       runnableConfig,
       researchCorrelationId
@@ -120,7 +120,7 @@ export const buildResearchNode = ({
       "research",
       {
         title:
-          "Research completed - context gathered for user story generation",
+          "Research completed and prepared summary for user story generation",
         output: response.structuredResponse.referenceInformation,
       },
       runnableConfig,
@@ -158,7 +158,7 @@ export const buildGenerateStoriesNode = (
       await workflowEvents.dispatchThinking(
         "generate-stories",
         {
-          title: "Generating user stories based on requirements and context",
+          title: "Generating User Stories",
         },
         runnableConfig,
         generateCorrelationId
@@ -226,9 +226,9 @@ export const buildGenerateStoriesNode = (
       await workflowEvents.dispatchAction(
         "generate-stories",
         {
-          title: `Successfully generated ${
+          title: `Generated ${
             parsedStories.features?.length || 0
-          } user stories`,
+          } user stories successfully`,
           input: prompt,
           output: JSON.stringify(parsedStories.features || []),
         },
@@ -358,7 +358,7 @@ export const buildEvaluateStoriesNode = (
         "evaluate-stories",
         {
           title: isApproved
-            ? "User stories approved and ready for use"
+            ? "User story generation completed successfully"
             : isComplete
             ? "Completing the evaluation since the maximum evaluation limit is reached."
             : "User stories need refinement - continuing iteration",

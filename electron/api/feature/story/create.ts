@@ -87,7 +87,7 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
             node: "tools_end",
             type: "mcp",
             message: {
-              title: `Completed tool execution: ${name}`,
+              title: `Executed MCP Tool: ${name}`,
               input: data?.input,
               output: data?.output?.content,
             },
