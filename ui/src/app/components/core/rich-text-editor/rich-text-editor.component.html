@@ -100,6 +100,27 @@
     >
       <ng-icon name="heroListBullet" size="18"></ng-icon>
     </button>
+
+    <div
+    data-orientation="vertical"
+    role="none"
+    class="shrink-0 border-l border-l-secondary-300 mx-1 w-[1px] h-5"
+    ></div>
+
+  <!-- Table button -->
+    <button
+    type="button"
+    [attr.data-state]="editor?.isActive('table') == true ? 'on' : 'off'"
+    [cdkMenuTriggerFor]="tableMenu"
+    [ngClass]="[toolbarButtonClass, 'h-8 w-10 flex items-center gap-1']"
+    matTooltip="Table"
+    matTooltipPosition="above"
+  >
+    <ng-icon name="heroViewColumns" size="16"></ng-icon>
+    <ng-icon name="heroChevronDown" size="10"></ng-icon>
+  </button>
+
+
   </div>
 
   <div #richTextEditor></div>
@@ -186,6 +207,181 @@
       [class]="headingMenuItemClass"
     >
       <h6>Heading 6</h6>
+    </button>
+  </div>
+</ng-template>
+
+
+<!-- Table Menu -->
+ 
+<ng-template #tableMenu>
+  <div
+    class="rounded-lg border border-slate-200 bg-white py-1 shadow-lg flex flex-col items-stretch p-1 [&>button]:flex [&>button]:justify-start"
+    cdkMenu
+  >
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="insertTable()"
+      [class]="headingMenuItemClass"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroViewColumns" size="16"></ng-icon>
+        <span>Insert table</span>
+      </div>
+    </button>
+    
+    <div class="border-t border-slate-200 my-1"></div>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="addColumnBefore()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroPlus" size="16"></ng-icon>
+        <span>Add column before</span>
+      </div>
+    </button>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="addColumnAfter()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroPlus" size="16"></ng-icon>
+        <span>Add column after</span>
+      </div>
+    </button>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="deleteColumn()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroMinus" size="16"></ng-icon>
+        <span>Delete column</span>
+      </div>
+    </button>
+    
+    <div class="border-t border-slate-200 my-1"></div>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="addRowBefore()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroPlus" size="16"></ng-icon>
+        <span>Add row before</span>
+      </div>
+    </button>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="addRowAfter()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroPlus" size="16"></ng-icon>
+        <span>Add row after</span>
+      </div>
+    </button>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="deleteRow()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroMinus" size="16"></ng-icon>
+        <span>Delete row</span>
+      </div>
+    </button>
+    
+    <div class="border-t border-slate-200 my-1"></div>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="mergeCells()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroRectangleGroup" size="16"></ng-icon>
+        <span>Merge cells</span>
+      </div>
+    </button>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="splitCell()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroDocumentDuplicate" size="16"></ng-icon>
+        <span>Split cell</span>
+      </div>
+    </button>
+    
+    <div class="border-t border-slate-200 my-1"></div>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="toggleHeaderRow()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroDocument" size="16"></ng-icon>
+        <span>Toggle header row</span>
+      </div>
+    </button>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="toggleHeaderColumn()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroDocument" size="16"></ng-icon>
+        <span>Toggle header column</span>
+      </div>
+    </button>
+    
+    <div class="border-t border-slate-200 my-1"></div>
+    
+    <button
+      type="button"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="deleteTable()"
+      [class]="headingMenuItemClass"
+      [disabled]="!editor?.isActive('table')"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="heroTrash" size="16"></ng-icon>
+        <span>Delete table</span>
+      </div>
     </button>
   </div>
 </ng-template>

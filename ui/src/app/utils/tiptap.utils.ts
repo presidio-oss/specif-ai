@@ -16,6 +16,8 @@ import Table from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
+import Gapcursor from '@tiptap/extension-gapcursor'
+
 
 
 const TiptapExtensions = [
@@ -43,10 +45,15 @@ const TiptapExtensions = [
   }),
   Table.configure({
     resizable: true,
+    HTMLAttributes: {
+      class: 'table-wrapper',
+    },
   }),
+
   TableRow,
   TableHeader,
   TableCell,
+  Gapcursor
 ];
 
 export { TiptapExtensions };

@@ -24,11 +24,22 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   heroBold,
   heroChevronDown,
+  heroChevronUp,
+  heroChevronLeft,
+  heroChevronRight,
   heroItalic,
   heroListBullet,
   heroNumberedList,
   heroLink,
   heroLinkSlash,
+  heroPlus,
+  heroMinus,
+  heroTrash,
+  heroDocument,
+  heroDocumentDuplicate,
+  heroViewColumns,
+  heroRectangleGroup
+  
 } from '@ng-icons/heroicons/outline';
 import { Editor } from '@tiptap/core';
 import type { Level as HeadingLevel } from '@tiptap/extension-heading';
@@ -68,7 +79,7 @@ type OnTouchedCallback = () => void;
     },
   ],
   imports: [CdkMenuModule, NgClass, NgIf, NgIcon, MatTooltipModule, MatDialogModule],
-  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList, heroLink, heroLinkSlash })],
+  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList, heroLink, heroLinkSlash, heroPlus, heroMinus, heroTrash, heroDocument, heroDocumentDuplicate, heroRectangleGroup, heroChevronUp, heroChevronLeft, heroChevronRight, heroViewColumns })],
 })
 export class RichTextEditorComponent
   implements
@@ -232,6 +243,66 @@ export class RichTextEditorComponent
     this.onTouched.emit();
     this.touched = true;
   }
+
+  // Table methods
+  
+  insertTable() {
+    this.editor?.chain().focus().insertTable({
+      rows: 3,
+      cols: 3,
+      withHeaderRow: true
+    }).run();
+  }
+
+
+  addColumnBefore() {
+    this.editor?.chain().focus().addColumnBefore().run();
+  }
+
+  addColumnAfter() {
+    this.editor?.chain().focus().addColumnAfter().run();
+  }
+
+  deleteColumn() {
+    this.editor?.chain().focus().deleteColumn().run();
+  }
+
+  addRowBefore() {
+    this.editor?.chain().focus().addRowBefore().run();
+  }
+
+  addRowAfter() {
+    this.editor?.chain().focus().addRowAfter().run();
+  }
+
+  deleteRow() {
+    this.editor?.chain().focus().deleteRow().run();
+  }
+
+  deleteTable() {
+    this.editor?.chain().focus().deleteTable().run();
+  }
+
+  mergeCells() {
+    this.editor?.chain().focus().mergeCells().run();
+  }
+
+  splitCell() {
+    this.editor?.chain().focus().splitCell().run();
+  }
+
+  toggleHeaderColumn() {
+    this.editor?.chain().focus().toggleHeaderColumn().run();
+  }
+
+  toggleHeaderRow() {
+    this.editor?.chain().focus().toggleHeaderRow().run();
+  }
+
+  toggleHeaderCell() {
+    this.editor?.chain().focus().toggleHeaderCell().run();
+  }
+
 
   // ControlValueAccessor methods
 
