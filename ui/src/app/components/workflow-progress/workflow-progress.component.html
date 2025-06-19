@@ -59,6 +59,7 @@
     *ngIf="processedProgress$ | async as processedSteps"
   >
     <div
+      *ngIf="processedSteps.length > 0; else loaderTemplate"
       class="space-y-1"
       [style.max-height]="isExpandedAll() ? 'none' : maxHeight"
     >
@@ -186,6 +187,17 @@
           class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed"
           >{{ data }}</pre
         >
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #loaderTemplate>
+    <div class="flex flex-col items-center justify-center py-8 space-y-4">
+      <h3 class="text-sm font-semibold text-gray-800 tracking-wide">
+        Please wait while we prepare everything for you
+      </h3>
+      <div class="pt-1" style="--dot-size: 4px; --dot-color: #312e81">
+        <app-three-bounce-loader> </app-three-bounce-loader>
       </div>
     </div>
   </ng-template>

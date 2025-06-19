@@ -31,6 +31,7 @@ import {
 } from '../../model/interfaces/workflow-progress.interface';
 import { CustomAccordionComponent } from '../custom-accordion/custom-accordion.component';
 import { ButtonComponent } from '../core/button/button.component';
+import { ThreeBounceLoaderComponent } from '../three-bounce-loader/three-bounce-loader.component';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -62,6 +63,7 @@ interface ProcessedProgressEvent extends WorkflowProgressEvent {
     CustomAccordionComponent,
     ButtonComponent,
     NgTemplateOutlet,
+    ThreeBounceLoaderComponent,
   ],
   providers: [
     provideIcons({
