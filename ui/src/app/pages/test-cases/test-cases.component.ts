@@ -485,11 +485,63 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   }
 
   navigateToAddTestCase() {
-    // Implementation for adding a new test case
+    // Get the user story ID from route params or navigation state
+    const userStoryId = this.route.snapshot.paramMap.get('userStoryId') || this.navigation.selectedRequirement?.id;
+    
+    if (!userStoryId) {
+      this.toast.showError('Please select a user story to add a test case');
+      return;
+    }
+    
+    this.logger.debug(`Navigating to add test case for user story ${userStoryId}`);
+    
+    // Navigate to the add test case page
+    this.router.navigate(['/test-case', userStoryId, 'add']);
   }
 
   navigateToEditTestCase(selectedTestCase: ITestCase) {
-    // Implementation for editing a test case
+    this.logger.debug('Navigating to test case detail:', selectedTestCase);
+    
+    // Get the user story ID for this test case
+    const userStoryId = this.testCaseUserStoryMap.get(selectedTestCase.id);
+    
+    if (!userStoryId) {
+      this.toast.showError(`Could not determine user story for test case ${selectedTestCase.id}`);
+      return;
+    }
+    
+    // Navigate to the view test case page
+    this.router.navigate(['/test-case', userStoryId, selectedTestCase.id, 'view']);
+  }
+  
+  /**
+   * Saves a test case to its file
+   * @param testCase The test case to save
+   */
+  private saveTestCaseToFile(testCase: ITestCase): void {
+    // Get the user story ID for this test case
+    const userStoryId = this.testCaseUserStoryMap.get(testCase.id);
+    
+    if (!userStoryId) {
+      this.toast.showError(`Could not determine user story for test case ${testCase.id}`);
+      return;
+    }
+    
+    const testCasePath = `${this.currentProject}/TC/${userStoryId}`;
+    const fileName = `${testCase.id.toLowerCase()}-base.json`;
+    const filePath = `${testCasePath}/${fileName}`;
+    
+    this.logger.debug(`Saving test case to ${filePath}`);
+    
+    this.appSystemService.createFileWithContent(
+      filePath,
+      JSON.stringify(testCase, null, 2)
+    ).then(() => {
+      this.toast.showSuccess(`Test case ${testCase.id} saved successfully`);
+    }).catch(error => {
+      this.logger.error(`Error saving test case ${testCase.id}:`, error);
+      this.toast.showError(`Failed to save test case ${testCase.id}`);
+    });
   }
 
   generateTestCases(regenerate: boolean = false, extraContext: string = '', userScreensInvolved: string = '') {

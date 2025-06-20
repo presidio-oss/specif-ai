@@ -24,18 +24,28 @@
       </div>
 
       <div class="flex items-center justify-between gap-3">
-        <app-button
-          [buttonContent]="
-            testCases.length === 0
-              ? 'Generate Test Cases'
-              : 'Regenerate Test Cases'
-          "
-          theme="secondary"
-          size="sm"
-          (click)="addMoreContext(testCases.length > 0)"
-          rounded="lg"
-          matTooltip="Add screens and context information for test case generation"
-        />
+        <div class="flex gap-2">
+          <app-button
+            [buttonContent]="
+              testCases.length === 0
+                ? 'Generate Test Cases'
+                : 'Regenerate Test Cases'
+            "
+            theme="secondary"
+            size="sm"
+            (click)="addMoreContext(testCases.length > 0)"
+            rounded="lg"
+            matTooltip="Add screens and context information for test case generation"
+          />
+          <app-button
+            buttonContent="Add Test Case"
+            theme="primary"
+            size="sm"
+            (click)="navigateToAddTestCase()"
+            rounded="lg"
+            matTooltip="Add a new test case manually"
+          />
+        </div>
         <app-export-dropdown
           [disabled]="testCases.length === 0"
           [options]="exportOptions"

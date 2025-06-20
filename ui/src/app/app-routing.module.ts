@@ -17,6 +17,7 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { TestCasesComponent } from './pages/test-cases/test-cases.component';
+import { TestCaseDetailPageComponent } from './pages/test-case-detail/test-case-detail.component';
 
 const routes: Routes = [
   {
@@ -148,10 +149,30 @@ const routes: Routes = [
         component: TestCasesComponent,
         canActivate: [UserGuard],
       },
-       {
+      {
         path: 'test-cases',
         component: TestCasesComponent,
         canActivate: [UserGuard],
+      },
+      {
+        path: 'test-case/:userStoryId/add',
+        component: TestCaseDetailPageComponent,
+        canActivate: [UserGuard],
+        canDeactivate: [CanDeactivateGuard],
+        data: { mode: 'add' }
+      },
+      {
+        path: 'test-case/:userStoryId/:testCaseId/view',
+        component: TestCaseDetailPageComponent,
+        canActivate: [UserGuard],
+        data: { mode: 'view' }
+      },
+      {
+        path: 'test-case/:userStoryId/:testCaseId/edit',
+        component: TestCaseDetailPageComponent,
+        canActivate: [UserGuard],
+        canDeactivate: [CanDeactivateGuard],
+        data: { mode: 'edit' }
       },
     ],
   },
