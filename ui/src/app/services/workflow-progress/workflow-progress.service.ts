@@ -301,17 +301,17 @@ export class WorkflowProgressService implements OnDestroy {
         this.addProgressEvent(projectId, workflowType, data);
       };
 
-      this.activeListeners.set(listenerKey, {
-        projectId,
-        workflowType,
-        callback,
-      });
-
-      this.electronService.listenWorkflowProgress(
+      const registeredListener = this.electronService.listenWorkflowProgress(
         workflowType,
         projectId,
         callback,
       );
+
+      this.activeListeners.set(listenerKey, {
+        projectId,
+        workflowType,
+        registeredListener,
+      });
     } catch (error) {
       this.handleError(
         'Failed to register global listener',
@@ -342,7 +342,7 @@ export class WorkflowProgressService implements OnDestroy {
         this.electronService.removeWorkflowProgressListener(
           workflowType,
           projectId,
-          listener.callback,
+          listener.registeredListener,
         );
         this.activeListeners.delete(listenerKey);
       }
@@ -387,7 +387,7 @@ export class WorkflowProgressService implements OnDestroy {
         this.electronService.removeWorkflowProgressListener(
           listener.workflowType,
           listener.projectId,
-          listener.callback,
+          listener.registeredListener,
         );
       });
       this.activeListeners.clear();

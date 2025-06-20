@@ -38,12 +38,12 @@ import { RichTextEditorComponent } from '../../../components/core/rich-text-edit
 import { processTaskContentForView } from 'src/app/utils/task.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
-import { WorkflowProgressComponent } from '../../../components/workflow-progress/workflow-progress.component';
+import { WorkflowProgressDialogComponent } from '../../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { WorkflowType } from '../../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../../services/workflow-progress/workflow-progress.service';
 import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 import { provideIcons } from '@ng-icons/core';
-import { heroEye } from '@ng-icons/heroicons/outline';
+import { heroArrowRight } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-task-list',
@@ -61,11 +61,11 @@ import { heroEye } from '@ng-icons/heroicons/outline';
     SearchInputComponent,
     MatTooltipModule,
     RichTextEditorComponent,
-    WorkflowProgressComponent,
+    WorkflowProgressDialogComponent,
   ],
   providers: [
     provideIcons({
-      heroEye,
+      heroArrowRight,
     }),
   ],
 })
