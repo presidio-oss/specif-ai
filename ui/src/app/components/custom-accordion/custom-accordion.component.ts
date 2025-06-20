@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
 import { CommonModule, NgClass } from '@angular/common';
 
@@ -14,8 +14,10 @@ export class CustomAccordionComponent {
   @Input() isOpen = false;
   @Input() triggerClassName = '';
   @Input() bodyClassName = '';
+  @Output() toggleChange = new EventEmitter<boolean>();
 
   toggle() {
     this.isOpen = !this.isOpen;
+    this.toggleChange.emit(this.isOpen);
   }
 }

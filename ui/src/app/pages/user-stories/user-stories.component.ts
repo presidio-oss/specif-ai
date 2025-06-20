@@ -39,7 +39,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroEye } from '@ng-icons/heroicons/outline';
+import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
@@ -61,7 +61,7 @@ import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
-import { WorkflowProgressComponent } from '../../components/workflow-progress/workflow-progress.component';
+import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 
@@ -82,11 +82,11 @@ import { WorkflowProgressService } from '../../services/workflow-progress/workfl
     SearchInputComponent,
     ExportDropdownComponent,
     MatTooltipModule,
-    WorkflowProgressComponent,
+    WorkflowProgressDialogComponent,
   ],
   providers: [
     provideIcons({
-      heroEye,
+      heroArrowRight,
     }),
   ],
 })

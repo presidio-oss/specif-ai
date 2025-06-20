@@ -194,11 +194,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.appName = this.appInfo?.name;
   }
 
-  @HostListener('window:focus')
-  onFocus() {
-    this.store.dispatch(new GetProjectFiles(this.projectId as string));
-  }
-
   ngOnInit(): void {
     this.llmConfig$.subscribe((config) => {
       this.currentLLMConfig = config;
