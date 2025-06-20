@@ -1,10 +1,9 @@
-import { Component, ElementRef, HostListener, inject, OnInit, ViewChild, OnDestroy, NgZone } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
 import { UserStoriesState } from '../../store/user-stories/user-stories.state';
 import {
-  EditUserStory,
   ExportUserStories,
   GetUserStories,
   SetCurrentConfig,
@@ -25,7 +24,6 @@ import {
 import { ClipboardService } from '../../services/clipboard.service';
 import { ITaskRequest, ITasksResponse } from '../../model/interfaces/ITask';
 import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
-import { LoadingService } from '../../services/loading.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import {
   getJiraTokenInfo,
@@ -40,7 +38,8 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
@@ -50,16 +49,21 @@ import {
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
-import { BehaviorSubject, map } from 'rxjs';
+import {
+  BehaviorSubject,
+  map,
+  Subject,
+  takeUntil,
+  distinctUntilChanged,
+} from 'rxjs';
 import { ExportFileFormat } from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
 import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
-import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
-import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
-import { ThinkingProcessConfig } from '../../components/thinking-process/thinking-process.config';
-import { environment } from '../../../environments/environment';
+import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
+import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
+import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 
 @Component({
   selector: 'app-user-stories',
@@ -78,22 +82,32 @@ import { environment } from '../../../environments/environment';
     SearchInputComponent,
     ExportDropdownComponent,
     MatTooltipModule,
-    ThinkingProcessComponent,
+    WorkflowProgressDialogComponent,
+  ],
+  providers: [
+    provideIcons({
+      heroArrowRight,
+    }),
   ],
 })
 export class UserStoriesComponent implements OnInit, OnDestroy {
+  protected readonly WorkflowType = WorkflowType;
   currentProject!: string;
   newFileName: string = '';
   entityType: string = 'US';
   selectedRequirement: any = {};
   metadata: any = {};
   private searchTerm$ = new BehaviorSubject<string>('');
+  private destroy$ = new Subject<void>();
   router = inject(Router);
   logger = inject(NGXLogger);
   store = inject(Store);
   searchService = inject(SearchService);
   requirementFile: any = [];
   userStories: IUserStory[] = [];
+  isGeneratingStories: boolean = false;
+  storyGenerationComplete: boolean = false;
+  showProgressDialog: boolean = false;
 
   isTokenAvailable: boolean = true;
   navigation: {
@@ -103,12 +117,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     selectedRequirement: any;
     data: any;
   } = {
-    projectId: '',
-    folderName: '',
-    fileName: '',
-    selectedRequirement: {},
-    data: {},
-  };
+      projectId: '',
+      folderName: '',
+      fileName: '',
+      selectedRequirement: {},
+      data: {},
+    };
 
   userStories$ = this.store.select(UserStoriesState.getUserStories).pipe(
     map((stories) =>
@@ -132,23 +146,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   userStoriesInState: IUserStory[] = [];
 
-  storyCreationProgress: WorkflowProgressEvent[] = [];
-  showThinkingProcess: boolean = false;
-  thinkingProcessConfig: ThinkingProcessConfig = {
-    title: 'Creating User Stories',
-    subtitle: `Sit back & let the ${environment.ThemeConfiguration.appName} do its job...`,
-  };
-  zone = inject(NgZone);
-
-  private workflowProgressListener = (
-    event: any,
-    data: WorkflowProgressEvent,
-  ) => {
-    this.zone.run(() => {
-      this.storyCreationProgress = [...this.storyCreationProgress, data];
-    });
-  };
-
   readonly dialogService = inject(DialogService);
 
   onSearch(term: string) {
@@ -158,11 +155,11 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   constructor(
     private featureService: FeatureService,
     private clipboardService: ClipboardService,
-    private loadingService: LoadingService,
     private jiraService: JiraService,
     private electronService: ElectronService,
     private toast: ToasterService,
     private requirementIdService: RequirementIdService,
+    private workflowProgressService: WorkflowProgressService,
   ) {
     this.navigation = getNavigationParams(this.router.getCurrentNavigation());
     this.store.dispatch(
@@ -222,9 +219,36 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       const tokenInfo = getJiraTokenInfo(this.navigation.projectId);
       return (
         tokenInfo.projectKey ===
-          this.metadata.integration?.jira?.jiraProjectKey && !!tokenInfo.token
+        this.metadata.integration?.jira?.jiraProjectKey && !!tokenInfo.token
       );
     })();
+
+    if (this.navigation.projectId) {
+      this.workflowProgressService
+        .getCreationStatusObservable(
+          this.navigation.projectId,
+          WorkflowType.Story,
+        )
+        .pipe(
+          takeUntil(this.destroy$),
+          distinctUntilChanged(
+            (prev, curr) =>
+              prev.isCreating === curr.isCreating &&
+              prev.isComplete === curr.isComplete &&
+              prev.isFailed === curr.isFailed,
+          ),
+        )
+        .subscribe((status) => {
+          const wasGenerating = this.isGeneratingStories;
+          this.isGeneratingStories = status.isCreating;
+          this.storyGenerationComplete = status.isComplete;
+
+          this.showProgressDialog = status.isCreating || status.isComplete;
+          if (wasGenerating && !status.isCreating && status.isComplete) {
+            this.resetStoryProgress();
+          }
+        });
+    }
 
     this.selectedProject$.subscribe((project) => {
       this.currentProject = project;
@@ -242,18 +266,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     this.userStories$.subscribe((userStories: IUserStory[]) => {
       this.userStoriesInState = userStories;
     });
-
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.Story,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
-    
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.Task,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
   }
 
   navigateToAddUserStory() {
@@ -307,7 +319,16 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     });
   }
 
-  generateUserStories(regenerate: boolean = false, extraContext: string = '') {
+  async generateUserStories(
+    regenerate: boolean = false,
+    extraContext: string = '',
+  ) {
+    this.setupStoryProgressListener();
+    await this.workflowProgressService.setCreating(
+      this.navigation.projectId,
+      WorkflowType.Story,
+    );
+
     let request: IUserStoriesRequest = {
       appId: this.navigation.projectId,
       appName: this.metadata.name,
@@ -320,25 +341,36 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       extraContext: extraContext,
     };
 
-    this.storyCreationProgress = [];
-    this.showThinkingProcess = true;
-
-    this.featureService.generateUserStories(request).then((response) => {
-      this.userStories = response;
-      this.generateTasks(regenerate).then(() => {
-        this.updateWithUserStories(this.userStories, regenerate);
-      });
-    })
-      .catch((error) => {
-        this.showThinkingProcess = false;
+    this.featureService
+      .generateUserStories(request)
+      .then((response) => {
+        this.userStories = response;
+        this.generateTasks(regenerate).then(() => {
+          this.updateWithUserStories(this.userStories, regenerate);
+        });
+      })
+      .catch(async (error) => {
+        await this.workflowProgressService.setFailed(
+          this.navigation.projectId,
+          WorkflowType.Story,
+          {
+            timestamp: new Date().toISOString(),
+            reason: error?.message || 'Failed to generate user stories',
+          },
+        );
         this.toast.showError(
           TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
         );
-      })
+      });
     this.dialogService.closeAll();
   }
 
-  generateTasks(regenerate: boolean): Promise<void[]> {
+  async generateTasks(regenerate: boolean): Promise<void[]> {
+    await this.workflowProgressService.setCreating(
+      this.navigation.projectId,
+      WorkflowType.Task,
+    );
+
     const requests = this.userStories.map(async (userStory: IUserStory) => {
       let request: ITaskRequest = {
         appId: this.navigation.projectId,
@@ -365,7 +397,25 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           );
         });
     });
-    return Promise.all(requests);
+
+    try {
+      const result = await Promise.all(requests);
+      await this.workflowProgressService.setComplete(
+        this.navigation.projectId,
+        WorkflowType.Task,
+      );
+      return result;
+    } catch (error: any) {
+      await this.workflowProgressService.setFailed(
+        this.navigation.projectId,
+        WorkflowType.Task,
+        {
+          timestamp: new Date().toISOString(),
+          reason: error?.message || 'Failed to generate tasks',
+        },
+      );
+      throw error;
+    }
   }
 
   updateWithUserStories(
@@ -405,9 +455,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       })
       .then();
 
-    setTimeout(() => {
+    setTimeout(async () => {
       this.getLatestUserStories();
-      this.showThinkingProcess = false;
+      await this.workflowProgressService.setComplete(
+        this.navigation.projectId,
+        WorkflowType.Story,
+      );
       this.toast.showSuccess(
         TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
       );
@@ -420,7 +473,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         `${this.currentProject}/${this.navigation.folderName}/${this.newFileName}`,
       ),
     );
-    this.loadingService.setLoading(false);
   }
 
   copyUserStoryContent(event: Event, userStory: IUserStory) {
@@ -736,20 +788,16 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       })) || [],
     }));
 
-    this.loadingService.setLoading(true);
-
     this.jiraService.syncFromJira(requestPayload).subscribe({
       next: (response) => {
         console.debug('JIRA Sync Response:', response);
         this.requirementFile.lastPullFromJiraTimestamp = new Date().toISOString();
         this.updateExportOptionsTimestamps();
         this.updateLocalContentFromJira(response);
-        this.loadingService.setLoading(false);
         this.toast.showSuccess('Successfully synced from JIRA');
       },
       error: (error) => {
         console.error('Error syncing from JIRA:', error);
-        this.loadingService.setLoading(false);
         this.toast.showError('Failed to sync from JIRA');
       },
     });
@@ -839,29 +887,86 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     }
   }
 
-  
+
   private updateExportOptionsTimestamps(): void {
-  if (this.exportOptions && this.exportOptions.length > 1) {
-    const jiraOptions = this.exportOptions[1].options;
-    if (jiraOptions && jiraOptions.length > 1) {
-      if (this.requirementFile?.lastPushToJiraTimestamp) {
-        jiraOptions[0].timestamp = this.requirementFile.lastPushToJiraTimestamp;
-      } else {
-        jiraOptions[0].timestamp = undefined;
-      }
-      
-      if (this.requirementFile?.lastPullFromJiraTimestamp) {
-        jiraOptions[1].timestamp = this.requirementFile.lastPullFromJiraTimestamp;
-      } else {
-        jiraOptions[1].timestamp = undefined;
+    if (this.exportOptions && this.exportOptions.length > 1) {
+      const jiraOptions = this.exportOptions[1].options;
+      if (jiraOptions && jiraOptions.length > 1) {
+        if (this.requirementFile?.lastPushToJiraTimestamp) {
+          jiraOptions[0].timestamp = this.requirementFile.lastPushToJiraTimestamp;
+        } else {
+          jiraOptions[0].timestamp = undefined;
+        }
+
+        if (this.requirementFile?.lastPullFromJiraTimestamp) {
+          jiraOptions[1].timestamp = this.requirementFile.lastPullFromJiraTimestamp;
+        } else {
+          jiraOptions[1].timestamp = undefined;
+        }
       }
     }
   }
-}
 
 
 
-  exportOptions : DropdownOptionGroup[] = [
+
+  private setupStoryProgressListener(): void {
+    if (!this.navigation.projectId) return;
+
+    const workflowTypes = [WorkflowType.Story, WorkflowType.Task];
+
+    workflowTypes.forEach((workflowType) => {
+      if (
+        !this.workflowProgressService.hasGlobalListener(
+          this.navigation.projectId!,
+          workflowType,
+        )
+      ) {
+        this.workflowProgressService.registerGlobalListener(
+          this.navigation.projectId!,
+          workflowType,
+        );
+      }
+
+      this.workflowProgressService.clearProgressEvents(
+        this.navigation.projectId!,
+        workflowType,
+      );
+    });
+  }
+
+  private resetStoryProgress(): void {
+    if (!this.navigation.projectId) return;
+
+    const workflowTypes = [WorkflowType.Story, WorkflowType.Task];
+
+    workflowTypes.forEach((workflowType) => {
+      this.workflowProgressService.removeGlobalListener(
+        this.navigation.projectId!,
+        workflowType,
+      );
+    });
+  }
+
+  closeProgressDialog(): void {
+    this.showProgressDialog = false;
+
+    if (this.navigation.projectId) {
+      const workflowTypes = [WorkflowType.Story, WorkflowType.Task];
+      workflowTypes.forEach((workflowType) => {
+        this.workflowProgressService.clearCreationStatus(
+          this.navigation.projectId!,
+          workflowType,
+        );
+        this.workflowProgressService.clearProgressEvents(
+          this.navigation.projectId!,
+          workflowType,
+        );
+      });
+    }
+  }
+
+  exportOptions: DropdownOptionGroup[] = [
     {
       groupName: 'Export',
       options: [
@@ -897,15 +1002,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   ];
 
   ngOnDestroy() {
-    this.electronService.removeWorkflowProgressListener(
-      WorkflowType.Story,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
-    this.electronService.removeWorkflowProgressListener(
-      WorkflowType.Task,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

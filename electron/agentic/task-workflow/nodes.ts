@@ -44,10 +44,10 @@ export const buildResearchNode = ({
         statusMessage: message,
       });
 
-      await workflowEvents.dispatchThinking(
+      await workflowEvents.dispatchAction(
         "research",
         {
-          title: "Skipping research phase - no tools available",
+          title: "Skipped research phase - no tools were available",
         },
         runnableConfig
       );
@@ -60,7 +60,7 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchThinking(
       "research",
       {
-        title: "Researching relevant context for task generation",
+        title: `Researching based on US: ${state.name} context`,
       },
       runnableConfig,
       researchCorrelationId
@@ -118,7 +118,7 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchAction(
       "research",
       {
-        title: "Research completed - context gathered for task generation",
+        title: `Research completed for US: ${state.name}`,
         output: response.structuredResponse.referenceInformation,
       },
       runnableConfig,
@@ -155,7 +155,7 @@ export const buildGenerateTasksNode = (
       await workflowEvents.dispatchThinking(
         "generate-tasks",
         {
-          title: "Generating detailed tasks based on requirements and context",
+          title: `Generating Tasks for US: ${state.name}`,
         },
         runnableConfig,
         generateCorrelationId
@@ -209,9 +209,9 @@ export const buildGenerateTasksNode = (
       await workflowEvents.dispatchAction(
         "generate-tasks",
         {
-          title: `Successfully generated ${
-            parsedTasks.tasks?.length || 0
-          } tasks`,
+          title: `Generated ${parsedTasks.tasks?.length || 0} tasks for US: ${
+            state.name
+          }`,
           input: prompt,
           output: parsedTasks,
         },
@@ -237,10 +237,10 @@ export const buildGenerateTasksNode = (
         statusMessage: message,
       });
 
-      await workflowEvents.dispatchAction(
+      await workflowEvents.dispatchError(
         "generate-tasks",
         {
-          title: "Error occurred during task generation",
+          title: `Task generation for US: ${state.name} failed`,
         },
         runnableConfig,
         generateCorrelationId

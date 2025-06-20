@@ -98,6 +98,17 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async abortSolutionCreation(projectId: string): Promise<boolean> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'solution:abortSolutionCreation',
+        args: [{ projectId }],
+        skipLoading: true,
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   
   async setContentGenerationStatus(
     solutionId: string,
@@ -644,13 +655,14 @@ export class ElectronService {
     workflowType: WorkflowType,
     solutionId: string,
     callback: (event: IpcRendererEvent, response: any) => void,
-  ): void {
+  ): (event: IpcRendererEvent, ...args: any[]) => void {
     if (this.electronAPI) {
-      this.electronAPI.on(
+      return this.electronAPI.on(
         this.buildWorkflowProgressChannel(workflowType, solutionId),
         callback,
       );
     }
+    throw new Error('Electron is not available');
   }
 
   removeWorkflowProgressListener(

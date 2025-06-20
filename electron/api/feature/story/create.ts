@@ -10,9 +10,11 @@ import { ObservabilityManager } from '../../../services/observability/observabil
 import { getMcpToolsForActiveProvider } from '../../../mcp';
 import { MCPHub } from '../../../mcp/mcp-hub';
 import { isLangfuseDetailedTracesEnabled } from '../../../services/observability/observability.util';
+import { WorkflowEventsService, WorkflowEventType } from '../../../services/events/workflow-events.service';
 
 export async function createStories(event: IpcMainInvokeEvent, data: unknown): Promise<CreateStoryResponse> {
   try {
+    const workflowEvents = new WorkflowEventsService("user-story");
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
     const o11y = ObservabilityManager.getInstance();
     const trace = o11y.createTrace('create-stories');
@@ -82,30 +84,17 @@ export async function createStories(event: IpcMainInvokeEvent, data: unknown): P
       const timestamp = Date.now();
 
       switch (evt) {
-        case "on_tool_start":
-          event.sender.send(channel, {
-            node: "tools",
-            type: "mcp",
-            message: {
-              title: `Tool call started: ${name}`
-            },
-            correlationId: run_id,
-            timestamp,
-          });
-          break;
-
         case "on_tool_end":
-          event.sender.send(channel, {
-            node: "tools_end",
-            type: "mcp",
-            message: {
-              title: `Tool call completed: ${name}`,
+          const toolEndEvent = workflowEvents.createEvent(
+            "tools_end",
+            WorkflowEventType.Mcp,
+            {
+              title: `Executed MCP Tool: ${name}`,
               input: data?.input,
               output: data?.output?.content,
-            },
-            timestamp,
-            correlationId: run_id,
-          });
+            }
+          );
+          event.sender.send(channel, toolEndEvent);
           break;
 
         case "on_custom_event":

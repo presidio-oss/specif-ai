@@ -21,7 +21,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { getDescriptionFromInput } from '../../utils/common.utils';
-import { Observable, Subject, first, takeUntil } from 'rxjs';
+import {
+  Observable,
+  Subject,
+  distinctUntilChanged,
+  first,
+  takeUntil,
+} from 'rxjs';
 import { AddBreadcrumbs } from '../../store/breadcrumb/breadcrumb.actions';
 import { MultiUploadComponent } from '../../components/multi-upload/multi-upload.component';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
@@ -64,11 +70,15 @@ import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
 import { LLMConfigState } from 'src/app/store/llm-config/llm-config.state';
 import { McpServersListComponent } from '../../components/mcp/mcp-servers-list/mcp-servers-list.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
-import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
 import { WorkflowProgressComponent } from '../../components/workflow-progress/workflow-progress.component';
 import { MCPServerDetails, MCPSettings } from 'src/app/types/mcp.types';
-import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
+import {
+  WorkflowErrorEvent,
+  WorkflowType,
+} from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
+import { ProjectFailureMessageComponent } from '../../components/project-failure-message/project-failure-message.component';
+import { ProjectCreationService } from '../../services/project-creation/project-creation.service';
 
 @Component({
   selector: 'app-info',
@@ -89,8 +99,8 @@ import { WorkflowProgressService } from '../../services/workflow-progress/workfl
     NgForOf,
     McpServersListComponent,
     McpIntegrationConfiguratorComponent,
-    ThinkingProcessComponent,
     WorkflowProgressComponent,
+    ProjectFailureMessageComponent,
   ],
   providers: [
     provideIcons({
@@ -176,16 +186,12 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private featureService: FeatureService,
     private logger: NGXLogger,
     private workflowProgressService: WorkflowProgressService,
+    private projectCreationService: ProjectCreationService,
   ) {
     const navigation = this.router.getCurrentNavigation();
     this.appInfo = navigation?.extras?.state?.['data'];
     this.navigationState = navigation?.extras?.state;
     this.appName = this.appInfo?.name;
-  }
-
-  @HostListener('window:focus')
-  onFocus() {
-    this.store.dispatch(new GetProjectFiles(this.projectId as string));
   }
 
   ngOnInit(): void {
@@ -198,7 +204,15 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     if (this.projectId) {
       this.workflowProgressService
         .getCreationStatusObservable(this.projectId, WorkflowType.Solution)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(
+          takeUntil(this.destroy$),
+          distinctUntilChanged(
+            (prev, curr) =>
+              prev.isCreating === curr.isCreating &&
+              prev.isComplete === curr.isComplete &&
+              prev.isFailed === curr.isFailed,
+          ),
+        )
         .subscribe((status) => {
           const wasCreating = this.isCreatingSolution;
           this.isCreatingSolution = status.isCreating;
@@ -207,6 +221,11 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           if (wasCreating && !status.isCreating && status.isComplete) {
             this.store.dispatch(new GetProjectFiles(this.projectId as string));
             this.resetSolutionProgress();
+          }
+
+          if (status.isFailed) {
+            this.appInfo.isFailed = true;
+            this.appInfo.failureInfo = status.failureInfo;
           }
         });
     }
@@ -745,8 +764,48 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       this.workflowProgressService.removeGlobalListener(
         this.projectId,
         WorkflowType.Solution,
-        this.electronService,
       );
+    }
+  }
+
+  get isProjectFailed(): boolean {
+    return this.appInfo?.isFailed === true;
+  }
+
+  get projectFailureInfo(): WorkflowErrorEvent | null {
+    return this.appInfo?.failureInfo || null;
+  }
+
+  async retryProjectCreation(): Promise<void> {
+    try {
+      if (this.projectId) {
+        this.workflowProgressService.clearProgressEvents(
+          this.projectId,
+          WorkflowType.Solution,
+        );
+        this.workflowProgressService.clearCreationStatus(
+          this.projectId,
+          WorkflowType.Solution,
+        );
+      }
+      await this.projectCreationService.createProject({
+        projectData: this.appInfo,
+        projectName: this.appName,
+        isRetry: true,
+        onSuccess: () => {
+          this.appInfo.isFailed = false;
+          this.appInfo.failureInfo = null;
+          this.store.dispatch(new GetProjectFiles(this.projectId as string));
+        },
+        onError: (error) => {
+          this.logger.error('Project retry failed:', error);
+        },
+      });
+    } catch (error: any) {
+      this.toast.showError(
+        `Failed to retry project creation: ${error.message}`,
+      );
+      this.logger.error('Project retry failed:', error);
     }
   }
 

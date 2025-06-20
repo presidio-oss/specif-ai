@@ -1,8 +1,9 @@
 import {
   IProject,
+  IProjectMetadata,
   ISolutionResponseRequirementItem,
 } from '../../model/interfaces/projects.interface';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 import {
   BulkReadFiles,
@@ -36,6 +37,7 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { RequirementExportService } from 'src/app/services/export/requirement-export.service';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { Optional } from 'src/app/utils/types';
+import { PROJECT_ERROR_MESSAGES } from 'src/app/constants/messages.constants';
 
 export class ProjectStateModel {
   projects!: IProject[];
@@ -81,6 +83,7 @@ export class ProjectsState {
     private toast: ToasterService,
     private requirementExportService: RequirementExportService,
     private requirementIdService: RequirementIdService,
+    private ngZone: NgZone,
   ) {}
 
   @Selector()
@@ -156,27 +159,39 @@ export class ProjectsState {
   @Action(CreateProject)
   async createProject(
     { getState, patchState }: StateContext<ProjectStateModel>,
-    { projectName, metadata }: CreateProject,
+    { projectName, metadata, isRetry }: CreateProject,
   ) {
     try {
       const state = getState();
       const projectExists = await this.appSystemService.fileExists(projectName);
-      if (projectExists) {
-        throw new Error('Project already exists, please retry with another unique project name');
+      if (projectExists && !isRetry) {
+        throw new Error(
+          'Project already exists, please retry with another unique project name',
+        );
       }
 
       await this.appSystemService.createProject(metadata, projectName);
 
-      let projectList = [
-        ...state.projects,
-        {
-          project: projectName,
-          projectKey: metadata.jiraProjectKey,
-          metadata: {
-            ...metadata,
+      let projectList;
+      if (isRetry) {
+        projectList = state.projects.map((project) =>
+          project.metadata.id === metadata.id
+            ? { ...project, metadata: { ...metadata } }
+            : project,
+        );
+      } else {
+        projectList = [
+          ...state.projects,
+          {
+            project: projectName,
+            projectKey: metadata.jiraProjectKey,
+            metadata: {
+              ...metadata,
+            },
           },
-        },
-      ];
+        ];
+      }
+
       const sortedProjectList = projectList.sort(
         (a, b) =>
           new Date(b.metadata.createdAt).getTime() -
@@ -187,8 +202,10 @@ export class ProjectsState {
         ...state,
         projects: sortedProjectList,
       });
-      
-      this.router.navigate([`apps/${metadata.id}`]);
+
+      this.ngZone.run(() => {
+        this.router.navigate([`apps/${metadata.id}`]);
+      });
 
       const response = await this.generateSolution(metadata, projectName);
       const responseMap = {
@@ -203,6 +220,8 @@ export class ProjectsState {
 
       metadata = {
         ...metadata,
+        isFailed: false,
+        failureInfo: null,
         ...Object.entries(REQUIREMENT_TYPE).reduce(
           (acc, [_, type]) => ({
             ...acc,
@@ -216,11 +235,46 @@ export class ProjectsState {
 
       await this.appSystemService.createFileWithContent(
         `${projectName}/.metadata.json`,
-        JSON.stringify(metadata),
+        JSON.stringify(metadata, null, 2),
       );
+
+      patchState({
+        projects: this.getUpdatedProjectsList(getState(), metadata),
+      });
     } catch (e) {
-      this.logger.error('Error creating project', e);
-      throw e;
+      const error =
+        e instanceof Error
+          ? e
+          : new Error('Unknown error occurred while creating project');
+      this.logger.error('Error creating project', error);
+
+      const isProjectExistsError = error.message.includes(
+        'Project already exists',
+      );
+
+      if (!isProjectExistsError) {
+        const updatedMetadata = {
+          ...metadata,
+          isFailed: true,
+          failureInfo: {
+            timestamp: new Date().toISOString(),
+            reason: error.message.includes('Aborted')
+              ? PROJECT_ERROR_MESSAGES.PROJECT_CREATION_ABORTED
+              : error.message,
+          },
+        };
+
+        await this.appSystemService.createFileWithContent(
+          `${projectName}/.metadata.json`,
+          JSON.stringify(updatedMetadata, null, 2),
+        );
+
+        patchState({
+          projects: this.getUpdatedProjectsList(getState(), updatedMetadata),
+        });
+      }
+
+      throw error;
     }
   }
 
@@ -282,6 +336,21 @@ export class ProjectsState {
     }
 
     return response;
+  }
+
+  private getUpdatedProjectsList(
+    state: ProjectStateModel,
+    metadata: IProjectMetadata,
+  ): IProject[] {
+    const updatedProjects = state.projects.map((p) =>
+      p.metadata.id === metadata.id ? { ...p, metadata } : p,
+    );
+
+    return updatedProjects.sort(
+      (a, b) =>
+        new Date(b.metadata.createdAt).getTime() -
+        new Date(a.metadata.createdAt).getTime(),
+    );
   }
 
   @Action(GetProjectFiles)
@@ -499,13 +568,7 @@ export class ProjectsState {
     );
 
     const nonNullFileContents = fileContents.filter(
-      (
-        file,
-      ): file is {
-        folderName: string;
-        fileName: string;
-        content: { requirement: string; title: string; epicTicketId: string };
-      } => file !== null,
+      (file): file is IList => file !== null,
     );
 
     patchState({

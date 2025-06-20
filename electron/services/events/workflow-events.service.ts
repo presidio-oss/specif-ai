@@ -1,9 +1,16 @@
 import { dispatchCustomEvent } from "@langchain/core/callbacks/dispatch";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 
+export enum WorkflowEventType {
+  Thinking = "thinking",
+  Action = "action",
+  Mcp = "mcp",
+  Error = "error",
+}
+
 export interface WorkflowProgressEvent {
   node: string;
-  type: "thinking" | "action" | "mcp";
+  type: WorkflowEventType;
   message: WorkflowProgressEventData;
   timestamp: number;
   correlationId?: string;
@@ -21,9 +28,9 @@ export class WorkflowEventsService {
     this.eventName = `${workflowName}-workflow-progress`;
   }
 
-  private createEvent(
+  public createEvent(
     node: string,
-    type: WorkflowProgressEvent["type"],
+    type: WorkflowEventType,
     message: WorkflowProgressEventData,
     correlationId?: string
   ): WorkflowProgressEvent {
@@ -42,7 +49,12 @@ export class WorkflowEventsService {
     config: LangGraphRunnableConfig,
     correlationId?: string
   ): Promise<void> {
-    const event = this.createEvent(node, "thinking", message, correlationId);
+    const event = this.createEvent(
+      node,
+      WorkflowEventType.Thinking,
+      message,
+      correlationId
+    );
     await dispatchCustomEvent(this.eventName, event, config);
   }
 
@@ -52,7 +64,12 @@ export class WorkflowEventsService {
     config: LangGraphRunnableConfig,
     correlationId?: string
   ): Promise<void> {
-    const event = this.createEvent(node, "action", message, correlationId);
+    const event = this.createEvent(
+      node,
+      WorkflowEventType.Action,
+      message,
+      correlationId
+    );
     await dispatchCustomEvent(this.eventName, event, config);
   }
 
@@ -62,7 +79,27 @@ export class WorkflowEventsService {
     config: LangGraphRunnableConfig,
     correlationId?: string
   ): Promise<void> {
-    const event = this.createEvent(node, "mcp", message, correlationId);
+    const event = this.createEvent(
+      node,
+      WorkflowEventType.Mcp,
+      message,
+      correlationId
+    );
+    await dispatchCustomEvent(this.eventName, event, config);
+  }
+
+  async dispatchError(
+    node: string,
+    message: WorkflowProgressEventData,
+    config: LangGraphRunnableConfig,
+    correlationId?: string
+  ): Promise<void> {
+    const event = this.createEvent(
+      node,
+      WorkflowEventType.Error,
+      message,
+      correlationId
+    );
     await dispatchCustomEvent(this.eventName, event, config);
   }
 }
