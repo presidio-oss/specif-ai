@@ -19,20 +19,25 @@
   ]"
   [type]="type"
   [disabled]="disabled"
-  [matTooltip]="disabled ? (tooltipDisabled || '') : (tooltip || '')"
+  [matTooltip]="disabled ? tooltipDisabled || '' : tooltip || ''"
   [matTooltipDisabled]="!tooltip && !tooltipDisabled"
   matTooltipPosition="above"
 >
-  <ng-container *ngIf="icon">
+  <ng-container *ngIf="icon && iconPosition === 'left'">
     <ng-icon
       [name]="icon"
       strokeWidth="2"
       [ngClass]="isIconButton ? 'w-5 h-5 text-lg' : 'w-4 h-4 mr-2'"
     ></ng-icon>
-    <!-- Or use an SVG/image like this -->
-    <!-- <img [src]="iconSrc" alt="" class="w-4 h-4 mr-2" *ngIf="iconSrc"/> -->
   </ng-container>
   <span *ngIf="!isIconButton" class="whitespace-nowrap">{{
     buttonContent
   }}</span>
+  <ng-container *ngIf="icon && iconPosition === 'right'">
+    <ng-icon
+      [name]="icon"
+      strokeWidth="2"
+      [ngClass]="isIconButton ? 'w-5 h-5 text-lg' : 'w-4 h-4 ml-2'"
+    ></ng-icon>
+  </ng-container>
 </button>

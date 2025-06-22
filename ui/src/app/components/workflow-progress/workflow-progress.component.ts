@@ -1,5 +1,18 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { NgIf, NgFor, NgClass, AsyncPipe } from '@angular/common';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  signal,
+} from '@angular/core';
+import {
+  NgIf,
+  NgFor,
+  NgClass,
+  AsyncPipe,
+  NgTemplateOutlet,
+} from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroSparkles,
@@ -8,23 +21,39 @@ import {
   heroStopCircle,
   heroChevronDoubleUp,
   heroChevronDoubleDown,
+  heroExclamationTriangle,
 } from '@ng-icons/heroicons/outline';
 import {
   WorkflowProgressEvent,
+  WorkflowProgressEventType,
   WorkflowType,
   WorkflowStatus,
 } from '../../model/interfaces/workflow-progress.interface';
 import { CustomAccordionComponent } from '../custom-accordion/custom-accordion.component';
 import { ButtonComponent } from '../core/button/button.component';
+import { ThreeBounceLoaderComponent } from '../three-bounce-loader/three-bounce-loader.component';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { Observable, Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil, map, combineLatest } from 'rxjs';
+
+interface ProcessedProgressEvent extends WorkflowProgressEvent {
+  hasInputOutput: boolean;
+  shouldShowSpinner: boolean;
+  iconName: string;
+  colorClass: string;
+  textColorClass: string;
+  borderColorClass: string;
+  formattedInput?: string;
+  formattedOutput?: string;
+  accordionId: string;
+}
 
 @Component({
   selector: 'app-workflow-progress',
   templateUrl: './workflow-progress.component.html',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NgIf,
     NgFor,
@@ -33,6 +62,8 @@ import { Observable, Subject, takeUntil } from 'rxjs';
     NgIconComponent,
     CustomAccordionComponent,
     ButtonComponent,
+    NgTemplateOutlet,
+    ThreeBounceLoaderComponent,
   ],
   providers: [
     provideIcons({
@@ -42,6 +73,7 @@ import { Observable, Subject, takeUntil } from 'rxjs';
       heroStopCircle,
       heroChevronDoubleUp,
       heroChevronDoubleDown,
+      heroExclamationTriangle,
     }),
   ],
 })
@@ -57,12 +89,43 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
   @Input() showCancelButton: boolean = true;
   @Input() showHeader: boolean = true;
 
-  progress$!: Observable<WorkflowProgressEvent[]>;
+  processedProgress$!: Observable<ProcessedProgressEvent[]>;
   workflowStatus$!: Observable<WorkflowStatus>;
-  isAborting = false;
-  isExpandedAll = false;
+  hasAnyAccordionEvents$!: Observable<boolean>;
 
+  isAborting = signal(false);
+  isExpandedAll = signal(false);
+  private individualAccordionStates = signal<Set<string>>(new Set());
+
+  readonly WorkflowProgressEventType = WorkflowProgressEventType;
   private destroy$ = new Subject<void>();
+
+  private readonly eventConfig = {
+    [WorkflowProgressEventType.Thinking]: {
+      iconName: 'heroSparkles',
+      colorClass: 'bg-primary-400',
+      textColorClass: 'text-primary-700',
+      borderColorClass: 'border-primary-500',
+    },
+    [WorkflowProgressEventType.Action]: {
+      iconName: 'heroCheckCircle',
+      colorClass: 'bg-success-400',
+      textColorClass: 'text-success-700',
+      borderColorClass: 'border-success-500',
+    },
+    [WorkflowProgressEventType.Mcp]: {
+      iconName: 'heroWrenchScrewdriver',
+      colorClass: 'bg-amber-400',
+      textColorClass: 'text-amber-700',
+      borderColorClass: 'border-amber-500',
+    },
+    [WorkflowProgressEventType.Error]: {
+      iconName: 'heroExclamationTriangle',
+      colorClass: 'bg-red-400',
+      textColorClass: 'text-red-700',
+      borderColorClass: 'border-red-500',
+    },
+  };
 
   constructor(
     private workflowProgressService: WorkflowProgressService,
@@ -72,10 +135,39 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (this.projectId && this.workflowType) {
-      this.progress$ = this.workflowProgressService.getProgressEvents$(
-        this.projectId,
-        this.workflowType,
-      );
+      const progress$ =
+        this.workflowType === WorkflowType.Story
+          ? combineLatest([
+              this.workflowProgressService.getProgressEvents$(
+                this.projectId,
+                WorkflowType.Story,
+              ),
+              this.workflowProgressService.getProgressEvents$(
+                this.projectId,
+                WorkflowType.Task,
+              ),
+            ]).pipe(
+              map(([storyEvents, taskEvents]) => {
+                const allEvents = [...storyEvents, ...taskEvents];
+
+                const uniqueEvents = allEvents.filter((event, index, array) => {
+                  return (
+                    array.findIndex(
+                      (e) => e.message.title === event.message.title,
+                    ) === index
+                  );
+                });
+
+                return uniqueEvents.sort((a, b) => a.timestamp - b.timestamp);
+              }),
+            )
+          : this.workflowProgressService
+              .getProgressEvents$(this.projectId, this.workflowType)
+              .pipe(
+                map((events) =>
+                  events.sort((a, b) => a.timestamp - b.timestamp),
+                ),
+              );
 
       this.workflowStatus$ =
         this.workflowProgressService.getCreationStatusObservable(
@@ -83,11 +175,22 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
           this.workflowType,
         );
 
+      this.processedProgress$ = combineLatest([
+        progress$,
+        this.workflowStatus$,
+      ]).pipe(
+        map(([events, status]) => this.processProgressEvents(events, status)),
+      );
+
+      this.hasAnyAccordionEvents$ = this.processedProgress$.pipe(
+        map((events) => events.some((event) => event.hasInputOutput)),
+      );
+
       this.workflowStatus$
         .pipe(takeUntil(this.destroy$))
         .subscribe((status) => {
           if (!status.isCreating) {
-            this.isAborting = false;
+            this.isAborting.set(false);
           }
         });
     }
@@ -98,61 +201,77 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onCancelClick(): void {
-    if (this.isAborting) {
-      return;
-    }
+  private processProgressEvents(
+    events: WorkflowProgressEvent[],
+    status: WorkflowStatus,
+  ): ProcessedProgressEvent[] {
+    return events.map((event, index) => {
+      const config = this.eventConfig[event.type];
+      const hasInputOutput = this.checkHasInputOutput(event);
 
-    this.dialogService
-      .confirm({
-        title: 'Cancel Process',
-        description: `Are you sure you want to cancel the ${this.workflowType} creation process? This action cannot be undone.`,
-        confirmButtonText: 'Yes, Cancel',
-        cancelButtonText: 'No, Continue',
-      })
-      .subscribe((result: boolean) => {
-        if (result) {
-          this.cancelWorkflow();
-        }
-      });
+      return {
+        ...event,
+        hasInputOutput,
+        shouldShowSpinner: this.calculateShouldShowSpinner(
+          event,
+          events,
+          status.isCreating,
+        ),
+        iconName: config.iconName,
+        colorClass: config.colorClass,
+        textColorClass: config.textColorClass,
+        borderColorClass: config.borderColorClass,
+        formattedInput:
+          hasInputOutput && event.message?.input
+            ? this.formatData(event.message.input)
+            : undefined,
+        formattedOutput:
+          hasInputOutput && event.message?.output
+            ? this.formatData(event.message.output)
+            : undefined,
+        accordionId: `progress-${event.type}-${index}-${event.timestamp}`,
+      };
+    });
   }
 
-  private async cancelWorkflow(): Promise<void> {
-    this.isAborting = true;
-
-    try {
-      const success = await this.workflowProgressService.abortWorkflow(
-        this.projectId,
-        this.workflowType,
-      );
-
-      if (!success) {
-        this.toasterService.showWarning(
-          `Unable to cancel ${this.workflowType} creation. The process may have already completed.`,
-        );
-      }
-    } catch (error) {
-      console.error(`Error cancelling ${this.workflowType} creation:`, error);
-      this.toasterService.showError(
-        `An error occurred while cancelling ${this.workflowType} creation. Please try again.`,
-      );
-    } finally {
-      this.isAborting = false;
-    }
-  }
-
-  hasInputOutput(event: WorkflowProgressEvent): boolean {
+  private checkHasInputOutput(event: WorkflowProgressEvent): boolean {
     return (
-      (event.type === 'mcp' || event.type === 'action') &&
+      event.type !== WorkflowProgressEventType.Thinking &&
       (!!event.message?.input || !!event.message?.output)
     );
   }
 
-  getAccordionId(event: WorkflowProgressEvent, index: number): string {
-    return `progress-${event.type}-${index}-${event.timestamp}`;
+  private calculateShouldShowSpinner(
+    event: WorkflowProgressEvent,
+    progress: WorkflowProgressEvent[],
+    isCreating: boolean,
+  ): boolean {
+    if (
+      event.type !== WorkflowProgressEventType.Thinking ||
+      this.isCompleted ||
+      !isCreating
+    ) {
+      return false;
+    }
+
+    if (event.correlationId) {
+      return event.type === WorkflowProgressEventType.Thinking;
+    }
+
+    const currentIndex = progress.indexOf(event);
+    let lastActionIndex = -1;
+
+    for (let i = progress.length - 1; i >= 0; i--) {
+      if (progress[i].type === WorkflowProgressEventType.Action) {
+        lastActionIndex = i;
+        break;
+      }
+    }
+
+    return currentIndex > lastActionIndex;
   }
 
-  formatData(data: any): string {
+  private formatData(data: any): string {
     if (data === null || data === undefined) {
       return '';
     }
@@ -173,43 +292,79 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
     return String(data);
   }
 
-  shouldShowSpinner(
-    event: WorkflowProgressEvent,
-    progress: WorkflowProgressEvent[],
-  ): boolean {
-    if (event.type === 'action' || this.isCompleted) {
-      return false;
+  onCancelClick(): void {
+    if (this.isAborting()) {
+      return;
     }
 
-    if (event.correlationId) {
-      const hasCorrespondingAction = progress.some(
-        (e) => e.correlationId === event.correlationId && e.type === 'action',
+    this.dialogService
+      .confirm({
+        title: 'Cancel Process',
+        description: `Are you sure you want to cancel the ${this.workflowType} creation process? This action cannot be undone.`,
+        confirmButtonText: 'Yes, Cancel',
+        cancelButtonText: 'No, Continue',
+      })
+      .subscribe((result: boolean) => {
+        if (result) {
+          this.cancelWorkflow();
+        }
+      });
+  }
+
+  private async cancelWorkflow(): Promise<void> {
+    this.isAborting.set(true);
+
+    try {
+      const success = await this.workflowProgressService.abortWorkflow(
+        this.projectId,
+        this.workflowType,
       );
-      return !hasCorrespondingAction;
-    }
 
-    const currentIndex = progress.indexOf(event);
-
-    let lastActionIndex = -1;
-    for (let i = progress.length - 1; i >= 0; i--) {
-      if (progress[i].type === 'action') {
-        lastActionIndex = i;
-        break;
+      if (!success) {
+        this.toasterService.showWarning(
+          `Unable to cancel ${this.workflowType} creation. The process may have already completed.`,
+        );
       }
+    } catch (error) {
+      console.error(`Error cancelling ${this.workflowType} creation:`, error);
+      this.toasterService.showError(
+        `An error occurred while cancelling ${this.workflowType} creation. Please try again.`,
+      );
+    } finally {
+      this.isAborting.set(false);
     }
-
-    return currentIndex > lastActionIndex;
   }
 
   toggleExpandAll(): void {
-    this.isExpandedAll = !this.isExpandedAll;
+    this.isExpandedAll.update((value) => {
+      if (!value) {
+        this.individualAccordionStates.set(new Set());
+      }
+      return !value;
+    });
   }
 
-  shouldAccordionBeOpen(): boolean {
-    return this.isExpandedAll;
+  shouldAccordionBeOpen(accordionId?: string): boolean {
+    if (this.isExpandedAll()) {
+      return true;
+    }
+
+    if (accordionId) {
+      return this.individualAccordionStates().has(accordionId);
+    }
+
+    return false;
   }
 
-  hasAnyAccordionEvents(progress: WorkflowProgressEvent[]): boolean {
-    return progress.some((event) => this.hasInputOutput(event));
+  onAccordionToggle(accordionId: string, isOpen: boolean): void {
+    this.individualAccordionStates.update((states) => {
+      const newStates = new Set(states);
+      if (isOpen) {
+        newStates.add(accordionId);
+      } else {
+        newStates.delete(accordionId);
+      }
+      return newStates;
+    });
   }
 }

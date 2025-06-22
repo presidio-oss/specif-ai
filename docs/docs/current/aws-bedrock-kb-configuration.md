@@ -37,7 +37,7 @@ You'll be prompted for:
    - Tag key: `specif-mcp-rag-kb`
 3. Click Validate, then Submit
 
-![AWS Bedrock KB Configuration Interface](/docs/static/img/specifai-aws-bedrock-kb-integration.png)
+![AWS Bedrock KB Configuration Interface](../../static/img/specifai-aws-bedrock-kb-integration.png)
 
 ## Common Issues
 

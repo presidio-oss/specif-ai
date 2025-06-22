@@ -23,7 +23,7 @@ import { MCPHub } from '../../mcp/mcp-hub';
 import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
 import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
 import { OperationRegistry } from '../../services/content-generation/operation-registry';
-import { WorkflowEventsService } from '../../services/events/workflow-events.service';
+import { WorkflowEventsService, WorkflowEventType } from '../../services/events/workflow-events.service';
 
 // types
 
@@ -218,9 +218,9 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
             case "on_tool_end":
               const toolEndEvent = workflowEvents.createEvent(
                 "tools_end",
-                "mcp",
+                WorkflowEventType.Mcp,
                 {
-                  title: `Completed tool execution: ${streamEvent.name}`,
+                  title: `Executed MCP Tool: ${streamEvent.name}`,
                   input: streamEvent.data?.input,
                   output: streamEvent.data?.output?.content,
                 }
@@ -310,7 +310,7 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
       const errorEvent = workflowEvents.createEvent(
         "error_occurred",
-        "action",
+        WorkflowEventType.Error,
         {
           title,
           output: error instanceof Error ? error.message : String(error),
@@ -341,10 +341,14 @@ export async function abortSolutionCreation(
     console.error("Error in abortSolutionCreation:", error);
     const channel = WORKFLOW_CHANNEL.SOLUTION_PROGRESS(data.projectId);
 
-    const errorEvent = workflowEvents.createEvent("abort_failed", "action", {
-      title: "Failed to abort solution creation",
-      output: error instanceof Error ? error.message : String(error),
-    });
+    const errorEvent = workflowEvents.createEvent(
+      "abort_failed",
+      WorkflowEventType.Error,
+      {
+        title: "Failed to abort solution creation",
+        output: error instanceof Error ? error.message : String(error),
+      }
+    );
     event.sender.send(channel, errorEvent);
 
     throw error;

@@ -3,7 +3,6 @@ import { Store } from '@ngxs/store';
 import { CreateProject } from '../../store/projects/projects.actions';
 import { WorkflowProgressService } from '../workflow-progress/workflow-progress.service';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
-import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../toaster/toaster.service';
 import { AppSystemService } from '../app-system/app-system.service';
 import { APP_CONSTANTS } from '../../constants/app.constants';
@@ -23,7 +22,6 @@ export interface ProjectCreationOptions {
 export class ProjectCreationService {
   private store = inject(Store);
   private workflowProgressService = inject(WorkflowProgressService);
-  private electronService = inject(ElectronService);
   private toast = inject(ToasterService);
   private appSystemService = inject(AppSystemService);
 
@@ -56,7 +54,6 @@ export class ProjectCreationService {
       this.workflowProgressService.registerGlobalListener(
         projectData.id,
         WorkflowType.Solution,
-        this.electronService,
       );
     }
 

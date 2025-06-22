@@ -671,13 +671,14 @@ export class ElectronService {
     workflowType: WorkflowType,
     solutionId: string,
     callback: (event: IpcRendererEvent, response: any) => void,
-  ): void {
+  ): (event: IpcRendererEvent, ...args: any[]) => void {
     if (this.electronAPI) {
-      this.electronAPI.on(
+      return this.electronAPI.on(
         this.buildWorkflowProgressChannel(workflowType, solutionId),
         callback,
       );
     }
+    throw new Error('Electron is not available');
   }
 
   removeWorkflowProgressListener(

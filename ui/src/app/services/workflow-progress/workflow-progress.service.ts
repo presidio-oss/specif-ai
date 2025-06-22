@@ -283,34 +283,35 @@ export class WorkflowProgressService implements OnDestroy {
    *
    * @param projectId - Unique identifier for the project
    * @param workflowType - Type of workflow
-   * @param electronService - Electron service instance for IPC communication
    * @throws {WorkflowProgressError} When registration fails
    */
   public registerGlobalListener(
     projectId: string,
     workflowType: WorkflowType,
-    electronService: ElectronService,
   ): void {
-    this.validateInputs({ projectId, workflowType, electronService });
-
+    this.validateInputs({ projectId, workflowType });
     try {
       const listenerKey = this.generateListenerKey(projectId, workflowType);
 
       if (this.activeListeners.has(listenerKey)) {
-        this.removeGlobalListener(projectId, workflowType, electronService);
+        this.removeGlobalListener(projectId, workflowType);
       }
 
       const callback = (_: IpcRendererEvent, data: WorkflowProgressEvent) => {
         this.addProgressEvent(projectId, workflowType, data);
       };
 
+      const registeredListener = this.electronService.listenWorkflowProgress(
+        workflowType,
+        projectId,
+        callback,
+      );
+
       this.activeListeners.set(listenerKey, {
         projectId,
         workflowType,
-        callback,
+        registeredListener,
       });
-
-      electronService.listenWorkflowProgress(workflowType, projectId, callback);
     } catch (error) {
       this.handleError(
         'Failed to register global listener',
@@ -330,19 +331,18 @@ export class WorkflowProgressService implements OnDestroy {
   public removeGlobalListener(
     projectId: string,
     workflowType: WorkflowType,
-    electronService: ElectronService,
   ): void {
-    this.validateInputs({ projectId, workflowType, electronService });
+    this.validateInputs({ projectId, workflowType });
 
     try {
       const listenerKey = this.generateListenerKey(projectId, workflowType);
       const listener = this.activeListeners.get(listenerKey);
 
       if (listener) {
-        electronService.removeWorkflowProgressListener(
+        this.electronService.removeWorkflowProgressListener(
           workflowType,
           projectId,
-          listener.callback,
+          listener.registeredListener,
         );
         this.activeListeners.delete(listenerKey);
       }
@@ -380,18 +380,14 @@ export class WorkflowProgressService implements OnDestroy {
 
   /**
    * Remove all global listeners for cleanup
-   *
-   * @param electronService - Electron service instance for IPC communication
    */
-  public removeAllGlobalListeners(electronService: ElectronService): void {
-    this.validateInputs({ electronService });
-
+  public removeAllGlobalListeners(): void {
     try {
       this.activeListeners.forEach((listener) => {
-        electronService.removeWorkflowProgressListener(
+        this.electronService.removeWorkflowProgressListener(
           listener.workflowType,
           listener.projectId,
-          listener.callback,
+          listener.registeredListener,
         );
       });
       this.activeListeners.clear();
@@ -711,7 +707,20 @@ export class WorkflowProgressService implements OnDestroy {
     }
 
     const currentEvents = [...updatedState[projectId][workflowType]];
-    currentEvents.push(event);
+
+    if (event.correlationId) {
+      const existingEventIndex = currentEvents.findIndex(
+        (existingEvent) => existingEvent.correlationId === event.correlationId,
+      );
+
+      if (existingEventIndex !== -1) {
+        currentEvents[existingEventIndex] = event;
+      } else {
+        currentEvents.push(event);
+      }
+    } else {
+      currentEvents.push(event);
+    }
 
     if (
       currentEvents.length > WORKFLOW_PROGRESS_CONFIG.MAX_EVENTS_PER_WORKFLOW
