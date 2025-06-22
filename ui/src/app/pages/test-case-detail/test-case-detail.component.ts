@@ -1,8 +1,11 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   inject,
+  HostListener,
 } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
@@ -17,8 +20,10 @@ import { provideIcons, NgIconComponent } from '@ng-icons/core';
 import { heroPlus, heroTrash, heroDocumentDuplicate } from '@ng-icons/heroicons/outline';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
+import { DialogService } from '../../services/dialog/dialog.service';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
+import { UpdateFile } from '../../store/projects/projects.actions';
 import { NGXLogger } from 'ngx-logger';
 import { RequirementIdService } from '../../services/requirement-id.service';
 import { REQUIREMENT_TYPE } from '../../constants/app.constants';
@@ -47,12 +52,13 @@ import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcru
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class TestCaseDetailPageComponent implements OnInit {
+export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private appSystemService: AppSystemService,
     private toast: ToasterService,
-    private requirementIdService: RequirementIdService
+    private requirementIdService: RequirementIdService,
+    private dialogService: DialogService
   ) {}
 
   router = inject(Router);
@@ -61,6 +67,12 @@ export class TestCaseDetailPageComponent implements OnInit {
   store = inject(Store);
   
   testCaseForm!: FormGroup;
+  
+  // Subscriptions
+  private subscriptions: Subscription[] = [];
+  
+  // Track if form has been modified
+  formModified = false;
   
   // Mode can be 'view', 'edit', or 'add'
   mode: 'view' | 'edit' | 'add' = 'view';
@@ -101,17 +113,34 @@ export class TestCaseDetailPageComponent implements OnInit {
   // Breadcrumb label
   breadcrumbLabel: string = '';
 
+  // Track form changes
+  @HostListener('input')
+  onFormInput() {
+    if (this.mode === 'edit' || this.mode === 'add') {
+      this.formModified = true;
+    }
+  }
+
   ngOnInit(): void {
     // Get the current project
-    this.store.select(ProjectsState.getSelectedProject).subscribe((project) => {
+    const projectSub = this.store.select(ProjectsState.getSelectedProject).subscribe((project) => {
       this.currentProject = project;
     });
+    this.subscriptions.push(projectSub);
     
     // Initialize the form
     this.initForm();
     
+    // Subscribe to form value changes
+    const formSub = this.testCaseForm.valueChanges.subscribe(() => {
+      if (this.mode === 'edit' || this.mode === 'add') {
+        this.formModified = true;
+      }
+    });
+    this.subscriptions.push(formSub);
+    
     // Get the mode from the route
-    this.route.data.subscribe(data => {
+    const routeSub = this.route.data.subscribe(data => {
       this.mode = data['mode'] || 'view';
       
       // Get the user story ID from the route
@@ -151,6 +180,7 @@ export class TestCaseDetailPageComponent implements OnInit {
       // Load the test case
       this.loadTestCase(testCaseId);
     });
+    this.subscriptions.push(routeSub);
   }
   
   // Initialize the form with empty values
@@ -174,7 +204,7 @@ export class TestCaseDetailPageComponent implements OnInit {
   
   // Load a test case by ID
   loadTestCase(testCaseId: string): void {
-    const testCasePath = `${this.currentProject}/TC/${this.userStoryId}`;
+    const testCasePath = `${this.currentProject}/${REQUIREMENT_TYPE.TC}/${this.userStoryId}`;
     const fileName = `${testCaseId.toLowerCase()}-base.json`;
     const filePath = `${testCasePath}/${fileName}`;
     
@@ -240,6 +270,11 @@ export class TestCaseDetailPageComponent implements OnInit {
         stepsArray.push(this.createStepFormGroup(step));
       });
     }
+    
+    // Ensure form is disabled in view mode
+    if (this.mode === 'view') {
+      this.testCaseForm.disable();
+    }
   }
   
   // Get the preConditions form array
@@ -264,21 +299,27 @@ export class TestCaseDetailPageComponent implements OnInit {
   // Add a new precondition
   addPreCondition(): void {
     this.preConditions.push(this.fb.control(''));
+    this.formModified = true;
   }
   
   // Remove a precondition
   removePreCondition(index: number): void {
     this.preConditions.removeAt(index);
+    this.formModified = true;
   }
   
   // Add a new step
   addStep(): void {
     this.steps.push(this.createStepFormGroup());
+    if (this.mode === 'edit') {
+      this.formModified = true;
+    }
   }
   
   // Remove a step
   removeStep(index: number): void {
     this.steps.removeAt(index);
+    this.formModified = true;
     
     // Update step numbers for remaining steps
     for (let i = index; i < this.steps.length; i++) {
@@ -290,6 +331,7 @@ export class TestCaseDetailPageComponent implements OnInit {
   enableEditMode(): void {
     this.mode = 'edit';
     this.testCaseForm.enable();
+    this.formModified = false;
   }
   
   // Save the test case
@@ -299,6 +341,9 @@ export class TestCaseDetailPageComponent implements OnInit {
       this.markFormGroupTouched(this.testCaseForm);
       return;
     }
+    
+    // Reset the form modified flag
+    this.formModified = false;
     
     const testCaseData = this.testCaseForm.getRawValue();
     
@@ -320,7 +365,7 @@ export class TestCaseDetailPageComponent implements OnInit {
   
   // Save the test case to a file
   private saveTestCaseToFile(testCase: ITestCase): void {
-    const testCasePath = `${this.currentProject}/TC/${this.userStoryId}`;
+    const testCasePath = `${this.currentProject}/${REQUIREMENT_TYPE.TC}/${this.userStoryId}`;
     const fileName = `${testCase.id.toLowerCase()}-base.json`;
     const filePath = `${testCasePath}/${fileName}`;
     
@@ -329,19 +374,21 @@ export class TestCaseDetailPageComponent implements OnInit {
     // Create the directory if it doesn't exist
     this.appSystemService.createDirectory(testCasePath)
       .then(() => {
-        // Save the file
-        this.appSystemService.createFileWithContent(
-          filePath,
-          JSON.stringify(testCase, null, 2)
-        ).then(() => {
-          this.toast.showSuccess(`Test case ${testCase.id} saved successfully`);
-          
-          // Navigate back to the test cases list
-          this.navigateBack();
-        }).catch(error => {
-          this.logger.error(`Error saving test case ${testCase.id}:`, error);
-          this.toast.showError(`Failed to save test case ${testCase.id}`);
-        });
+        // Use the store to update the file
+        const path = `${REQUIREMENT_TYPE.TC}/${this.userStoryId}/${fileName}`;
+        
+        this.store.dispatch(new UpdateFile(path, testCase))
+          .subscribe({
+            next: () => {
+              this.toast.showSuccess(`Test case ${testCase.id} saved successfully`);
+              // Navigate back to the test cases list
+              this.navigateBack();
+            },
+            error: (error) => {
+              this.logger.error(`Error saving test case ${testCase.id}:`, error);
+              this.toast.showError(`Failed to save test case ${testCase.id}`);
+            }
+          });
       })
       .catch(error => {
         this.logger.error(`Error creating directory ${testCasePath}:`, error);
@@ -351,7 +398,21 @@ export class TestCaseDetailPageComponent implements OnInit {
   
   // Cancel and navigate back
   cancel(): void {
-    this.navigateBack();
+    // If form is modified and in edit/add mode, show confirmation dialog
+    if (this.formModified && (this.mode === 'edit' || this.mode === 'add')) {
+      this.dialogService.confirm({
+        title: 'Discard Changes',
+        description: 'You have unsaved changes. Are you sure you want to discard them?',
+        confirmButtonText: 'Discard',
+        cancelButtonText: 'Keep Editing'
+      }).subscribe(result => {
+        if (result) {
+          this.navigateBack();
+        }
+      });
+    } else {
+      this.navigateBack();
+    }
   }
   
   // Navigate back to the test cases list
@@ -401,5 +462,8 @@ export class TestCaseDetailPageComponent implements OnInit {
     if (this.breadcrumbLabel) {
       this.store.dispatch(new DeleteBreadcrumb(this.breadcrumbLabel));
     }
+    
+    // Unsubscribe from all subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 }
