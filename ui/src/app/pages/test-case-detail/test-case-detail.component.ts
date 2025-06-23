@@ -39,7 +39,7 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
-import { UpdateFile, ArchiveFile } from '../../store/projects/projects.actions';
+import { UpdateFile, ArchiveFile, CreateFile } from '../../store/projects/projects.actions';
 import { SetSelectedUserStory } from '../../store/user-stories/user-stories.actions';
 import { NGXLogger } from 'ngx-logger';
 import { RequirementIdService } from '../../services/requirement-id.service';
@@ -148,18 +148,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       });
     this.subscriptions.push(projectSub);
 
-    // Initialize the form
-    this.initForm();
-
-    // Subscribe to form value changes
-    const formSub = this.testCaseForm.valueChanges.subscribe(() => {
-      if (this.mode === 'edit' || this.mode === 'add') {
-        this.formModified = true;
-      }
-    });
-    this.subscriptions.push(formSub);
-
-    // Get the mode from the route
+    // Get the mode from the route first
     const routeSub = this.route.data.subscribe((data) => {
       this.mode = data['mode'] || 'view';
 
@@ -171,6 +160,17 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
         this.navigateBack();
         return;
       }
+
+      // Initialize the form after we know the mode
+      this.initForm();
+
+      // Subscribe to form value changes
+      const formSub = this.testCaseForm.valueChanges.subscribe(() => {
+        if (this.mode === 'edit' || this.mode === 'add') {
+          this.formModified = true;
+        }
+      });
+      this.subscriptions.push(formSub);
 
       // If we're in add mode, we're done
       if (this.mode === 'add') {
@@ -218,6 +218,9 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
     // If we're in view mode, disable the form
     if (this.mode === 'view') {
       this.testCaseForm.disable();
+    } else {
+      // Ensure the form is enabled for add and edit modes
+      this.testCaseForm.enable();
     }
   }
 
@@ -332,7 +335,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   // Add a new step
   addStep(): void {
     this.steps.push(this.createStepFormGroup());
-    if (this.mode === 'edit') {
+    if (this.mode === 'edit' || this.mode === 'add') {
       this.formModified = true;
     }
   }
@@ -394,34 +397,53 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
     const testCasePath = `${this.currentProject}/${REQUIREMENT_TYPE.TC}/${this.userStoryId}`;
     const fileName = `${testCase.id}-base.json`;
     const filePath = `${testCasePath}/${fileName}`;
+    const path = `${REQUIREMENT_TYPE.TC}/${this.userStoryId}/${fileName}`;
 
-    this.logger.debug(`Saving test case to ${filePath}`);
+    this.logger.debug(`${this.mode === 'add' ? 'Creating' : 'Updating'} test case at ${filePath}`);
 
     // Create the directory if it doesn't exist
     this.appSystemService
       .createDirectory(testCasePath)
       .then(() => {
-        // Use the store to update the file
-        const path = `${REQUIREMENT_TYPE.TC}/${this.userStoryId}/${fileName}`;
-
-        this.store.dispatch(new UpdateFile(path, testCase)).subscribe({
-          next: () => {
-            this.toast.showSuccess(
-              `Test case ${testCase.id} saved successfully`,
-            );
-            // Navigate back to the test cases list
-            this.navigateBack();
-          },
-          error: (error) => {
-            this.logger.error(`Error saving test case ${testCase.id}:`, error);
-            this.toast.showError(`Failed to save test case ${testCase.id}`);
-          },
-        });
+        // Use the store to create or update the file based on mode
+        if (this.mode === 'add') {
+          this.store.dispatch(new CreateFile(path, testCase)).subscribe({
+            next: () => {
+              this.toast.showSuccess(
+                TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(REQUIREMENT_TYPE.TC)
+              );
+              // Navigate back to the test cases list
+              this.navigateBack();
+            },
+            error: (error) => {
+              this.logger.error(`Error creating test case ${testCase.id}:`, error);
+              this.toast.showError(
+                TOASTER_MESSAGES.ENTITY.ADD.FAILURE(REQUIREMENT_TYPE.TC)
+              );
+            },
+          });
+        } else {
+          this.store.dispatch(new UpdateFile(path, testCase)).subscribe({
+            next: () => {
+              this.toast.showSuccess(
+                TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(REQUIREMENT_TYPE.TC, testCase.id)
+              );
+              // Navigate back to the test cases list
+              this.navigateBack();
+            },
+            error: (error) => {
+              this.logger.error(`Error updating test case ${testCase.id}:`, error);
+              this.toast.showError(
+                TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(REQUIREMENT_TYPE.TC, testCase.id)
+              );
+            },
+          });
+        }
       })
       .catch((error) => {
         this.logger.error(`Error creating directory ${testCasePath}:`, error);
         this.toast.showError(
-          `Failed to create directory for test case ${testCase.id}`,
+          `Failed to create directory for test case ${testCase.id}`
         );
       });
   }
@@ -480,7 +502,6 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Cancel and navigate back
   cancel(): void {
     // If form is modified and in edit/add mode, show confirmation dialog
     if (this.formModified && (this.mode === 'edit' || this.mode === 'add')) {
@@ -514,6 +535,12 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
     } else {
       this.router.navigate(['/test-cases', this.userStoryId]); // go back to specific user story
     }
+  }
+
+  // Required by CanDeactivateGuard to check if user can navigate away
+  canDeactivate(): boolean {
+    // Allow navigation if form is not modified or if in view mode
+    return !this.formModified || this.mode === 'view';
   }
 
   // Helper method to mark all controls in a form group as touched
