@@ -56,11 +56,11 @@ import {
   takeUntil,
   distinctUntilChanged,
 } from 'rxjs';
-import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
-import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
+import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
@@ -117,12 +117,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     selectedRequirement: any;
     data: any;
   } = {
-    projectId: '',
-    folderName: '',
-    fileName: '',
-    selectedRequirement: {},
-    data: {},
-  };
+      projectId: '',
+      folderName: '',
+      fileName: '',
+      selectedRequirement: {},
+      data: {},
+    };
 
   userStories$ = this.store.select(UserStoriesState.getUserStories).pipe(
     map((stories) =>
@@ -151,6 +151,9 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   onSearch(term: string) {
     this.searchTerm$.next(term);
   }
+
+  exportOptions: DropdownOptionGroup[] = [];
+  exportedProjectId: string = '';
 
   constructor(
     private featureService: FeatureService,
@@ -219,7 +222,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       const tokenInfo = getJiraTokenInfo(this.navigation.projectId);
       return (
         tokenInfo.projectKey ===
-          this.metadata.integration?.jira?.jiraProjectKey && !!tokenInfo.token
+        this.metadata.integration?.jira?.jiraProjectKey && !!tokenInfo.token
       );
     })();
 
@@ -260,10 +263,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     this.selectedFileContent$.subscribe((res: any) => {
       this.requirementFile = res;
+      this.updateExportOptionsTimestamps();
     });
 
     this.userStories$.subscribe((userStories: IUserStory[]) => {
       this.userStoriesInState = userStories;
+      this.getExportOptions();
     });
   }
 
@@ -518,40 +523,37 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   }
 
   syncRequirementWithJira(): void {
-    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
-      this.navigation.projectId,
-    );
-    const isJiraTokenValid =
-      token &&
-      tokenExpiration &&
-      new Date() < new Date(tokenExpiration) &&
-      this.isTokenAvailable;
-
-    if (isJiraTokenValid) {
-      console.log('Token exists and is valid, making API call', token);
-      this.syncJira(token as string, jiraURL as string);
-    } else if (refreshToken) {
-      this.electronService
-        .refreshJiraToken(refreshToken)
-        .then((authResponse) => {
-          storeJiraToken(
-            authResponse,
-            this.metadata?.integration?.jira?.jiraProjectKey,
-            this.navigation.projectId,
-          );
-          console.debug(
-            'Token refreshed, making API call',
-            authResponse.accessToken,
-          );
-          this.syncJira(authResponse.accessToken, jiraURL as string);
-        })
-        .catch((error) => {
-          console.error('Error during token refresh:', error);
-          this.promptReauthentication();
+    this.dialogService
+      .confirm({
+        title: 'Push to JIRA',
+        description: 'This action will override the existing content in JIRA with your local changes. Any updates made directly in JIRA will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Push to JIRA',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
+          console.log('Token exists and is valid, making API call', token);
+          this.syncJira(token, jiraUrl);
         });
-    } else {
-      this.promptReauthentication();
-    }
+      });
+  }
+
+  syncRequirementFromJira(): void {
+    this.dialogService
+      .confirm({
+        title: 'Pull from JIRA',
+        description: 'This action will override your local content with the latest updates from JIRA. Any unsaved local changes will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Pull from JIRA',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
+          console.log('Token exists and is valid, syncing from JIRA', token);
+          this.syncFromJira(token, jiraUrl);
+        });
+      });
   }
 
   promptReauthentication(): void {
@@ -653,6 +655,10 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           this.requirementFile.epicTicketId = response.epicTicketId;
         }
 
+        this.requirementFile.lastPushToJiraTimestamp = new Date().toISOString();
+
+        this.updateExportOptionsTimestamps();
+
         const updatedFeatures = this.userStories.map((existingFeature: any) => {
           const matchedFeature = response.features.find(
             (responseFeature: any) =>
@@ -697,11 +703,183 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     });
   }
 
+  private syncFromJira(token: string, jiraUrl: string): void {
+    const requestPayload: any = {
+      epicName: '',
+      epicDescription: '',
+      epicTicketId: '',
+      jiraUrl: jiraUrl,
+      token: token,
+      projectKey: this.metadata.integration.jira.jiraProjectKey,
+      features: [],
+    };
+
+    requestPayload.epicName = this.requirementFile.title;
+    requestPayload.epicDescription = this.requirementFile.requirement;
+    requestPayload.epicTicketId = this.requirementFile.epicTicketId || '';
+
+    this.userStories = this.userStoriesInState;
+
+    requestPayload.features = this.userStories.map((story) => ({
+      id: story.id,
+      name: story.name,
+      description: story.description,
+      storyTicketId: story.storyTicketId || '',
+      tasks: story?.tasks?.map((task) => ({
+        id: task.id,
+        list: task.list,
+        acceptance: task.acceptance,
+        subTaskTicketId: task.subTaskTicketId || '',
+      })) || [],
+    }));
+
+    this.jiraService.syncFromJira(requestPayload).subscribe({
+      next: (response) => {
+        console.debug('JIRA Sync Response:', response);
+        this.requirementFile.lastPullFromJiraTimestamp = new Date().toISOString();
+        this.updateExportOptionsTimestamps();
+        this.updateLocalContentFromJira(response);
+        this.toast.showSuccess('Successfully synced from JIRA');
+      },
+      error: (error) => {
+        console.error('Error syncing from JIRA:', error);
+        this.toast.showError('Failed to sync from JIRA');
+      },
+    });
+  }
+
   private formatDescriptionForView(
     description: string | undefined,
   ): string | null {
     if (!description) return null;
     return processUserStoryContentForView(description, 180);
+  }
+
+  private updateLocalContentFromJira(syncResponse: any): void {
+    if (syncResponse.epic) {
+      const updatedRequirementFile = {
+        ...this.requirementFile,
+        title: syncResponse.epic.title,
+        requirement: syncResponse.epic.requirement,
+        epicTicketId: syncResponse.epic.epicTicketId,
+        lastPullFromJiraTimestamp: this.requirementFile.lastPullFromJiraTimestamp
+      };
+
+      this.store.dispatch(
+        new UpdateFile(
+          `${this.navigation.folderName}/${this.navigation.fileName}`,
+          updatedRequirementFile,
+        ),
+      );
+    }
+
+    if (syncResponse.features && syncResponse.features.length > 0) {
+      const updatedUserStories = this.userStories.map((existingStory) => {
+        const syncedStory = syncResponse.features.find(
+          (feature: any) =>
+            feature.storyTicketId === existingStory.storyTicketId ||
+            feature.id === existingStory.id
+        );
+
+        if (syncedStory) {
+          const updatedTasks = existingStory.tasks?.map((existingTask) => {
+            const syncedTask = syncedStory.tasks?.find(
+              (task: any) =>
+                task.subTaskTicketId === existingTask.subTaskTicketId ||
+                task.id === existingTask.id
+            );
+
+            if (syncedTask) {
+              return {
+                ...existingTask,
+                list: syncedTask.list || existingTask.list,
+                acceptance: syncedTask.acceptance || existingTask.acceptance,
+                subTaskTicketId: syncedTask.subTaskTicketId || existingTask.subTaskTicketId,
+                status: syncedTask.status,
+                lastUpdated: syncedTask.lastUpdated,
+              };
+            }
+            return existingTask;
+          }) || [];
+
+          return {
+            ...existingStory,
+            name: syncedStory.name,
+            description: syncedStory.description,
+            storyTicketId: syncedStory.storyTicketId,
+            status: syncedStory.status,
+            lastUpdated: syncedStory.lastUpdated,
+            tasks: updatedTasks,
+          };
+        }
+
+        return existingStory;
+      });
+
+      this.store.dispatch(
+        new BulkEditUserStories(
+          `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
+          updatedUserStories,
+        ),
+      );
+
+      // Refresh the user stories view
+      setTimeout(() => {
+        this.getLatestUserStories();
+      }, 1000);
+    }
+  }
+
+
+  private updateExportOptionsTimestamps(): void {
+    if (this.exportOptions && this.exportOptions.length > 1) {
+      const jiraOptions = this.exportOptions[2].options;
+      if (jiraOptions && jiraOptions.length > 1) {
+        if (this.requirementFile?.lastPushToJiraTimestamp) {
+          jiraOptions[0].additionalInfo = this.requirementFile.lastPushToJiraTimestamp;
+        } else {
+          jiraOptions[0].additionalInfo = undefined;
+        }
+
+        if (this.requirementFile?.lastPullFromJiraTimestamp) {
+          jiraOptions[1].additionalInfo = this.requirementFile.lastPullFromJiraTimestamp;
+        } else {
+          jiraOptions[1].additionalInfo = undefined;
+        }
+      }
+    }
+  }
+
+  private validateAndExecuteWithJiraToken(callback: (token: string, jiraUrl: string) => void): void {
+    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
+      this.navigation.projectId,
+    );
+    const isJiraTokenValid =
+      token &&
+      tokenExpiration &&
+      new Date() < new Date(tokenExpiration) &&
+      this.isTokenAvailable;
+
+    if (isJiraTokenValid) {
+      callback(token as string, jiraURL as string);
+    } else if (refreshToken) {
+      this.electronService
+        .refreshJiraToken(refreshToken)
+        .then((authResponse) => {
+          storeJiraToken(
+            authResponse,
+            this.metadata?.integration?.jira?.jiraProjectKey,
+            this.navigation.projectId,
+          );
+          callback(authResponse.accessToken, jiraURL as string);
+        })
+        .catch((error) => {
+          console.error('Error during token refresh:', error);
+          this.promptReauthentication();
+        });
+    } else {
+      this.promptReauthentication();
+    }
   }
 
   private setupStoryProgressListener(): void {
@@ -760,20 +938,90 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     }
   }
 
-  exportOptions = [
-    {
-      label: 'Copy JSON to Clipboard',
-      callback: () => this.exportUserStories('json')
-    },
-    {
-      label: 'Download as Excel (.xlsx)',
-      callback: () => this.exportUserStories('xlsx')
-    },
-    {
-      label: 'Sync with Jira',
-      callback: () => this.syncRequirementWithJira()
+  getExportOptions() {
+    this.exportOptions = [];
+
+    const addMoreContext = () => {
+      this.addMoreContext(this.userStoriesInState.length > 0);
+    };
+
+    const exportJson = () => {
+      this.exportUserStories(EXPORT_FILE_FORMATS.JSON);
+    };
+
+    const exportExcel = () => {
+      this.exportUserStories(EXPORT_FILE_FORMATS.EXCEL);
+    };
+
+    const pushToJira = () => {
+      this.syncRequirementWithJira();
+    };
+
+    const pullFromJira = () => {
+      this.syncRequirementFromJira();
+    };
+
+    if (this.userStoriesInState.length > 0) {
+      this.exportOptions.push(
+        {
+          groupName: 'HAI Actions',
+          options: [
+            {
+              label: 'Regenerate',
+              callback: addMoreContext.bind(this),
+              icon: 'heroDocumentText',
+              additionalInfo: 'User Stories & Tasks',
+            },
+          ],
+        },
+        {
+          groupName: 'Export',
+          options: [
+            {
+              label: 'Copy to Clipboard',
+              callback: exportJson.bind(this),
+              icon: 'heroPaperClip',
+              additionalInfo: "JSON Format",
+              isTimestamp: false,
+            },
+            {
+              label: 'Download',
+              callback: exportExcel.bind(this),
+              icon: 'heroDocumentText',
+              additionalInfo: "Excel (.xlsx)",
+              isTimestamp: false,
+            },
+          ],
+        }
+      );
+
+      const jiraOptions = [
+        {
+          label: 'Push to JIRA',
+          callback: pushToJira.bind(this),
+          icon: 'heroArrowUpTray',
+          additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
+        }
+      ];
+
+      if (this.requirementFile?.epicTicketId) {
+        jiraOptions.push({
+          label: 'Pull from JIRA',
+          callback: pullFromJira.bind(this),
+          icon: 'heroArrowDownTray',
+          additionalInfo: this.requirementFile?.lastPullFromJiraTimestamp || undefined,
+        });
+      }
+
+      this.exportOptions.push({
+        groupName: 'JIRA',
+        options: jiraOptions,
+      });
     }
-  ];
+
+    return this.exportOptions;
+  }
+
 
   ngOnDestroy() {
     this.destroy$.next();
