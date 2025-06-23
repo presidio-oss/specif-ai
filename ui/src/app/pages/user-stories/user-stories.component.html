@@ -32,12 +32,9 @@
       </div>
 
       <div class="flex items-center justify-between gap-3">
-        <app-button
-          [buttonContent]="
-            userStories.length === 0
-              ? 'Generate User Stories'
-              : 'Regenerate User Stories'
-          "
+       <app-button
+          *ngIf="userStories.length === 0"
+          buttonContent="Generate User Stories"
           theme="secondary"
           size="sm"
           (click)="addMoreContext(userStories.length > 0)"
@@ -46,7 +43,7 @@
         />
         <app-export-dropdown
           [disabled]="userStories.length === 0 || isGeneratingStories"
-          [options]="exportOptions"
+          [groupedOptions]="getExportOptions()"
         />
         <app-button
           buttonContent="Add New"

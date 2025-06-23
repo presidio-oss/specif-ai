@@ -1,13 +1,9 @@
-<div class="relative inline-block text-left" #dropdownContainer>
-  <app-button
-    [disabled]="disabled"
-    [buttonContent]="buttonLabel"
-    theme="secondary"
-    size="sm"
-    rounded="lg"
+<div class="relative inline-block text-left" *ngIf="groupedOptions && groupedOptions.length > 0 && hasAnyOptions()" #dropdownContainer>
+    <ng-icon
+    name="heroEllipsisVertical"
     (click)="toggleDropdown($event)"
-    class="export-button"
-  ></app-button>
+    class="export-icon"
+  ></ng-icon>
   <div *ngIf="isOpen"
        class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none export-dropdown"
        role="menu"
@@ -30,8 +26,9 @@
             <ng-icon *ngIf="option.icon" [name]="option.icon" class="mr-2 text-secondary-500"></ng-icon>
             <div class="flex flex-col">
               <span>{{ option.label }}</span>
-              <div *ngIf="option.timestamp" class="flex items-center text-xs text-secondary-500">
-                <span *ngIf="option.timestamp">{{ option.timestamp | timezone }}</span>
+              <div *ngIf="option.additionalInfo" class="flex items-center text-xs text-secondary-500">
+                  <span *ngIf="option.isTimestamp">{{ option.additionalInfo | timezone }}</span>
+                  <span *ngIf="!option.isTimestamp">{{ option.additionalInfo }}</span>
               </div>
             </div>
           </div>

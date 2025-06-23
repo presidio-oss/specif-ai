@@ -6,14 +6,16 @@ import {
   heroPaperClip,
   heroDocumentText,
   heroArrowUpTray,
-  heroArrowDownTray
+  heroArrowDownTray,
+  heroEllipsisVertical
 } from '@ng-icons/heroicons/outline';
 import { TimeZonePipe } from '../pipes/timezone-pipe';
 
 export interface DropdownOption {
   label: string;
   callback: () => void;
-  timestamp?: string;
+  additionalInfo?: string;
+  isTimestamp?: boolean;
   icon?: string;
 }
 
@@ -33,7 +35,8 @@ export interface DropdownOptionGroup {
       heroPaperClip,
       heroDocumentText,
       heroArrowUpTray,
-      heroArrowDownTray
+      heroArrowDownTray,
+      heroEllipsisVertical
     })
   ]
 })
@@ -72,6 +75,10 @@ export class ExportDropdownComponent {
   closeDropdown(): void {
     this.isOpen = false;
   }
+
+  hasAnyOptions(): boolean {
+  return this.groupedOptions?.some(group => group.options && group.options.length > 0) || false;
+}
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {

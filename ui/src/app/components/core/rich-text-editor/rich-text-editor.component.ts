@@ -110,6 +110,7 @@ export class RichTextEditorComponent
   private editorUpdate$ = new Subject<string>();
   private changeSubscription?: Subscription;
   private touchedSubscription?: Subscription;
+  private linkClickHandler: ((event: MouseEvent) => void) | null = null
 
   isEmpty = true;
   isInvalid = false;
@@ -378,10 +379,8 @@ export class RichTextEditorComponent
   private setupLinkHandler() {
     if (this.editor) {
       const editorElement = this.editor.view.dom;
-
-      editorElement.addEventListener('click', (event) => {
+      this.linkClickHandler = (event: MouseEvent) => {
         const linkElement = (event.target as HTMLElement).closest('a');
-
         if (linkElement && linkElement.href) {
           event.preventDefault();
           this.electronService.openExternalUrl(linkElement.href)
@@ -389,11 +388,15 @@ export class RichTextEditorComponent
               this.logger.error('Error opening link:', error);
             });
         }
-      });
+      };
+      editorElement.addEventListener('click', this.linkClickHandler);
     }
   }
 
   ngOnDestroy() {
+    if (this.editor && this.linkClickHandler) {
+      this.editor.view.dom.removeEventListener('click', this.linkClickHandler);
+    }
     this.editor?.destroy();
     this.editorUpdate$.complete();
     this.changeSubscription?.unsubscribe();

@@ -16,16 +16,30 @@ import { ButtonComponent } from '../../../core/button/button.component';
   ]
 })
 export class LinkDialogComponent {
+  urlError: string | null = null;
   constructor(
     public dialogRef: MatDialogRef<LinkDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { url: string, isEdit: boolean }
-  ) {}
+  ) { }
 
   onCancel(): void {
     this.dialogRef.close();
   }
 
+  isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   onConfirm(): void {
-    this.dialogRef.close(this.data);
+    if (this.data.url && this.isValidUrl(this.data.url)) {
+      this.dialogRef.close(this.data);
+    } else {
+      this.urlError = 'Please enter a valid URL';
+    }
   }
 }

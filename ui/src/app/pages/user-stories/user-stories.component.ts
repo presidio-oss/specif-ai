@@ -56,7 +56,7 @@ import {
   takeUntil,
   distinctUntilChanged,
 } from 'rxjs';
-import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
@@ -151,6 +151,9 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   onSearch(term: string) {
     this.searchTerm$.next(term);
   }
+
+  exportOptions: DropdownOptionGroup[] = [];
+  exportedProjectId: string = '';
 
   constructor(
     private featureService: FeatureService,
@@ -890,18 +893,18 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   private updateExportOptionsTimestamps(): void {
     if (this.exportOptions && this.exportOptions.length > 1) {
-      const jiraOptions = this.exportOptions[1].options;
+      const jiraOptions = this.exportOptions[2].options;
       if (jiraOptions && jiraOptions.length > 1) {
         if (this.requirementFile?.lastPushToJiraTimestamp) {
-          jiraOptions[0].timestamp = this.requirementFile.lastPushToJiraTimestamp;
+          jiraOptions[0].additionalInfo = this.requirementFile.lastPushToJiraTimestamp;
         } else {
-          jiraOptions[0].timestamp = undefined;
+          jiraOptions[0].additionalInfo = undefined;
         }
 
         if (this.requirementFile?.lastPullFromJiraTimestamp) {
-          jiraOptions[1].timestamp = this.requirementFile.lastPullFromJiraTimestamp;
+          jiraOptions[1].additionalInfo = this.requirementFile.lastPullFromJiraTimestamp;
         } else {
-          jiraOptions[1].timestamp = undefined;
+          jiraOptions[1].additionalInfo = undefined;
         }
       }
     }
@@ -966,40 +969,99 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     }
   }
 
-  exportOptions: DropdownOptionGroup[] = [
-    {
-      groupName: 'Export',
-      options: [
+  getExportOptions() {
+    if (!this.navigation.projectId) {
+      console.warn('Project ID is undefined');
+      return [];
+    }
+
+    if (this.exportedProjectId === this.navigation.projectId) {
+      return this.exportOptions;
+    }
+
+    const addMoreContext = () => {
+      this.addMoreContext(this.userStoriesInState.length > 0);
+    };
+
+    const exportJson = () => {
+      this.exportUserStories(EXPORT_FILE_FORMATS.JSON);
+    };
+
+    const exportExcel = () => {
+      this.exportUserStories(EXPORT_FILE_FORMATS.EXCEL);
+    };
+
+    const pushToJira = () => {
+      this.syncRequirementWithJira();
+    };
+
+    const pullFromJira = () => {
+      this.syncRequirementFromJira();
+    };
+
+    this.exportedProjectId = this.navigation.projectId;
+
+    if (this.userStoriesInState.length > 0) {
+      this.exportOptions.push(
         {
-          label: 'Copy to Clipboard',
-          callback: () => this.exportUserStories('json'),
-          icon: 'heroPaperClip'
+          groupName: 'HAI Actions',
+          options: [
+            {
+              label: 'Regenerate',
+              callback: addMoreContext.bind(this),
+              icon: 'heroDocumentText',
+              additionalInfo: 'User Stories & Tasks',
+            },
+          ],
         },
         {
-          label: 'Export to Excel (.xlsx)',
-          callback: () => this.exportUserStories('xlsx'),
-          icon: 'heroDocumentText'
+          groupName: 'Export',
+          options: [
+            {
+              label: 'Copy to Clipboard',
+              callback: exportJson.bind(this),
+              icon: 'heroPaperClip',
+              additionalInfo: "JSON Format",
+              isTimestamp: false,
+            },
+            {
+              label: 'Download',
+              callback: exportExcel.bind(this),
+              icon: 'heroDocumentText',
+              additionalInfo: "Excel (.xlsx)",
+              isTimestamp: false,
+            },
+          ],
         }
-      ]
-    },
-    {
-      groupName: 'JIRA',
-      options: [
+      );
+
+      const jiraOptions = [
         {
           label: 'Push to JIRA',
-          callback: () => this.syncRequirementWithJira(),
+          callback: pushToJira.bind(this),
           icon: 'heroArrowUpTray',
-          timestamp: this.requirementFile?.lastPushToJiraTimestamp || undefined
-        },
-        {
-          label: 'Pull from JIRA',
-          callback: () => this.syncRequirementFromJira(),
-          icon: 'heroArrowDownTray',
-          timestamp: this.requirementFile?.lastPullFromJiraTimestamp || undefined
+          additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
         }
-      ]
+      ];
+
+      if (this.requirementFile?.epicTicketId) {
+        jiraOptions.push({
+          label: 'Pull from JIRA',
+          callback: pullFromJira.bind(this),
+          icon: 'heroArrowDownTray',
+          additionalInfo: this.requirementFile?.lastPullFromJiraTimestamp || undefined,
+        });
+      }
+
+      this.exportOptions.push({
+        groupName: 'JIRA',
+        options: jiraOptions,
+      });
     }
-  ];
+
+    return this.exportOptions;
+  }
+
 
   ngOnDestroy() {
     this.destroy$.next();
