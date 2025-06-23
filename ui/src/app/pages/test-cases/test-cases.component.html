@@ -8,9 +8,7 @@
         <h1
           class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
         >
-          <ng-container
-            *ngIf="navigation.selectedRequirement?.id; else allTestCases"
-          >
+          <ng-container *ngIf="!isGlobalView; else allTestCases">
             Test Cases for {{ navigation.selectedRequirement?.id }}:
             {{ navigation.selectedRequirement?.name }}
           </ng-container>

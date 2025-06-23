@@ -9,6 +9,7 @@ import {
   SetCurrentConfig,
   SetSelectedProject,
   BulkEditUserStories,
+  SetSelectedUserStory,
 } from '../../store/user-stories/user-stories.actions';
 import { ProjectsState } from '../../store/projects/projects.state';
 import {
@@ -313,6 +314,9 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   }
 
   navigateToTestCases(userStory: IUserStory, index: number) {
+    // Set the selected user story in the store
+    this.store.dispatch(new SetSelectedUserStory(userStory.id));
+    
     this.router.navigate(['/test-cases', userStory.id], {
       state: {
         projectId: this.navigation.projectId,
