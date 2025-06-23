@@ -314,12 +314,16 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
           {
             label: 'Copy to Clipboard',
             callback: exportJson.bind(this),
-            icon: 'heroPaperClip'
+            icon: 'heroPaperClip',
+            additionalInfo: "JSON Format",
+            isTimestamp: false,
           },
           {
-            label: 'Export to Excel (.xlsx)',
+            label: 'Download',
             callback: exportExcel.bind(this),
-            icon: 'heroDocumentText'
+            icon: 'heroDocumentText',
+            additionalInfo: "Excel (.xlsx)",
+            isTimestamp: false,
           }
         ]
       }

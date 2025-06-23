@@ -268,6 +268,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     this.userStories$.subscribe((userStories: IUserStory[]) => {
       this.userStoriesInState = userStories;
+      this.getExportOptions();
     });
   }
 
@@ -531,41 +532,10 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       })
       .subscribe((confirmed) => {
         if (!confirmed) return;
-
-        const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
-          this.navigation.projectId,
-        );
-        const isJiraTokenValid =
-          token &&
-          tokenExpiration &&
-          new Date() < new Date(tokenExpiration) &&
-          this.isTokenAvailable;
-
-        if (isJiraTokenValid) {
+        this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
           console.log('Token exists and is valid, making API call', token);
-          this.syncJira(token as string, jiraURL as string);
-        } else if (refreshToken) {
-          this.electronService
-            .refreshJiraToken(refreshToken)
-            .then((authResponse) => {
-              storeJiraToken(
-                authResponse,
-                this.metadata?.integration?.jira?.jiraProjectKey,
-                this.navigation.projectId,
-              );
-              console.debug(
-                'Token refreshed, making API call',
-                authResponse.accessToken,
-              );
-              this.syncJira(authResponse.accessToken, jiraURL as string);
-            })
-            .catch((error) => {
-              console.error('Error during token refresh:', error);
-              this.promptReauthentication();
-            });
-        } else {
-          this.promptReauthentication();
-        }
+          this.syncJira(token, jiraUrl);
+        });
       });
   }
 
@@ -579,38 +549,10 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       })
       .subscribe((confirmed) => {
         if (!confirmed) return;
-
-        const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
-          this.navigation.projectId,
-        );
-        const isJiraTokenValid =
-          token &&
-          tokenExpiration &&
-          new Date() < new Date(tokenExpiration) &&
-          this.isTokenAvailable;
-
-        if (isJiraTokenValid) {
+        this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
           console.log('Token exists and is valid, syncing from JIRA', token);
-          this.syncFromJira(token as string, jiraURL as string);
-        } else if (refreshToken) {
-          this.electronService
-            .refreshJiraToken(refreshToken)
-            .then((authResponse) => {
-              storeJiraToken(
-                authResponse,
-                this.metadata?.integration?.jira?.jiraProjectKey,
-                this.navigation.projectId,
-              );
-              console.debug('Token refreshed, syncing from JIRA', authResponse.accessToken);
-              this.syncFromJira(authResponse.accessToken, jiraURL as string);
-            })
-            .catch((error) => {
-              console.error('Error during token refresh:', error);
-              this.promptReauthentication();
-            });
-        } else {
-          this.promptReauthentication();
-        }
+          this.syncFromJira(token, jiraUrl);
+        });
       });
   }
 
@@ -874,8 +816,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         return existingStory;
       });
 
-      console.log('Updated user stories with JIRA data:', updatedUserStories);
-
       this.store.dispatch(
         new BulkEditUserStories(
           `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
@@ -910,8 +850,37 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     }
   }
 
+  private validateAndExecuteWithJiraToken(callback: (token: string, jiraUrl: string) => void): void {
+    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
+      this.navigation.projectId,
+    );
+    const isJiraTokenValid =
+      token &&
+      tokenExpiration &&
+      new Date() < new Date(tokenExpiration) &&
+      this.isTokenAvailable;
 
-
+    if (isJiraTokenValid) {
+      callback(token as string, jiraURL as string);
+    } else if (refreshToken) {
+      this.electronService
+        .refreshJiraToken(refreshToken)
+        .then((authResponse) => {
+          storeJiraToken(
+            authResponse,
+            this.metadata?.integration?.jira?.jiraProjectKey,
+            this.navigation.projectId,
+          );
+          callback(authResponse.accessToken, jiraURL as string);
+        })
+        .catch((error) => {
+          console.error('Error during token refresh:', error);
+          this.promptReauthentication();
+        });
+    } else {
+      this.promptReauthentication();
+    }
+  }
 
   private setupStoryProgressListener(): void {
     if (!this.navigation.projectId) return;
@@ -970,14 +939,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   }
 
   getExportOptions() {
-    if (!this.navigation.projectId) {
-      console.warn('Project ID is undefined');
-      return [];
-    }
-
-    if (this.exportedProjectId === this.navigation.projectId) {
-      return this.exportOptions;
-    }
+    this.exportOptions = [];
 
     const addMoreContext = () => {
       this.addMoreContext(this.userStoriesInState.length > 0);
@@ -998,8 +960,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     const pullFromJira = () => {
       this.syncRequirementFromJira();
     };
-
-    this.exportedProjectId = this.navigation.projectId;
 
     if (this.userStoriesInState.length > 0) {
       this.exportOptions.push(

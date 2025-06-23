@@ -7,7 +7,9 @@ import {
   heroDocumentText,
   heroArrowUpTray,
   heroArrowDownTray,
-  heroEllipsisVertical
+  heroEllipsisVertical,
+  heroChevronDown,
+  heroChevronRight
 } from '@ng-icons/heroicons/outline';
 import { TimeZonePipe } from '../pipes/timezone-pipe';
 
@@ -36,7 +38,9 @@ export interface DropdownOptionGroup {
       heroDocumentText,
       heroArrowUpTray,
       heroArrowDownTray,
-      heroEllipsisVertical
+      heroEllipsisVertical,
+      heroChevronDown,
+      heroChevronRight
     })
   ]
 })
@@ -44,7 +48,7 @@ export class ExportDropdownComponent {
   @Input() disabled: boolean = false;
   @Input() options: DropdownOption[] = [];
   @Input() groupedOptions: DropdownOptionGroup[] = [];
-  @Input() buttonLabel: string = 'Export';  
+  @Input() buttonLabel: string = 'Options';  
 
   isOpen = false;
 

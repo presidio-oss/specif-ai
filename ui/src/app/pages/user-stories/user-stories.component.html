@@ -43,7 +43,7 @@
         />
         <app-export-dropdown
           [disabled]="userStories.length === 0 || isGeneratingStories"
-          [groupedOptions]="getExportOptions()"
+          [groupedOptions]="exportOptions"
         />
         <app-button
           buttonContent="Add New"
