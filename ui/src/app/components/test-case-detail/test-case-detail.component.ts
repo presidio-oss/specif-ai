@@ -72,14 +72,6 @@ export class TestCaseDetailComponent implements OnInit {
     { value: 'Security', label: 'Security' }
   ];
   
-  // Status options
-  statusOptions: SelectOption[] = [
-    { value: 'Draft', label: 'Draft' },
-    { value: 'Ready', label: 'Ready' },
-    { value: 'In Progress', label: 'In Progress' },
-    { value: 'Completed', label: 'Completed' }
-  ];
-
   ngOnInit(): void {
     // Set the mode from dialog data
     this.mode = this.data.mode || 'view';
@@ -106,7 +98,6 @@ export class TestCaseDetailComponent implements OnInit {
       description: ['', Validators.required],
       priority: ['Medium', Validators.required],
       type: ['Functional', Validators.required],
-      status: ['Draft', Validators.required],
       preConditions: this.fb.array([]),
       steps: this.fb.array([])
     });
@@ -124,8 +115,7 @@ export class TestCaseDetailComponent implements OnInit {
       title: testCase.title,
       description: testCase.description,
       priority: testCase.priority,
-      type: testCase.type,
-      status: testCase.status
+      type: testCase.type
     });
     
     // Clear and populate preConditions

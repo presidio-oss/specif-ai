@@ -23,10 +23,10 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
-import { UpdateFile } from '../../store/projects/projects.actions';
+import { UpdateFile, ArchiveFile } from '../../store/projects/projects.actions';
 import { NGXLogger } from 'ngx-logger';
 import { RequirementIdService } from '../../services/requirement-id.service';
-import { REQUIREMENT_TYPE } from '../../constants/app.constants';
+import { CONFIRMATION_DIALOG, REQUIREMENT_TYPE, TOASTER_MESSAGES } from '../../constants/app.constants';
 import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 
 @Component({
@@ -93,14 +93,6 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
     { value: 'Security', label: 'Security' }
   ];
   
-  // Status options
-  statusOptions: SelectOption[] = [
-    { value: 'Draft', label: 'Draft' },
-    { value: 'Ready', label: 'Ready' },
-    { value: 'In Progress', label: 'In Progress' },
-    { value: 'Completed', label: 'Completed' }
-  ];
-
   // Current project path
   currentProject: string = '';
   
@@ -191,7 +183,6 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       description: ['', Validators.required],
       priority: ['Medium', Validators.required],
       type: ['Functional', Validators.required],
-      status: ['Draft', Validators.required],
       preConditions: this.fb.array([]),
       steps: this.fb.array([])
     });
@@ -205,7 +196,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   // Load a test case by ID
   loadTestCase(testCaseId: string): void {
     const testCasePath = `${this.currentProject}/${REQUIREMENT_TYPE.TC}/${this.userStoryId}`;
-    const fileName = `${testCaseId.toLowerCase()}-base.json`;
+    const fileName = `${testCaseId}-base.json`;
     const filePath = `${testCasePath}/${fileName}`;
     
     this.logger.debug(`Loading test case from ${filePath}`);
@@ -247,8 +238,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       title: testCase.title,
       description: testCase.description,
       priority: testCase.priority,
-      type: testCase.type,
-      status: testCase.status
+      type: testCase.type
     });
     
     // Clear and populate preConditions
@@ -366,7 +356,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   // Save the test case to a file
   private saveTestCaseToFile(testCase: ITestCase): void {
     const testCasePath = `${this.currentProject}/${REQUIREMENT_TYPE.TC}/${this.userStoryId}`;
-    const fileName = `${testCase.id.toLowerCase()}-base.json`;
+    const fileName = `${testCase.id}-base.json`;
     const filePath = `${testCasePath}/${fileName}`;
     
     this.logger.debug(`Saving test case to ${filePath}`);
@@ -393,6 +383,52 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       .catch(error => {
         this.logger.error(`Error creating directory ${testCasePath}:`, error);
         this.toast.showError(`Failed to create directory for test case ${testCase.id}`);
+      });
+  }
+  
+  // Delete the test case
+  deleteTestCase(): void {
+    const testCaseId = this.testCaseForm.get('id')?.value;
+    
+    if (!testCaseId) {
+      this.toast.showError('Test case ID not found');
+      return;
+    }
+    
+    // For test cases, we don't need to check for associations like PRDs or BRDs
+    // since test cases don't have dependencies that would prevent deletion
+    this.promptTestCaseDeletion(testCaseId);
+  }
+  
+  // Show confirmation dialog and delete the test case if confirmed
+  private promptTestCaseDeletion(testCaseId: string): void {
+    this.dialogService
+      .confirm({
+        title: CONFIRMATION_DIALOG.DELETION.TITLE,
+        description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(testCaseId),
+        cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
+        confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
+      })
+      .subscribe((result) => {
+        if (result) {
+          const testCasePath = `${REQUIREMENT_TYPE.TC}/${this.userStoryId}/${testCaseId}-base.json`;
+          
+          this.store.dispatch(new ArchiveFile(testCasePath))
+            .subscribe({
+              next: () => {
+                this.toast.showSuccess(
+                  TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(REQUIREMENT_TYPE.TC, testCaseId)
+                );
+                this.navigateBack();
+              },
+              error: (error) => {
+                this.logger.error(`Error deleting test case ${testCaseId}:`, error);
+                this.toast.showError(
+                  TOASTER_MESSAGES.ENTITY.DELETE.FAILURE(REQUIREMENT_TYPE.TC, testCaseId)
+                );
+              }
+            });
+        }
       });
   }
   

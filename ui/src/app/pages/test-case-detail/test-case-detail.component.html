@@ -16,6 +16,14 @@
           (click)="enableEditMode()"
         />
         <app-button
+          buttonContent="Delete"
+          theme="danger"
+          size="sm"
+          rounded="lg"
+          (click)="deleteTestCase()"
+          matTooltip="Delete this test case"
+        />
+        <app-button
           buttonContent="Back"
           theme="secondary"
           size="sm"
@@ -75,8 +83,8 @@
       />
     </div>
     
-    <!-- Priority, Type, Status in a row -->
-    <div class="grid grid-cols-3 gap-4 mb-4">
+    <!-- Priority and Type in a row -->
+    <div class="grid grid-cols-2 gap-4 mb-4">
       <!-- Priority -->
       <div>
         <label class="block text-secondary-700 text-sm font-medium mb-2">
@@ -99,19 +107,6 @@
           [options]="typeOptions"
           placeholder="Select type"
           formControlName="type"
-          [required]="true"
-        ></app-select>
-      </div>
-      
-      <!-- Status -->
-      <div>
-        <label class="block text-secondary-700 text-sm font-medium mb-2">
-          Status <span class="text-danger-500 text-xs">*</span>
-        </label>
-        <app-select
-          [options]="statusOptions"
-          placeholder="Select status"
-          formControlName="status"
           [required]="true"
         ></app-select>
       </div>

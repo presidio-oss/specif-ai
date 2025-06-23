@@ -14,7 +14,6 @@ export interface TestCase {
   }[];
   priority: 'High' | 'Medium' | 'Low';
   type: 'Functional' | 'Integration' | 'UI/UX' | 'Performance' | 'Security';
-  status: 'Draft' | 'Ready' | 'In Progress' | 'Passed' | 'Failed';
 }
 
 export interface TestCaseWorkflowRunnableConfig extends RunnableConfig {

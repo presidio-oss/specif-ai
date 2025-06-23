@@ -34,10 +34,6 @@ export const validateTestCase = (testCase: any): boolean => {
       return false;
     }
 
-    if (testCase.status && !["Draft", "Ready", "In Progress", "Passed", "Failed"].includes(testCase.status)) {
-      return false;
-    }
-
     return true;
   } catch (error) {
     return false;
@@ -50,6 +46,5 @@ export const sanitizeTestCases = (testCases: any[]): any[] => {
     .map((tc, index) => ({
       ...tc,
       id: formatTestCaseId(index),
-      status: tc.status || "Draft",
     }));
 };

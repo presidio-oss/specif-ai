@@ -81,7 +81,6 @@ Return the test cases in the following JSON format:
       ],
       "priority": "High|Medium|Low",
       "type": "Functional|Integration|UI/UX|Performance|Security",
-      "status": "Draft"
     }
   ]
 }`;

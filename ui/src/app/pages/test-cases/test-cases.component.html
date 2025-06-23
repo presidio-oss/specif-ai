@@ -139,8 +139,13 @@
   </div>
 </div>
 
-<app-thinking-process
-  [show]="showThinkingProcess"
-  [progress]="testCaseCreationProgress"
-  [config]="thinkingProcessConfig"
-></app-thinking-process>
+<app-workflow-progress-dialog
+  [isVisible]="showThinkingProcess"
+  [projectId]="navigation.projectId"
+  [workflowType]="WorkflowType.TestCase"
+  [isCompleted]="false"
+  [initialTitle]="thinkingProcessConfig.title"
+  [subtitle]="thinkingProcessConfig.subtitle"
+  [showCancelButton]="false"
+  (closeDialog)="showThinkingProcess = false"
+></app-workflow-progress-dialog>

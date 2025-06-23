@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, OnDestroy, NgZone } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
@@ -22,12 +23,10 @@ import { SearchInputComponent } from '../../components/core/search-input/search-
 import { BehaviorSubject } from 'rxjs';
 import { TestCaseContextModalComponent } from 'src/app/components/test-case-context-modal/test-case-context-modal.component';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
-import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
 import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
-import { ThinkingProcessConfig } from '../../components/thinking-process/thinking-process.config';
 import { environment } from '../../../environments/environment';
 import { TestCaseService } from '../../services/test-case/test-case.service';
-import { ITestCase, ITestCaseRequest } from '../../model/interfaces/test-case/testcase.interface';
+import { ITestCase, ITestCaseRequest, ThinkingProcessConfig } from '../../model/interfaces/test-case/testcase.interface';
 import { SearchService } from '../../services/search/search.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { ClipboardService } from '../../services/clipboard.service';
@@ -50,8 +49,9 @@ import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcru
     SearchInputComponent,
     ExportDropdownComponent,
     MatTooltipModule,
-    ThinkingProcessComponent,
+    WorkflowProgressDialogComponent,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TestCasesComponent implements OnInit, OnDestroy {
   currentProject!: string;
@@ -68,10 +68,8 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   requirementFile: any = [];
   testCases: ITestCase[] = [];
   
-  // Map to store user story ID for each test case
   testCaseUserStoryMap: Map<string, string> = new Map();
   
-  // Store project files structure
   currentProjectFiles: { name: string; children: string[] }[] = [];
 
   navigation: {
@@ -104,6 +102,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     (testCase: ITestCase) => [testCase.id, testCase.title],
   );
   
+  
   /**
    * Get unique user story IDs from the test case map
    * @returns Array of unique user story IDs
@@ -111,7 +110,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   getUserStoryIds(): string[] {
     const userStoryIds = new Set<string>();
     
-    // Extract unique user story IDs from the map
     this.testCaseUserStoryMap.forEach((userStoryId) => {
       userStoryIds.add(userStoryId);
     });
@@ -136,6 +134,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   );
 
   testCasesInState: ITestCase[] = [];
+  WorkflowType = WorkflowType;
 
   testCaseCreationProgress: WorkflowProgressEvent[] = [];
   showThinkingProcess: boolean = false;
@@ -514,36 +513,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/test-case', userStoryId, selectedTestCase.id, 'view']);
   }
   
-  /**
-   * Saves a test case to its file
-   * @param testCase The test case to save
-   */
-  private saveTestCaseToFile(testCase: ITestCase): void {
-    // Get the user story ID for this test case
-    const userStoryId = this.testCaseUserStoryMap.get(testCase.id);
-    
-    if (!userStoryId) {
-      this.toast.showError(`Could not determine user story for test case ${testCase.id}`);
-      return;
-    }
-    
-    const testCasePath = `${this.currentProject}/TC/${userStoryId}`;
-    const fileName = `${testCase.id.toLowerCase()}-base.json`;
-    const filePath = `${testCasePath}/${fileName}`;
-    
-    this.logger.debug(`Saving test case to ${filePath}`);
-    
-    this.appSystemService.createFileWithContent(
-      filePath,
-      JSON.stringify(testCase, null, 2)
-    ).then(() => {
-      this.toast.showSuccess(`Test case ${testCase.id} saved successfully`);
-    }).catch(error => {
-      this.logger.error(`Error saving test case ${testCase.id}:`, error);
-      this.toast.showError(`Failed to save test case ${testCase.id}`);
-    });
-  }
-
   generateTestCases(regenerate: boolean = false, extraContext: string = '', userScreensInvolved: string = '') {
     // The user story ID should be available from the route params
     const userStoryId = this.route.snapshot.paramMap.get('userStoryId');
