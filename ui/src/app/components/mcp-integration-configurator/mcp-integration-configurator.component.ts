@@ -124,10 +124,6 @@ export class McpIntegrationConfiguratorComponent
           this.mcpSettings.mcpServers[result.id] = result;
           this.onChange(this.mcpSettings);
           this.toasterService.showSuccess('New MCP server added successfully.');
-        } else {
-          this.toasterService.showInfo(
-            'New MCP server configuration cancelled.',
-          );
         }
       },
     );
