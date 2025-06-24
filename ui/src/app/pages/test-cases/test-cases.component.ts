@@ -11,7 +11,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
-import { ReadFile } from '../../store/projects/projects.actions';
+import { ArchiveFile, ReadFile } from '../../store/projects/projects.actions';
 import { UserStoriesState } from '../../store/user-stories/user-stories.state';
 import { SetSelectedUserStory } from '../../store/user-stories/user-stories.actions';
 import { RequirementIdService } from '../../services/requirement-id.service';
@@ -32,7 +32,7 @@ import {
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, take } from 'rxjs';
 import { TestCaseContextModalComponent } from 'src/app/components/test-case-context-modal/test-case-context-modal.component';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 import {
@@ -761,9 +761,8 @@ export class TestCasesComponent implements OnInit, OnDestroy {
             // Remove existing files before creating new ones
             Promise.all(
               files.map((fileName: string) => {
-                return this.appSystemService.archiveFile(
-                  `${testCasePath}/${fileName}`,
-                );
+                const filePath = `TC/${userStoryId}/${fileName}`;
+                return firstValueFrom(this.store.dispatch(new ArchiveFile(filePath)));
               }),
             )
               .then(() => {
@@ -842,12 +841,16 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     );
     this.logger.debug(`Starting test case numbering from ${nextTestCaseId}`);
 
+    const testCaseIds: string[] = [];
+
     Promise.all(
       testCases.map((testCase, index) => {
         const tcNumber = (nextTestCaseId + index).toString().padStart(2, '0');
         const fileName = `TC${tcNumber}-base.json`;
         const filePath = `${testCasePath}/${fileName}`;
         testCase.id = `TC${tcNumber}`;
+
+        testCaseIds.push(testCase.id);
 
         // Update the test case user story map
         this.testCaseUserStoryMap.set(testCase.id, userStoryId);
@@ -909,10 +912,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
         this.toast.showError('Failed to create test case files');
         this.showThinkingProcess = false;
       });
-  }
-
-  getLatestTestCases() {
-    // Implementation for getting latest test cases
   }
 
   copyTestCaseContent(event: Event, testCase: ITestCase) {
