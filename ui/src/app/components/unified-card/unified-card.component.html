@@ -1,0 +1,77 @@
+<div
+  class="group flex flex-col p-4 bg-white border rounded-lg mb-3 cursor-pointer transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-md relative overflow-hidden"
+  [ngClass]="borderClass"
+  (click)="onViewItem()"
+>
+  <div class="flex justify-between items-start mb-3 z-10">
+    <div class="flex items-start">
+      <div
+        class="bg-gray-100 text-gray-700 font-semibold text-sm py-1 px-3 rounded-full shadow-sm mr-2"
+      >
+        {{ id }}
+      </div>
+      <div class="flex flex-col">
+        <div class="font-semibold text-base text-gray-900 mb-1 line-clamp-2">
+          {{ title }}
+        </div>
+        <div class="text-sm text-gray-500 line-clamp-2">
+          {{ truncateText(description) }}
+        </div>
+      </div>
+    </div>
+    <div>
+      <app-button
+        theme="secondary_outline"
+        size="xs"
+        rounded="lg"
+        [isIconButton]="true"
+        icon="heroDocumentDuplicate"
+        (click)="onCopyContent($event)"
+        [matTooltip]="copyTooltip"
+      ></app-button>
+    </div>
+  </div>
+
+  <!-- Card Footer -->
+  <div class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100 z-10">
+    <div class="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-2 py-1">
+      <!-- Status indicator -->
+      <ng-container *ngIf="statusIndicator">
+        <div
+          class="rounded-full p-1 flex items-center justify-center w-6 h-6"
+          [ngClass]="statusIndicator.iconBgClass"
+        >
+          <ng-icon
+            [name]="statusIndicator.icon"
+            size="14"
+            [ngClass]="statusIndicator.iconColorClass"
+          ></ng-icon>
+        </div>
+        <span 
+          class="text-xs font-medium whitespace-nowrap"
+          [ngClass]="statusIndicator.textColorClass"
+          [matTooltip]="statusIndicator.tooltip || ''"
+        >
+          {{ statusIndicator.text }}
+        </span>
+      </ng-container>
+
+      <!-- Additional badges -->
+      <ng-container *ngFor="let badge of badges">
+        <div
+          class="text-xs font-medium px-2 py-0.5 rounded-full ml-2"
+          [ngClass]="[badge.bgClass, badge.textClass]"
+        >
+          {{ badge.text }}
+        </div>
+      </ng-container>
+    </div>
+
+    <div
+      class="flex items-center gap-1 text-primary-600 text-sm bg-blue-50 px-3 py-1 rounded-full opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-primary-100"
+    >
+      <span class="font-medium">{{ actionButtonText }}</span>
+      <ng-icon name="heroArrowRight" size="16"></ng-icon>
+    </div>
+  </div>
+</div>

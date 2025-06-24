@@ -23,23 +23,54 @@
       </div>
     </div>
 
-    <!-- PRD Filter -->
-    <div class="mt-4 mb-4">
-      <app-select
-        label="Select PRD"
-        [options]="getPrdSelectOptions()"
-        [placeholder]="'Select a PRD'"
-        (selectionChange)="selectPrd($event || '')"
-        [clearable]="false"
-      ></app-select>
+    <!-- PRD Filter and Search in one row -->
+    <ng-container *ngIf="prdList.length > 0; else noPrds">
+      <div class="flex gap-4 mt-4 mb-4 items-end">
+        <div class="w-1/2 relative z-50">
+          <app-select
+            label="Select PRD"
+            [options]="getPrdSelectOptions()"
+            [placeholder]="'Select a PRD'"
+            (selectionChange)="selectPrd($event || '')"
+            [clearable]="false"
+          ></app-select>
+        </div>
+        
+        <div class="w-1/2 flex items-end" *ngIf="filteredUserStories$ | async as userStories">
+          <app-search-input
+            class="w-full"
+            [hidden]="userStories.length === 0"
+            placeholder="Search user stories..."
+            (searchChange)="onSearch($event)"
+            label="Search"
+          ></app-search-input>
+        </div>
+      </div>
+    </ng-container>
+    
+    <!-- No PRDs message -->
+    <ng-template #noPrds>
+      <div class="flex flex-col justify-center items-center min-h-[20vh] mt-4 mb-4 text-center">
+        <h1 class="font-semibold text-secondary-700 text-xl mb-2">
+          No PRD is available.
+        </h1>
+        <p class="text-secondary-500 text-sm">
+          Please check if PRD documents exist for this project.
+        </p>
+      </div>
+    </ng-template>
+    
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-3 gap-4 mb-6" *ngIf="!isLoading && userStories.length > 0">
+      <app-summary-card
+        *ngFor="let card of summaryCards"
+        [icon]="card.icon"
+        [count]="card.countFn()"
+        [title]="card.title"
+        [color]="card.color"
+        [percentage]="card.percentage ? card.percentage() : null"
+      ></app-summary-card>
     </div>
-
-    <app-search-input
-      *ngIf="filteredUserStories$ | async as userStories"
-      [hidden]="userStories.length === 0"
-      placeholder="Search user stories..."
-      (searchChange)="onSearch($event)"
-    ></app-search-input>
   </div>
 
   <div class="flex-1 overflow-y-auto">
@@ -53,29 +84,18 @@
       *ngIf="!isLoading && (filteredUserStories$ | async) as userStories"
     >
       <ng-container *ngIf="userStories.length > 0; else noUserStories">
-        <app-list-item
+        <app-unified-card
           *ngFor="let userStory of userStories"
-          [payload]="{
-            description: userStory.description,
-            name: userStory.name,
-            id: userStory.id
-          }"
-          [tag]="userStory.id"
-          (click)="navigateToTestCases(userStory)"
-          class="relative"
-        >
-          <div class="absolute top-4 right-4 flex gap-2">
-            <app-button
-              theme="secondary_outline"
-              size="xs"
-              rounded="lg"
-              [isIconButton]="true"
-              icon="heroDocumentDuplicate"
-              (click)="copyUserStoryContent($event, userStory)"
-              matTooltip="Copy"
-            />
-          </div>
-        </app-list-item>
+          [id]="userStory.id"
+          [title]="userStory.name"
+          [description]="userStory.description"
+          [borderClass]="getUserStoryBorderClass(userStory.id)"
+          [statusIndicator]="getUserStoryStatusIndicator(userStory.id)"
+          [actionButtonText]="'View Tests'"
+          [copyTooltip]="'Copy user story content'"
+          (viewItem)="navigateToTestCases(userStory)"
+          (copyContent)="copyUserStoryContent($event, userStory)"
+        ></app-unified-card>
       </ng-container>
 
       <!-- Empty state -->

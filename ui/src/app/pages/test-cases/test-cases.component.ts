@@ -19,12 +19,12 @@ import { IUserStory } from '../../model/interfaces/IUserStory';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ElectronService } from '../../electron-bridge/electron.service';
-import { getNavigationParams } from '../../utils/common.utils';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
+import { UnifiedCardComponent, CardStatusIndicator, CardBadge } from '../../components/unified-card/unified-card.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
   FILTER_STRINGS,
@@ -52,6 +52,7 @@ import { ClipboardService } from '../../services/clipboard.service';
 import { LoadingService } from '../../services/loading.service';
 import {
   AddBreadcrumb,
+  AddBreadcrumbs,
   DeleteBreadcrumb,
 } from '../../store/breadcrumb/breadcrumb.actions';
 
@@ -72,6 +73,7 @@ import {
     ExportDropdownComponent,
     MatTooltipModule,
     WorkflowProgressDialogComponent,
+    UnifiedCardComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -112,44 +114,12 @@ export class TestCasesComponent implements OnInit, OnDestroy {
 
   testCases$ = new BehaviorSubject<ITestCase[]>([]);
 
-  // Observable for grouped test cases
-  groupedTestCases$ = new BehaviorSubject<
-    {
-      userStory: { id: string; name: string };
-      testCases: ITestCase[];
-    }[]
-  >([]);
-
+  // Observable for filtered test cases
   filteredTestCases$ = this.searchService.filterItems(
     this.testCases$,
     this.searchTerm$,
     (testCase: ITestCase) => [testCase.id, testCase.title],
   );
-
-  /**
-   * Get unique user story IDs from the test case map
-   * @returns Array of unique user story IDs
-   */
-  getUserStoryIds(): string[] {
-    const userStoryIds = new Set<string>();
-
-    this.testCaseUserStoryMap.forEach((userStoryId) => {
-      userStoryIds.add(userStoryId);
-    });
-
-    return Array.from(userStoryIds);
-  }
-
-  /**
-   * Get test cases for a specific user story
-   * @param userStoryId User story ID to filter by
-   * @returns Array of test cases for the specified user story
-   */
-  getTestCasesForUserStory(userStoryId: string): ITestCase[] {
-    return this.testCasesInState.filter(
-      (testCase) => this.testCaseUserStoryMap.get(testCase.id) === userStoryId,
-    );
-  }
 
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   selectedFileContent$ = this.store.select(
@@ -192,25 +162,14 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     private appSystemService: AppSystemService,
     private requirementIdService: RequirementIdService,
   ) {
-    // Get navigation state directly from router
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation && navigation.extras && navigation.extras.state) {
-      const state = navigation.extras.state as any;
-      this.navigation = {
-        projectId: state.projectId || '',
-        folderName: state.folderName || '',
-        fileName: state.fileName || '',
-        selectedRequirement: state.selectedRequirement || {},
-        data: state.data || {},
-      };
-      this.logger.debug('Navigation state from router:', this.navigation);
-    } else {
-      this.navigation = getNavigationParams(this.router.getCurrentNavigation());
-      this.logger.debug(
-        'Navigation state from getNavigationParams:',
-        this.navigation,
-      );
-    }
+    // Initialize navigation object with empty values
+    this.navigation = {
+      projectId: '',
+      folderName: '',
+      fileName: '',
+      selectedRequirement: {},
+      data: {},
+    };
 
     // Get the user story ID from route params
     const userStoryId = this.route.snapshot.paramMap.get('userStoryId');
@@ -224,14 +183,22 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       this.currentLabel = 'Test Cases';
     }
 
-    // Add breadcrumb
+    // Add breadcrumbs with proper navigation path
+    this.store.dispatch(
+      new AddBreadcrumb({
+        label: 'Test Cases',
+        tooltipLabel: 'Test Cases Home',
+        url: `/test-cases-home?projectId=${this.navigation.projectId || this.currentProject}`
+      })
+    );
+    
     this.store.dispatch(
       new AddBreadcrumb({
         label: this.currentLabel,
         tooltipLabel: this.navigation.selectedRequirement?.name
           ? `Test Cases for ${this.navigation.selectedRequirement.id}: ${this.navigation.selectedRequirement.name}`
           : `Test Cases for ${userStoryId}`,
-      }),
+      })
     );
 
     this.store.select(ProjectsState.getMetadata).subscribe((res) => {
@@ -240,12 +207,16 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Get the user story ID from route params
-    if (this.isGlobalView) {
-      this.navigation.selectedRequirement = {};
-    }
-
     const userStoryId = this.route.snapshot.paramMap.get('userStoryId');
+    
+    // Get projectId from query parameters
+    this.route.queryParams.subscribe((params: { [key: string]: string }) => {
+      if (params['projectId']) {
+        this.navigation.projectId = params['projectId'];
+        this.logger.debug(`Project ID from query params: ${this.navigation.projectId}`);
+      }
+    });
+    
     console.log('Navigation Params:', this.navigation);
     
     // If we have a user story ID from the route, set it in the store
@@ -273,14 +244,9 @@ export class TestCasesComponent implements OnInit, OnDestroy {
         this.newFileName = this.navigation.fileName.replace('base', 'feature');
       }
 
-      if (project) {
-        if (userStoryId) {
-          // Load test cases for a specific user story
-          this.loadTestCasesForUserStory(userStoryId);
-        } else {
-          // Load all test cases when no user story ID is provided
-          this.loadAllTestCases();
-        }
+      if (project && userStoryId) {
+        // Load test cases for the specific user story
+        this.loadTestCasesForUserStory(userStoryId);
       }
     });
 
@@ -298,7 +264,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       this.workflowProgressListener,
     );
 
-    // Get project folders for user story selection in global view
+    // Get project folders for user story selection
     this.store.select(ProjectsState.getProjectsFolders).subscribe((folders) => {
       this.currentProjectFiles = folders;
     });
@@ -407,160 +373,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Loads all test cases from all user story directories
-   */
-  loadAllTestCases() {
-    const tcBasePath = `${this.currentProject}/TC`;
-
-    console.log(`[DEBUG] Loading all test cases from ${tcBasePath}`);
-    this.logger.debug(`Loading all test cases from ${tcBasePath}`);
-
-    this.appSystemService
-      .fileExists(tcBasePath)
-      .then((exists: boolean) => {
-        console.log(`[DEBUG] TC directory exists: ${exists}`);
-        this.logger.debug(`TC directory exists: ${exists}`);
-
-        if (!exists) {
-          console.log(
-            '[DEBUG] TC directory does not exist, no test cases to load',
-          );
-          this.logger.debug(
-            'TC directory does not exist, no test cases to load',
-          );
-          // Set an empty array to indicate no test cases found
-          this.testCases = [];
-          this.testCases$.next([]);
-          return;
-        }
-
-        // First, get a list of all directories in TC folder
-        this.appSystemService
-          .getFolders(tcBasePath, 'base', true)
-          .then((userStoryDirNames: any[]) => {
-            console.log(
-              `[DEBUG] User story directories in TC folder:`,
-              userStoryDirNames,
-            );
-            this.logger.debug(
-              `User story directories in TC folder:`,
-              userStoryDirNames,
-            );
-
-            if (!userStoryDirNames || userStoryDirNames.length === 0) {
-              console.log(
-                '[DEBUG] No user story directories found in TC folder',
-              );
-              this.logger.debug('No user story directories found in TC folder');
-              return;
-            }
-
-            let allTestCases: ITestCase[] = [];
-            let loadedCount = 0;
-            let processedDirs = 0;
-
-            // Process each user story directory
-            userStoryDirNames.forEach((userStoryDir: any) => {
-              // Skip if it's not a valid directory object
-              if (!userStoryDir.name || !userStoryDir.children) {
-                console.log(
-                  `[DEBUG] Invalid user story directory:`,
-                  userStoryDir,
-                );
-                processedDirs++;
-                return;
-              }
-
-              const userStoryId = userStoryDir.name;
-              console.log(
-                `[DEBUG] Processing user story directory: ${userStoryId}`,
-              );
-
-              // Filter for base test case files
-              const testCaseFiles = userStoryDir.children.filter(
-                (file: string) => file.includes('-base.json'),
-              );
-
-              console.log(
-                `[DEBUG] Found ${testCaseFiles.length} test case files in ${userStoryId}`,
-              );
-
-              if (testCaseFiles.length === 0) {
-                processedDirs++;
-                if (processedDirs === userStoryDirNames.length) {
-                  console.log(
-                    `[DEBUG] Completed loading all test cases. Total: ${allTestCases.length}`,
-                  );
-                }
-                return;
-              }
-
-              // Load each test case file
-              Promise.all(
-                testCaseFiles.map(async (fileName: string) => {
-                  try {
-                    const content = await this.appSystemService.readFile(
-                      `${this.currentProject}/TC/${userStoryId}/${fileName}`,
-                    );
-                    const testCase = JSON.parse(content);
-
-                    // Store the user story ID for this test case
-                    if (testCase && testCase.id) {
-                      this.testCaseUserStoryMap.set(testCase.id, userStoryId);
-                    }
-
-                    return testCase;
-                  } catch (error) {
-                    this.logger.error(
-                      `Error parsing test case file ${fileName}:`,
-                      error,
-                    );
-                    return null;
-                  }
-                }),
-              )
-                .then((testCases: any[]) => {
-                  const validTestCases = testCases.filter((tc) => tc !== null);
-                  loadedCount += validTestCases.length;
-
-                  // Add to the collection of all test cases
-                  allTestCases = [...allTestCases, ...validTestCases];
-
-                  // Update the UI with all test cases loaded so far
-                  this.testCases = allTestCases;
-                  this.testCases$.next(allTestCases);
-
-                  processedDirs++;
-                  this.logger.debug(
-                    `Loaded ${loadedCount} test cases so far from ${processedDirs}/${userStoryDirNames.length} directories`,
-                  );
-
-                  // If this is the last directory, log a summary
-                  if (processedDirs === userStoryDirNames.length) {
-                    this.logger.debug(
-                      `Completed loading all test cases. Total: ${allTestCases.length}`,
-                    );
-                  }
-                })
-                .catch((error) => {
-                  processedDirs++;
-                  this.logger.error(
-                    `Error loading test cases for ${userStoryId}:`,
-                    error,
-                  );
-                });
-            });
-          })
-          .catch((error) => {
-            this.logger.error('Error listing user story directories:', error);
-          });
-      })
-      .catch((error) => {
-        this.logger.error(`Error checking for TC directory: ${error}`);
-      });
-  }
-
   fetchUserStoryDetails(userStoryId: string) {
     this.logger.debug(`Fetching user story details for ${userStoryId}`);
 
@@ -636,13 +448,13 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     // Store the user story ID in the NgXs store so it can be retrieved when navigating back
     this.store.dispatch(new SetSelectedUserStory(userStoryId));
 
-    console.log(`Navigating to edit test case ${selectedTestCase.id} for user story ${userStoryId} with global view: ${this.isGlobalView}`);
+    console.log(`Navigating to edit test case ${selectedTestCase.id} for user story ${userStoryId}`);
     this.router.navigate(
       ['/test-case', userStoryId, selectedTestCase.id, 'view'],
       {
-        state: {
-          fromGlobalView: this.isGlobalView,
-        },
+        queryParams: {
+          projectId: this.navigation.projectId
+        }
       },
     );
   }
@@ -736,7 +548,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     );
 
     // Update the test case user story map for all new test cases
-    // This is important for the global view to show the test cases under the correct user story
     testCases.forEach((testCase) => {
       if (testCase.id) {
         this.testCaseUserStoryMap.set(testCase.id, userStoryId);
@@ -878,27 +689,14 @@ export class TestCasesComponent implements OnInit, OnDestroy {
           `Updated test case count to ${nextTestCaseId + testCases.length - 1}`,
         );
 
-        // Determine if we're in global view or specific user story view
-        const isGlobalView = !this.route.snapshot.paramMap.get('userStoryId');
+        // Refresh the test cases for the current user story
+        const routeUserStoryId = this.route.snapshot.paramMap.get('userStoryId');
+        this.logger.debug(
+          `Refreshing test cases for user story ${routeUserStoryId}`,
+        );
 
-        this.logger.debug(`Test cases created. isGlobalView: ${isGlobalView}`);
-
-        // Refresh the view based on the current context
-        if (isGlobalView) {
-          // In global view, reload all test cases to show everything
-          this.logger.debug('In global view, refreshing all test cases');
-          this.loadAllTestCases();
-        } else {
-          // In specific user story view, only load test cases for that user story
-          const routeUserStoryId =
-            this.route.snapshot.paramMap.get('userStoryId');
-          this.logger.debug(
-            `In specific view, refreshing test cases for user story ${routeUserStoryId}`,
-          );
-
-          if (routeUserStoryId) {
-            this.loadTestCasesForUserStory(routeUserStoryId);
-          }
+        if (routeUserStoryId) {
+          this.loadTestCasesForUserStory(routeUserStoryId);
         }
 
         // Show success message
@@ -928,150 +726,105 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       );
     }
   }
-
-  // Store all user stories for the global view
-  allUserStories: IUserStory[] = [];
+  
+  /**
+   * Returns the appropriate border class based on test case priority
+   */
+  getTestCaseBorderClass(testCase: ITestCase): string {
+    if (!testCase.priority) return 'border-l-4 border-l-blue-500';
+    
+    switch (testCase.priority.toLowerCase()) {
+      case 'high':
+        return 'border-l-4 border-l-red-500';
+      case 'medium':
+        return 'border-l-4 border-l-amber-500';
+      case 'low':
+        return 'border-l-4 border-l-green-500';
+      default:
+        return 'border-l-4 border-l-blue-500';
+    }
+  }
+  
+  /**
+   * Returns the status indicator for a test case
+   */
+  getTestCaseStatusIndicator(testCase: ITestCase): CardStatusIndicator {
+    let icon = 'heroArrowRight';
+    let iconBgClass = 'bg-blue-100';
+    let iconColorClass = 'text-blue-600';
+    let text = testCase.priority || 'Normal';
+    
+    if (testCase.priority) {
+      switch (testCase.priority.toLowerCase()) {
+        case 'high':
+          icon = 'heroArrowTrendingUp';
+          iconBgClass = 'bg-red-100';
+          iconColorClass = 'text-red-600';
+          break;
+        case 'medium':
+          icon = 'heroArrowRight';
+          iconBgClass = 'bg-amber-100';
+          iconColorClass = 'text-amber-600';
+          break;
+        case 'low':
+          icon = 'heroArrowTrendingDown';
+          iconBgClass = 'bg-green-100';
+          iconColorClass = 'text-green-600';
+          break;
+      }
+    }
+    
+    return {
+      icon,
+      iconBgClass,
+      iconColorClass,
+      text,
+      textColorClass: iconColorClass
+    };
+  }
+  
+  /**
+   * Returns badges for a test case
+   */
+  getTestCaseBadges(testCase: ITestCase): CardBadge[] {
+    const badges: CardBadge[] = [];
+    
+    // Type badge
+    if (testCase.type) {
+      badges.push({
+        text: testCase.type,
+        bgClass: 'bg-blue-50',
+        textClass: 'text-blue-700'
+      });
+    }
+    
+    // Steps count badge
+    if (testCase.steps?.length) {
+      badges.push({
+        text: `${testCase.steps.length} steps`,
+        bgClass: 'bg-gray-50',
+        textClass: 'text-gray-700'
+      });
+    }
+    
+    return badges;
+  }
 
   /**
    * Opens a modal to collect additional context for test case generation
    * @param regenerate Whether this is a regeneration operation
    */
   addMoreContext(regenerate: boolean = false) {
-    // Check if we're in a specific user story view or global view
+    // Get the user story ID from route params
     const userStoryId = this.route.snapshot.paramMap.get('userStoryId');
-    const isGlobalView =
-      !userStoryId && !this.navigation.selectedRequirement?.id;
 
     this.logger.debug(
-      `addMoreContext called. isGlobalView: ${isGlobalView}, userStoryId: ${userStoryId}, selectedRequirement: ${this.navigation.selectedRequirement?.id}`,
+      `addMoreContext called. userStoryId: ${userStoryId}, selectedRequirement: ${this.navigation.selectedRequirement?.id}`,
     );
 
-    // If in global view, we need to fetch all user stories first
-    if (isGlobalView) {
-      this.logger.debug('In global view, fetching all user stories');
-      this.fetchAllUserStories().then((userStories) => {
-        this.logger.debug(`Fetched ${userStories.length} user stories`);
-        this.openTestCaseContextModal(regenerate, isGlobalView, userStories);
-      });
-    } else {
-      // In user story specific view, just open the modal
-      this.logger.debug(
-        'In user story specific view, opening modal without user stories',
-      );
-      this.openTestCaseContextModal(regenerate, isGlobalView);
-    }
-  }
-
-  /**
-   * Fetches all user stories from PRD files
-   * @returns Promise with array of user stories
-   */
-  private async fetchAllUserStories(): Promise<IUserStory[]> {
-    if (this.allUserStories.length > 0) {
-      this.logger.debug(
-        `Returning ${this.allUserStories.length} cached user stories`,
-      );
-      return this.allUserStories;
-    }
-
-    try {
-      // Create some mock user stories for testing
-      const mockUserStories: IUserStory[] = [
-        {
-          id: 'US1',
-          name: 'User Story 1',
-          description: 'Description 1',
-          prdId: 'PRD01',
-        },
-        {
-          id: 'US2',
-          name: 'User Story 2',
-          description: 'Description 2',
-          prdId: 'PRD01',
-        },
-        {
-          id: 'US3',
-          name: 'User Story 3',
-          description: 'Description 3',
-          prdId: 'PRD02',
-        },
-        {
-          id: 'US4',
-          name: 'User Story 4',
-          description: 'Description 4',
-          prdId: 'PRD02',
-        },
-      ];
-
-      this.logger.debug(
-        `Created ${mockUserStories.length} mock user stories for testing`,
-      );
-      this.allUserStories = mockUserStories;
-      return mockUserStories;
-
-      /* Commenting out the actual implementation for now
-      // Check if PRD folder exists
-      const prdFolderExists = await this.appSystemService.fileExists(`${this.currentProject}/PRD`);
-      if (!prdFolderExists) {
-        this.logger.debug('PRD folder does not exist');
-        return [];
-      }
-      
-      // Get all files in PRD folder directly
-      const files = await this.appSystemService.getFolders(`${this.currentProject}/PRD`, '', false);
-      this.logger.debug('All files in PRD folder:', files);
-      
-      // Filter for feature files
-      const featureFiles = files.filter((file: any) => 
-        typeof file === 'string' ? file.includes('-feature.json') : 
-        file.name && file.name.includes('-feature.json')
-      );
-      
-      this.logger.debug(`Found ${featureFiles.length} feature files in PRD folder:`, featureFiles);
-      
-      if (featureFiles.length === 0) {
-        return [];
-      }
-      
-      // Read each feature file and extract user stories
-      const userStories: IUserStory[] = [];
-      
-      for (const file of featureFiles) {
-        const fileName = typeof file === 'string' ? file : file.name;
-        this.logger.debug(`Reading feature file: ${fileName}`);
-        
-        try {
-          const content = await this.appSystemService.readFile(`${this.currentProject}/PRD/${fileName}`);
-          const parsedContent = JSON.parse(content);
-          this.logger.debug(`Parsed content for ${fileName}:`, parsedContent);
-          
-          if (parsedContent.features && Array.isArray(parsedContent.features)) {
-            // Add the PRD ID to each user story for better identification
-            const prdId = fileName.split('-')[0]; // Extract PRD ID from filename
-            this.logger.debug(`PRD ID: ${prdId}, Found ${parsedContent.features.length} user stories`);
-            
-            const storiesWithPrdInfo = parsedContent.features.map((story: IUserStory) => ({
-              ...story,
-              prdId: prdId
-            }));
-            
-            userStories.push(...storiesWithPrdInfo);
-          } else {
-            this.logger.debug(`No features array found in ${fileName}`);
-          }
-        } catch (error) {
-          this.logger.error(`Error processing feature file ${fileName}:`, error);
-        }
-      }
-      
-      this.logger.debug(`Fetched ${userStories.length} user stories from PRD files`);
-      this.allUserStories = userStories;
-      return userStories;
-      */
-    } catch (error) {
-      this.logger.error('Error fetching user stories:', error);
-      return [];
-    }
+    // Open the modal for the specific user story
+    this.logger.debug('Opening modal for user story specific view');
+    this.openTestCaseContextModal(regenerate, false);
   }
 
   /**
@@ -1173,6 +926,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   }
 
   get isGlobalView(): boolean {
-    return !this.route.snapshot.paramMap.get('userStoryId');
+    return false; // Always return false since we only support user story specific view
   }
 }

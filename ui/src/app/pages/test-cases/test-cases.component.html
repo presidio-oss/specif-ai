@@ -8,11 +8,8 @@
         <h1
           class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
         >
-          <ng-container *ngIf="!isGlobalView; else allTestCases">
-            Test Cases for {{ navigation.selectedRequirement?.id }}:
-            {{ navigation.selectedRequirement?.name }}
-          </ng-container>
-          <ng-template #allTestCases>All Test Cases </ng-template>
+          Test Cases for {{ navigation.selectedRequirement?.id }}:
+          {{ navigation.selectedRequirement?.name }}
         </h1>
 
         <div class="flex items-center">
@@ -60,72 +57,21 @@
 
   <div class="h-full overflow-y-auto">
     <!-- User Story specific view -->
-    <ng-container *ngIf="route.snapshot.paramMap.get('userStoryId') as userStoryId; else groupedTestCases">
-      <ng-container *ngIf="((filteredTestCases$ | async)?.length ?? 0) > 0; else noTestCases">
-        <app-list-item
-          [payload]="{
-            description: testCase.description,
-            name: testCase.title,
-            id: testCase.id,
-          }"
-          *ngFor="let testCase of filteredTestCases$ | async"
-          [tag]="testCase.id"
-          (click)="navigateToEditTestCase(testCase)"
-          class="relative"
-        >
-          <div class="absolute top-4 right-4 flex gap-2">
-            <app-button
-              theme="secondary_outline"
-              size="xs"
-              rounded="lg"
-              [isIconButton]="true"
-              icon="heroDocumentDuplicate"
-              (click)="copyTestCaseContent($event, testCase)"
-              matTooltip="Copy"
-            />
-          </div>
-        </app-list-item>
-      </ng-container>
+    <ng-container *ngIf="((filteredTestCases$ | async)?.length ?? 0) > 0; else noTestCases">
+      <app-unified-card
+        *ngFor="let testCase of filteredTestCases$ | async"
+        [id]="testCase.id"
+        [title]="testCase.title"
+        [description]="testCase.description"
+        [borderClass]="getTestCaseBorderClass(testCase)"
+        [statusIndicator]="getTestCaseStatusIndicator(testCase)"
+        [badges]="getTestCaseBadges(testCase)"
+        [actionButtonText]="'View Details'"
+        [copyTooltip]="'Copy test case content'"
+        (viewItem)="navigateToEditTestCase(testCase)"
+        (copyContent)="copyTestCaseContent($event, testCase)"
+      ></app-unified-card>
     </ng-container>
-
-    <!-- Grouped test case view -->
-    <ng-template #groupedTestCases>
-      <ng-container *ngIf="filteredTestCases$ | async as filteredTestCases">
-        <ng-container *ngIf="filteredTestCases.length > 0; else noTestCases">
-          <ng-container *ngFor="let userStoryId of getUserStoryIds()">
-            <div class="bg-secondary-50 p-3 my-2 rounded-lg">
-              <h3 class="text-md font-semibold text-secondary-800">
-                User Story: {{ userStoryId }}
-              </h3>
-            </div>
-
-            <app-list-item
-              [payload]="{
-                description: testCase.description,
-                name: testCase.title,
-                id: testCase.id,
-              }"
-              *ngFor="let testCase of getTestCasesForUserStory(userStoryId)"
-              [tag]="testCase.id"
-              (click)="navigateToEditTestCase(testCase)"
-              class="relative"
-            >
-              <div class="absolute top-4 right-4 flex gap-2">
-                <app-button
-                  theme="secondary_outline"
-                  size="xs"
-                  rounded="lg"
-                  [isIconButton]="true"
-                  icon="heroDocumentDuplicate"
-                  (click)="copyTestCaseContent($event, testCase)"
-                  matTooltip="Copy"
-                />
-              </div>
-            </app-list-item>
-          </ng-container>
-        </ng-container>
-      </ng-container>
-    </ng-template>
 
     <!-- Empty State Message -->
     <ng-template #noTestCases>

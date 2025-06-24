@@ -3,19 +3,17 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
-import { GetProjectFiles, BulkReadFiles } from '../../store/projects/projects.actions';
-import { UserStoriesState } from '../../store/user-stories/user-stories.state';
+import { GetProjectFiles, BulkReadFiles, ClearBRDPRDState } from '../../store/projects/projects.actions';
 import { SetSelectedUserStory } from '../../store/user-stories/user-stories.actions';
 import { IUserStory } from '../../model/interfaces/IUserStory';
 import { ClipboardService } from '../../services/clipboard.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroArrowRight } from '@ng-icons/heroicons/outline';
-import { ListItemComponent } from '../../components/core/list-item/list-item.component';
+import { provideIcons } from '@ng-icons/core';
+import { heroArrowRight, heroDocumentText, heroClipboardDocumentCheck, heroBeaker } from '@ng-icons/heroicons/outline';
+import { UnifiedCardComponent, CardStatusIndicator } from '../../components/unified-card/unified-card.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import { FILTER_STRINGS, TOASTER_MESSAGES } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
@@ -24,7 +22,7 @@ import { SearchService } from '../../services/search/search.service';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { AppSystemService } from '../../services/app-system/app-system.service';
-import { ElectronService } from '../../electron-bridge/electron.service';
+import { SummaryCardComponent } from "../../components/summary-card/summary-card.component";
 
 // Interface for PRD information
 interface IPrdInfo {
@@ -40,20 +38,23 @@ interface IPrdInfo {
   styleUrls: ['./test-cases-home.component.scss'],
   standalone: true,
   imports: [
-    ButtonComponent,
     MatMenuModule,
     AsyncPipe,
     NgIf,
     NgForOf,
-    ListItemComponent,
+    UnifiedCardComponent,
+    SummaryCardComponent,
     BadgeComponent,
     SearchInputComponent,
     MatTooltipModule,
-    AppSelectComponent,
-  ],
+    AppSelectComponent
+],
   providers: [
     provideIcons({
       heroArrowRight,
+      heroDocumentText,
+      heroClipboardDocumentCheck,
+      heroBeaker
     }),
   ],
 })
@@ -68,18 +69,39 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
   
   userStories: IUserStory[] = [];
   isLoading: boolean = false;
+  testCaseCounts: Map<string, number> = new Map<string, number>();
   
-  // Observable for user stories
+  summaryCards: SummaryCardData[] = [
+    {
+      icon: 'heroDocumentText',
+      title: 'Total User Stories',
+      color: 'blue',
+      countFn: () => this.getTotalUserStories()
+    },
+    {
+      icon: 'heroClipboardDocumentCheck',
+      title: 'Stories with Test Cases',
+      color: 'green',
+      countFn: () => this.getUserStoriesWithTestCases(),
+      percentage: () => this.userStories.length ? 
+        (this.getUserStoriesWithTestCases() / this.getTotalUserStories()) * 100 : 0
+    },
+    {
+      icon: 'heroBeaker',
+      title: 'Total Test Cases',
+      color: 'purple',
+      countFn: () => this.getTotalTestCases()
+    }
+  ];
+  
   userStories$ = new BehaviorSubject<IUserStory[]>([]);
   
-  // Observable for filtered user stories
   filteredUserStories$ = this.searchService.filterItems(
     this.userStories$,
     this.searchTerm$,
     (story: IUserStory) => [story.id, story.name],
   );
   
-  // PRD information
   prdList: IPrdInfo[] = [];
   prdList$ = new BehaviorSubject<IPrdInfo[]>([]);
   selectedPrdId: string | null = null;
@@ -94,46 +116,63 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     private appSystemService: AppSystemService,
     private route: ActivatedRoute,
   ) {
-    // Add breadcrumb for test cases home
+  }
+  
+  ngOnInit() {
+    console.debug('TestCasesHomeComponent initialized');
+    
+    this.clearAllData();
+    
     this.store.dispatch(
       new AddBreadcrumb({
         label: 'Test Cases',
         tooltipLabel: 'Test Cases Home',
       }),
     );
-  }
-  
-  ngOnInit() {
-    console.log('TestCasesHomeComponent initialized');
-    // Get projectId from query parameters
-    this.route.queryParams.subscribe((params: { [key: string]: string }) => {
+    
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params: { [key: string]: string }) => {
       if (params['projectId']) {
         this.currentProject = params['projectId'];
-        console.log(`Project ID from query params: ${this.currentProject}`);
-        this.logger.debug(`Project ID from query params: ${this.currentProject}`);
+        console.debug(`Project ID from query params: ${this.currentProject}`);
         
-        // Dispatch GetProjectFiles action to load project folders with base files
+        this.clearAllData();
+        
         this.store.dispatch(new GetProjectFiles(this.currentProject, FILTER_STRINGS.BASE)).subscribe(() => {
           console.log('GetProjectFiles action with BASE filter completed');
           this.loadPrdList();
         });
       } else {
-        // Fallback to selected project from store if no query param
-        this.selectedProject$.subscribe((project) => {
-          this.currentProject = project;
-          console.log('Selected project from store:', project);
-          this.logger.debug(project, 'selected project');
-          
-          if (project) {
-            // Dispatch GetProjectFiles action to load project folders with base files
-            this.store.dispatch(new GetProjectFiles(this.currentProject, FILTER_STRINGS.BASE)).subscribe(() => {
-              console.log('GetProjectFiles action with BASE filter completed');
-              this.loadPrdList();
-            });
+        this.selectedProject$.pipe(takeUntil(this.destroy$)).subscribe((project) => {
+          if (this.currentProject !== project) {
+            this.currentProject = project;
+            console.log('Selected project from store:', project);
+            this.logger.debug(project, 'selected project');
+            
+            this.clearAllData();
+            
+            if (project) {
+              this.store.dispatch(new GetProjectFiles(this.currentProject, FILTER_STRINGS.BASE)).subscribe(() => {
+                console.log('GetProjectFiles action with BASE filter completed');
+                this.loadPrdList();
+              });
+            }
           }
         });
       }
     });
+  }
+  
+  private clearAllData() {
+    console.debug('Clearing all PRD and user story data');
+    this.store.dispatch(new ClearBRDPRDState());
+
+    this.prdList = [];
+    this.prdList$.next([]);
+    this.selectedPrdId = null;
+    this.selectedPrdTitle = '';
+    this.userStories = [];
+    this.userStories$.next([]);
+    this.testCaseCounts = new Map<string, number>();
   }
   
   onSearch(term: string) {
@@ -143,10 +182,8 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
   navigateToTestCases(userStory: IUserStory) {
     this.logger.debug('Navigating to test cases for user story:', userStory);
     
-    // Store the user story ID in the NgXs store
     this.store.dispatch(new SetSelectedUserStory(userStory.id));
     
-    // Navigate to the test-cases component with the user story ID
     this.router.navigate(['/test-cases', userStory.id], {
       queryParams: {
         projectId: this.currentProject
@@ -169,27 +206,66 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     }
   }
   
+  getUserStoryBorderClass(userStoryId: string): string {
+    const testCaseCount = this.getTestCaseCount(userStoryId);
+    if (testCaseCount === 0) {
+      return 'border-l-4 border-l-red-500';
+    } else if (testCaseCount > 0) {
+      return 'border-l-4 border-l-green-500';
+    } else {
+      return 'border-l-4 border-l-amber-500';
+    }
+  }
+  
   /**
-   * Loads the list of PRDs from base files
+   * Returns the status indicator for a user story
    */
+  getUserStoryStatusIndicator(userStoryId: string): CardStatusIndicator {
+    const testCaseCount = this.getTestCaseCount(userStoryId);
+    let icon = '';
+    let iconBgClass = '';
+    let iconColorClass = '';
+    let tooltip = '';
+    
+    if (testCaseCount === 0) {
+      icon = 'heroExclamationCircle';
+      iconBgClass = 'bg-red-100';
+      iconColorClass = 'text-red-600';
+      tooltip = 'No test cases created';
+    } else {
+      icon = 'heroClipboardDocumentCheck';
+      iconBgClass = 'bg-green-100';
+      iconColorClass = 'text-green-600';
+      tooltip = `${testCaseCount} test cases created`;
+    }
+    
+    return {
+      icon,
+      iconBgClass,
+      iconColorClass,
+      text: `${testCaseCount} test cases`,
+      tooltip
+    };
+  }
+  
   private loadPrdList() {
     this.isLoading = true;
-    console.log('Loading PRD list');
     this.logger.debug('Loading PRD list');
     
-    // Use BulkReadFiles to load all PRD base files
+    this.prdList = [];
+    this.prdList$.next([]);
+    this.selectedPrdId = null;
+    this.selectedPrdTitle = '';
+    
     this.store.dispatch(new BulkReadFiles('PRD'));
     
-    // Subscribe to the file contents
-    this.originalDocumentList$.subscribe(documents => {
+    this.originalDocumentList$.pipe(takeUntil(this.destroy$)).subscribe(documents => {
       if (!documents || documents.length === 0) {
-        console.log('No PRD documents found');
+        console.debug('No PRD documents found');
         this.isLoading = false;
-        this.prdList$.next([]);
         return;
       }
       
-      // Filter for base files and exclude archived files
       const baseDocuments = documents.filter(doc => 
         doc.fileName.includes('-base.json') && !doc.fileName.includes('-archived')
       );
@@ -199,23 +275,19 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
       if (baseDocuments.length === 0) {
         console.log('No non-archived base documents found');
         this.isLoading = false;
-        this.prdList$.next([]);
         return;
       }
       
       console.log(`Found ${baseDocuments.length} non-archived base documents`);
       this.logger.debug(`Found ${baseDocuments.length} non-archived base documents`);
       
-      // Process each base document to get PRD information
       const allPrds: IPrdInfo[] = [];
       
       baseDocuments.forEach(doc => {
-        // Extract the full PRD ID (e.g., "PRD01") from the filename
         const prdId = doc.fileName.split('-base.json')[0];
         const content = doc.content;
         
         if (content) {
-          // Create PRD info object
           const prdInfo: IPrdInfo = {
             id: prdId,
             name: content.title || `PRD ${prdId.replace('PRD', '')}`,
@@ -232,44 +304,32 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     });
   }
   
-  /**
-   * Helper method to finish loading PRD list
-   */
   private finishLoadingPrds(prds: IPrdInfo[]) {
     console.log(`Loaded ${prds.length} PRDs:`, prds);
     this.logger.debug(`Loaded ${prds.length} PRDs`);
     
-    // Sort PRDs by ID
     prds.sort((a, b) => a.id.localeCompare(b.id));
     
     this.prdList = prds;
     this.prdList$.next(prds);
     this.isLoading = false;
     
-    // If there are PRDs, select the first one by default
     if (prds.length > 0) {
       this.selectPrd(prds[0].id);
     }
   }
   
-  /**
-   * Convert PRD list to SelectOption array for app-select component
-   */
   getPrdSelectOptions(): SelectOption[] {
     return this.prdList.map(prd => ({
       value: prd.id,
       label: `${prd.id} - ${prd.name}`
     }));
   }
-  
-  /**
-   * Select a PRD and load its user stories
-   */
+
   selectPrd(prdId: string) {
-    console.log(`Selecting PRD: ${prdId}`);
+    console.debug(`Selecting PRD: ${prdId}`);
     this.logger.debug(`Selecting PRD: ${prdId}`);
     
-    // Update selected state in PRD list
     this.prdList = this.prdList.map(prd => ({
       ...prd,
       selected: prd.id === prdId
@@ -278,19 +338,13 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     
     this.selectedPrdId = prdId;
     
-    // Set the selected PRD title
     const selectedPrd = this.prdList.find(prd => prd.id === prdId);
     if (selectedPrd) {
       this.selectedPrdTitle = selectedPrd.name;
     }
-    
-    // Load user stories for the selected PRD
     this.loadUserStoriesForPrd(prdId);
   }
   
-  /**
-   * Loads user stories for a specific PRD from its feature file
-   */
   private loadUserStoriesForPrd(prdId: string) {
     this.isLoading = true;
     console.log(`Loading user stories for PRD: ${prdId}`);
@@ -301,7 +355,6 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     
     console.log(`Reading feature file: ${featurePath}`);
     
-    // First check if the file exists
     this.appSystemService.fileExists(featurePath)
       .then(exists => {
         if (!exists) {
@@ -310,7 +363,6 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
           return;
         }
         
-        // Read the file content using AppSystemService
         this.appSystemService.readFile(featurePath)
           .then(content => {
             console.log(`File content for ${featureFile}:`, content ? 'Content received' : 'No content');
@@ -360,22 +412,112 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
       });
   }
   
-  /**
-   * Helper method to finish loading user stories
-   */
   private finishLoading(userStories: IUserStory[]) {
     console.log(`Loaded ${userStories.length} user stories:`, userStories);
     this.logger.debug(`Loaded ${userStories.length} user stories`);
     this.userStories = userStories;
     this.userStories$.next(userStories);
-    this.isLoading = false;
+    
+    if (userStories.length > 0) {
+      this.fetchTestCaseCounts(userStories);
+    } else {
+      this.isLoading = false;
+    }
+  }
+  
+  private fetchTestCaseCounts(userStories: IUserStory[]) {
+    console.log('Fetching test case counts for user stories');
+    this.logger.debug('Fetching test case counts for user stories');
+    
+    this.testCaseCounts = new Map<string, number>();
+    let processedCount = 0;
+    
+    userStories.forEach(userStory => {
+      const testCasePath = `${this.currentProject}/TC/${userStory.id}`;
+      
+      this.appSystemService.fileExists(testCasePath)
+        .then(exists => {
+          if (exists) {
+            this.appSystemService.getFolders(testCasePath, FILTER_STRINGS.BASE, false)
+              .then(files => {
+                this.testCaseCounts.set(userStory.id, files.length);
+                console.log(`User story ${userStory.id} has ${files.length} test cases`);
+                
+                processedCount++;
+                
+                if (processedCount === userStories.length) {
+                  this.isLoading = false;
+                }
+              })
+              .catch(error => {
+                console.error(`Error getting test case files for ${userStory.id}:`, error);
+                this.testCaseCounts.set(userStory.id, 0);
+                processedCount++;
+                
+                if (processedCount === userStories.length) {
+                  this.isLoading = false;
+                }
+              });
+          } else {
+            this.testCaseCounts.set(userStory.id, 0);
+            console.log(`User story ${userStory.id} has no test cases`);
+            
+            processedCount++;
+            
+            if (processedCount === userStories.length) {
+              this.isLoading = false;
+            }
+          }
+        })
+        .catch(error => {
+          console.error(`Error checking test case directory for ${userStory.id}:`, error);
+          this.testCaseCounts.set(userStory.id, 0);
+          
+          processedCount++;
+          if (processedCount === userStories.length) {
+            this.isLoading = false;
+          }
+        });
+    });
+  }
+  
+  getTestCaseCount(userStoryId: string): number {
+    return this.testCaseCounts.get(userStoryId) || 0;
+  }
+  
+  getTotalUserStories(): number {
+    return this.userStories.length;
+  }
+
+  getUserStoriesWithTestCases(): number {
+    let count = 0;
+    this.userStories.forEach(story => {
+      if (this.getTestCaseCount(story.id) > 0) {
+        count++;
+      }
+    });
+    return count;
+  }
+
+  getTotalTestCases(): number {
+    let total = 0;
+    this.userStories.forEach(story => {
+      total += this.getTestCaseCount(story.id);
+    });
+    return total;
   }
   
   ngOnDestroy() {
-    // Remove the breadcrumb when the component is destroyed
     this.store.dispatch(new DeleteBreadcrumb('Test Cases'));
-    
     this.destroy$.next();
     this.destroy$.complete();
   }
+}
+
+interface SummaryCardData {
+  icon: string;
+  title: string;
+  color: 'blue' | 'green' | 'purple' | 'amber' | 'red';
+  countFn: () => number;
+  percentage?: () => number | null;
 }

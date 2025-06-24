@@ -101,7 +101,11 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.fromGlobalView = history.state?.fromGlobalView === true;
+    this.subscriptions.push(
+      this.route.queryParams.subscribe(params => {
+        this.fromGlobalView = params['fromGlobalView'] === 'true';
+      })
+    );
 
     this.subscriptions.push(
       this.store.select(ProjectsState.getSelectedProject).subscribe((project) => {
