@@ -657,19 +657,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     });
   }
   
-  /**
-   * Navigate to the test-cases component
-   * This method is called when the TC folder is clicked
-   */
-  navigateToTestCases() {
-    this.router.navigate(['/test-cases'], {
-      state: {
-        projectId: this.projectId,
-        data: this.appInfo,
-      }
-    });
-  }
-  
   navigateToTestCasesHome() {
     this.router.navigate(['/test-cases-home'], {
       queryParams: {

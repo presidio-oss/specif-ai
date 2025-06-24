@@ -52,7 +52,6 @@ import { ClipboardService } from '../../services/clipboard.service';
 import { LoadingService } from '../../services/loading.service';
 import {
   AddBreadcrumb,
-  AddBreadcrumbs,
   DeleteBreadcrumb,
 } from '../../store/breadcrumb/breadcrumb.actions';
 
@@ -67,7 +66,6 @@ import {
     AsyncPipe,
     NgIf,
     NgForOf,
-    ListItemComponent,
     BadgeComponent,
     SearchInputComponent,
     ExportDropdownComponent,
@@ -156,7 +154,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   constructor(
     private testCaseService: TestCaseService,
     private clipboardService: ClipboardService,
-    private loadingService: LoadingService,
     private electronService: ElectronService,
     private toast: ToasterService,
     private appSystemService: AppSystemService,
@@ -188,16 +185,14 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       new AddBreadcrumb({
         label: 'Test Cases',
         tooltipLabel: 'Test Cases Home',
-        url: `/test-cases-home?projectId=${this.navigation.projectId || this.currentProject}`
+        url: '/test-cases-home'
       })
     );
     
     this.store.dispatch(
       new AddBreadcrumb({
         label: this.currentLabel,
-        tooltipLabel: this.navigation.selectedRequirement?.name
-          ? `Test Cases for ${this.navigation.selectedRequirement.id}: ${this.navigation.selectedRequirement.name}`
-          : `Test Cases for ${userStoryId}`,
+        tooltipLabel: `Test Cases for ${userStoryId}`,
       })
     );
 

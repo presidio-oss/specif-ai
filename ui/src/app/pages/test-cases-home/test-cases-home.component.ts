@@ -75,13 +75,13 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     {
       icon: 'heroDocumentText',
       title: 'Total User Stories',
-      color: 'blue',
+      color: 'purple',
       countFn: () => this.getTotalUserStories()
     },
     {
       icon: 'heroClipboardDocumentCheck',
       title: 'Stories with Test Cases',
-      color: 'green',
+      color: 'blue',
       countFn: () => this.getUserStoriesWithTestCases(),
       percentage: () => this.userStories.length ? 
         (this.getUserStoriesWithTestCases() / this.getTotalUserStories()) * 100 : 0
@@ -89,7 +89,7 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     {
       icon: 'heroBeaker',
       title: 'Total Test Cases',
-      color: 'purple',
+      color: 'green',
       countFn: () => this.getTotalTestCases()
     }
   ];
@@ -517,7 +517,7 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
 interface SummaryCardData {
   icon: string;
   title: string;
-  color: 'blue' | 'green' | 'purple' | 'amber' | 'red';
+  color: string;
   countFn: () => number;
   percentage?: () => number | null;
 }
