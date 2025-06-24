@@ -21,6 +21,7 @@ import {
   heroStopCircle,
   heroChevronDoubleUp,
   heroChevronDoubleDown,
+  heroExclamationTriangle,
 } from '@ng-icons/heroicons/outline';
 import {
   WorkflowProgressEvent,
@@ -30,6 +31,7 @@ import {
 } from '../../model/interfaces/workflow-progress.interface';
 import { CustomAccordionComponent } from '../custom-accordion/custom-accordion.component';
 import { ButtonComponent } from '../core/button/button.component';
+import { ThreeBounceLoaderComponent } from '../three-bounce-loader/three-bounce-loader.component';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -61,6 +63,7 @@ interface ProcessedProgressEvent extends WorkflowProgressEvent {
     CustomAccordionComponent,
     ButtonComponent,
     NgTemplateOutlet,
+    ThreeBounceLoaderComponent,
   ],
   providers: [
     provideIcons({
@@ -70,6 +73,7 @@ interface ProcessedProgressEvent extends WorkflowProgressEvent {
       heroStopCircle,
       heroChevronDoubleUp,
       heroChevronDoubleDown,
+      heroExclamationTriangle,
     }),
   ],
 })
@@ -91,6 +95,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
 
   isAborting = signal(false);
   isExpandedAll = signal(false);
+  private individualAccordionStates = signal<Set<string>>(new Set());
 
   readonly WorkflowProgressEventType = WorkflowProgressEventType;
   private destroy$ = new Subject<void>();
@@ -113,6 +118,12 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
       colorClass: 'bg-amber-400',
       textColorClass: 'text-amber-700',
       borderColorClass: 'border-amber-500',
+    },
+    [WorkflowProgressEventType.Error]: {
+      iconName: 'heroExclamationTriangle',
+      colorClass: 'bg-red-400',
+      textColorClass: 'text-red-700',
+      borderColorClass: 'border-red-500',
     },
   };
 
@@ -225,8 +236,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
 
   private checkHasInputOutput(event: WorkflowProgressEvent): boolean {
     return (
-      (event.type === WorkflowProgressEventType.Mcp ||
-        event.type === WorkflowProgressEventType.Action) &&
+      event.type !== WorkflowProgressEventType.Thinking &&
       (!!event.message?.input || !!event.message?.output)
     );
   }
@@ -237,8 +247,7 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
     isCreating: boolean,
   ): boolean {
     if (
-      event.type === WorkflowProgressEventType.Action ||
-      event.type === WorkflowProgressEventType.Mcp ||
+      event.type !== WorkflowProgressEventType.Thinking ||
       this.isCompleted ||
       !isCreating
     ) {
@@ -327,10 +336,35 @@ export class WorkflowProgressComponent implements OnInit, OnDestroy {
   }
 
   toggleExpandAll(): void {
-    this.isExpandedAll.update((value) => !value);
+    this.isExpandedAll.update((value) => {
+      if (!value) {
+        this.individualAccordionStates.set(new Set());
+      }
+      return !value;
+    });
   }
 
-  shouldAccordionBeOpen(): boolean {
-    return this.isExpandedAll();
+  shouldAccordionBeOpen(accordionId?: string): boolean {
+    if (this.isExpandedAll()) {
+      return true;
+    }
+
+    if (accordionId) {
+      return this.individualAccordionStates().has(accordionId);
+    }
+
+    return false;
+  }
+
+  onAccordionToggle(accordionId: string, isOpen: boolean): void {
+    this.individualAccordionStates.update((states) => {
+      const newStates = new Set(states);
+      if (isOpen) {
+        newStates.add(accordionId);
+      } else {
+        newStates.delete(accordionId);
+      }
+      return newStates;
+    });
   }
 }

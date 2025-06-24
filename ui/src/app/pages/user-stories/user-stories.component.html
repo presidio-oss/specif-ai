@@ -2,43 +2,18 @@
   class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full relative"
   *ngIf="userStories$ | async as userStories"
 >
-  <div
-    *ngIf="showProgressDialog"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm overlay-enter overflow-y-auto"
-    [class.animate-fadeIn]="showProgressDialog"
-  >
-    <div
-      class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 my-8 max-h-[90vh] border border-gray-200 workflow-dialog flex flex-col"
-    >
-      <div class="p-6 flex-1 overflow-y-auto">
-        <app-workflow-progress
-          [projectId]="navigation.projectId"
-          [workflowType]="WorkflowType.Story"
-          [isVisible]="true"
-          [isCompleted]="storyGenerationComplete"
-          initialTitle="Generating User Stories..."
-          completedTitle="User Stories Generated Successfully!"
-          subtitle="Creating user stories and tasks..."
-          [showCancelButton]="false"
-        >
-        </app-workflow-progress>
-      </div>
-
-      <div
-        *ngIf="storyGenerationComplete"
-        class="p-4 flex justify-center border-t border-gray-100"
-      >
-        <app-button
-          buttonContent="View Generated Stories"
-          theme="primary"
-          size="sm"
-          rounded="lg"
-          icon="heroEye"
-          (click)="closeProgressDialog()"
-        />
-      </div>
-    </div>
-  </div>
+  <app-workflow-progress-dialog
+    [isVisible]="showProgressDialog"
+    [projectId]="navigation.projectId"
+    [workflowType]="WorkflowType.Story"
+    [isCompleted]="storyGenerationComplete"
+    initialTitle="Generating User Stories..."
+    completedTitle="User Stories Generated Successfully!"
+    subtitle="Creating user stories and tasks..."
+    completionButtonText="View Generated Stories"
+    [showCancelButton]="false"
+    (closeDialog)="closeProgressDialog()"
+  />
 
   <div class="mb-4">
     <div class="flex items-center mt-2 justify-between">
@@ -57,12 +32,9 @@
       </div>
 
       <div class="flex items-center justify-between gap-3">
-        <app-button
-          [buttonContent]="
-            userStories.length === 0
-              ? 'Generate User Stories'
-              : 'Regenerate User Stories'
-          "
+       <app-button
+          *ngIf="userStories.length === 0"
+          buttonContent="Generate User Stories"
           theme="secondary"
           size="sm"
           (click)="addMoreContext(userStories.length > 0)"
@@ -71,7 +43,7 @@
         />
         <app-export-dropdown
           [disabled]="userStories.length === 0 || isGeneratingStories"
-          [options]="exportOptions"
+          [groupedOptions]="exportOptions"
         />
         <app-button
           buttonContent="Add New"

@@ -25,6 +25,7 @@ export class ButtonComponent {
   @Input() roundedRight: 'none' | 'sm' | 'md' | 'lg' = 'none';
   @Input() disabled: boolean = false;
   @Input() icon?: string;
+  @Input() iconPosition: 'left' | 'right' = 'left';
   @Input() type: string = 'button';
   @Input() isIconButton: boolean = false;
   @Input() isFullWidth: boolean = false;

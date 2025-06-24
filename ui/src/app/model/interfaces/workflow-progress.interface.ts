@@ -4,6 +4,7 @@ export enum WorkflowProgressEventType {
   Thinking = 'thinking',
   Action = 'action',
   Mcp = 'mcp',
+  Error = 'error',
 }
 
 export interface WorkflowProgressEvent {
@@ -47,9 +48,9 @@ export interface WorkflowStatusState {
 export interface ActiveListener {
   readonly projectId: string;
   readonly workflowType: WorkflowType;
-  readonly callback: (
+  readonly registeredListener: (
     event: IpcRendererEvent,
-    data: WorkflowProgressEvent,
+    ...args: any[]
   ) => void;
 }
 
