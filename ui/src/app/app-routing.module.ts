@@ -18,6 +18,7 @@ import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout.component
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { TestCasesComponent } from './pages/test-cases/test-cases.component';
 import { TestCaseDetailPageComponent } from './pages/test-case-detail/test-case-detail.component';
+import { TestCasesHomeComponent } from './pages/test-cases-home/test-cases-home.component';
 
 const routes: Routes = [
   {
@@ -173,6 +174,18 @@ const routes: Routes = [
         canActivate: [UserGuard],
         canDeactivate: [CanDeactivateGuard],
         data: { mode: 'edit' }
+      },
+      {
+        path: 'test-cases-home',
+        component: TestCasesHomeComponent,
+        canActivate: [UserGuard],
+        data: {
+          breadcrumb: {
+            name: 'Test Cases',
+            link: '/apps',
+            icon: 'test',
+          },
+        },
       },
     ],
   },

@@ -669,6 +669,14 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
+  navigateToTestCasesHome() {
+    this.router.navigate(['/test-cases-home'], {
+      queryParams: {
+        projectId: this.appName
+      }
+    });
+  }
 
   handleIntegrationNavState(): void {
     if (this.navigationState && this.navigationState['openAppIntegrations']) {

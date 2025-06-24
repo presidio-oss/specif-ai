@@ -1,0 +1,96 @@
+<div
+  class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full"
+>
+  <div class="mb-4">
+    <div class="flex items-center mt-2 justify-between">
+      <div class="flex flex-col gap-2 min-w-0">
+        <h1
+          class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
+        >
+          Test Cases
+        </h1>
+
+        <div class="flex items-center">
+          <h2 class="text-md font-semibold text-secondary-600">User Stories</h2>
+          <app-badge
+            *ngIf="filteredUserStories$ | async as userStories"
+            [badgeText]="userStories.length"
+          ></app-badge>
+        </div>
+        <div *ngIf="selectedPrdTitle" class="text-sm text-secondary-500">
+          {{ selectedPrdTitle }}
+        </div>
+      </div>
+    </div>
+
+    <!-- PRD Filter -->
+    <div class="mt-4 mb-4">
+      <app-select
+        label="Select PRD"
+        [options]="getPrdSelectOptions()"
+        [placeholder]="'Select a PRD'"
+        (selectionChange)="selectPrd($event || '')"
+        [clearable]="false"
+      ></app-select>
+    </div>
+
+    <app-search-input
+      *ngIf="filteredUserStories$ | async as userStories"
+      [hidden]="userStories.length === 0"
+      placeholder="Search user stories..."
+      (searchChange)="onSearch($event)"
+    ></app-search-input>
+  </div>
+
+  <div class="flex-1 overflow-y-auto">
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="flex justify-center items-center h-32">
+      <p class="text-secondary-600">Loading...</p>
+    </div>
+
+    <!-- User stories list -->
+    <ng-container
+      *ngIf="!isLoading && (filteredUserStories$ | async) as userStories"
+    >
+      <ng-container *ngIf="userStories.length > 0; else noUserStories">
+        <app-list-item
+          *ngFor="let userStory of userStories"
+          [payload]="{
+            description: userStory.description,
+            name: userStory.name,
+            id: userStory.id
+          }"
+          [tag]="userStory.id"
+          (click)="navigateToTestCases(userStory)"
+          class="relative"
+        >
+          <div class="absolute top-4 right-4 flex gap-2">
+            <app-button
+              theme="secondary_outline"
+              size="xs"
+              rounded="lg"
+              [isIconButton]="true"
+              icon="heroDocumentDuplicate"
+              (click)="copyUserStoryContent($event, userStory)"
+              matTooltip="Copy"
+            />
+          </div>
+        </app-list-item>
+      </ng-container>
+
+      <!-- Empty state -->
+      <ng-template #noUserStories>
+        <div
+          class="flex flex-col justify-center items-center min-h-[40vh] text-center"
+        >
+          <h1 class="font-semibold text-secondary-700 text-xl mb-2">
+            No User Stories Available for the selected PRD.
+          </h1>
+          <p class="text-secondary-500 text-sm">
+            Try selecting a different PRD or check if feature documents exist.
+          </p>
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+</div>
