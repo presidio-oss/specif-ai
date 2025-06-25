@@ -59,7 +59,6 @@
       <div class="grid grid-cols-3 gap-4">
         <!-- Priority filter -->
         <app-select
-          label="Priority"
           [options]="priorityOptions"
           [placeholder]="'Filter by priority'"
           (selectionChange)="onPriorityFilterChange($event)"
@@ -68,7 +67,6 @@
         
         <!-- Type filter -->
         <app-select
-          label="Type"
           [options]="typeOptions"
           [placeholder]="'Filter by type'"
           (selectionChange)="onTypeFilterChange($event)"
@@ -77,7 +75,6 @@
         
         <!-- Steps count filter -->
         <app-select
-          label="Steps"
           [options]="stepsCountOptions"
           [placeholder]="'Filter by steps count'"
           (selectionChange)="onStepsCountFilterChange($event)"

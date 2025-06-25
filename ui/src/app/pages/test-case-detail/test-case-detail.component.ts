@@ -24,7 +24,29 @@ import { AppSelectComponent } from '../../components/core/app-select/app-select.
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import { MatIconModule } from '@angular/material/icon';
 import { provideIcons, NgIconComponent } from '@ng-icons/core';
-import { heroPlus, heroTrash, heroDocumentDuplicate } from '@ng-icons/heroicons/outline';
+import { 
+  heroPlus, 
+  heroTrash, 
+  heroDocumentDuplicate, 
+  heroBeaker,
+  heroPencil,
+  heroArrowLeft,
+  heroCheck,
+  heroXMark,
+  heroTag,
+  heroFlag,
+  heroSquares2x2,
+  heroCircleStack,
+  heroDocumentText,
+  heroClipboard,
+  heroClipboardDocument,
+  heroListBullet,
+  heroArrowUp,
+  heroArrowDown,
+  heroPlay,
+  heroCheckCircle,
+  heroExclamationTriangle
+} from '@ng-icons/heroicons/outline';
 import { CommonModule, NgClass, NgForOf, NgIf } from '@angular/common';
 
 import { AppSystemService } from '../../services/app-system/app-system.service';
@@ -66,7 +88,29 @@ import {
     NgIconComponent,
     CommonModule,
   ],
-  providers: [provideIcons({ heroPlus, heroTrash, heroDocumentDuplicate })],
+  providers: [provideIcons({ 
+    heroPlus, 
+    heroTrash, 
+    heroDocumentDuplicate,
+    heroBeaker,
+    heroPencil,
+    heroArrowLeft,
+    heroCheck,
+    heroXMark,
+    heroTag,
+    heroFlag,
+    heroSquares2x2,
+    heroCircleStack,
+    heroDocumentText,
+    heroClipboard,
+    heroClipboardDocument,
+    heroListBullet,
+    heroArrowUp,
+    heroArrowDown,
+    heroPlay,
+    heroCheckCircle,
+    heroExclamationTriangle
+  })],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
@@ -93,6 +137,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
 
   priorityOptions = ['High', 'Medium', 'Low'].map((val) => ({ value: val, label: val }));
   typeOptions = ['Functional', 'Integration', 'UI/UX', 'Performance', 'Security'].map((val) => ({ value: val, label: val }));
+  statusOptions = ['Active', 'Draft', 'Deprecated', 'Archived'].map((val) => ({ value: val, label: val }));
 
   @HostListener('input') onFormInput() {
     if (this.mode === 'edit' || this.mode === 'add') {
@@ -157,6 +202,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       description: ['', Validators.required],
       priority: ['Medium', Validators.required],
       type: ['Functional', Validators.required],
+      status: ['Active', Validators.required],
       preConditions: this.fb.array([]),
       steps: this.fb.array([]),
     });
@@ -224,6 +270,8 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       this.steps.at(j).get('stepNumber')?.setValue(j + 1);
     }
   }
+  
+  // Step reordering methods removed as per requirement
 
   enableEditMode() {
     this.mode = 'edit';

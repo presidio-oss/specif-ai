@@ -75,7 +75,7 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     {
       icon: 'heroDocumentText',
       title: 'Total User Stories',
-      color: 'amber',
+      // color: '',
       countFn: () => this.getTotalUserStories()
     },
     {
@@ -533,6 +533,6 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
 interface SummaryCardData {
   icon: string;
   title: string;
-  color: string;
+  color?: string;
   countFn: () => number;
 }
