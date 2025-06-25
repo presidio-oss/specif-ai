@@ -9,7 +9,8 @@ import {
   heroArrowDownTray,
   heroEllipsisVertical,
   heroChevronDown,
-  heroChevronRight
+  heroChevronRight,
+  heroDocument
 } from '@ng-icons/heroicons/outline';
 import { TimeZonePipe } from '../pipes/timezone-pipe';
 
@@ -40,7 +41,8 @@ export interface DropdownOptionGroup {
       heroArrowDownTray,
       heroEllipsisVertical,
       heroChevronDown,
-      heroChevronRight
+      heroChevronRight,
+      heroDocument
     })
   ]
 })

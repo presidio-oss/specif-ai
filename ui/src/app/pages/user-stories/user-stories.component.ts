@@ -969,7 +969,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
             {
               label: 'Regenerate',
               callback: addMoreContext.bind(this),
-              icon: 'heroDocumentText',
+              icon: 'heroDocument',
               additionalInfo: 'User Stories & Tasks',
               isTimestamp: false,
             },

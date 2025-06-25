@@ -32,7 +32,7 @@
             <ng-icon *ngIf="option.icon" [name]="option.icon" class="mr-2 text-secondary-500"></ng-icon>
             <div class="flex flex-col">
               <span class="text-sm">{{ option.label }}</span>
-              <div *ngIf="option.additionalInfo" class="flex items-center text-[11px] text-secondary-500 mt-0.5 whitespace-nowrap">
+              <div *ngIf="option.additionalInfo" class="flex items-center text-[10px] text-secondary-500 mt-0.5 whitespace-nowrap">
                   <span *ngIf="option.isTimestamp">Last Synced: {{ option.additionalInfo | timezone }}</span>
                   <span *ngIf="!option.isTimestamp">{{ option.additionalInfo }}</span>
               </div>
