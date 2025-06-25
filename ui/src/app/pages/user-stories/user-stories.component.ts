@@ -969,8 +969,9 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
             {
               label: 'Regenerate',
               callback: addMoreContext.bind(this),
-              icon: 'heroDocumentText',
+              icon: 'heroDocument',
               additionalInfo: 'User Stories & Tasks',
+              isTimestamp: false,
             },
           ],
         },
@@ -1001,6 +1002,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           callback: pushToJira.bind(this),
           icon: 'heroArrowUpTray',
           additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
+          isTimestamp:true
         }
       ];
 
@@ -1010,6 +1012,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           callback: pullFromJira.bind(this),
           icon: 'heroArrowDownTray',
           additionalInfo: this.requirementFile?.lastPullFromJiraTimestamp || undefined,
+          isTimestamp:true
         });
       }
 
