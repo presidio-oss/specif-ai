@@ -1,4 +1,6 @@
+import { CRITICAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS } from '../../context/editor-instructions';
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
+import { SPECIAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS } from '../../context/editor-instructions';
 
 export interface UpdateTaskPromptParams {
   name: string;
@@ -41,6 +43,8 @@ The task should be strictly derived from the provided user story description and
 The "Client Request - Task Description" can be expanded to derive acceptance criteria based on provided input but DO NOT include additional or irrelevant content.
 An apt task name should be generated based on the updated acceptance criteria.
 
+${CRITICAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS}
+
 STRICT:
 (!) Ensure to categorize the task as frontend, backend, API integration, UX screens, Infra changes if applicable.
 (!) Output Structure should be a valid JSON: Here is the sample Structure. Follow this exactly. Don't add or change the response JSON
@@ -60,6 +64,7 @@ Special Instructions:
 2. Strictly return ONLY ONE OBJECT in the response tasks array.
 3. You are allowed to use Markdown for the description of the task. You MUST ONLY use valid Markdown according to the following rules:
     ${MARKDOWN_RULES}
+4. ${SPECIAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS}
 
 STRICT:
 (!) return a list of task ONLY: no other headers, footers, or additional text
