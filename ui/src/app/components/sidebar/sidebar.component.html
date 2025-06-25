@@ -1,0 +1,259 @@
+<div
+  class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4"
+>
+  <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
+  <ul role="list" class="min-h space-y-1.5">
+    <li
+      class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
+      [ngClass]="{
+        'bg-secondary-50 border-secondary-200':
+          selectedFolder?.title === 'solution',
+        'bg-white border-transparent':
+          selectedFolder?.title !== 'solution',
+      }"
+      (click)="selectFolder({ name: 'solution', children: [] })"
+      (keydown.enter)="selectFolder({ name: 'solution', children: [] })"
+      (keydown.space)="
+        selectFolder({ name: 'solution', children: [] });
+        $event.preventDefault()
+      "
+      role="button"
+      tabindex="0"
+    >
+      <div class="flex items-center">
+        <ng-icon
+          class="size-4 mr-2"
+          strokeWidth="2"
+          [ngClass]="{
+            'text-primary-600': selectedFolder?.title === 'solution',
+            'text-secondary-500': selectedFolder?.title !== 'solution',
+          }"
+          name="heroArchiveBox"
+        ></ng-icon>
+        <h4
+          class="text-sm font-medium"
+          [ngClass]="{
+            'text-primary-600': selectedFolder?.title === 'solution',
+            'text-secondary-500': selectedFolder?.title !== 'solution',
+          }"
+        >
+          Solution
+        </h4>
+      </div>
+    </li>
+
+    <ng-container *ngFor="let folder of directories; index as i">
+      <li
+        *ngIf="!isArchived(folder)"
+        class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
+        [ngClass]="{
+          'bg-secondary-50 border-secondary-200':
+            selectedFolder?.title === folder.name,
+          'bg-white border-transparent':
+            selectedFolder?.title !== folder.name,
+        }"
+        (click)="selectFolder(folder)"
+        (keydown.enter)="selectFolder(folder)"
+        (keydown.space)="selectFolder(folder); $event.preventDefault()"
+        role="button"
+        tabindex="0"
+      >
+        <div class="flex items-center">
+          <ng-icon
+            class="size-4 mr-2"
+            strokeWidth="2"
+            *ngIf="folder.name === 'BRD'"
+            [ngClass]="{
+              'text-primary-600': selectedFolder?.title === folder.name,
+              'text-secondary-500': selectedFolder?.title !== folder.name,
+            }"
+            name="heroBriefcase"
+          ></ng-icon>
+          <ng-icon
+            class="size-4 mr-2"
+            strokeWidth="2"
+            *ngIf="folder.name === 'PRD'"
+            [ngClass]="{
+              'text-primary-600': selectedFolder?.title === folder.name,
+              'text-secondary-500': selectedFolder?.title !== folder.name,
+            }"
+            name="heroSquares2x2"
+          ></ng-icon>
+          <ng-icon
+            class="size-4 mr-2"
+            strokeWidth="2"
+            *ngIf="folder.name === 'NFR'"
+            [ngClass]="{
+              'text-primary-600': selectedFolder?.title === folder.name,
+              'text-secondary-500': selectedFolder?.title !== folder.name,
+            }"
+            name="heroCube"
+          ></ng-icon>
+
+          <ng-icon
+            class="size-4 mr-2"
+            strokeWidth="2"
+            *ngIf="folder.name === 'UIR'"
+            [ngClass]="{
+              'text-primary-600': selectedFolder?.title === folder.name,
+              'text-secondary-500': selectedFolder?.title !== folder.name,
+            }"
+            name="heroWindow"
+          ></ng-icon>
+          <ng-icon
+            *ngIf="folder.name === 'BP'"
+            class="text-xl w-5 h-5 mr-2"
+            [ngClass]="{
+              'text-primary-600': selectedFolder?.title === folder.name,
+              'text-secondary-500': selectedFolder?.title !== folder.name,
+            }"
+            name="heroSquare3Stack3d"
+          >
+          </ng-icon>
+          <ng-icon
+            *ngIf="folder.name === 'TC'"
+            class="text-xl w-5 h-5 mr-2"
+            [ngClass]="{
+              'text-primary-600': selectedFolder?.title === folder.name,
+              'text-secondary-500': selectedFolder?.title !== folder.name,
+            }"
+            name="heroServerStack"
+          >
+          </ng-icon>
+          <h4
+            class="text-sm font-medium"
+            [ngClass]="{
+              'text-primary-600': selectedFolder?.title === folder.name,
+              'text-secondary-500': selectedFolder?.title !== folder.name,
+            }"
+          >
+            {{ getDescription(folder.name) }}
+          </h4>
+        </div>
+        <app-badge [badgeText]="folder.children.length" />
+      </li>
+    </ng-container>
+    <ng-container *ngFor="let folder of haiFolder">
+      <!-- TC folder - always show as clickable -->
+      <ng-container *ngIf="folder.key === 'TC'; else otherFolder">
+        <li
+          class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
+          [ngClass]="{
+            'bg-secondary-50 border-secondary-200':
+              selectedFolder?.title === 'TC',
+            'bg-white border-transparent':
+              selectedFolder?.title !== 'TC'
+          }"
+          (click)="navigateToTestCasesHome()"
+          (keydown.enter)="navigateToTestCasesHome()"
+          (keydown.space)="navigateToTestCasesHome(); $event.preventDefault()"
+          role="button"
+          tabindex="0"
+        >
+          <div class="flex items-center">
+            <ng-icon
+              class="text-xl w-5 h-5 mr-2"
+              [ngClass]="{
+                'text-primary-600': selectedFolder?.title === 'TC',
+                'text-secondary-500': selectedFolder?.title !== 'TC'
+              }"
+              name="heroServerStack"
+            >
+            </ng-icon>
+            <h4
+              class="text-sm font-medium"
+              [ngClass]="{
+                'text-primary-600': selectedFolder?.title === 'TC',
+                'text-secondary-500': selectedFolder?.title !== 'TC'
+              }"
+            >
+              Test Cases
+            </h4>
+          </div>
+        </li>
+      </ng-container>
+      
+      <ng-template #otherFolder>
+        <li
+          *ngIf="!directoryContainsFolder(folder.key, directories)"
+          class="flex items-center justify-between px-2 py-2 rounded-lg bg-white"
+        >
+          <div class="flex items-center">
+            <ng-icon
+              class="size-4 mr-2 text-secondary-500"
+              strokeWidth="2"
+              [name]="getIconName(folder.key)"
+            ></ng-icon>
+            <h4 class="text-sm text-secondary-500 font-medium">
+              {{ folder.value }}
+            </h4>
+          </div>
+          <app-button
+            buttonContent="Add"
+            theme="secondary"
+            size="xs"
+            rounded="lg"
+            [disabled]="isCreatingSolution"
+            tooltip="Add new document"
+            tooltipDisabled="Generating your solution. Please wait..."
+            (click)="
+              folder.key === 'BP'
+                ? navigateToBPAdd()
+                : navigateToAdd(folder.key)
+            "
+          />
+        </li>
+      </ng-template>
+    </ng-container>
+    <li
+      (click)="
+        !isCreatingSolution &&
+          selectFolder({ name: 'app-integrations', children: [] })
+      "
+      (keydown.enter)="
+        !isCreatingSolution &&
+          selectFolder({ name: 'app-integrations', children: [] })
+      "
+      (keydown.space)="
+        !isCreatingSolution &&
+          selectFolder({ name: 'app-integrations', children: [] });
+        $event.preventDefault()
+      "
+      role="button"
+      tabindex="0"
+      [ngClass]="{
+        'bg-secondary-50 border-secondary-200':
+          selectedFolder?.title === 'app-integrations',
+        'bg-white border-transparent':
+          selectedFolder?.title !== 'app-integrations',
+        'cursor-not-allowed': isCreatingSolution,
+      }"
+      class="flex cursor-pointer items-center justify-between px-2 py-2 rounded-lg bg-white hover:bg-secondary-50 border"
+    >
+      <div class="flex items-center">
+        <ng-icon
+          class="size-4 mr-2"
+          strokeWidth="2"
+          [ngClass]="{
+            'text-primary-600':
+              selectedFolder?.title === 'app-integrations',
+            'text-secondary-500':
+              selectedFolder?.title !== 'app-integrations',
+          }"
+          name="heroLink"
+        ></ng-icon>
+        <h4
+          class="text-sm font-medium"
+          [ngClass]="{
+            'text-primary-600':
+              selectedFolder?.title === 'app-integrations',
+            'text-secondary-500':
+              selectedFolder?.title !== 'app-integrations',
+          }"
+        >
+          Integrations
+        </h4>
+      </div>
+    </li>
+  </ul>
+</div>
