@@ -2,7 +2,7 @@
   class="rounded-lg p-5 shadow-sm hover:shadow-md transition-all duration-200 h-full"
   [ngClass]="getBackgroundClass()"
 >
-  <div class="flex items-center mb-4">
+  <div class="flex items-center">
     <div 
       class="rounded-full p-2.5 mr-4 flex items-center justify-center w-12 h-12"
       [ngClass]="getIconBgClass()"
@@ -11,14 +11,7 @@
     </div>
     <div>
       <div class="text-sm font-medium mb-1" [ngClass]="getTextColorClass()">{{ title }}</div>
-      <div class="text-3xl font-bold" [ngClass]="getHeadingColorClass()">{{ count }}</div>
+      <div class="text-3xl font-bold">{{ count }}</div>
     </div>
-  </div>
-  
-  <div *ngIf="percentage !== null" class="w-full h-1.5 mt-3 rounded-full overflow-hidden" [ngClass]="getProgressBgClass()">
-    <div class="h-1.5 rounded-full" [ngClass]="getProgressFillClass()" [style.width.%]="percentage"></div>
-  </div>
-  <div *ngIf="percentage === null" class="w-full h-1.5 mt-3 rounded-full overflow-hidden" [ngClass]="getProgressBgClass()">
-    <div class="h-1.5 rounded-full" [ngClass]="getProgressFillClass()" style="width: 100%"></div>
   </div>
 </div>

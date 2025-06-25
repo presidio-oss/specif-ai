@@ -11,11 +11,17 @@ export const buildResearchPrompt = (
   acceptanceCriteria: string,
   technicalDetails: string,
   userScreensInvolved: string,
-  extraContext: string
+  extraContext: string,
+  prdId: string,
+  prdTitle: string,
+  prdDescription: string
 ): string => {
   return `Please analyze this user story and gather relevant information for test case generation:
 Story Title: ${userStoryTitle}
 Story Description: ${userStoryDescription}
+${prdId ? `PRD ID: ${prdId}` : ""}
+${prdTitle ? `PRD Title: ${prdTitle}` : ""}
+${prdDescription ? `PRD Description: ${prdDescription}` : ""}
 ${acceptanceCriteria ? `Acceptance Criteria: ${acceptanceCriteria}` : ""}
 ${technicalDetails ? `Technical Details: ${technicalDetails}` : ""}
 ${userScreensInvolved ? `User Screens Involved: ${userScreensInvolved}` : ""}
@@ -39,12 +45,18 @@ export const buildGenerateTestCasesPrompt = (
   technicalDetails: string,
   userScreensInvolved: string,
   extraContext: string,
-  referenceInformation: string
+  referenceInformation: string,
+  prdId: string,
+  prdTitle: string,
+  prdDescription: string
 ): string => {
   return `Generate comprehensive test cases for the following user story following best practices from factifai.io:
 
 Story Title: ${userStoryTitle}
 Story Description: ${userStoryDescription}
+${prdId ? `PRD ID: ${prdId}` : ""}
+${prdTitle ? `PRD Title: ${prdTitle}` : ""}
+${prdDescription ? `PRD Description: ${prdDescription}` : ""}
 ${acceptanceCriteria ? `Acceptance Criteria: ${acceptanceCriteria}` : ""}
 ${technicalDetails ? `Technical Details: ${technicalDetails}` : ""}
 ${userScreensInvolved ? `User Screens Involved: ${userScreensInvolved}` : ""}
@@ -94,12 +106,18 @@ export const buildEvaluateTestCasesPrompt = (
   userStoryDescription: string,
   acceptanceCriteria: string,
   userScreensInvolved: string,
-  testCases: any[]
+  testCases: any[],
+  prdId: string,
+  prdTitle: string,
+  prdDescription: string
 ): string => {
   return `Evaluate the following test cases for quality and completeness:
 
 Story Title: ${userStoryTitle}
 Story Description: ${userStoryDescription}
+${prdId ? `PRD ID: ${prdId}` : ""}
+${prdTitle ? `PRD Title: ${prdTitle}` : ""}
+${prdDescription ? `PRD Description: ${prdDescription}` : ""}
 ${acceptanceCriteria ? `Acceptance Criteria: ${acceptanceCriteria}` : ""}
 ${userScreensInvolved ? `User Screens Involved: ${userScreensInvolved}` : ""}
 

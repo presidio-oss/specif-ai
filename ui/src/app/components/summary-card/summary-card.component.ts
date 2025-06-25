@@ -29,16 +29,4 @@ export class SummaryCardComponent {
   getTextColorClass(): string {
     return `text-${this.color}-600`;
   }
-
-  getHeadingColorClass(): string {
-    return `text-${this.color}-700`;
-  }
-
-  getProgressBgClass(): string {
-    return `bg-${this.color}-200`;
-  }
-
-  getProgressFillClass(): string {
-    return `bg-${this.color}-600`;
-  }
 }

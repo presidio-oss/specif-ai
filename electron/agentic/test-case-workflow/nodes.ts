@@ -96,7 +96,10 @@ export const buildResearchNode = ({
       state.acceptanceCriteria,
       state.technicalDetails,
       state.userScreensInvolved,
-      state.extraContext
+      state.extraContext,
+      state.prdId,
+      state.prdTitle,
+      state.prdDescription
     );
 
     const response = await agent.invoke(
@@ -166,7 +169,10 @@ export const buildGenerateTestCasesNode = (
         state.technicalDetails,
         state.userScreensInvolved,
         state.extraContext,
-        state.referenceInformation
+        state.referenceInformation,
+        state.prdId,
+        state.prdTitle,
+        state.prdDescription
       );
 
       const generation = span?.generation({
@@ -329,7 +335,10 @@ export const buildEvaluateTestCasesNode = (
         state.userStoryDescription,
         state.acceptanceCriteria,
         state.userScreensInvolved,
-        state.testCases
+        state.testCases,
+        state.prdId,
+        state.prdTitle,
+        state.prdDescription
       );
 
       const generation = span?.generation({

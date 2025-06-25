@@ -25,6 +25,9 @@ export interface ITestCaseRequest {
   userStoryId: string;
   userStoryTitle: string;
   userStoryDescription: string;
+  prdId?: string;
+  prdTitle?: string;
+  prdDescription?: string;
   acceptanceCriteria?: string;
   technicalDetails?: string;
   userScreensInvolved?: string;

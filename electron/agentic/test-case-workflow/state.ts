@@ -16,6 +16,18 @@ export const TestCaseWorkflowStateAnnotation = Annotation.Root({
   userStoryDescription: Annotation<string>({
     reducer: (_, val) => val,
   }),
+  prdId: Annotation<string>({
+    reducer: (_, val) => val,
+    default: () => "",
+  }),
+  prdTitle: Annotation<string>({
+    reducer: (_, val) => val,
+    default: () => "",
+  }),
+  prdDescription: Annotation<string>({
+    reducer: (_, val) => val,
+    default: () => "",
+  }),
   acceptanceCriteria: Annotation<string>({
     reducer: (_, val) => val,
     default: () => "",

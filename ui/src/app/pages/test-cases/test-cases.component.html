@@ -48,11 +48,43 @@
       </div>
     </div>
 
-    <app-search-input
-      *ngIf="testCases.length > 0"
-      placeholder="Search..."
-      (searchChange)="onSearch($event)"
-    ></app-search-input>
+    <!-- Search and filters -->
+    <div *ngIf="testCases.length > 0" class="mb-4">
+      <app-search-input
+        placeholder="Search..."
+        (searchChange)="onSearch($event)"
+        class="mb-4"
+      ></app-search-input>
+      
+      <div class="grid grid-cols-3 gap-4">
+        <!-- Priority filter -->
+        <app-select
+          label="Priority"
+          [options]="priorityOptions"
+          [placeholder]="'Filter by priority'"
+          (selectionChange)="onPriorityFilterChange($event)"
+          [clearable]="true"
+        ></app-select>
+        
+        <!-- Type filter -->
+        <app-select
+          label="Type"
+          [options]="typeOptions"
+          [placeholder]="'Filter by type'"
+          (selectionChange)="onTypeFilterChange($event)"
+          [clearable]="true"
+        ></app-select>
+        
+        <!-- Steps count filter -->
+        <app-select
+          label="Steps"
+          [options]="stepsCountOptions"
+          [placeholder]="'Filter by steps count'"
+          (selectionChange)="onStepsCountFilterChange($event)"
+          [clearable]="true"
+        ></app-select>
+      </div>
+    </div>
   </div>
 
   <div class="h-full overflow-y-auto">

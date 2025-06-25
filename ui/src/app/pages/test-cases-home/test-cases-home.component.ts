@@ -75,7 +75,7 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     {
       icon: 'heroDocumentText',
       title: 'Total User Stories',
-      color: 'purple',
+      color: 'amber',
       countFn: () => this.getTotalUserStories()
     },
     {
@@ -83,8 +83,6 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
       title: 'Stories with Test Cases',
       color: 'blue',
       countFn: () => this.getUserStoriesWithTestCases(),
-      percentage: () => this.userStories.length ? 
-        (this.getUserStoriesWithTestCases() / this.getTotalUserStories()) * 100 : 0
     },
     {
       icon: 'heroBeaker',
@@ -184,9 +182,27 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     
     this.store.dispatch(new SetSelectedUserStory(userStory.id));
     
+    // Get PRD information if available
+    const prdId = userStory.prdId || '';
+    let prdTitle = '';
+    let prdDescription = '';
+    
+    // Find the selected PRD in our list
+    if (prdId && this.prdList && this.prdList.length > 0) {
+      const selectedPrd = this.prdList.find(prd => prd.id === prdId);
+      if (selectedPrd) {
+        prdTitle = selectedPrd.name || '';
+        prdDescription = selectedPrd.description || '';
+        console.debug(`Including PRD information in navigation: ${prdId} - ${prdTitle} - ${prdDescription}`);
+      }
+    }
+    
     this.router.navigate(['/test-cases', userStory.id], {
       queryParams: {
-        projectId: this.currentProject
+        projectId: this.currentProject,
+        prdId: prdId,
+        prdTitle: prdTitle ? encodeURIComponent(prdTitle) : '',
+        prdDescription: prdDescription ? encodeURIComponent(prdDescription) : ''
       }
     });
   }
@@ -519,5 +535,4 @@ interface SummaryCardData {
   title: string;
   color: string;
   countFn: () => number;
-  percentage?: () => number | null;
 }

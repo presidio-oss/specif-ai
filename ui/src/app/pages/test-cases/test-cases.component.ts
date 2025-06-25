@@ -32,7 +32,8 @@ import {
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
-import { BehaviorSubject, firstValueFrom, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, firstValueFrom, map, take } from 'rxjs';
+import { AppSelectComponent, SelectOption } from '../../components/core/app-select/app-select.component';
 import { TestCaseContextModalComponent } from 'src/app/components/test-case-context-modal/test-case-context-modal.component';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 import {
@@ -72,6 +73,7 @@ import {
     MatTooltipModule,
     WorkflowProgressDialogComponent,
     UnifiedCardComponent,
+    AppSelectComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -81,7 +83,35 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   entityType: string = 'TC';
   selectedUserStory: any = {};
   metadata: any = {};
+  // Filter state
   private searchTerm$ = new BehaviorSubject<string>('');
+  priorityFilter$ = new BehaviorSubject<string | null>(null);
+  typeFilter$ = new BehaviorSubject<string | null>(null);
+  stepsCountFilter$ = new BehaviorSubject<string | null>(null);
+  
+  // Filter options
+  priorityOptions: SelectOption[] = [
+    { value: 'all', label: 'All Priorities' },
+    { value: 'High', label: 'High Priority' },
+    { value: 'Medium', label: 'Medium Priority' },
+    { value: 'Low', label: 'Low Priority' }
+  ];
+  
+  typeOptions: SelectOption[] = [
+    { value: 'all', label: 'All Types' },
+    { value: 'Functional', label: 'Functional' },
+    { value: 'Integration', label: 'Integration' },
+    { value: 'UI/UX', label: 'UI/UX' },
+    { value: 'Performance', label: 'Performance' },
+    { value: 'Security', label: 'Security' }
+  ];
+  
+  stepsCountOptions: SelectOption[] = [
+    { value: 'all', label: 'All Steps' },
+    { value: '1-3', label: '1-3 Steps' },
+    { value: '4-6', label: '4-6 Steps' },
+    { value: '7+', label: '7+ Steps' }
+  ];
   router = inject(Router);
   route = inject(ActivatedRoute);
   logger = inject(NGXLogger);
@@ -113,10 +143,46 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   testCases$ = new BehaviorSubject<ITestCase[]>([]);
 
   // Observable for filtered test cases
-  filteredTestCases$ = this.searchService.filterItems(
+  filteredTestCases$ = combineLatest([
     this.testCases$,
     this.searchTerm$,
-    (testCase: ITestCase) => [testCase.id, testCase.title],
+    this.priorityFilter$,
+    this.typeFilter$,
+    this.stepsCountFilter$
+  ]).pipe(
+    map(([testCases, searchTerm, priorityFilter, typeFilter, stepsCountFilter]) => {
+      // First apply the search filter
+      let filtered = searchTerm 
+        ? testCases.filter(testCase => 
+            testCase.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            testCase.title.toLowerCase().includes(searchTerm.toLowerCase()))
+        : testCases;
+      
+      // Apply priority filter
+      if (priorityFilter && priorityFilter !== 'all') {
+        filtered = filtered.filter(testCase => testCase.priority === priorityFilter);
+      }
+      
+      // Apply type filter
+      if (typeFilter && typeFilter !== 'all') {
+        filtered = filtered.filter(testCase => testCase.type === typeFilter);
+      }
+      
+      // Apply steps count filter
+      if (stepsCountFilter && stepsCountFilter !== 'all') {
+        filtered = filtered.filter(testCase => {
+          const stepsCount = testCase.steps?.length || 0;
+          switch (stepsCountFilter) {
+            case '1-3': return stepsCount >= 1 && stepsCount <= 3;
+            case '4-6': return stepsCount >= 4 && stepsCount <= 6;
+            case '7+': return stepsCount >= 7;
+            default: return true;
+          }
+        });
+      }
+      
+      return filtered;
+    })
   );
 
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
@@ -149,6 +215,27 @@ export class TestCasesComponent implements OnInit, OnDestroy {
 
   onSearch(term: string) {
     this.searchTerm$.next(term);
+  }
+  
+  /**
+   * Updates the priority filter
+   */
+  onPriorityFilterChange(value: any) {
+    this.priorityFilter$.next(value);
+  }
+  
+  /**
+   * Updates the type filter
+   */
+  onTypeFilterChange(value: any) {
+    this.typeFilter$.next(value);
+  }
+  
+  /**
+   * Updates the steps count filter
+   */
+  onStepsCountFilterChange(value: any) {
+    this.stepsCountFilter$.next(value);
   }
 
   constructor(
@@ -204,11 +291,22 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const userStoryId = this.route.snapshot.paramMap.get('userStoryId');
     
-    // Get projectId from query parameters
+    // Get projectId and PRD information from query parameters
     this.route.queryParams.subscribe((params: { [key: string]: string }) => {
       if (params['projectId']) {
         this.navigation.projectId = params['projectId'];
         this.logger.debug(`Project ID from query params: ${this.navigation.projectId}`);
+      }
+      
+      // Get PRD information from query parameters if available
+      if (params['prdId']) {
+        this.navigation.selectedRequirement = {
+          ...this.navigation.selectedRequirement,
+          prdId: params['prdId'],
+          prdTitle: params['prdTitle'] ? decodeURIComponent(params['prdTitle']) : '',
+          prdDescription: params['prdDescription'] ? decodeURIComponent(params['prdDescription']) : ''
+        };
+        console.debug(`Got PRD information from query params: ${params['prdId']} - ${params['prdTitle']}`);
       }
     });
     
@@ -492,12 +590,21 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       userStoryTitle: this.navigation.selectedRequirement?.name || '',
       userStoryDescription:
         this.navigation.selectedRequirement?.description || '',
+      prdId: this.navigation.selectedRequirement?.prdId || '',
+      prdTitle: this.navigation.selectedRequirement?.prdTitle || '',
+      prdDescription: this.navigation.selectedRequirement?.prdDescription || '',
       acceptanceCriteria: '',
       technicalDetails: this.metadata.technicalDetails || '',
       userScreensInvolved: userScreensInvolved,
       extraContext: extraContext,
       regenerate: regenerate,
     };
+    
+    console.debug('Including PRD information in test case request:', {
+      prdId: request.prdId,
+      prdTitle: request.prdTitle,
+      prdDescription: request.prdDescription ? request.prdDescription.substring(0, 50) + '...' : ''
+    });
 
     // Log the request to show what information is being sent
     this.logger.debug(
