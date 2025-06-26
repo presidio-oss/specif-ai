@@ -1,4 +1,6 @@
+import { CRITICAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS } from '../../context/editor-instructions';
 import { MARKDOWN_RULES } from '../../context/markdown-rules';
+import { SPECIAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS } from '../../context/editor-instructions';
 
 export interface UpdateStoryPromptParams {
   name: string;
@@ -47,6 +49,8 @@ Ensure that the revised feature is clear, concise, comprehensive, and actionable
 
 The updated feature must strictly adhere to the client's request and the provided file content, with no additional or irrelevant information included. However, you must always enhance the content to ensure it is actionable, user-centric, and aligned with best practices.
 
+${CRITICAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS}
+
 STRICT:
 (!) Output Structure must be a valid JSON. Follow this exact structure without any modifications:
 
@@ -77,6 +81,7 @@ Special Instructions:
    - I want to have a centralized dashboard for managing user accounts.
 6. You are allowed to use Markdown for the description of the feature. You MUST ONLY use valid Markdown according to the following rules:
     ${MARKDOWN_RULES}
+7. ${SPECIAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS}
 
 STRICT:
 (!) Return a list of features ONLY: no headers, footers, or additional text.
