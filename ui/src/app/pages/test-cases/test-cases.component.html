@@ -114,11 +114,13 @@
 
 <app-workflow-progress-dialog
   [isVisible]="showThinkingProcess"
-  [projectId]="navigation.projectId"
+  [projectId]="userStoryId"
   [workflowType]="WorkflowType.TestCase"
-  [isCompleted]="false"
+  [isCompleted]="testCases.length > 0"
   [initialTitle]="thinkingProcessConfig.title"
+  [completedTitle]="'Test Cases Generated Successfully!'"
   [subtitle]="thinkingProcessConfig.subtitle"
+  [completionButtonText]="'Continue'"
   [showCancelButton]="false"
   (closeDialog)="showThinkingProcess = false"
 ></app-workflow-progress-dialog>

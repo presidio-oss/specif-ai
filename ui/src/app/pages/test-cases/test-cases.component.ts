@@ -55,6 +55,7 @@ import {
   AddBreadcrumb,
   DeleteBreadcrumb,
 } from '../../store/breadcrumb/breadcrumb.actions';
+import { WorkflowProgressService } from 'src/app/services/workflow-progress/workflow-progress.service';
 
 @Component({
   selector: 'app-test-cases',
@@ -201,13 +202,36 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     subtitle: `Sit back & let the ${environment.ThemeConfiguration.appName} do its job...`,
   };
   zone = inject(NgZone);
+  
+  // Store the user story ID for consistent use throughout the component
+  get userStoryId(): string {
+    return this.route.snapshot.paramMap.get('userStoryId') || 
+           this.navigation.selectedRequirement?.id || '';
+  }
 
   private workflowProgressListener = (
     event: any,
     data: WorkflowProgressEvent,
   ) => {
     this.zone.run(() => {
+      this.logger.debug('Received workflow progress event:', data);
+      
+      // Add the event to our progress array
       this.testCaseCreationProgress = [...this.testCaseCreationProgress, data];
+      
+      // Make sure the thinking process dialog is visible
+      if (!this.showThinkingProcess) {
+        console.log('Setting showThinkingProcess to true');
+        this.showThinkingProcess = true;
+      }
+      
+      // Force the dialog to be visible
+      this.showThinkingProcess = true;
+      
+      // Log the event for debugging
+      console.log(`Thinking process event: ${data.type} - ${data.message.title}`);
+      console.log('Current showThinkingProcess value:', this.showThinkingProcess);
+      console.log('Current userStoryId value:', this.userStoryId);
     });
   };
 
@@ -245,6 +269,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     private toast: ToasterService,
     private appSystemService: AppSystemService,
     private requirementIdService: RequirementIdService,
+    private workflowProgressService: WorkflowProgressService,
   ) {
     // Initialize navigation object with empty values
     this.navigation = {
@@ -298,7 +323,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
         this.logger.debug(`Project ID from query params: ${this.navigation.projectId}`);
       }
       
-      // Get PRD information from query parameters if available
       if (params['prdId']) {
         this.navigation.selectedRequirement = {
           ...this.navigation.selectedRequirement,
@@ -309,6 +333,20 @@ export class TestCasesComponent implements OnInit, OnDestroy {
         console.debug(`Got PRD information from query params: ${params['prdId']} - ${params['prdTitle']}`);
       }
     });
+    
+    if (this.userStoryId) {
+      this.setupTestCaseProgressListener();
+      
+      this.workflowProgressService
+        .getCreationStatusObservable(
+          this.userStoryId,
+          WorkflowType.TestCase
+        )
+        .subscribe((status) => {
+          this.logger.debug('Workflow status changed:', status);
+          this.showThinkingProcess = status.isCreating || status.isComplete;
+        });
+    }
     
     console.log('Navigation Params:', this.navigation);
     
@@ -350,12 +388,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     this.testCases$.subscribe((testCases: ITestCase[]) => {
       this.testCasesInState = testCases;
     });
-
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.TestCase,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
 
     // Get project folders for user story selection
     this.store.select(ProjectsState.getProjectsFolders).subscribe((folders) => {
@@ -552,7 +584,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     );
   }
 
-  generateTestCases(
+  async generateTestCases(
     regenerate: boolean = false,
     extraContext: string = '',
     userScreensInvolved: string = '',
@@ -577,8 +609,16 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       this.navigation,
     );
 
-    // Start the thinking process early to give feedback to the user
-    this.testCaseCreationProgress = [];
+    // Set up the workflow progress service
+    this.setupTestCaseProgressListener();
+    
+    // Set the creation status to indicate we're creating test cases
+    await this.workflowProgressService.setCreating(
+      this.userStoryId,
+      WorkflowType.TestCase
+    );
+    
+    // Show the thinking process dialog
     this.showThinkingProcess = true;
 
     // Create the request with the available information
@@ -618,7 +658,17 @@ export class TestCasesComponent implements OnInit, OnDestroy {
         this.testCases = response.testCases;
         this.updateWithTestCases(this.testCases, regenerate);
       })
-      .catch((error) => {
+      .catch(async (error) => {
+        // Set the workflow status to failed
+        await this.workflowProgressService.setFailed(
+          this.userStoryId,
+          WorkflowType.TestCase,
+          {
+            timestamp: new Date().toISOString(),
+            reason: error?.message || 'Failed to generate test cases',
+          }
+        );
+        
         this.showThinkingProcess = false;
         this.toast.showError(
           TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
@@ -641,6 +691,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
 
     if (!userStoryId) {
       this.toast.showError('User story ID not found');
+      this.showThinkingProcess = false; // Hide thinking process on error
       return;
     }
 
@@ -801,11 +852,16 @@ export class TestCasesComponent implements OnInit, OnDestroy {
           this.loadTestCasesForUserStory(routeUserStoryId);
         }
 
-        // Show success message
-        this.showThinkingProcess = false;
-        this.toast.showSuccess(
-          TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
-        );
+        // Set the workflow status to complete
+        this.workflowProgressService.setComplete(
+          this.userStoryId,
+          WorkflowType.TestCase
+        ).then(() => {
+          // Show success message
+          this.toast.showSuccess(
+            TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
+          );
+        });
       })
       .catch((error) => {
         this.logger.error('Error creating test case files:', error);
@@ -1016,12 +1072,85 @@ export class TestCasesComponent implements OnInit, OnDestroy {
     // Implementation for exporting test cases
   }
 
-  ngOnDestroy() {
-    this.electronService.removeWorkflowProgressListener(
+  /**
+   * Sets up the workflow progress listener for test case generation using ElectronService
+   */
+  setupWorkflowProgressListener() {
+    if (!this.userStoryId) {
+      this.logger.debug('Cannot set up workflow progress listener: no user story ID available');
+      return;
+    }
+
+    // Log the exact values we're using
+    console.log('DEBUG - WorkflowType.TestCase value:', WorkflowType.TestCase);
+    console.log('DEBUG - userStoryId value:', this.userStoryId);
+    console.log('DEBUG - Expected channel:', `${WorkflowType.TestCase}:${this.userStoryId}-workflow-progress`);
+    
+    this.logger.debug(`Setting up workflow progress listener for user story ${this.userStoryId}`);
+    
+    // Remove any existing listener first to avoid duplicates
+    try {
+      this.electronService.removeWorkflowProgressListener(
+        WorkflowType.TestCase,
+        this.userStoryId,
+        this.workflowProgressListener
+      );
+    } catch (error) {
+      // Ignore errors when removing non-existent listeners
+    }
+
+    // Register the new listener
+    this.electronService.listenWorkflowProgress(
       WorkflowType.TestCase,
-      this.navigation.projectId,
-      this.workflowProgressListener,
+      this.userStoryId,
+      this.workflowProgressListener
     );
+    
+    this.logger.debug('Workflow progress listener set up successfully');
+  }
+
+  /**
+   * Sets up the test case progress listener using WorkflowProgressService
+   */
+  setupTestCaseProgressListener(): void {
+    if (!this.userStoryId) {
+      this.logger.debug('Cannot set up test case progress listener: no user story ID available');
+      return;
+    }
+
+    this.logger.debug(`Setting up test case progress listener for user story ${this.userStoryId}`);
+    
+    // Register the global listener if it doesn't exist
+    if (!this.workflowProgressService.hasGlobalListener(this.userStoryId, WorkflowType.TestCase)) {
+      this.workflowProgressService.registerGlobalListener(this.userStoryId, WorkflowType.TestCase);
+      this.logger.debug('Registered global listener for test case workflow');
+    }
+    
+    // Clear any existing progress events
+    this.workflowProgressService.clearProgressEvents(this.userStoryId, WorkflowType.TestCase);
+    
+    this.logger.debug('Test case progress listener set up successfully');
+  }
+
+  ngOnDestroy() {
+    // Get the user story ID from route params or navigation state
+    const userStoryId = this.route.snapshot.paramMap.get('userStoryId') || 
+                        this.navigation.selectedRequirement?.id;
+    
+    if (userStoryId) {
+      // Remove the ElectronService listener
+      this.electronService.removeWorkflowProgressListener(
+        WorkflowType.TestCase,
+        userStoryId,
+        this.workflowProgressListener,
+      );
+      
+      // Remove the WorkflowProgressService global listener
+      if (this.workflowProgressService.hasGlobalListener(userStoryId, WorkflowType.TestCase)) {
+        this.workflowProgressService.removeGlobalListener(userStoryId, WorkflowType.TestCase);
+        this.logger.debug('Removed global listener for test case workflow');
+      }
+    }
 
     // Remove the breadcrumb when the component is destroyed
     this.store.dispatch(new DeleteBreadcrumb(this.currentLabel));

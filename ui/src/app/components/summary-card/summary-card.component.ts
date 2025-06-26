@@ -15,18 +15,18 @@ export class SummaryCardComponent {
   @Input() icon: string = '';
   @Input() count: number = 0;
   @Input() title: string = '';
-  @Input() color: string = 'purple'; 
+  @Input() color?: string = 'indigo'; 
   @Input() percentage: number | null = null;
 
   getBackgroundClass(): string {
-    return `border border-${this.color}-200`;
+    return `border border-indigo-200`;
   }
 
   getIconBgClass(): string {
-    return `bg-${this.color}-100 border border-${this.color}-200`;
+    return `bg-indigo-100 border border-indigo-200`;
   }
 
   getTextColorClass(): string {
-    return `text-${this.color}-600`;
+    return `text-indigo-600`;
   }
 }

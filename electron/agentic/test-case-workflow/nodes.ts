@@ -63,6 +63,16 @@ export const buildResearchNode = ({
       "research",
       {
         title: "Researching context for test case generation",
+        input: JSON.stringify({
+          userStoryTitle: state.userStoryTitle,
+          availableTools: tools.length,
+          researchGoals: [
+            "Gather technical implementation details",
+            "Identify system dependencies and integration points",
+            "Understand user workflows and interactions",
+            "Discover potential edge cases and error scenarios"
+          ]
+        })
       },
       runnableConfig,
       researchCorrelationId
@@ -157,6 +167,20 @@ export const buildGenerateTestCasesNode = (
         "generate-test-cases",
         {
           title: "Generating test cases based on user story and context",
+          input: JSON.stringify({
+            userStoryTitle: state.userStoryTitle,
+            iteration: state.feedbackLoops + 1,
+            hasReferenceInfo: !!state.referenceInformation,
+            hasAcceptanceCriteria: !!state.acceptanceCriteria,
+            hasExtraContext: !!state.extraContext,
+            hasPRDInfo: !!(state.prdId && state.prdTitle),
+            testCaseGenerationGoals: [
+              "Create comprehensive test coverage",
+              "Include positive and negative test scenarios",
+              "Prioritize tests based on business impact",
+              "Ensure clear test steps and expected results"
+            ]
+          })
         },
         runnableConfig,
         generateCorrelationId
@@ -325,6 +349,17 @@ export const buildEvaluateTestCasesNode = (
         "evaluate-test-cases",
         {
           title: "Evaluating generated test cases for quality and completeness",
+          input: JSON.stringify({
+            testCaseCount: state.testCases.length,
+            userStoryTitle: state.userStoryTitle,
+            evaluationCriteria: [
+              "Coverage of acceptance criteria",
+              "Edge case handling",
+              "Test case clarity and structure",
+              "Appropriate test priorities",
+              "Completeness of test steps"
+            ]
+          }),
         },
         runnableConfig,
         evaluateCorrelationId
@@ -379,6 +414,11 @@ export const buildEvaluateTestCasesNode = (
             : isComplete
             ? "Completing the evaluation since the maximum evaluation limit is reached."
             : "Test cases need refinement - continuing iteration",
+          output: isApproved 
+            ? "All test cases meet quality standards and cover the user story requirements adequately."
+            : isComplete
+            ? "Maximum iteration limit reached. Using current test cases as final version."
+            : `Iteration ${state.feedbackLoops} of 3: Test cases need improvement in one or more areas. Continuing refinement process to enhance quality and coverage.`,
         },
         runnableConfig,
         evaluateCorrelationId
