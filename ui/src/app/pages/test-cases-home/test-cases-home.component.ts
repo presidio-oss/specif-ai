@@ -75,19 +75,19 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     {
       icon: 'heroDocumentText',
       title: 'Total User Stories',
-      // color: '',
+      color: 'primary',
       countFn: () => this.getTotalUserStories()
     },
     {
       icon: 'heroClipboardDocumentCheck',
       title: 'Stories with Test Cases',
-      color: 'blue',
+      color: 'warning',
       countFn: () => this.getUserStoriesWithTestCases(),
     },
     {
       icon: 'heroBeaker',
       title: 'Total Test Cases',
-      color: 'green',
+      color: 'success',
       countFn: () => this.getTotalTestCases()
     }
   ];
