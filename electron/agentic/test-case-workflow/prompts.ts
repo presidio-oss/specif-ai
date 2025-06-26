@@ -84,6 +84,7 @@ Return the test cases in the following JSON format:
       "title": "Test case title",
       "description": "Detailed description of what is being tested",
       "preConditions": ["List of conditions that must be met before test execution"],
+      "postConditions": ["Optional list of conditions that should be true after test execution"],
       "steps": [
         {
           "stepNumber": 1,

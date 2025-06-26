@@ -40,8 +40,8 @@
         <div [class]="(filteredUserStories$ | async)?.length ? 'w-1/3' : 'w-full'" class="relative z-50">
           <app-select
             [options]="getPrdSelectOptions()"
-            [placeholder]="'Select a PRD'"
-            (selectionChange)="selectPrd($event || '')"
+            [(ngModel)]="selectedPrdId"
+            (ngModelChange)="selectPrd($event)"
             [clearable]="false"
           ></app-select>
         </div>

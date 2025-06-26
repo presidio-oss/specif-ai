@@ -80,6 +80,22 @@
             </div>
           </div>
         </div>
+
+
+        <div class="bg-white border border-secondary-200 rounded-xl p-8 shadow-sm">
+          <h2 class="text-lg font-semibold text-secondary-800 mb-4 flex items-center">
+            <ng-icon name="heroClipboardDocument" class="mr-3 text-primary-500 w-5 h-5"></ng-icon>
+            Post-conditions
+          </h2>
+          <ng-container *ngIf="testCaseForm.get('postConditions')?.value?.length; else noPostConditions">
+            <ul class="list-disc pl-8 text-secondary-800 space-y-2 text-base">
+              <li *ngFor="let item of testCaseForm.get('postConditions')?.value">{{ item }}</li>
+            </ul>
+          </ng-container>
+          <ng-template #noPostConditions>
+            <p class="text-secondary-500 italic text-base pl-8">No post-conditions specified.</p>
+          </ng-template>
+        </div>
       </div>
     </ng-container>
 
@@ -179,6 +195,24 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+
+        <div class="mt-10">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-secondary-800 flex items-center">
+              <ng-icon name="heroClipboardDocument" class="mr-3 text-primary-500 w-5 h-5"></ng-icon>
+              Post-conditions (Optional)
+            </h2>
+            <app-button buttonContent="Add Post-condition" icon="heroPlus" theme="secondary_outline" size="sm" rounded="lg" (click)="addPostCondition()" />
+          </div>
+          <div formArrayName="postConditions" class="space-y-3">
+            <div *ngFor="let condition of postConditions.controls; let i = index" class="flex items-center gap-3">
+              <app-input-field [formControlName]="i" [elementPlaceHolder]="'Enter post-condition'" class="flex-grow" />
+              <app-button [isIconButton]="true" icon="heroTrash" theme="danger_outline" size="xs" rounded="lg" (click)="removePostCondition(i)" />
+            </div>
+            <p *ngIf="postConditions.controls.length === 0" class="text-secondary-500 italic text-base">No post-conditions specified. Click "Add Post-condition" to add one.</p>
           </div>
         </div>
       </div>

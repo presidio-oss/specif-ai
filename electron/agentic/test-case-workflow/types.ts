@@ -7,6 +7,7 @@ export interface TestCase {
   title: string;
   description: string;
   preConditions: string[];
+  postConditions?: string[];
   steps: {
     stepNumber: number;
     action: string;

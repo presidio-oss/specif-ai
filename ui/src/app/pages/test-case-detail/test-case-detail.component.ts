@@ -13,11 +13,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Subscription, take } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { NGXLogger } from 'ngx-logger';
-
 import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { AppSelectComponent } from '../../components/core/app-select/app-select.component';
@@ -204,6 +203,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       type: ['Functional', Validators.required],
       status: ['Active', Validators.required],
       preConditions: this.fb.array([]),
+      postConditions: this.fb.array([]),
       steps: this.fb.array([]),
     });
 
@@ -236,11 +236,13 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
 
   private populateForm(testCase: ITestCase) {
     const pre = this.testCaseForm.get('preConditions') as FormArray;
+    const post = this.testCaseForm.get('postConditions') as FormArray;
     const steps = this.testCaseForm.get('steps') as FormArray;
-    pre.clear(); steps.clear();
+    pre.clear(); post.clear(); steps.clear();
 
     this.testCaseForm.patchValue({ ...testCase });
     testCase.preConditions?.forEach(c => pre.push(this.fb.control(c)));
+    testCase.postConditions?.forEach(c => post.push(this.fb.control(c)));
     testCase.steps?.forEach(s => steps.push(this.createStepFormGroup(s)));
     if (this.mode === 'view') this.testCaseForm.disable();
   }
@@ -248,6 +250,11 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   get preConditions(): FormArray {
     return this.testCaseForm.get('preConditions') as FormArray;
   }
+  
+  get postConditions(): FormArray {
+    return this.testCaseForm.get('postConditions') as FormArray;
+  }
+  
   get steps(): FormArray {
     return this.testCaseForm.get('steps') as FormArray;
   }
@@ -262,6 +269,9 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
 
   addPreCondition() { this.preConditions.push(this.fb.control('')); this.formModified = true; }
   removePreCondition(i: number) { this.preConditions.removeAt(i); this.formModified = true; }
+  
+  addPostCondition() { this.postConditions.push(this.fb.control('')); this.formModified = true; }
+  removePostCondition(i: number) { this.postConditions.removeAt(i); this.formModified = true; }
 
   addStep() { this.steps.push(this.createStepFormGroup()); this.formModified = true; }
   removeStep(i: number) {

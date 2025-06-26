@@ -399,6 +399,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       if (userStory && (!this.navigation.selectedRequirement || !this.navigation.selectedRequirement.name)) {
         this.logger.debug('Retrieved user story from store:', userStory);
         this.navigation.selectedRequirement = userStory;
+        console.log("Here's the set req", this.navigation.selectedRequirement)
         
         // Update the breadcrumb with the user story information
         if (this.currentLabel && userStory.id) {
@@ -640,11 +641,9 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       regenerate: regenerate,
     };
     
-    console.debug('Including PRD information in test case request:', {
-      prdId: request.prdId,
-      prdTitle: request.prdTitle,
-      prdDescription: request.prdDescription ? request.prdDescription.substring(0, 50) + '...' : ''
-    });
+    console.debug('Including PRD information in test case request:',
+      request
+    );
 
     // Log the request to show what information is being sent
     this.logger.debug(

@@ -112,6 +112,8 @@ export const buildResearchNode = ({
       state.prdDescription
     );
 
+    console.log("generation params 2", state);
+
     const response = await agent.invoke(
       {
         messages: [new HumanMessage(prompt)],
@@ -198,6 +200,8 @@ export const buildGenerateTestCasesNode = (
         state.prdTitle,
         state.prdDescription
       );
+
+      console.log("generation params 1", state);
 
       const generation = span?.generation({
         name: "llm",
@@ -365,6 +369,7 @@ export const buildEvaluateTestCasesNode = (
         evaluateCorrelationId
       );
 
+      console.log("generation params 3", state);
       const prompt = buildEvaluateTestCasesPrompt(
         state.userStoryTitle,
         state.userStoryDescription,

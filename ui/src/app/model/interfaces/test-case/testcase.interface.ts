@@ -9,6 +9,7 @@ export interface ITestCase {
   title: string;
   description: string;
   preConditions: string[];
+  postConditions?: string[];
   steps: ITestCaseStep[];
   priority: 'High' | 'Medium' | 'Low';
   type: 'Functional' | 'Integration' | 'UI/UX' | 'Performance' | 'Security';

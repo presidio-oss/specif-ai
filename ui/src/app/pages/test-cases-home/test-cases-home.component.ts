@@ -4,7 +4,7 @@ import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { GetProjectFiles, BulkReadFiles, ClearBRDPRDState } from '../../store/projects/projects.actions';
-import { SetSelectedUserStory } from '../../store/user-stories/user-stories.actions';
+import { GetUserStories, SetSelectedUserStory } from '../../store/user-stories/user-stories.actions';
 import { IUserStory } from '../../model/interfaces/IUserStory';
 import { ClipboardService } from '../../services/clipboard.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
@@ -23,6 +23,7 @@ import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { AppSystemService } from '../../services/app-system/app-system.service';
 import { SummaryCardComponent } from "../../components/summary-card/summary-card.component";
+import { FormsModule } from '@angular/forms';
 
 // Interface for PRD information
 interface IPrdInfo {
@@ -47,7 +48,8 @@ interface IPrdInfo {
     BadgeComponent,
     SearchInputComponent,
     MatTooltipModule,
-    AppSelectComponent
+    AppSelectComponent,
+    FormsModule
 ],
   providers: [
     provideIcons({
@@ -70,6 +72,7 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
   userStories: IUserStory[] = [];
   isLoading: boolean = false;
   testCaseCounts: Map<string, number> = new Map<string, number>();
+  private readonly SELECTED_PRD_KEY = 'selectedPrdId';
   
   summaryCards: SummaryCardData[] = [
     {
@@ -331,7 +334,12 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     this.isLoading = false;
     
     if (prds.length > 0) {
-      this.selectPrd(prds[0].id);
+      const savedPrdId = sessionStorage.getItem(`${this.SELECTED_PRD_KEY}_${this.currentProject}`);
+      if (savedPrdId && prds.some(prd => prd.id === savedPrdId)) {
+        this.selectPrd(savedPrdId);
+      } else {
+        this.selectPrd(prds[0].id);
+      }
     }
   }
   
@@ -358,6 +366,10 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     if (selectedPrd) {
       this.selectedPrdTitle = selectedPrd.name;
     }
+    
+    // Save the selected PRD ID to session storage
+    sessionStorage.setItem(`${this.SELECTED_PRD_KEY}_${this.currentProject}`, prdId);
+    
     this.loadUserStoriesForPrd(prdId);
   }
   
@@ -370,6 +382,7 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     const featurePath = `${this.currentProject}/PRD/${featureFile}`;
     
     console.log(`Reading feature file: ${featurePath}`);
+    this.store.dispatch(new GetUserStories(featurePath));
     
     this.appSystemService.fileExists(featurePath)
       .then(exists => {
