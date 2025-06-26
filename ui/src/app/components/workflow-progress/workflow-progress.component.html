@@ -3,7 +3,7 @@
     *ngIf="showHeader"
     class="sticky top-0 z-50 bg-white border-b border-gray-300 px-4 py-3 flex items-center justify-between"
   >
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-3">
       <h1
         class="text-base font-bold text-gray-900 truncate leading-tight tracking-tight"
       >
@@ -14,14 +14,14 @@
         *ngIf="showCancelButton && (workflowStatus$ | async)?.isCreating"
         (click)="onCancelClick()"
         [disabled]="isAborting()"
-        class="flex items-center justify-center text-red-500 hover:text-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed p-2 rounded-full hover:bg-red-50 hover:shadow-sm border border-transparent hover:border-red-100 group"
+        class="flex items-center justify-center text-red-500 hover:text-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed p-1.5 rounded-full hover:bg-red-50 hover:shadow-sm border border-transparent hover:border-red-100 group"
         type="button"
         title="Cancel Process"
       >
         <ng-icon
           *ngIf="!isAborting()"
           name="heroStopCircle"
-          size="22"
+          size="20"
           class="transition-transform duration-200 group-hover:scale-110"
         ></ng-icon>
       </button>
@@ -78,7 +78,7 @@
 
           <div class="flex-1 min-w-0 flex items-center justify-between">
             <span
-              class="text-sm leading-relaxed flex-1 truncate pr-2"
+              class="text-sm leading-relaxed flex-1 truncate pr-2 flex items-center"
               [ngClass]="step.textColorClass"
             >
               {{ step.message.title }}
@@ -115,7 +115,7 @@
 
             <div class="flex-1 min-w-0 flex items-center justify-between">
               <p
-                class="text-sm leading-relaxed flex-1 truncate pr-2 min-w-0"
+                class="text-sm leading-relaxed flex-1 truncate pr-2 min-w-0 flex items-center"
                 [ngClass]="step.textColorClass"
               >
                 {{ step.message.title }}
@@ -153,14 +153,14 @@
   </div>
 
   <ng-template #stepIconTemplate let-step="step">
-    <div class="flex-shrink-0 relative">
+    <div class="flex-shrink-0 relative flex items-center justify-center">
       <div
         class="absolute inset-0 rounded-full blur-md opacity-30"
         [ngClass]="step.colorClass"
       ></div>
       <ng-icon
         [name]="step.iconName"
-        class="h-5 w-5 mt-0.5 shrink-0 relative"
+        class="h-5 w-5 shrink-0 relative"
         [class.text-primary-500]="
           step.type === WorkflowProgressEventType.Thinking
         "
@@ -182,9 +182,11 @@
         </h4>
         <div class="flex-1 h-px bg-gray-200"></div>
       </div>
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+      <div
+        class="bg-gray-50 border border-gray-200 rounded-lg p-3 overflow-hidden"
+      >
         <pre
-          class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed"
+          class="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed overflow-x-auto max-w-full"
           >{{ data }}</pre
         >
       </div>

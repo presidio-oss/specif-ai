@@ -1,5 +1,5 @@
 <div
-  class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full relative"
+  class="bg-white border rounded-lg p-5 flex flex-col h-[calc(100vh-80px)] lg:col-span-2 w-full relative"
   *ngIf="userStories$ | async as userStories"
 >
   <app-workflow-progress-dialog
@@ -32,7 +32,7 @@
       </div>
 
       <div class="flex items-center justify-between gap-3">
-       <app-button
+        <app-button
           *ngIf="userStories.length === 0"
           buttonContent="Generate User Stories"
           theme="secondary"
