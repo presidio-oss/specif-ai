@@ -44,8 +44,42 @@ export class ProjectCreationService {
       throw new Error('Please select a valid root directory.');
     }
 
+    await this.initializeWorkflowProgress(projectData);
+
+    this.store
+      .dispatch(new CreateProject(projectName, projectData, isRetry))
+      .subscribe({
+        next: async () => {
+          const successMessage = isRetry
+            ? `Great! Your ${projectName} solution has been successfully recreated.`
+            : `All set! Your ${projectName} solution is ready to roll.`;
+
+          this.toast.showSuccess(successMessage);
+          await this.handleWorkflowSuccess(projectData);
+          onSuccess?.();
+        },
+        error: async (error) => {
+          const rawMessage = error?.message || '';
+          const match = rawMessage.match(/Error: .*/);
+          const cleanedMessage = match ? match[0] : rawMessage;
+
+          const errorMessage = isRetry
+            ? `Failed to retry project creation: ${cleanedMessage}`
+            : cleanedMessage;
+
+          this.toast.showError(errorMessage);
+          await this.handleWorkflowError(projectData, errorMessage);
+          onError?.(error);
+        },
+      });
+  }
+
+  private async initializeWorkflowProgress(
+    projectData: ICreateSolutionRequest,
+  ): Promise<void> {
+    if (!projectData.createReqt || !projectData.id) return;
+
     if (
-      projectData?.id &&
       !this.workflowProgressService.hasGlobalListener(
         projectData.id,
         WorkflowType.Solution,
@@ -61,46 +95,32 @@ export class ProjectCreationService {
       projectData.id,
       WorkflowType.Solution,
     );
+  }
 
-    this.store
-      .dispatch(new CreateProject(projectName, projectData, isRetry))
-      .subscribe({
-        next: async () => {
-          const successMessage = isRetry
-            ? `Great! Your ${projectName} solution has been successfully recreated.`
-            : `All set! Your ${projectName} solution is ready to roll.`;
+  private async handleWorkflowSuccess(
+    projectData: ICreateSolutionRequest,
+  ): Promise<void> {
+    if (!projectData.createReqt || !projectData.id) return;
 
-          this.toast.showSuccess(successMessage);
+    await this.workflowProgressService.setComplete(
+      projectData.id,
+      WorkflowType.Solution,
+    );
+  }
 
-          await this.workflowProgressService.setComplete(
-            projectData.id,
-            WorkflowType.Solution,
-          );
+  private async handleWorkflowError(
+    projectData: ICreateSolutionRequest,
+    errorMessage: string,
+  ): Promise<void> {
+    if (!projectData.createReqt) return;
 
-          onSuccess?.();
-        },
-        error: async (error) => {
-          const rawMessage = error?.message || '';
-          const match = rawMessage.match(/Error: .*/);
-          const cleanedMessage = match ? match[0] : rawMessage;
-
-          const errorMessage = isRetry
-            ? `Failed to retry project creation: ${cleanedMessage}`
-            : cleanedMessage;
-
-          this.toast.showError(errorMessage);
-
-          await this.workflowProgressService.setFailed(
-            projectData.id,
-            WorkflowType.Solution,
-            {
-              timestamp: new Date().toISOString(),
-              reason: errorMessage,
-            },
-          );
-
-          onError?.(error);
-        },
-      });
+    await this.workflowProgressService.setFailed(
+      projectData.id,
+      WorkflowType.Solution,
+      {
+        timestamp: new Date().toISOString(),
+        reason: errorMessage,
+      },
+    );
   }
 }
