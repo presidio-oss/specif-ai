@@ -6,7 +6,7 @@
         class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4"
       >
         <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
-        <ul role="list" class="min-h space-y-1.5">
+        <ul role="list" class="min-h space-y-2">
           <li
             class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
             [ngClass]="{
@@ -106,7 +106,8 @@
                 ></ng-icon>
                 <ng-icon
                   *ngIf="folder.name === 'BP'"
-                  class="text-xl w-5 h-5 mr-2"
+                  class="size-4 mr-2"
+                  strokeWidth="2"
                   [ngClass]="{
                     'text-primary-600': selectedFolder?.title === folder.name,
                     'text-secondary-500': selectedFolder?.title !== folder.name,
@@ -116,7 +117,8 @@
                 </ng-icon>
                 <ng-icon
                   *ngIf="folder.name === 'TC'"
-                  class="text-xl w-5 h-5 mr-2"
+                  class="size-4 mr-2"
+                  strokeWidth="2"
                   [ngClass]="{
                     'text-primary-600': selectedFolder?.title === folder.name,
                     'text-secondary-500': selectedFolder?.title !== folder.name,
@@ -156,12 +158,13 @@
               >
                 <div class="flex items-center">
                   <ng-icon
-                    class="text-xl w-5 h-5 mr-2"
+                    class="size-4 mr-2"
+                    strokeWidth="2"
                     [ngClass]="{
                       'text-primary-600': selectedFolder?.title === 'TC',
                       'text-secondary-500': selectedFolder?.title !== 'TC'
                     }"
-                    name="heroServerStack"
+                    name="heroBeaker"
                   >
                   </ng-icon>
                   <h4

@@ -46,6 +46,7 @@ import {
   heroChevronDown,
   heroChevronUp,
   heroServerStack,
+  heroBeaker,
 } from '@ng-icons/heroicons/outline';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
 import { APP_MESSAGES, FILTER_STRINGS } from '../../constants/app.constants';
@@ -114,6 +115,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
       heroChevronDown,
       heroChevronUp,
       heroServerStack,
+      heroBeaker
     }),
   ],
 })
