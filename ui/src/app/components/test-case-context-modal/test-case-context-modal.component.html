@@ -21,8 +21,14 @@
       <label class="block text-secondary-700 text-sm font-medium mb-2">
         User Screens Involved <span class="text-secondary-400">(Optional)</span>
       </label>
+      <p class="text-secondary-500 text-xs mb-2">
+        List the screens, pages, or UI components that users will interact with during this test case. 
+        This helps in creating more specific test steps and expected results.
+        <br>
+        Example: "Login Screen, Dashboard, User Profile Page, Payment Form"
+      </p>
       <app-textarea-field
-        [elementPlaceHolder]="'Enter screens that users will interact with'"
+        [elementPlaceHolder]="'E.g., Login Screen, Dashboard, User Profile Page, Payment Form'"
         elementId="userScreensInvolved"
         formControlName="userScreensInvolved"
         [rows]="5"
@@ -34,8 +40,14 @@
       <label class="block text-secondary-700 text-sm font-medium mb-2">
         Extra Context <span class="text-secondary-400">(Optional)</span>
       </label>
+      <p class="text-secondary-500 text-xs mb-2">
+        Provide any additional information that might be helpful for generating comprehensive test cases.
+        This could include specific business rules, edge cases to consider, or technical constraints.
+        <br>
+        Example: "The system should handle concurrent users. Test cases should cover both mobile and desktop views."
+      </p>
       <app-textarea-field
-        [elementPlaceHolder]="'Enter additional context for test case generation'"
+        [elementPlaceHolder]="'E.g., Include edge cases for network failures, consider accessibility requirements, test with different user roles'"
         elementId="extraContext"
         formControlName="extraContext"
         [rows]="5"
