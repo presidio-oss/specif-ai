@@ -8,6 +8,7 @@ import { getDescriptionFromInput } from '../../utils/common.utils';
 import { FILTER_STRINGS } from '../../constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { IconPairingEnum } from '../../model/enum/file-type.enum';
+import { ISelectedFolder } from 'src/app/model/interfaces/IList';
 
 @Component({
   selector: 'app-sidebar',
@@ -25,7 +26,7 @@ import { IconPairingEnum } from '../../model/enum/file-type.enum';
 })
 export class SidebarComponent {
   @Input() directories: { name: string; children: string[] }[] = [];
-  @Input() selectedFolder: any;
+  @Input() selectedFolder: ISelectedFolder | null = null;
   @Input() appName: string = '';
   @Input() haiFolder: { key: string; value: string }[] = [];
   @Input() isCreatingSolution: boolean = false;

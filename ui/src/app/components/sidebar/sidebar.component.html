@@ -220,7 +220,8 @@
         $event.preventDefault()
       "
       role="button"
-      tabindex="0"
+      [attr.tabindex]="isCreatingSolution ? -1 : 0"
+      [attr.aria-disabled]="isCreatingSolution"
       [ngClass]="{
         'bg-secondary-50 border-secondary-200':
           selectedFolder?.title === 'app-integrations',
