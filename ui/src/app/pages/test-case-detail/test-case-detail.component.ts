@@ -145,6 +145,12 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Since we have routing scroll position resotration in routing module to be  enabled  and not 'top', need to explicitly reset scroll position of the main layout's scrollable area
+    const testCaseContainer = document.querySelector('.test-case-detail-container') as HTMLElement;
+    if (testCaseContainer) {
+      testCaseContainer.scrollTop = 0;
+    }
+    
     this.subscriptions.push(
       this.route.queryParams.subscribe(params => {
         this.fromGlobalView = params['fromGlobalView'] === 'true';

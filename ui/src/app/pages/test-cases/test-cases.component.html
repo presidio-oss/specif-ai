@@ -41,10 +41,11 @@
             matTooltip="Add a new test case manually"
           />
         </div>
-        <app-export-dropdown
+        <!-- TODO export feature -->
+        <!-- <app-export-dropdown
           [disabled]="testCases.length === 0"
           [options]="exportOptions"
-        />
+        /> -->
       </div>
     </div>
 
@@ -113,14 +114,15 @@
 </div>
 
 <app-workflow-progress-dialog
-  [isVisible]="showThinkingProcess"
+  [isVisible]="showProgressDialog"
   [projectId]="userStoryId"
   [workflowType]="WorkflowType.TestCase"
-  [isCompleted]="testCases.length > 0"
+  [isCompleted]="testCaseGenerationComplete"
   [initialTitle]="thinkingProcessConfig.title"
   [completedTitle]="'Test Cases Generated Successfully!'"
   [subtitle]="thinkingProcessConfig.subtitle"
-  [completionButtonText]="'Continue'"
+  completionButtonText="View Generated Test Cases"
+  completionButtonIcon="heroArrowRight"
   [showCancelButton]="false"
-  (closeDialog)="showThinkingProcess = false"
+  (closeDialog)="closeProgressDialog()"
 ></app-workflow-progress-dialog>

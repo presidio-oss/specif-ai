@@ -112,8 +112,6 @@ export const buildResearchNode = ({
       state.prdDescription
     );
 
-    console.log("generation params 2", state);
-
     const response = await agent.invoke(
       {
         messages: [new HumanMessage(prompt)],
@@ -165,13 +163,19 @@ export const buildGenerateTestCasesNode = (
     const generateCorrelationId = uuid();
 
     try {
+      const isRefinement = state.feedbackLoops > 0 && state.testCases.length > 0;
+      
       await workflowEvents.dispatchThinking(
         "generate-test-cases",
         {
-          title: "Generating test cases based on user story and context",
+          title: isRefinement 
+            ? `Refining test cases for user story: ${state.userStoryTitle}` 
+            : `Generating test cases for user story: ${state.userStoryTitle}`,
           input: JSON.stringify({
             userStoryTitle: state.userStoryTitle,
             iteration: state.feedbackLoops + 1,
+            isRefinement: isRefinement,
+            existingTestCasesCount: state.testCases.length,
             hasReferenceInfo: !!state.referenceInformation,
             hasAcceptanceCriteria: !!state.acceptanceCriteria,
             hasExtraContext: !!state.extraContext,
@@ -198,10 +202,10 @@ export const buildGenerateTestCasesNode = (
         state.referenceInformation,
         state.prdId,
         state.prdTitle,
-        state.prdDescription
+        state.prdDescription,
+        isRefinement ? state.testCases : undefined,
+        isRefinement ? state.evaluation : undefined
       );
-
-      console.log("generation params 1", state);
 
       const generation = span?.generation({
         name: "llm",
@@ -243,7 +247,6 @@ export const buildGenerateTestCasesNode = (
           statusMessage: `Error parsing LLM response: ${error}`,
         });
 
-        // Instead of throwing, return state that will trigger another generation attempt
         return {
           testCases: [],
           feedbackLoops: state.feedbackLoops + 1,
@@ -251,29 +254,62 @@ export const buildGenerateTestCasesNode = (
         };
       }
 
+      if (!parsedTestCases.testCases || !Array.isArray(parsedTestCases.testCases) || parsedTestCases.testCases.length === 0) {
+        const errorMessage = "Invalid response format: No test cases found in the parsed response";
+        console.error(errorMessage, parsedTestCases);
+        
+        span?.end({
+          level: "ERROR",
+          statusMessage: errorMessage,
+        });
+        
+        await workflowEvents.dispatchAction(
+          "generate-test-cases",
+          {
+            title: "Error: No test cases found in the response",
+            input: prompt,
+          },
+          runnableConfig,
+          generateCorrelationId
+        );
+        
+        if (state.feedbackLoops >= 2) {
+          throw new Error("Failed to generate valid test cases after multiple attempts");
+        }
+        
+        return {
+          testCases: [],
+          feedbackLoops: state.feedbackLoops + 1,
+          messages: [...state.messages, new HumanMessage(prompt)],
+        };
+      }
+      
+      const testCaseCount = parsedTestCases.testCases.length;
       console.log("[test-case-node] Successfully parsed test cases:", {
-        testCasesCount: parsedTestCases.testCases?.length || 0,
+        testCaseCount,
       });
 
       await workflowEvents.dispatchAction(
         "generate-test-cases",
         {
-          title: `Successfully generated ${
-            parsedTestCases.testCases?.length || 0
-          } test cases`,
+          title: isRefinement
+            ? `Successfully refined ${testCaseCount} test cases. (Iteration ${state.feedbackLoops + 1})`
+            : `Successfully generated ${testCaseCount} test cases.`,
           input: prompt,
-          output: parsedTestCases.testCases || [],
+          output: parsedTestCases.testCases,
         },
         runnableConfig,
         generateCorrelationId
       );
 
       span?.end({
-        statusMessage: "Successfully generated test cases",
+        statusMessage: isRefinement 
+          ? `Successfully refined ${testCaseCount} test cases` 
+          : `Successfully generated ${testCaseCount} test cases`,
       });
 
       return {
-        testCases: parsedTestCases.testCases || [],
+        testCases: parsedTestCases.testCases,
         feedbackLoops: state.feedbackLoops + 1,
         messages: [...state.messages, new HumanMessage(prompt)],
       };
@@ -352,10 +388,11 @@ export const buildEvaluateTestCasesNode = (
       await workflowEvents.dispatchThinking(
         "evaluate-test-cases",
         {
-          title: "Evaluating generated test cases for quality and completeness",
+          title: `Evaluating ${state.testCases.length} test cases for user story: ${state.userStoryTitle} (Iteration ${state.feedbackLoops})`,
           input: JSON.stringify({
             testCaseCount: state.testCases.length,
             userStoryTitle: state.userStoryTitle,
+            iteration: state.feedbackLoops,
             evaluationCriteria: [
               "Coverage of acceptance criteria",
               "Edge case handling",
@@ -369,7 +406,6 @@ export const buildEvaluateTestCasesNode = (
         evaluateCorrelationId
       );
 
-      console.log("generation params 3", state);
       const prompt = buildEvaluateTestCasesPrompt(
         state.userStoryTitle,
         state.userStoryDescription,
@@ -415,10 +451,10 @@ export const buildEvaluateTestCasesNode = (
         "evaluate-test-cases",
         {
           title: isApproved
-            ? "Test cases approved and ready for use"
+            ? `${state.testCases.length} test cases approved for user story: ${state.userStoryTitle}`
             : isComplete
-            ? "Completing the evaluation since the maximum evaluation limit is reached."
-            : "Test cases need refinement - continuing iteration",
+            ? `Completing evaluation after ${state.feedbackLoops} iterations for user story: ${state.userStoryTitle}`
+            : `Test cases need refinement for user story: ${state.userStoryTitle} (Iteration ${state.feedbackLoops} of 3)`,
           output: isApproved 
             ? "All test cases meet quality standards and cover the user story requirements adequately."
             : isComplete

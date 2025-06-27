@@ -48,9 +48,13 @@ export const buildGenerateTestCasesPrompt = (
   referenceInformation: string,
   prdId: string,
   prdTitle: string,
-  prdDescription: string
+  prdDescription: string,
+  existingTestCases?: any[],
+  evaluation?: string
 ): string => {
-  return `Generate comprehensive test cases for the following user story following best practices from factifai.io:
+  const isRefinement = existingTestCases && existingTestCases.length > 0;
+  
+  let prompt = `${isRefinement ? 'Refine' : 'Generate'} comprehensive test cases for the following user story following best practices from factifai.io:
 
 Story Title: ${userStoryTitle}
 Story Description: ${userStoryDescription}
@@ -62,9 +66,19 @@ ${technicalDetails ? `Technical Details: ${technicalDetails}` : ""}
 ${userScreensInvolved ? `User Screens Involved: ${userScreensInvolved}` : ""}
 ${extraContext ? `Additional Context: ${extraContext}` : ""}
 
-Research Information: ${referenceInformation}
+Research Information: ${referenceInformation}`;
 
-Follow these guidelines:
+  if (isRefinement && evaluation) {
+    prompt += `\n\nPrevious test cases that need improvement:
+${JSON.stringify(existingTestCases, null, 2)}
+
+Evaluation feedback:
+${evaluation}
+
+Please refine these test cases based on the feedback. Keep the good parts and improve the areas that need enhancement.`;
+  }
+
+  prompt += `\n\nFollow these guidelines:
 1. Each test case should be specific and focused on a single aspect
 2. Include clear steps with expected results
 3. Consider positive and negative test scenarios
@@ -76,7 +90,9 @@ Follow these guidelines:
 9. Ensure test cases are traceable to requirements
 10. Make test cases reusable and maintainable
 
-Return the test cases in the following JSON format:
+IMPORTANT: Strictly Return ONLY a valid JSON object with no additional text, comments, or markdown formatting before or after. Your entire response must be a valid JSON object that can be parsed directly.
+
+Strictly Return the test cases in the following JSON format:
 {
   "testCases": [
     {
@@ -96,7 +112,11 @@ Return the test cases in the following JSON format:
       "type": "Functional|Integration|UI/UX|Performance|Security",
     }
   ]
-}`;
+}
+
+Strictly do not include any explanatory text, markdown formatting, or code blocks. The response must be a raw JSON object only.`;
+
+  return prompt;
 };
 
 /**
@@ -134,6 +154,20 @@ Evaluate based on these criteria:
 6. Performance and security considerations
 7. Adherence to best practices
 
-If the test cases meet all criteria, respond with "APPROVED AND READY FOR REFINEMENT"
-Otherwise, provide specific feedback on what needs improvement.`;
+Evaluate each test case individually and provide a JSON response with the following structure:
+{
+  "overallEvaluation": "APPROVED AND READY FOR REFINEMENT" or "NEEDS IMPROVEMENT",
+  "testCaseEvaluations": [
+    {
+      "id": "TC-1",
+      "status": "PASS" or "FAIL",
+      "feedback": "Specific feedback on what needs improvement (if status is FAIL)"
+    },
+    ...
+  ],
+  "summary": "Overall summary of the evaluation, including statistics on how many test cases passed/failed"
+}
+
+If all test cases meet the criteria, set overallEvaluation to "APPROVED AND READY FOR REFINEMENT".
+Otherwise, set it to "NEEDS IMPROVEMENT" and provide specific feedback for each failing test case.`;
 };
