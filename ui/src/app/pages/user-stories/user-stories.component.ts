@@ -326,8 +326,13 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   navigateToTestCases(userStory: IUserStory, index: number) {
     this.store.dispatch(new SetSelectedUserStory(userStory.id));
-    
-    this.router.navigate(['/test-cases', userStory.id], {
+    this.router.navigate(['/test-cases', userStory.id,], {
+      queryParams: {
+        projectName: this.currentProject,
+        prdId: this.newFileName.split('-')[0],
+        prdTitle: encodeURIComponent(this.navigation.selectedRequirement.title),
+        prdDescription: encodeURIComponent(this.navigation.selectedRequirement.requirement)
+      },
       state: {
         projectId: this.navigation.projectId,
         folderName: this.navigation.folderName,

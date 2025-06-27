@@ -662,7 +662,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   navigateToTestCasesHome() {
     this.router.navigate(['/test-cases-home'], {
       queryParams: {
-        projectId: this.appName
+        projectName: this.appName
       }
     });
   }

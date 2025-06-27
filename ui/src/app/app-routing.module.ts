@@ -151,11 +151,6 @@ const routes: Routes = [
         canActivate: [UserGuard],
       },
       {
-        path: 'test-cases',
-        component: TestCasesComponent,
-        canActivate: [UserGuard],
-      },
-      {
         path: 'test-case/:userStoryId/add',
         component: TestCaseDetailPageComponent,
         canActivate: [UserGuard],

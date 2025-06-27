@@ -132,9 +132,9 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     );
     
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params: { [key: string]: string }) => {
-      if (params['projectId']) {
-        this.currentProject = params['projectId'];
-        console.debug(`Project ID from query params: ${this.currentProject}`);
+      if (params['projectName']) {
+        this.currentProject = params['projectName'];
+        console.debug(`Project name from query params: ${this.currentProject}`);
         
         this.clearAllData();
         
@@ -202,7 +202,7 @@ export class TestCasesHomeComponent implements OnInit, OnDestroy {
     
     this.router.navigate(['/test-cases', userStory.id], {
       queryParams: {
-        projectId: this.currentProject,
+        projectName: this.currentProject,
         prdId: prdId,
         prdTitle: prdTitle ? encodeURIComponent(prdTitle) : '',
         prdDescription: prdDescription ? encodeURIComponent(prdDescription) : ''

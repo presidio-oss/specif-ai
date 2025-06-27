@@ -250,7 +250,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       
       // Make sure the thinking process dialog is visible
       if (!this.showThinkingProcess) {
-        console.log('Setting showThinkingProcess to true');
         this.showThinkingProcess = true;
       }
       
@@ -355,11 +354,11 @@ export class TestCasesComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const userStoryId = this.route.snapshot.paramMap.get('userStoryId');
     
-    // Get projectId and PRD information from query parameters
+    // Get project name and PRD information from query parameters
     this.route.queryParams.subscribe((params: { [key: string]: string }) => {
-      if (params['projectId']) {
-        this.navigation.projectId = params['projectId'];
-        this.logger.debug(`Project ID from query params: ${this.navigation.projectId}`);
+      if (params['projectName']) {
+        this.navigation.projectId = params['projectName'];
+        this.logger.debug(`Project name from query params: ${this.navigation.projectId}`);
       }
       
       if (params['prdId']) {
@@ -631,7 +630,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       ['/test-case', userStoryId, selectedTestCase.id, 'view'],
       {
         queryParams: {
-          projectId: this.navigation.projectId
+          projectName: this.navigation.projectId
         }
       },
     );
