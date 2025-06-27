@@ -1054,25 +1054,18 @@ export class TestCasesComponent implements OnInit, OnDestroy {
 
     // Open the modal for the specific user story
     this.logger.debug('Opening modal for user story specific view');
-    this.openTestCaseContextModal(regenerate, false);
+    this.openTestCaseContextModal(regenerate);
   }
 
   /**
    * Opens the test case context modal with appropriate data
    * @param regenerate Whether this is a regeneration operation
-   * @param isGlobalView Whether we're in global view (no specific user story)
    * @param userStories Optional array of user stories (for global view)
    */
   private openTestCaseContextModal(
     regenerate: boolean,
-    isGlobalView: boolean,
     userStories: IUserStory[] = [],
   ) {
-    this.logger.debug(
-      `Opening test case context modal. isGlobalView: ${isGlobalView}, userStories: ${userStories.length}`,
-    );
-
-    // Log some sample user stories for debugging
     if (userStories.length > 0) {
       this.logger.debug('Sample user stories:', userStories.slice(0, 3));
     }
@@ -1082,7 +1075,6 @@ export class TestCasesComponent implements OnInit, OnDestroy {
       .forComponent(TestCaseContextModalComponent)
       .withData({
         title: 'Generate Test Cases',
-        isGlobalView: isGlobalView,
         userStories: userStories,
       })
       .withWidth('600px')
@@ -1096,7 +1088,7 @@ export class TestCasesComponent implements OnInit, OnDestroy {
           const extraContext = formValues.extraContext || '';
 
           // If in global view, use the selected user story
-          if (isGlobalView && formValues.selectedUserStoryId) {
+          if (formValues.selectedUserStoryId) {
             this.logger.debug(
               `Selected user story ID: ${formValues.selectedUserStoryId}`,
             );
@@ -1245,9 +1237,5 @@ export class TestCasesComponent implements OnInit, OnDestroy {
 
     // Remove the breadcrumb when the component is destroyed
     this.store.dispatch(new DeleteBreadcrumb(this.currentLabel));
-  }
-
-  get isGlobalView(): boolean {
-    return false; // Always return false since we only support user story specific view
   }
 }

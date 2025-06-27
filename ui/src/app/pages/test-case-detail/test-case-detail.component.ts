@@ -127,7 +127,6 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
 
   mode: 'view' | 'edit' | 'add' = 'view';
-  fromGlobalView = false;
   formModified = false;
   currentProject = '';
   userStoryId = '';
@@ -150,12 +149,6 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
     if (testCaseContainer) {
       testCaseContainer.scrollTop = 0;
     }
-    
-    this.subscriptions.push(
-      this.route.queryParams.subscribe(params => {
-        this.fromGlobalView = params['fromGlobalView'] === 'true';
-      })
-    );
 
     this.subscriptions.push(
       this.store.select(ProjectsState.getSelectedProject).subscribe((project) => {
@@ -392,7 +385,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
     if (this.userStoryId) {
       this.store.dispatch(new SetSelectedUserStory(this.userStoryId));
     }
-    this.router.navigate(this.fromGlobalView ? ['/test-cases'] : ['/test-cases', this.userStoryId]);
+    this.router.navigate(['/test-cases', this.userStoryId ]);
   }
 
   canDeactivate(): boolean {
