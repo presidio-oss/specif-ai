@@ -40,7 +40,14 @@
               "debug",
               "html2canvas",
               "file-saver",
-              "panzoom"
+              "panzoom",
+              "linkify-it",
+              "lodash/isEqual",
+              "@babel/runtime/regenerator",
+              "@statsig/js-client",
+              "extend",
+              "exceljs",
+              "markdown-truncate"
             ]
           },
           "configurations": {
@@ -48,8 +55,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "4mb",
-                  "maximumError": "4mb"
+                  "maximumWarning": "4.5mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -69,8 +76,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "4mb",
-                  "maximumError": "4mb"
+                  "maximumWarning": "4.5mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",

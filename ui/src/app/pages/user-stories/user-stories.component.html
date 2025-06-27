@@ -1,5 +1,5 @@
 <div
-  class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full relative"
+  class="bg-white border rounded-lg p-5 flex flex-col h-[calc(100vh-80px)] lg:col-span-2 w-full relative"
   *ngIf="userStories$ | async as userStories"
 >
   <app-workflow-progress-dialog
@@ -33,11 +33,8 @@
 
       <div class="flex items-center justify-between gap-3">
         <app-button
-          [buttonContent]="
-            userStories.length === 0
-              ? 'Generate User Stories'
-              : 'Regenerate User Stories'
-          "
+          *ngIf="userStories.length === 0"
+          buttonContent="Generate User Stories"
           theme="secondary"
           size="sm"
           (click)="addMoreContext(userStories.length > 0)"
@@ -46,7 +43,7 @@
         />
         <app-export-dropdown
           [disabled]="userStories.length === 0 || isGeneratingStories"
-          [options]="exportOptions"
+          [groupedOptions]="exportOptions"
         />
         <app-button
           buttonContent="Add New"
