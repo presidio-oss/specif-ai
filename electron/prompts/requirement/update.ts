@@ -1,5 +1,7 @@
 import { MARKDOWN_RULES } from '../context/markdown-rules';
 import { getContextAndType } from '../../utils/get-context';
+import { CRITICAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS } from '../context/editor-instructions';
+import { SPECIAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS } from '../context/editor-instructions';
 
 interface UpdateRequirementParams {
   name: string;
@@ -54,11 +56,14 @@ Output Structure MUST be a valid JSON: Here is the sample Structure:
   "updated": ${format}
 }
 
+${CRITICAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS}
+
 Special Instructions:
 (!) You are allowed to use Markdown for the updated requirement description. You MUST ONLY use valid Markdown according to the following rules:
 ${MARKDOWN_RULES}
 (!) The output MUST be a valid JSON object strictly adhering to the structure defined above. Failure to produce valid JSON will cause a critical application error.
     The value of the updated key MUST represent one requirement (and absolutely NOT an array of requirements)
+(!) ${SPECIAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS}
 
 Output only valid JSON. Do not include \`\`\`json \`\`\` on start and end of the response.`;
 }
