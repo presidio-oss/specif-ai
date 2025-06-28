@@ -17,10 +17,10 @@ import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { NGXLogger } from 'ngx-logger';
-import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
-import { ButtonComponent } from '../../components/core/button/button.component';
-import { AppSelectComponent } from '../../components/core/app-select/app-select.component';
-import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
+import { TextareaFieldComponent } from '../../../components/core/textarea-field/textarea-field.component';
+import { ButtonComponent } from '../../../components/core/button/button.component';
+import { AppSelectComponent } from '../../../components/core/app-select/app-select.component';
+import { InputFieldComponent } from '../../../components/core/input-field/input-field.component';
 import { MatIconModule } from '@angular/material/icon';
 import { provideIcons, NgIconComponent } from '@ng-icons/core';
 import { 
@@ -47,27 +47,23 @@ import {
   heroExclamationTriangle
 } from '@ng-icons/heroicons/outline';
 import { CommonModule, NgClass, NgForOf, NgIf } from '@angular/common';
-
-import { AppSystemService } from '../../services/app-system/app-system.service';
-import { ToasterService } from '../../services/toaster/toaster.service';
-import { DialogService } from '../../services/dialog/dialog.service';
-import { RequirementIdService } from '../../services/requirement-id.service';
-
-import { ProjectsState } from '../../store/projects/projects.state';
-import { UpdateFile, ArchiveFile } from '../../store/projects/projects.actions';
-import { SetSelectedUserStory } from '../../store/user-stories/user-stories.actions';
-import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
-
 import {
   CONFIRMATION_DIALOG,
   REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
-} from '../../constants/app.constants';
-
+} from '../../../constants/app.constants';
 import {
   ITestCase,
   ITestCaseStep,
-} from '../../model/interfaces/test-case/testcase.interface';
+} from '../../../model/interfaces/test-case/testcase.interface';
+import { AppSystemService } from 'src/app/services/app-system/app-system.service';
+import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { RequirementIdService } from 'src/app/services/requirement-id.service';
+import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import { AddBreadcrumb, DeleteBreadcrumb } from 'src/app/store/breadcrumb/breadcrumb.actions';
+import { UpdateFile, ArchiveFile } from 'src/app/store/projects/projects.actions';
+import { ProjectsState } from 'src/app/store/projects/projects.state';
+import { SetSelectedUserStory } from 'src/app/store/user-stories/user-stories.actions';
 
 @Component({
   selector: 'app-test-case-detail-page',
@@ -81,7 +77,6 @@ import {
     AppSelectComponent,
     NgIf,
     NgForOf,
-    NgClass,
     InputFieldComponent,
     MatIconModule,
     NgIconComponent,

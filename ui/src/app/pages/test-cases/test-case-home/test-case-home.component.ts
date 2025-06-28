@@ -2,30 +2,29 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
-import { ProjectsState } from '../../store/projects/projects.state';
-import { GetProjectFiles, BulkReadFiles, ClearBRDPRDState } from '../../store/projects/projects.actions';
-import { GetUserStories, SetSelectedUserStory } from '../../store/user-stories/user-stories.actions';
-import { IUserStory } from '../../model/interfaces/IUserStory';
-import { ClipboardService } from '../../services/clipboard.service';
-import { ToasterService } from '../../services/toaster/toaster.service';
+import { ProjectsState } from '../../../store/projects/projects.state';
+import { GetProjectFiles, BulkReadFiles, ClearBRDPRDState } from '../../../store/projects/projects.actions';
+import { GetUserStories, SetSelectedUserStory } from '../../../store/user-stories/user-stories.actions';
+import { IUserStory } from '../../../model/interfaces/IUserStory';
+import { ClipboardService } from '../../../services/clipboard.service';
+import { ToasterService } from '../../../services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { provideIcons } from '@ng-icons/core';
 import { heroArrowRight, heroDocumentText, heroClipboardDocumentCheck, heroBeaker } from '@ng-icons/heroicons/outline';
-import { UnifiedCardComponent, CardStatusIndicator } from '../../components/unified-card/unified-card.component';
-import { BadgeComponent } from '../../components/core/badge/badge.component';
-import { FILTER_STRINGS, TOASTER_MESSAGES } from '../../constants/app.constants';
-import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
-import { AppSelectComponent, SelectOption } from '../../components/core/app-select/app-select.component';
-import { SearchService } from '../../services/search/search.service';
+import { UnifiedCardComponent, CardStatusIndicator } from '../../../components/unified-card/unified-card.component';
+import { BadgeComponent } from '../../../components/core/badge/badge.component';
+import { FILTER_STRINGS, TOASTER_MESSAGES } from '../../../constants/app.constants';
+import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
+import { AppSelectComponent, SelectOption } from '../../../components/core/app-select/app-select.component';
+import { SearchService } from '../../../services/search/search.service';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
-import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
-import { AppSystemService } from '../../services/app-system/app-system.service';
-import { SummaryCardComponent } from "../../components/summary-card/summary-card.component";
+import { AddBreadcrumb, DeleteBreadcrumb } from '../../../store/breadcrumb/breadcrumb.actions';
+import { AppSystemService } from '../../../services/app-system/app-system.service';
+import { SummaryCardComponent } from "../../../components/summary-card/summary-card.component";
 import { FormsModule } from '@angular/forms';
 
-// Interface for PRD information
 interface IPrdInfo {
   id: string;
   name: string;
@@ -35,8 +34,8 @@ interface IPrdInfo {
 
 @Component({
   selector: 'app-test-cases-home',
-  templateUrl: './test-cases-home.component.html',
-  styleUrls: ['./test-cases-home.component.scss'],
+  templateUrl: './test-case-home.component.html',
+  styleUrls: ['./test-case-home.component.scss'],
   standalone: true,
   imports: [
     MatMenuModule,
@@ -60,7 +59,7 @@ interface IPrdInfo {
     }),
   ],
 })
-export class TestCasesHomeComponent implements OnInit, OnDestroy {
+export class TestCaseHomeComponent implements OnInit, OnDestroy {
   currentProject!: string;
   private searchTerm$ = new BehaviorSubject<string>('');
   private destroy$ = new Subject<void>();

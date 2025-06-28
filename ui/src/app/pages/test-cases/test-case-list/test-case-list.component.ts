@@ -6,63 +6,62 @@ import {
   NgZone,
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
-import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
+import { WorkflowProgressDialogComponent } from '../../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
-import { ProjectsState } from '../../store/projects/projects.state';
-import { ArchiveFile, ReadFile } from '../../store/projects/projects.actions';
-import { UserStoriesState } from '../../store/user-stories/user-stories.state';
-import { SetSelectedUserStory } from '../../store/user-stories/user-stories.actions';
-import { RequirementIdService } from '../../services/requirement-id.service';
-import { IUserStory } from '../../model/interfaces/IUserStory';
-import { AppSystemService } from '../../services/app-system/app-system.service';
-import { ToasterService } from '../../services/toaster/toaster.service';
-import { ElectronService } from '../../electron-bridge/electron.service';
-import { ButtonComponent } from '../../components/core/button/button.component';
+import { ProjectsState } from '../../../store/projects/projects.state';
+import { ArchiveFile, ReadFile } from '../../../store/projects/projects.actions';
+import { UserStoriesState } from '../../../store/user-stories/user-stories.state';
+import { SetSelectedUserStory } from '../../../store/user-stories/user-stories.actions';
+import { RequirementIdService } from '../../../services/requirement-id.service';
+import { IUserStory } from '../../../model/interfaces/IUserStory';
+import { AppSystemService } from '../../../services/app-system/app-system.service';
+import { ToasterService } from '../../../services/toaster/toaster.service';
+import { ElectronService } from '../../../electron-bridge/electron.service';
+import { ButtonComponent } from '../../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { ListItemComponent } from '../../components/core/list-item/list-item.component';
-import { UnifiedCardComponent, CardStatusIndicator, CardBadge } from '../../components/unified-card/unified-card.component';
-import { BadgeComponent } from '../../components/core/badge/badge.component';
+import { ListItemComponent } from '../../../components/core/list-item/list-item.component';
+import { UnifiedCardComponent, CardStatusIndicator, CardBadge } from '../../../components/unified-card/unified-card.component';
+import { BadgeComponent } from '../../../components/core/badge/badge.component';
 import {
   FILTER_STRINGS,
   REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
-} from '../../constants/app.constants';
-import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
+} from '../../../constants/app.constants';
+import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { BehaviorSubject, combineLatest, firstValueFrom, map, take } from 'rxjs';
-import { AppSelectComponent, SelectOption } from '../../components/core/app-select/app-select.component';
+import { AppSelectComponent, SelectOption } from '../../../components/core/app-select/app-select.component';
 import { TestCaseContextModalComponent } from 'src/app/components/test-case-context-modal/test-case-context-modal.component';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 import {
   WorkflowType,
   WorkflowProgressEvent,
-} from '../../model/interfaces/workflow-progress.interface';
-import { environment } from '../../../environments/environment';
-import { TestCaseService } from '../../services/test-case/test-case.service';
+} from '../../../model/interfaces/workflow-progress.interface';
+import { environment } from '../../../../environments/environment';
+import { TestCaseService } from '../../../services/test-case/test-case.service';
 import {
   ITestCase,
   ITestCaseRequest,
   ThinkingProcessConfig,
-} from '../../model/interfaces/test-case/testcase.interface';
-import { SearchService } from '../../services/search/search.service';
-import { DialogService } from '../../services/dialog/dialog.service';
-import { ClipboardService } from '../../services/clipboard.service';
-import { LoadingService } from '../../services/loading.service';
+} from '../../../model/interfaces/test-case/testcase.interface';
+import { SearchService } from '../../../services/search/search.service';
+import { DialogService } from '../../../services/dialog/dialog.service';
+import { ClipboardService } from '../../../services/clipboard.service';
+import { LoadingService } from '../../../services/loading.service';
 import {
   AddBreadcrumb,
   DeleteBreadcrumb,
-} from '../../store/breadcrumb/breadcrumb.actions';
+} from '../../../store/breadcrumb/breadcrumb.actions';
 import { WorkflowProgressService } from 'src/app/services/workflow-progress/workflow-progress.service';
 import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { provideIcons } from '@ng-icons/core';
 
 @Component({
-  selector: 'app-test-cases',
-  templateUrl: './test-cases.component.html',
-  styleUrls: ['./test-cases.component.scss'],
+  selector: 'app-test-case-list',
+  templateUrl: './test-case-list.component.html',
   standalone: true,
   imports: [
     ButtonComponent,
@@ -85,7 +84,7 @@ import { provideIcons } from '@ng-icons/core';
       }),
     ],
 })
-export class TestCasesComponent implements OnInit, OnDestroy {
+export class TestCaseListComponent implements OnInit, OnDestroy {
   currentProject!: string;
   newFileName: string = '';
   entityType: string = 'TC';
