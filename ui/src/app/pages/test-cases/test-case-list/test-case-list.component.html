@@ -56,7 +56,7 @@
         (searchChange)="onSearch($event)"
         class="mb-6"
       ></app-search-input>
-      
+
       <div class="grid grid-cols-3 gap-4 mt-4">
         <!-- Priority filter -->
         <app-select
@@ -65,7 +65,7 @@
           (selectionChange)="onPriorityFilterChange($event)"
           [clearable]="true"
         ></app-select>
-        
+
         <!-- Type filter -->
         <app-select
           [options]="typeOptions"
@@ -73,7 +73,7 @@
           (selectionChange)="onTypeFilterChange($event)"
           [clearable]="true"
         ></app-select>
-        
+
         <!-- Steps count filter -->
         <app-select
           [options]="stepsCountOptions"
@@ -87,7 +87,9 @@
 
   <div class="h-full overflow-y-auto">
     <!-- User Story specific view -->
-    <ng-container *ngIf="((filteredTestCases$ | async)?.length ?? 0) > 0; else noTestCases">
+    <ng-container
+      *ngIf="((filteredTestCases$ | async)?.length ?? 0) > 0; else noTestCases"
+    >
       <app-unified-card
         *ngFor="let testCase of filteredTestCases$ | async"
         [id]="testCase.id"
@@ -105,10 +107,22 @@
 
     <!-- Empty State Message -->
     <ng-template #noTestCases>
-      <h1 class="text-secondary-700 my-4 text-center">
-        No Test Cases Found. Generate test cases by clicking the
-        <strong>"Generate Test Cases"</strong> button.
-      </h1>
+      <div
+        class="flex flex-col justify-center items-center min-h-[60vh] text-center"
+      >
+        <img
+          src="assets/img/empty-states/no-data.svg"
+          alt="No Test Cases Available"
+          class="w-80 h-80 mx-auto"
+        />
+        <h1 class="font-semibold text-secondary-700 text-xl mb-2">
+          No Test Cases Found
+        </h1>
+        <p class="text-secondary-500 text-sm">
+          Generate test cases by clicking the
+          <strong>"Generate Test Cases"</strong> button.
+        </p>
+      </div>
     </ng-template>
   </div>
 </div>

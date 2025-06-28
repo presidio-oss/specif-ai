@@ -51,8 +51,13 @@
     <!-- No PRDs message -->
     <ng-template #noPrds>
       <div
-        class="flex flex-col justify-center items-center min-h-[20vh] mt-4 mb-4 text-center"
+        class="flex flex-col justify-center items-center min-h-[60vh] mt-4 mb-4 text-center"
       >
+          <img 
+            src="assets/img/empty-states/no-data.svg" 
+            alt="No PRD Available" 
+            class="w-80 h-80 mx-auto"
+          />
         <h1 class="font-semibold text-secondary-700 text-xl mb-2">
           No PRD is available.
         </h1>
@@ -98,8 +103,15 @@
 
         <ng-template #noUserStories>
           <div
-            class="flex flex-col justify-center items-center min-h-[40vh] text-center"
+            class="flex flex-col justify-center items-center min-h-[60vh] text-center"
           >
+            <div class="">
+              <img 
+                src="assets/img/empty-states/no-data.svg" 
+                alt="No User Stories Available" 
+                class="w-80 h-80 mx-auto"
+              />
+            </div>
             <h1 class="font-semibold text-secondary-700 text-xl mb-2">
               No User Stories Available for the selected PRD.
             </h1>
