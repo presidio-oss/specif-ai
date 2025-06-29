@@ -119,8 +119,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit() {
-    console.debug('TestCasesHomeComponent initialized');
-    
     this.clearAllData();
     
     this.store.dispatch(
@@ -133,26 +131,22 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params: { [key: string]: string }) => {
       if (params['projectName']) {
         this.currentProject = params['projectName'];
-        console.debug(`Project name from query params: ${this.currentProject}`);
         
         this.clearAllData();
         
         this.store.dispatch(new GetProjectFiles(this.currentProject, FILTER_STRINGS.BASE)).subscribe(() => {
-          console.log('GetProjectFiles action with BASE filter completed');
           this.loadPrdList();
         });
       } else {
         this.selectedProject$.pipe(takeUntil(this.destroy$)).subscribe((project) => {
           if (this.currentProject !== project) {
             this.currentProject = project;
-            console.log('Selected project from store:', project);
             this.logger.debug(project, 'selected project');
             
             this.clearAllData();
             
             if (project) {
               this.store.dispatch(new GetProjectFiles(this.currentProject, FILTER_STRINGS.BASE)).subscribe(() => {
-                console.log('GetProjectFiles action with BASE filter completed');
                 this.loadPrdList();
               });
             }
@@ -163,7 +157,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   }
   
   private clearAllData() {
-    console.debug('Clearing all PRD and user story data');
     this.store.dispatch(new ClearBRDPRDState());
 
     this.prdList = [];
@@ -184,18 +177,15 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     
     this.store.dispatch(new SetSelectedUserStory(userStory.id));
     
-    // Get PRD information if available
     const prdId = userStory.prdId || '';
     let prdTitle = '';
     let prdDescription = '';
     
-    // Find the selected PRD in our list
     if (prdId && this.prdList && this.prdList.length > 0) {
       const selectedPrd = this.prdList.find(prd => prd.id === prdId);
       if (selectedPrd) {
         prdTitle = selectedPrd.name || '';
         prdDescription = selectedPrd.description || '';
-        console.debug(`Including PRD information in navigation: ${prdId} - ${prdTitle} - ${prdDescription}`);
       }
     }
     
@@ -279,7 +269,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     
     this.originalDocumentList$.pipe(takeUntil(this.destroy$)).subscribe(documents => {
       if (!documents || documents.length === 0) {
-        console.debug('No PRD documents found');
         this.isLoading = false;
         return;
       }
@@ -288,15 +277,11 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
         doc.fileName.includes('-base.json') && !doc.fileName.includes('-archived')
       );
       
-      console.log('Base documents:', baseDocuments);
-      
       if (baseDocuments.length === 0) {
-        console.log('No non-archived base documents found');
         this.isLoading = false;
         return;
       }
       
-      console.log(`Found ${baseDocuments.length} non-archived base documents`);
       this.logger.debug(`Found ${baseDocuments.length} non-archived base documents`);
       
       const allPrds: IPrdInfo[] = [];
@@ -314,7 +299,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
           };
           
           allPrds.push(prdInfo);
-          console.log(`Added PRD info: ${prdInfo.id} - ${prdInfo.name}`);
         }
       });
       
@@ -323,7 +307,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   }
   
   private finishLoadingPrds(prds: IPrdInfo[]) {
-    console.log(`Loaded ${prds.length} PRDs:`, prds);
     this.logger.debug(`Loaded ${prds.length} PRDs`);
     
     prds.sort((a, b) => a.id.localeCompare(b.id));
@@ -350,7 +333,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   }
 
   selectPrd(prdId: string) {
-    console.debug(`Selecting PRD: ${prdId}`);
     this.logger.debug(`Selecting PRD: ${prdId}`);
     
     this.prdList = this.prdList.map(prd => ({
@@ -366,7 +348,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
       this.selectedPrdTitle = selectedPrd.name;
     }
     
-    // Save the selected PRD ID to session storage
     sessionStorage.setItem(`${this.SELECTED_PRD_KEY}_${this.currentProject}`, prdId);
     
     this.loadUserStoriesForPrd(prdId);
@@ -374,40 +355,31 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   
   private loadUserStoriesForPrd(prdId: string) {
     this.isLoading = true;
-    console.log(`Loading user stories for PRD: ${prdId}`);
     this.logger.debug(`Loading user stories for PRD: ${prdId}`);
     
     const featureFile = `${prdId}-feature.json`;
     const featurePath = `${this.currentProject}/PRD/${featureFile}`;
     
-    console.log(`Reading feature file: ${featurePath}`);
     this.store.dispatch(new GetUserStories(featurePath));
     
     this.appSystemService.fileExists(featurePath)
       .then(exists => {
         if (!exists) {
-          console.log(`File ${featurePath} does not exist`);
           this.finishLoading([]);
           return;
         }
         
         this.appSystemService.readFile(featurePath)
           .then(content => {
-            console.log(`File content for ${featureFile}:`, content ? 'Content received' : 'No content');
-            
             if (!content) {
-              console.log(`Empty content for ${featureFile}`);
               this.finishLoading([]);
               return;
             }
             
             try {
               const parsedContent = JSON.parse(content);
-              console.log(`Parsed content for ${featureFile}:`, parsedContent);
               
               if (parsedContent && parsedContent.features && Array.isArray(parsedContent.features)) {
-                console.log(`Features array found in ${featureFile}:`, parsedContent.features);
-                
                 const userStories = parsedContent.features.map((feature: any) => ({
                   id: feature.id,
                   name: feature.name,
@@ -415,33 +387,27 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
                   prdId: prdId,
                 }));
                 
-                console.log(`Mapped user stories from ${featureFile}:`, userStories);
                 this.finishLoading(userStories);
               } else {
-                console.log(`No features array found in ${featureFile} or it's not an array`);
                 this.finishLoading([]);
               }
             } catch (error) {
-              console.error(`Error parsing feature file ${featureFile}:`, error);
               this.logger.error(`Error parsing feature file ${featureFile}:`, error);
               this.finishLoading([]);
             }
           })
           .catch(error => {
-            console.error(`Error reading feature file ${featureFile}:`, error);
             this.logger.error(`Error reading feature file ${featureFile}:`, error);
             this.finishLoading([]);
           });
       })
       .catch(error => {
-        console.error(`Error checking if file exists ${featurePath}:`, error);
         this.logger.error(`Error checking if file exists ${featurePath}:`, error);
         this.finishLoading([]);
       });
   }
   
   private finishLoading(userStories: IUserStory[]) {
-    console.log(`Loaded ${userStories.length} user stories:`, userStories);
     this.logger.debug(`Loaded ${userStories.length} user stories`);
     this.userStories = userStories;
     this.userStories$.next(userStories);
@@ -454,7 +420,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   }
   
   private fetchTestCaseCounts(userStories: IUserStory[]) {
-    console.log('Fetching test case counts for user stories');
     this.logger.debug('Fetching test case counts for user stories');
     
     this.testCaseCounts = new Map<string, number>();
@@ -469,7 +434,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
             this.appSystemService.getFolders(testCasePath, FILTER_STRINGS.BASE, false)
               .then(files => {
                 this.testCaseCounts.set(userStory.id, files.length);
-                console.log(`User story ${userStory.id} has ${files.length} test cases`);
                 
                 processedCount++;
                 
@@ -478,7 +442,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
                 }
               })
               .catch(error => {
-                console.error(`Error getting test case files for ${userStory.id}:`, error);
+                this.logger.error(`Error getting test case files for ${userStory.id}:`, error);
                 this.testCaseCounts.set(userStory.id, 0);
                 processedCount++;
                 
@@ -488,7 +452,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
               });
           } else {
             this.testCaseCounts.set(userStory.id, 0);
-            console.log(`User story ${userStory.id} has no test cases`);
             
             processedCount++;
             
@@ -498,7 +461,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
           }
         })
         .catch(error => {
-          console.error(`Error checking test case directory for ${userStory.id}:`, error);
+          this.logger.error(`Error checking test case directory for ${userStory.id}:`, error);
           this.testCaseCounts.set(userStory.id, 0);
           
           processedCount++;

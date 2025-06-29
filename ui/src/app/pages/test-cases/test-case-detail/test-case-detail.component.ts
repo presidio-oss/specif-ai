@@ -274,8 +274,6 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       this.steps.at(j).get('stepNumber')?.setValue(j + 1);
     }
   }
-  
-  // Step reordering methods removed as per requirement
 
   enableEditMode() {
     this.mode = 'edit';
@@ -296,7 +294,6 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       const tcNumber = id.toString().padStart(2, '0');
       raw.id = `TC${tcNumber}`;
       
-      // Create the test case path
       const testCasePath = `${this.currentProject}/${REQUIREMENT_TYPE.TC}/${this.userStoryId}`;
       const fileName = `${raw.id}-base.json`;
       const filePath = `${testCasePath}/${fileName}`;
@@ -323,7 +320,6 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       return;
     }
     
-    // For edit mode, use the store dispatch
     const path = `${REQUIREMENT_TYPE.TC}/${this.userStoryId}/${raw.id}-base.json`;
     this.store.dispatch(new UpdateFile(path, raw)).subscribe({
       next: () => {
