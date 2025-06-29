@@ -154,21 +154,18 @@ const routes: Routes = [
         path: 'test-case/:userStoryId/add',
         component: TestCaseDetailPageComponent,
         canActivate: [UserGuard],
-        canDeactivate: [CanDeactivateGuard],
-        data: { mode: 'add' }
+        canDeactivate: [CanDeactivateGuard]
       },
       {
         path: 'test-case/:userStoryId/:testCaseId/view',
         component: TestCaseDetailPageComponent,
-        canActivate: [UserGuard],
-        data: { mode: 'view' }
+        canActivate: [UserGuard]
       },
       {
         path: 'test-case/:userStoryId/:testCaseId/edit',
         component: TestCaseDetailPageComponent,
         canActivate: [UserGuard],
-        canDeactivate: [CanDeactivateGuard],
-        data: { mode: 'edit' }
+        canDeactivate: [CanDeactivateGuard]
       },
       {
         path: 'test-cases-home',

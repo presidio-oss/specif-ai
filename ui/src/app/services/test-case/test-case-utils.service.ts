@@ -4,7 +4,8 @@ import { NGXLogger } from 'ngx-logger';
 import { firstValueFrom } from 'rxjs';
 import { AppSystemService } from '../app-system/app-system.service';
 import { ArchiveFile } from '../../store/projects/projects.actions';
-import { FILTER_STRINGS } from '../../constants/app.constants';
+import { FILTER_STRINGS, REQUIREMENT_TYPE } from '../../constants/app.constants';
+import { joinPaths } from '../../utils/path.utils';
 
 // FIXME: This approach is inefficient for large projects with many test cases. 
 // We need to consider a more efficient way to handle test cases, such as using a database or indexed storage.
@@ -15,7 +16,7 @@ export class TestCaseUtilsService {
   private appSystemService = inject(AppSystemService);
 
   private getTestCasePath(projectPath: string, userStoryId: string): string {
-    return `${projectPath}/TC/${userStoryId}`;
+    return joinPaths(projectPath, REQUIREMENT_TYPE.TC, userStoryId);
   }
 
   private async getBaseFiles(testCasePath: string): Promise<string[]> {
@@ -45,7 +46,7 @@ export class TestCaseUtilsService {
       if (files.length === 0) return;
 
       for (const fileName of files) {
-        const filePath = `TC/${userStoryId}/${fileName}`;
+        const filePath = joinPaths(REQUIREMENT_TYPE.TC, userStoryId, fileName);
         await firstValueFrom(this.store.dispatch(new ArchiveFile(filePath)));
         this.logger.debug(`Archived test case file: ${fileName}`);
       }
@@ -75,7 +76,7 @@ export class TestCaseUtilsService {
 
       const testCases = await Promise.all(
         files.map(async (fileName) => {
-          const fullPath = `${testCasePath}/${fileName}`;
+          const fullPath = joinPaths(testCasePath, fileName);
           try {
             const content = await this.appSystemService.readFile(fullPath);
             return JSON.parse(content);

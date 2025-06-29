@@ -55,15 +55,19 @@ import {
 import {
   ITestCase,
   ITestCaseStep,
+  TestCaseMode,
+  TestCaseStatus,
+  TEST_CASE_PRIORITY,
+  TEST_CASE_TYPE
 } from '../../../model/interfaces/test-case/testcase.interface';
 import { AppSystemService } from 'src/app/services/app-system/app-system.service';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { AddBreadcrumb, DeleteBreadcrumb } from 'src/app/store/breadcrumb/breadcrumb.actions';
-import { UpdateFile, ArchiveFile } from 'src/app/store/projects/projects.actions';
 import { ProjectsState } from 'src/app/store/projects/projects.state';
 import { SetSelectedUserStory } from 'src/app/store/user-stories/user-stories.actions';
+import { TestCaseService } from 'src/app/services/test-case/test-case.service';
 
 @Component({
   selector: 'app-test-case-detail-page',
@@ -117,23 +121,24 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private logger = inject(NGXLogger);
+  private testCaseService = inject(TestCaseService);
 
   testCaseForm!: FormGroup;
   subscriptions: Subscription[] = [];
 
-  mode: 'view' | 'edit' | 'add' = 'view';
+  mode: TestCaseMode = TestCaseMode.VIEW;
   formModified = false;
   currentProject = '';
   userStoryId = '';
   testCase: ITestCase | null = null;
   breadcrumbLabel = '';
 
-  priorityOptions = ['High', 'Medium', 'Low'].map((val) => ({ value: val, label: val }));
-  typeOptions = ['Functional', 'Integration', 'UI/UX', 'Performance', 'Security'].map((val) => ({ value: val, label: val }));
-  statusOptions = ['Active', 'Draft', 'Deprecated', 'Archived'].map((val) => ({ value: val, label: val }));
+  priorityOptions = this.testCaseService.priorityOptions;
+  typeOptions = this.testCaseService.typeOptions;
+  statusOptions = this.testCaseService.statusOptions;
 
   @HostListener('input') onFormInput() {
-    if (this.mode === 'edit' || this.mode === 'add') {
+    if (this.mode === TestCaseMode.EDIT || this.mode === TestCaseMode.ADD) {
       this.formModified = true;
     }
   }
@@ -151,30 +156,43 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       })
     );
 
+    // Extract user story ID from route params
+    this.userStoryId = this.route.snapshot.paramMap.get('userStoryId') || '';
+    if (!this.userStoryId) {
+      this.toast.showError('User story ID not found');
+      return;
+    }
+
+    // Determine mode from URL path
+    const urlPath = this.router.url;
+    if (urlPath.endsWith('/add')) {
+      this.mode = TestCaseMode.ADD;
+    } else if (urlPath.endsWith('/edit')) {
+      this.mode = TestCaseMode.EDIT;
+    } else if (urlPath.endsWith('/view')) {
+      this.mode = TestCaseMode.VIEW;
+    } else {
+      this.mode = TestCaseMode.VIEW; // Default fallback
+    }
+
+    this.initForm();
+
     this.subscriptions.push(
-      this.route.data.subscribe((data) => {
-        this.mode = data['mode'] || 'view';
-        this.userStoryId = this.route.snapshot.paramMap.get('userStoryId') || '';
-
-        if (!this.userStoryId) return this.toast.showError('User story ID not found');
-
-        this.initForm();
-
-        this.subscriptions.push(
-          this.testCaseForm.valueChanges.subscribe(() => {
-            if (this.mode !== 'view') this.formModified = true;
-          })
-        );
-
-        if (this.mode === 'add') {
-          this.setupAddMode();
-        } else {
-          const testCaseId = this.route.snapshot.paramMap.get('testCaseId') || '';
-          if (!testCaseId) return this.toast.showError('Test case ID not found');
-          this.loadTestCase(testCaseId);
-        }
+      this.testCaseForm.valueChanges.subscribe(() => {
+        if (this.mode !== TestCaseMode.VIEW) this.formModified = true;
       })
     );
+
+    if (this.mode === TestCaseMode.ADD) {
+      this.setupAddMode();
+    } else {
+      const testCaseId = this.route.snapshot.paramMap.get('testCaseId') || '';
+      if (!testCaseId) {
+        this.toast.showError('Test case ID not found');
+        return;
+      }
+      this.loadTestCase(testCaseId);
+    }
   }
 
   private setupAddMode() {
@@ -193,39 +211,35 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       id: [''],
       title: ['', Validators.required],
       description: ['', Validators.required],
-      priority: ['Medium', Validators.required],
-      type: ['Functional', Validators.required],
-      status: ['Active', Validators.required],
+      priority: [TEST_CASE_PRIORITY.MEDIUM, Validators.required],
+      type: [TEST_CASE_TYPE.FUNCTIONAL, Validators.required],
+      status: [TestCaseStatus.ACTIVE, Validators.required],
       preConditions: this.fb.array([]),
       postConditions: this.fb.array([]),
       steps: this.fb.array([]),
     });
 
-    if (this.mode === 'view') this.testCaseForm.disable();
+    if (this.mode === TestCaseMode.VIEW) this.testCaseForm.disable();
   }
 
   private loadTestCase(testCaseId: string) {
-    const path = `${this.currentProject}/${REQUIREMENT_TYPE.TC}/${this.userStoryId}/${testCaseId}-base.json`;
-
-    this.appSystemService.readFile(path).then((content) => {
-      try {
-        const testCase = JSON.parse(content);
-        this.testCase = testCase;
-        this.breadcrumbLabel = `${testCase.id}: ${testCase.title}`;
-        this.store.dispatch(
-          new AddBreadcrumb({ label: this.breadcrumbLabel, tooltipLabel: testCase.description })
-        );
-        this.populateForm(testCase);
-      } catch (err) {
-        this.logger.error(`Error parsing test case`, err);
-        this.toast.showError(`Failed to load test case ${testCaseId}`);
-        this.navigateBack();
-      }
-    }).catch((err) => {
-      this.logger.error(`Error reading test case`, err);
-      this.toast.showError(`Failed to load test case ${testCaseId}`);
-      this.navigateBack();
-    });
+    this.subscriptions.push(
+      this.testCaseService.getTestCase(this.currentProject, this.userStoryId, testCaseId)
+        .subscribe({
+          next: (testCase) => {
+            this.testCase = testCase;
+            this.breadcrumbLabel = `${testCase.id}: ${testCase.title}`;
+            this.store.dispatch(
+              new AddBreadcrumb({ label: this.breadcrumbLabel, tooltipLabel: testCase.description })
+            );
+            this.populateForm(testCase);
+          },
+          error: (error) => {
+            this.toast.showError(`Failed to load test case ${testCaseId}`);
+            this.navigateBack();
+          }
+        })
+    );
   }
 
   private populateForm(testCase: ITestCase) {
@@ -238,7 +252,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
     testCase.preConditions?.forEach(c => pre.push(this.fb.control(c)));
     testCase.postConditions?.forEach(c => post.push(this.fb.control(c)));
     testCase.steps?.forEach(s => steps.push(this.createStepFormGroup(s)));
-    if (this.mode === 'view') this.testCaseForm.disable();
+    if (this.mode === TestCaseMode.VIEW) this.testCaseForm.disable();
   }
 
   get preConditions(): FormArray {
@@ -276,7 +290,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   }
 
   enableEditMode() {
-    this.mode = 'edit';
+    this.mode = TestCaseMode.EDIT;
     this.testCaseForm.enable();
     this.formModified = false;
   }
@@ -288,49 +302,28 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
     }
 
     const raw = this.testCaseForm.getRawValue();
+    const isNew = this.mode === TestCaseMode.ADD;
     
-    if (this.mode === 'add') {
-      const id = this.requirementIdService.getNextRequirementId(REQUIREMENT_TYPE.TC);
-      const tcNumber = id.toString().padStart(2, '0');
-      raw.id = `TC${tcNumber}`;
-      
-      const testCasePath = `${this.currentProject}/${REQUIREMENT_TYPE.TC}/${this.userStoryId}`;
-      const fileName = `${raw.id}-base.json`;
-      const filePath = `${testCasePath}/${fileName}`;
-      
-      this.appSystemService.createDirectory(testCasePath)
-        .then(() => {
-          this.appSystemService.createFileWithContent(
-            filePath,
-            JSON.stringify(raw)
-          ).then(() => {
-            this.requirementIdService.updateRequirementCounters({ [REQUIREMENT_TYPE.TC]: id });
-            this.toast.showSuccess(TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(REQUIREMENT_TYPE.TC));
+    this.subscriptions.push(
+      this.testCaseService.saveTestCase(this.currentProject, this.userStoryId, raw, isNew)
+        .subscribe({
+          next: () => {
+            if (isNew) {
+              this.toast.showSuccess(TOASTER_MESSAGES.ENTITY.ADD.SUCCESS(REQUIREMENT_TYPE.TC));
+            } else {
+              this.toast.showSuccess(TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(REQUIREMENT_TYPE.TC, raw.id));
+            }
             this.navigateBack();
-          }).catch((error) => {
-            this.logger.error(`Error creating test case file:`, error);
-            this.toast.showError(TOASTER_MESSAGES.ENTITY.ADD.FAILURE(REQUIREMENT_TYPE.TC));
-          });
+          },
+          error: (error) => {
+            if (isNew) {
+              this.toast.showError(TOASTER_MESSAGES.ENTITY.ADD.FAILURE(REQUIREMENT_TYPE.TC));
+            } else {
+              this.toast.showError(TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(REQUIREMENT_TYPE.TC, raw.id));
+            }
+          }
         })
-        .catch((error) => {
-          this.logger.error(`Error creating directory ${testCasePath}:`, error);
-          this.toast.showError(`Failed to create directory for test case ${raw.id}`);
-        });
-      
-      return;
-    }
-    
-    const path = `${REQUIREMENT_TYPE.TC}/${this.userStoryId}/${raw.id}-base.json`;
-    this.store.dispatch(new UpdateFile(path, raw)).subscribe({
-      next: () => {
-        this.toast.showSuccess(TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(REQUIREMENT_TYPE.TC, raw.id));
-        this.navigateBack();
-      },
-      error: (e) => {
-        this.logger.error(`Error updating test case`, e);
-        this.toast.showError(TOASTER_MESSAGES.ENTITY.UPDATE.FAILURE(REQUIREMENT_TYPE.TC, raw.id));
-      },
-    });
+    );
   }
 
   deleteTestCase() {
@@ -344,23 +337,24 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
       confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
     }).subscribe((result) => {
       if (result) {
-        const path = `${REQUIREMENT_TYPE.TC}/${this.userStoryId}/${id}-base.json`;
-        this.store.dispatch(new ArchiveFile(path)).subscribe({
-          next: () => {
-            this.toast.showSuccess(TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(REQUIREMENT_TYPE.TC, id));
-            this.navigateBack();
-          },
-          error: (e) => {
-            this.logger.error(`Error deleting test case`, e);
-            this.toast.showError(TOASTER_MESSAGES.ENTITY.DELETE.FAILURE(REQUIREMENT_TYPE.TC, id));
-          },
-        });
+        this.subscriptions.push(
+          this.testCaseService.deleteTestCase(this.currentProject, this.userStoryId, id)
+            .subscribe({
+              next: () => {
+                this.toast.showSuccess(TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(REQUIREMENT_TYPE.TC, id));
+                this.navigateBack();
+              },
+              error: (error) => {
+                this.toast.showError(TOASTER_MESSAGES.ENTITY.DELETE.FAILURE(REQUIREMENT_TYPE.TC, id));
+              }
+            })
+        );
       }
     });
   }
 
   cancel() {
-    if (this.formModified && this.mode !== 'view') {
+    if (this.formModified && this.mode !== TestCaseMode.VIEW) {
       this.dialogService.confirm({
         title: 'Discard Changes',
         description: 'You have unsaved changes. Are you sure you want to discard them?',
@@ -380,7 +374,7 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   }
 
   canDeactivate(): boolean {
-    return !this.formModified || this.mode === 'view';
+    return !this.formModified || this.mode === TestCaseMode.VIEW;
   }
 
   markFormGroupTouched(form: FormGroup) {

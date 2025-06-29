@@ -8,6 +8,7 @@ import { GetUserStories, SetSelectedUserStory } from '../../../store/user-storie
 import { IUserStory } from '../../../model/interfaces/IUserStory';
 import { ClipboardService } from '../../../services/clipboard.service';
 import { ToasterService } from '../../../services/toaster/toaster.service';
+import { TestCaseService } from '../../../services/test-case/test-case.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
@@ -67,11 +68,11 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   logger = inject(NGXLogger);
   store = inject(Store);
   searchService = inject(SearchService);
+  testCaseService = inject(TestCaseService);
   
   userStories: IUserStory[] = [];
   isLoading: boolean = false;
   testCaseCounts: Map<string, number> = new Map<string, number>();
-  private readonly SELECTED_PRD_KEY = 'selectedPrdId';
   
   summaryCards: SummaryCardData[] = [
     {
@@ -215,45 +216,14 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   }
   
   getUserStoryBorderClass(userStoryId: string): string {
-    const testCaseCount = this.getTestCaseCount(userStoryId);
-    if (testCaseCount === 0) {
-      return 'border-l-4 border-l-red-500';
-    } else if (testCaseCount > 0) {
-      return 'border-l-4 border-l-green-500';
-    } else {
-      return 'border-l-4 border-l-amber-500';
-    }
+    return this.testCaseService.getUserStoryBorderClass(this.testCaseCounts, userStoryId);
   }
   
   /**
    * Returns the status indicator for a user story
    */
   getUserStoryStatusIndicator(userStoryId: string): CardStatusIndicator {
-    const testCaseCount = this.getTestCaseCount(userStoryId);
-    let icon = '';
-    let iconBgClass = '';
-    let iconColorClass = '';
-    let tooltip = '';
-    
-    if (testCaseCount === 0) {
-      icon = 'heroExclamationCircle';
-      iconBgClass = 'bg-red-100';
-      iconColorClass = 'text-red-600';
-      tooltip = 'No test cases created';
-    } else {
-      icon = 'heroClipboardDocumentCheck';
-      iconBgClass = 'bg-green-100';
-      iconColorClass = 'text-green-600';
-      tooltip = `${testCaseCount} test cases created`;
-    }
-    
-    return {
-      icon,
-      iconBgClass,
-      iconColorClass,
-      text: `${testCaseCount} test cases`,
-      tooltip
-    };
+    return this.testCaseService.getUserStoryStatusIndicator(this.testCaseCounts, userStoryId);
   }
   
   private loadPrdList() {
@@ -316,7 +286,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     this.isLoading = false;
     
     if (prds.length > 0) {
-      const savedPrdId = sessionStorage.getItem(`${this.SELECTED_PRD_KEY}_${this.currentProject}`);
+      const savedPrdId = this.testCaseService.getSelectedPrdId(this.currentProject);
       if (savedPrdId && prds.some(prd => prd.id === savedPrdId)) {
         this.selectPrd(savedPrdId);
       } else {
@@ -348,7 +318,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
       this.selectedPrdTitle = selectedPrd.name;
     }
     
-    sessionStorage.setItem(`${this.SELECTED_PRD_KEY}_${this.currentProject}`, prdId);
+    this.testCaseService.setSelectedPrdId(this.currentProject, prdId);
     
     this.loadUserStoriesForPrd(prdId);
   }
@@ -419,83 +389,26 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     }
   }
   
-  private fetchTestCaseCounts(userStories: IUserStory[]) {
+  private async fetchTestCaseCounts(userStories: IUserStory[]) {
     this.logger.debug('Fetching test case counts for user stories');
-    
-    this.testCaseCounts = new Map<string, number>();
-    let processedCount = 0;
-    
-    userStories.forEach(userStory => {
-      const testCasePath = `${this.currentProject}/TC/${userStory.id}`;
-      
-      this.appSystemService.fileExists(testCasePath)
-        .then(exists => {
-          if (exists) {
-            this.appSystemService.getFolders(testCasePath, FILTER_STRINGS.BASE, false)
-              .then(files => {
-                this.testCaseCounts.set(userStory.id, files.length);
-                
-                processedCount++;
-                
-                if (processedCount === userStories.length) {
-                  this.isLoading = false;
-                }
-              })
-              .catch(error => {
-                this.logger.error(`Error getting test case files for ${userStory.id}:`, error);
-                this.testCaseCounts.set(userStory.id, 0);
-                processedCount++;
-                
-                if (processedCount === userStories.length) {
-                  this.isLoading = false;
-                }
-              });
-          } else {
-            this.testCaseCounts.set(userStory.id, 0);
-            
-            processedCount++;
-            
-            if (processedCount === userStories.length) {
-              this.isLoading = false;
-            }
-          }
-        })
-        .catch(error => {
-          this.logger.error(`Error checking test case directory for ${userStory.id}:`, error);
-          this.testCaseCounts.set(userStory.id, 0);
-          
-          processedCount++;
-          if (processedCount === userStories.length) {
-            this.isLoading = false;
-          }
-        });
-    });
+    this.testCaseCounts = await this.testCaseService.fetchTestCaseCounts(this.currentProject, userStories);
+    this.isLoading = false;
   }
   
   getTestCaseCount(userStoryId: string): number {
-    return this.testCaseCounts.get(userStoryId) || 0;
+    return this.testCaseService.getTestCaseCount(this.testCaseCounts, userStoryId);
   }
   
   getTotalUserStories(): number {
-    return this.userStories.length;
+    return this.testCaseService.getTotalUserStories(this.userStories);
   }
 
   getUserStoriesWithTestCases(): number {
-    let count = 0;
-    this.userStories.forEach(story => {
-      if (this.getTestCaseCount(story.id) > 0) {
-        count++;
-      }
-    });
-    return count;
+    return this.testCaseService.getUserStoriesWithTestCases(this.userStories, this.testCaseCounts);
   }
 
   getTotalTestCases(): number {
-    let total = 0;
-    this.userStories.forEach(story => {
-      total += this.getTestCaseCount(story.id);
-    });
-    return total;
+    return this.testCaseService.getTotalTestCases(this.userStories, this.testCaseCounts);
   }
   
   ngOnDestroy() {

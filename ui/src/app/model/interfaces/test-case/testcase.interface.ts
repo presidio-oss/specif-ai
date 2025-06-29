@@ -1,3 +1,35 @@
+// Define enums and constants for test case component
+export enum TestCaseMode {
+  VIEW = 'view',
+  EDIT = 'edit',
+  ADD = 'add'
+}
+
+export enum TestCaseStatus {
+  ACTIVE = 'Active',
+  DRAFT = 'Draft',
+  DEPRECATED = 'Deprecated',
+  ARCHIVED = 'Archived'
+}
+
+export const TEST_CASE_PRIORITY = {
+  HIGH: 'High',
+  MEDIUM: 'Medium',
+  LOW: 'Low'
+} as const;
+
+export type TestCasePriority = typeof TEST_CASE_PRIORITY[keyof typeof TEST_CASE_PRIORITY];
+
+export const TEST_CASE_TYPE = {
+  FUNCTIONAL: 'Functional',
+  INTEGRATION: 'Integration',
+  UI_UX: 'UI/UX',
+  PERFORMANCE: 'Performance',
+  SECURITY: 'Security'
+} as const;
+
+export type TestCaseType = typeof TEST_CASE_TYPE[keyof typeof TEST_CASE_TYPE];
+
 export interface ITestCaseStep {
   stepNumber: number;
   action: string;
@@ -11,8 +43,8 @@ export interface ITestCase {
   preConditions: string[];
   postConditions?: string[];
   steps: ITestCaseStep[];
-  priority: 'High' | 'Medium' | 'Low';
-  type: 'Functional' | 'Integration' | 'UI/UX' | 'Performance' | 'Security';
+  priority: TestCasePriority;
+  type: TestCaseType;
 }
 
 export interface ITestCasesResponse {

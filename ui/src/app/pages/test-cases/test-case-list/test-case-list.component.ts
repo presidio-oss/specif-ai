@@ -19,11 +19,11 @@ import { IUserStory } from '../../../model/interfaces/IUserStory';
 import { AppSystemService } from '../../../services/app-system/app-system.service';
 import { ToasterService } from '../../../services/toaster/toaster.service';
 import { ElectronService } from '../../../electron-bridge/electron.service';
+import { joinPaths } from '../../../utils/path.utils';
 import { ButtonComponent } from '../../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { ListItemComponent } from '../../../components/core/list-item/list-item.component';
 import { UnifiedCardComponent, CardStatusIndicator, CardBadge } from '../../../components/unified-card/unified-card.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
 import {
@@ -58,6 +58,7 @@ import {
 import { WorkflowProgressService } from 'src/app/services/workflow-progress/workflow-progress.service';
 import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { provideIcons } from '@ng-icons/core';
+import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 
 @Component({
   selector: 'app-test-case-list',
@@ -95,28 +96,9 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
   typeFilter$ = new BehaviorSubject<string | null>(null);
   stepsCountFilter$ = new BehaviorSubject<string | null>(null);
   
-  priorityOptions: SelectOption[] = [
-    { value: 'all', label: 'All Priorities' },
-    { value: 'High', label: 'High Priority' },
-    { value: 'Medium', label: 'Medium Priority' },
-    { value: 'Low', label: 'Low Priority' }
-  ];
-  
-  typeOptions: SelectOption[] = [
-    { value: 'all', label: 'All Types' },
-    { value: 'Functional', label: 'Functional' },
-    { value: 'Integration', label: 'Integration' },
-    { value: 'UI/UX', label: 'UI/UX' },
-    { value: 'Performance', label: 'Performance' },
-    { value: 'Security', label: 'Security' }
-  ];
-  
-  stepsCountOptions: SelectOption[] = [
-    { value: 'all', label: 'All Steps' },
-    { value: '1-3', label: '1-3 Steps' },
-    { value: '4-6', label: '4-6 Steps' },
-    { value: '7+', label: '7+ Steps' }
-  ];
+  priorityOptions = this.testCaseService.priorityFilterOptions;
+  typeOptions = this.testCaseService.typeFilterOptions;
+  stepsCountOptions = this.testCaseService.stepsCountFilterOptions;
   router = inject(Router);
   route = inject(ActivatedRoute);
   logger = inject(NGXLogger);
@@ -432,7 +414,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
   loadTestCasesForUserStory(userStoryId: string) {
     this.logger.debug(`Loading test cases for user story ${userStoryId}`);
 
-    const testCasePath = `${this.currentProject}/TC/${userStoryId}`;
+    const testCasePath = joinPaths(this.currentProject, REQUIREMENT_TYPE.TC, userStoryId);
     this.logger.debug(`Checking if directory exists: ${testCasePath}`);
 
     this.appSystemService
@@ -455,7 +437,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
                 Promise.all(
                   files.map(async (fileName: string) => {
                     const content = await this.appSystemService.readFile(
-                      `${this.currentProject}/TC/${userStoryId}/${fileName}`,
+                      joinPaths(this.currentProject, REQUIREMENT_TYPE.TC, userStoryId, fileName),
                     );
                     try {
                       const testCase = JSON.parse(content);
@@ -702,7 +684,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
       }
     });
 
-    const testCasePath = `${this.currentProject}/TC/${userStoryId}`;
+    const testCasePath = joinPaths(this.currentProject, RequirementTypeEnum.TC, userStoryId);
     this.appSystemService.createDirectory(testCasePath);
 
     if (regenerate) {
@@ -718,7 +700,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
             );
             Promise.all(
               files.map((fileName: string) => {
-                const filePath = `TC/${userStoryId}/${fileName}`;
+                const filePath = joinPaths(REQUIREMENT_TYPE.TC, userStoryId, fileName);
                 return firstValueFrom(this.store.dispatch(new ArchiveFile(filePath)));
               }),
             )
@@ -793,8 +775,8 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
       testCases.map((testCase, index) => {
         const tcNumber = (nextTestCaseId + index).toString().padStart(2, '0');
         const fileName = `TC${tcNumber}-base.json`;
-        const filePath = `${testCasePath}/${fileName}`;
-        testCase.id = `TC${tcNumber}`;
+        const filePath = joinPaths(testCasePath, fileName);
+        testCase.id = `${REQUIREMENT_TYPE.TC}${tcNumber}`;
 
         testCaseIds.push(testCase.id);
 
@@ -863,75 +845,15 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
   }
   
   getTestCaseBorderClass(testCase: ITestCase): string {
-    if (!testCase.priority) return 'border-l-4 border-l-blue-500';
-    
-    switch (testCase.priority.toLowerCase()) {
-      case 'high':
-        return 'border-l-4 border-l-red-500';
-      case 'medium':
-        return 'border-l-4 border-l-amber-500';
-      case 'low':
-        return 'border-l-4 border-l-green-500';
-      default:
-        return 'border-l-4 border-l-blue-500';
-    }
+    return this.testCaseService.getTestCaseBorderClass(testCase);
   }
   
   getTestCaseStatusIndicator(testCase: ITestCase): CardStatusIndicator {
-    let icon = 'heroArrowRight';
-    let iconBgClass = 'bg-blue-100';
-    let iconColorClass = 'text-blue-600';
-    let text = testCase.priority || 'Normal';
-    
-    if (testCase.priority) {
-      switch (testCase.priority.toLowerCase()) {
-        case 'high':
-          icon = 'heroArrowTrendingUp';
-          iconBgClass = 'bg-red-100';
-          iconColorClass = 'text-red-600';
-          break;
-        case 'medium':
-          icon = 'heroArrowRight';
-          iconBgClass = 'bg-amber-100';
-          iconColorClass = 'text-amber-600';
-          break;
-        case 'low':
-          icon = 'heroArrowTrendingDown';
-          iconBgClass = 'bg-green-100';
-          iconColorClass = 'text-green-600';
-          break;
-      }
-    }
-    
-    return {
-      icon,
-      iconBgClass,
-      iconColorClass,
-      text,
-      textColorClass: iconColorClass
-    };
+    return this.testCaseService.getTestCaseStatusIndicator(testCase);
   }
   
   getTestCaseBadges(testCase: ITestCase): CardBadge[] {
-    const badges: CardBadge[] = [];
-    
-    if (testCase.type) {
-      badges.push({
-        text: testCase.type,
-        bgClass: 'bg-blue-50',
-        textClass: 'text-blue-700'
-      });
-    }
-    
-    if (testCase.steps?.length) {
-      badges.push({
-        text: `${testCase.steps.length} steps`,
-        bgClass: 'bg-gray-50',
-        textClass: 'text-gray-700'
-      });
-    }
-    
-    return badges;
+    return this.testCaseService.getTestCaseBadges(testCase);
   }
 
   addMoreContext(regenerate: boolean = false) {
