@@ -67,7 +67,6 @@ export class AppSystemService {
     content: any,
     featureFile: string,
     baseFileCount: number,
-    customPrefix?: string,
   ): Promise<number> {
     const directory = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
     return await this.electronService.invokeFunction('appendFile', {
@@ -75,7 +74,6 @@ export class AppSystemService {
       path: `${directory}/${relativePathWithFileName}`,
       featureFile,
       baseFileCount,
-      customPrefix,
     });
   }
 

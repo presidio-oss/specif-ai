@@ -580,7 +580,7 @@ export class ProjectsState {
   @Action(CreateFile)
   async createFile(
     { getState, patchState }: StateContext<ProjectStateModel>,
-    { path, content, featureFile, customPrefix }: CreateFile,
+    { path, content, featureFile }: CreateFile,
   ) {
     const state = getState();
     this.logger.debug('Creating file:', path, content);
@@ -591,7 +591,6 @@ export class ProjectsState {
       fileContent,
       featureFile,
       state.metadata?.[path]?.count || -1,
-      customPrefix,
     );
 
     if (!featureFile) {

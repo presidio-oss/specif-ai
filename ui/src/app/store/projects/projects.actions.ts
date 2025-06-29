@@ -54,7 +54,6 @@ export class CreateFile {
     public path: string,
     public content: any,
     public featureFile: string = '',
-    public customPrefix?: string,
   ) {}
 }
 

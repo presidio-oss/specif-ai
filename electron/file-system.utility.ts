@@ -26,7 +26,6 @@ interface DirectoryListParams extends FileParams {
 interface AppendFileParams extends ContentParams {
   featureFile: string;
   baseFileCount: number;
-  customPrefix?: string;
 }
 
 interface FileChunkParams extends FileParams {
@@ -187,7 +186,6 @@ async function appendFile({
   content,
   featureFile,
   baseFileCount,
-  customPrefix,
 }: AppendFileParams): Promise<number | undefined> {
   const keyName = pathModule.basename(path);
 
@@ -197,7 +195,6 @@ async function appendFile({
       path,
       content,
       featureFile,
-      customPrefix,
       "Directory created or already exists."
     );
   } catch (err) {
@@ -215,14 +212,10 @@ async function appendFile({
     let newFileName;
     
     if (featureFile === "") {
-      // Use customPrefix if provided, otherwise use directory name
-      const prefix = customPrefix || keyName;
-      console.log(`Using prefix: ${prefix}, customPrefix: ${customPrefix}, keyName: ${keyName}`);
-      
       // For base files, use the prefix with the counter
       const countStr = (fileCount + 1).toString().padStart(2, "0");
         
-      newFileName = `${prefix}${countStr}-base.json`;
+      newFileName = `${keyName}${countStr}-base.json`;
       console.log(`Generated filename: ${newFileName}`);
     } else {
       // For feature files, use the standard format
