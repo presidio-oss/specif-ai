@@ -88,7 +88,7 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 export class TestCaseListComponent implements OnInit, OnDestroy {
   currentProject!: string;
   newFileName: string = '';
-  entityType: string = 'TC';
+  entityType: string = REQUIREMENT_TYPE.TC;
   selectedUserStory: any = {};
   metadata: any = {};
   private searchTerm$ = new BehaviorSubject<string>('');

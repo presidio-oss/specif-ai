@@ -17,6 +17,9 @@
             [badgeText]="userStories.length"
           ></app-badge>
         </div>
+        <div class="text-xs text-secondary-500 mb-2">
+          Each user story contains its own test cases. View or create test cases by choosing a user story.
+        </div>
         <div *ngIf="selectedPrdTitle" class="text-sm text-secondary-500">
           {{ selectedPrdTitle }}
         </div>
@@ -51,7 +54,7 @@
     <!-- No PRDs message -->
     <ng-template #noPrds>
       <div
-        class="flex flex-col justify-center items-center min-h-[60vh] mt-4 mb-4 text-center"
+        class="flex flex-col justify-center items-center min-h-[50vh] mt-4 mb-4 text-center"
       >
           <img 
             src="assets/img/empty-states/no-data.svg" 
@@ -103,7 +106,7 @@
 
         <ng-template #noUserStories>
           <div
-            class="flex flex-col justify-center items-center min-h-[60vh] text-center"
+            class="flex flex-col justify-center items-center min-h-[50vh] text-center"
           >
             <div class="">
               <img 
@@ -116,7 +119,7 @@
               No User Stories Available for the selected PRD.
             </h1>
             <p class="text-secondary-500 text-sm">
-              Try selecting a different PRD or check if feature documents exist.
+              Try selecting a different PRD or check if user stories exist.
             </p>
           </div>
         </ng-template>

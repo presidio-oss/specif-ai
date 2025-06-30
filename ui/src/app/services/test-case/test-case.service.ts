@@ -355,7 +355,7 @@ export class TestCaseService {
     const testCaseCounts = new Map<string, number>();
     
     for (const userStory of userStories) {
-      const testCasePath = joinPaths(projectId, 'TC', userStory.id);
+      const testCasePath = joinPaths(projectId, REQUIREMENT_TYPE.TC, userStory.id);
       
       try {
         const exists = await this.appSystemService.fileExists(testCasePath);
