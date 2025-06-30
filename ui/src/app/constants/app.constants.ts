@@ -229,14 +229,8 @@ export const APP_MESSAGES = {
     <li>Story</li>
     <li>Task</li>
   </ul>`,
-  ADO_ACCORDION: 'Azure DevOps Integration allows users to publish generated user stories as Azure DevOps work items by configuring their organization, project, and personal access token. Once configured and connected, users can sync their user stories directly to Azure DevOps.',
-  ADO_PREREQUISITE: `Please ensure that you have the following work item types in your Azure DevOps project:
-  <ul class="list-disc pl-5 mt-2">
-    <li>Epic</li>
-    <li>Feature</li>
-    <li>User Story</li>
-    <li>Task</li>
-  </ul>`,
+  ADO_ACCORDION:
+    'Azure DevOps Integration allows users to publish generated user stories as Azure DevOps work items by configuring their organization, project, and personal access token. Once configured and connected, users can sync their user stories directly to Azure DevOps.',
 };
 
 export const TOOLTIP_CONTENT = {
