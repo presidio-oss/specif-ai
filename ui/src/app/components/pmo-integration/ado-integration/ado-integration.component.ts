@@ -29,9 +29,11 @@ import { ElectronService } from '../../../electron-bridge/electron.service';
 import {
   IProjectMetadata,
   AdoIntegrationConfig,
+  WorkItemTypeMapping,
 } from '../../../model/interfaces/projects.interface';
 import { APP_MESSAGES } from '../../../constants/app.constants';
 import { APP_INTEGRATIONS } from '../../../constants/toast.constant';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-ado-integration',
@@ -52,6 +54,7 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
   private readonly electronService = inject(ElectronService);
 
   protected readonly APP_MESSAGES = APP_MESSAGES;
+  protected readonly environment = environment;
 
   adoForm: FormGroup;
   editButtonDisabled = signal<boolean>(false);
@@ -78,6 +81,9 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
       organization: ['', [Validators.required, Validators.minLength(1)]],
       projectName: ['', [Validators.required, Validators.minLength(1)]],
       personalAccessToken: ['', [Validators.required, Validators.minLength(1)]],
+      prdWorkItemType: ['', [Validators.required]],
+      userStoryWorkItemType: ['', [Validators.required]],
+      taskWorkItemType: ['', [Validators.required]],
     });
   }
 
@@ -89,6 +95,9 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
         organization: adoIntegration.organization || '',
         projectName: adoIntegration.projectName || '',
         personalAccessToken: adoIntegration.personalAccessToken || '',
+        prdWorkItemType: adoIntegration.workItemTypeMapping?.['PRD'] || '',
+        userStoryWorkItemType: adoIntegration.workItemTypeMapping?.['US'] || '',
+        taskWorkItemType: adoIntegration.workItemTypeMapping?.['TASK'] || '',
       });
     }
 
@@ -167,7 +176,7 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
       });
   }
 
-  private async saveAdoData(formData: AdoIntegrationConfig): Promise<void> {
+  private async saveAdoData(formData: any): Promise<void> {
     try {
       const validationResult =
         await this.electronService.validateAdoCredentials(
@@ -182,10 +191,17 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
         return;
       }
 
+      const workflowMapping: WorkItemTypeMapping = {
+        PRD: formData.prdWorkItemType,
+        US: formData.userStoryWorkItemType,
+        TASK: formData.taskWorkItemType,
+      };
+
       const adoConfig: AdoIntegrationConfig = {
         organization: formData.organization,
         projectName: formData.projectName,
         personalAccessToken: formData.personalAccessToken,
+        workItemTypeMapping: workflowMapping,
       };
 
       const updatedMetadata = this.createUpdatedMetadata({

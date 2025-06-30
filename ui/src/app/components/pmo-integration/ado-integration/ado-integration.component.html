@@ -1,13 +1,79 @@
-<section class="space-y-4 mb-6" aria-labelledby="ado-info">
-  <div class="text-sm text-secondary-500">
-    <p>{{ APP_MESSAGES.ADO_ACCORDION }}</p>
-  </div>
-  <div class="text-sm text-secondary-500">
-    <p [innerHTML]="APP_MESSAGES.ADO_PREREQUISITE"></p>
-  </div>
-</section>
-
 <form [formGroup]="adoForm" class="space-y-6" novalidate>
+  <section class="space-y-4" aria-labelledby="ado-info">
+    <div class="text-sm text-secondary-500">
+      <p>{{ APP_MESSAGES.ADO_ACCORDION }}</p>
+    </div>
+    <div
+      class="text-sm text-secondary-500 p-4 border border-gray-200 rounded-lg bg-gray-50"
+    >
+      <div class="mb-4 pb-3 border-b border-gray-300">
+        <p class="text-sm text-gray-600 leading-relaxed">
+          Map your work item types to
+          {{ environment.ThemeConfiguration.appName }} requirements based on
+          your project in ADO
+        </p>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center flex-1">
+            <span class="w-32 font-medium text-gray-700 flex-shrink-0"
+              >Product Requirement <span class="text-red-500">*</span></span
+            >
+            <span class="mx-3 text-gray-400">→</span>
+            <div class="flex-1 max-w-xs">
+              <app-input-field
+                formControlName="prdWorkItemType"
+                elementId="prdWorkItemType"
+                elementPlaceHolder="Work Item Type"
+                [showLabel]="false"
+                [required]="true"
+                customClass="!p-2 !py-1.5 !text-sm !w-full !my-0 !border-gray-300"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center flex-1">
+            <span class="w-32 font-medium text-gray-700 flex-shrink-0"
+              >User Story <span class="text-red-500">*</span></span
+            >
+            <span class="mx-3 text-gray-400">→</span>
+            <div class="flex-1 max-w-xs">
+              <app-input-field
+                formControlName="userStoryWorkItemType"
+                elementId="userStoryWorkItemType"
+                elementPlaceHolder="Work Item Type"
+                [showLabel]="false"
+                [required]="true"
+                customClass="!p-2 !py-1.5 !text-sm !w-full !my-0 !border-gray-300"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center flex-1">
+            <span class="w-32 font-medium text-gray-700 flex-shrink-0"
+              >Task <span class="text-red-500">*</span></span
+            >
+            <span class="mx-3 text-gray-400">→</span>
+            <div class="flex-1 max-w-xs">
+              <app-input-field
+                formControlName="taskWorkItemType"
+                elementId="taskWorkItemType"
+                elementPlaceHolder="Work Item Type"
+                [showLabel]="false"
+                [required]="true"
+                customClass="!p-2 !py-1.5 !text-sm !w-full !my-0 !border-gray-300"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
       <app-input-field
