@@ -505,8 +505,9 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
         if (prdFolder) {
           prdFolder.children.forEach((prdFile: string) => {
             if (prdFile.includes('-feature.json')) {
+              let path = joinPaths(REQUIREMENT_TYPE.PRD, prdFile);
               this.store
-                .dispatch(new ReadFile(`PRD/${prdFile}`))
+                .dispatch(new ReadFile(path))
                 .subscribe((fileContent: any) => {
                   if (fileContent && fileContent.features) {
                     const userStory = fileContent.features.find(

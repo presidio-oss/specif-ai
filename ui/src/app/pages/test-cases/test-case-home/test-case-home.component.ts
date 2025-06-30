@@ -16,7 +16,7 @@ import { provideIcons } from '@ng-icons/core';
 import { heroArrowRight, heroDocumentText, heroClipboardDocumentCheck, heroBeaker } from '@ng-icons/heroicons/outline';
 import { UnifiedCardComponent, CardStatusIndicator } from '../../../components/unified-card/unified-card.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
-import { FILTER_STRINGS, TOASTER_MESSAGES } from '../../../constants/app.constants';
+import { FILTER_STRINGS, REQUIREMENT_TYPE, TOASTER_MESSAGES } from '../../../constants/app.constants';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { AppSelectComponent, SelectOption } from '../../../components/core/app-select/app-select.component';
 import { SearchService } from '../../../services/search/search.service';
@@ -25,6 +25,7 @@ import { AddBreadcrumb, DeleteBreadcrumb } from '../../../store/breadcrumb/bread
 import { AppSystemService } from '../../../services/app-system/app-system.service';
 import { SummaryCardComponent } from "../../../components/summary-card/summary-card.component";
 import { FormsModule } from '@angular/forms';
+import { joinPaths } from 'src/app/utils/path.utils';
 
 interface IPrdInfo {
   id: string;
@@ -328,7 +329,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     this.logger.debug(`Loading user stories for PRD: ${prdId}`);
     
     const featureFile = `${prdId}-feature.json`;
-    const featurePath = `${this.currentProject}/PRD/${featureFile}`;
+    const featurePath = joinPaths(this.currentProject, REQUIREMENT_TYPE.PRD ,featureFile);
     
     this.store.dispatch(new GetUserStories(featurePath));
     
