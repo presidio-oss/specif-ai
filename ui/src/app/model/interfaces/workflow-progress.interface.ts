@@ -75,4 +75,5 @@ export enum WorkflowType {
   Solution = 'solution',
   Story = 'story',
   Task = 'task',
+  TestCase = 'test-case',
 }

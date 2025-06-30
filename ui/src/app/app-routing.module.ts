@@ -16,6 +16,9 @@ import { LoginComponent } from './pages/login/login.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { TestCaseListComponent } from './pages/test-cases/test-case-list/test-case-list.component';
+import { TestCaseDetailPageComponent } from './pages/test-cases/test-case-detail/test-case-detail.component';
+import { TestCaseHomeComponent } from './pages/test-cases/test-case-home/test-case-home.component';
 
 const routes: Routes = [
   {
@@ -139,6 +142,40 @@ const routes: Routes = [
             name: 'Settings',
             link: '/apps',
             icon: 'settings',
+          },
+        },
+      },
+      {
+        path: 'test-cases/:userStoryId',
+        component: TestCaseListComponent,
+        canActivate: [UserGuard],
+      },
+      {
+        path: 'test-case/:userStoryId/add',
+        component: TestCaseDetailPageComponent,
+        canActivate: [UserGuard],
+        canDeactivate: [CanDeactivateGuard]
+      },
+      {
+        path: 'test-case/:userStoryId/:testCaseId/view',
+        component: TestCaseDetailPageComponent,
+        canActivate: [UserGuard]
+      },
+      {
+        path: 'test-case/:userStoryId/:testCaseId/edit',
+        component: TestCaseDetailPageComponent,
+        canActivate: [UserGuard],
+        canDeactivate: [CanDeactivateGuard]
+      },
+      {
+        path: 'test-cases-home',
+        component: TestCaseHomeComponent,
+        canActivate: [UserGuard],
+        data: {
+          breadcrumb: {
+            name: 'Test Cases',
+            link: '/apps',
+            icon: 'test',
           },
         },
       },

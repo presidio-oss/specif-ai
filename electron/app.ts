@@ -16,6 +16,7 @@ import {
 import { setupJiraHandlers } from "./handlers/jira-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
 import { setupMcpHandlers } from "./handlers/mcp-handler";
+import { setupWorkflowHandlers } from "./handlers/workflow-handler";
 import { MCPHub } from "./mcp/mcp-hub";
 import { APP_MESSAGES } from "./constants/message.constants";
 
@@ -311,6 +312,7 @@ app.whenReady().then(async () => {
     setupSolutionHandlers();
     setupContentGenerationHandlers();
     setupMcpHandlers();
+    setupWorkflowHandlers();
 
     // start mcp servers in the background
     MCPHub.getInstance();

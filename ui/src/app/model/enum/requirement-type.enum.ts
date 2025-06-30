@@ -3,5 +3,6 @@ export enum RequirementTypeEnum {
     PRD = 'PRD',
     UIR = 'UIR',
     NFR = 'NFR',
-    BP = 'BP'
+    BP = 'BP',
+    TC = 'TC'
 }

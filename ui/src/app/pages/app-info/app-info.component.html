@@ -6,7 +6,7 @@
         class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4"
       >
         <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
-        <ul role="list" class="min-h space-y-1.5">
+        <ul role="list" class="min-h space-y-2">
           <li
             class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
             [ngClass]="{
@@ -106,12 +106,24 @@
                 ></ng-icon>
                 <ng-icon
                   *ngIf="folder.name === 'BP'"
-                  class="text-xl w-5 h-5 mr-2"
+                  class="size-4 mr-2"
+                  strokeWidth="2"
                   [ngClass]="{
                     'text-primary-600': selectedFolder?.title === folder.name,
                     'text-secondary-500': selectedFolder?.title !== folder.name,
                   }"
                   name="heroSquare3Stack3d"
+                >
+                </ng-icon>
+                <ng-icon
+                  *ngIf="folder.name === 'TC'"
+                  class="size-4 mr-2"
+                  strokeWidth="2"
+                  [ngClass]="{
+                    'text-primary-600': selectedFolder?.title === folder.name,
+                    'text-secondary-500': selectedFolder?.title !== folder.name,
+                  }"
+                  name="heroServerStack"
                 >
                 </ng-icon>
                 <h4
@@ -128,35 +140,77 @@
             </li>
           </ng-container>
           <ng-container *ngFor="let folder of haiFolder">
-            <li
-              *ngIf="!directoryContainsFolder(folder.key, directories)"
-              class="flex items-center justify-between px-2 py-2 rounded-lg bg-white"
-            >
-              <div class="flex items-center">
-                <ng-icon
-                  class="size-4 mr-2 text-secondary-500"
-                  strokeWidth="2"
-                  [name]="getIconName(folder.key)"
-                ></ng-icon>
-                <h4 class="text-sm text-secondary-500 font-medium">
-                  {{ folder.value }}
-                </h4>
-              </div>
-              <app-button
-                buttonContent="Add"
-                theme="secondary"
-                size="xs"
-                rounded="lg"
-                [disabled]="isCreatingSolution"
-                tooltip="Add new document"
-                tooltipDisabled="Generating your solution. Please wait..."
-                (click)="
-                  folder.key === 'BP'
-                    ? navigateToBPAdd()
-                    : navigateToAdd(folder.key)
-                "
-              />
-            </li>
+            <!-- TC folder - always show as clickable -->
+            <ng-container *ngIf="folder.key === 'TC'; else otherFolder">
+              <li
+                class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
+                [ngClass]="{
+                  'bg-secondary-50 border-secondary-200':
+                    selectedFolder?.title === 'TC',
+                  'bg-white border-transparent':
+                    selectedFolder?.title !== 'TC'
+                }"
+                (click)="navigateToTestCasesHome()"
+                (keydown.enter)="navigateToTestCasesHome()"
+                (keydown.space)="navigateToTestCasesHome(); $event.preventDefault()"
+                role="button"
+                tabindex="0"
+              >
+                <div class="flex items-center">
+                  <ng-icon
+                    class="size-4 mr-2"
+                    strokeWidth="2"
+                    [ngClass]="{
+                      'text-primary-600': selectedFolder?.title === 'TC',
+                      'text-secondary-500': selectedFolder?.title !== 'TC'
+                    }"
+                    name="heroBeaker"
+                  >
+                  </ng-icon>
+                  <h4
+                    class="text-sm font-medium"
+                    [ngClass]="{
+                      'text-primary-600': selectedFolder?.title === 'TC',
+                      'text-secondary-500': selectedFolder?.title !== 'TC'
+                    }"
+                  >
+                    Test Cases
+                  </h4>
+                </div>
+              </li>
+            </ng-container>
+            
+            <ng-template #otherFolder>
+              <li
+                *ngIf="!directoryContainsFolder(folder.key, directories)"
+                class="flex items-center justify-between px-2 py-2 rounded-lg bg-white"
+              >
+                <div class="flex items-center">
+                  <ng-icon
+                    class="size-4 mr-2 text-secondary-500"
+                    strokeWidth="2"
+                    [name]="getIconName(folder.key)"
+                  ></ng-icon>
+                  <h4 class="text-sm text-secondary-500 font-medium">
+                    {{ folder.value }}
+                  </h4>
+                </div>
+                <app-button
+                  buttonContent="Add"
+                  theme="secondary"
+                  size="xs"
+                  rounded="lg"
+                  [disabled]="isCreatingSolution"
+                  tooltip="Add new document"
+                  tooltipDisabled="Generating your solution. Please wait..."
+                  (click)="
+                    folder.key === 'BP'
+                      ? navigateToBPAdd()
+                      : navigateToAdd(folder.key)
+                  "
+                />
+              </li>
+            </ng-template>
           </ng-container>
           <li
             (click)="

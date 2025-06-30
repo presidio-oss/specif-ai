@@ -15,6 +15,7 @@ class ContentGenerationManager {
       [ContentGenerationType.Solution]: "Solution Generation",
       [ContentGenerationType.Story]: "Story Generation",
       [ContentGenerationType.Task]: "Task Generation",
+      [ContentGenerationType.TestCase]: "Test Case Generation",
     };
 
     const key = `${solutionId}-${type}`;

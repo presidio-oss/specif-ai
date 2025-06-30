@@ -46,6 +46,7 @@ import {
   heroChevronDown,
   heroChevronUp,
   heroServerStack,
+  heroBeaker,
 } from '@ng-icons/heroicons/outline';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
 import { APP_MESSAGES, FILTER_STRINGS } from '../../constants/app.constants';
@@ -114,6 +115,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
       heroChevronDown,
       heroChevronUp,
       heroServerStack,
+      heroBeaker
     }),
   ],
 })
@@ -171,7 +173,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
 
   // Predefined order of folders
-  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
+  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
@@ -654,6 +656,14 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           metadata: this.appInfo,
         },
       },
+    });
+  }
+  
+  navigateToTestCasesHome() {
+    this.router.navigate(['/test-cases-home'], {
+      queryParams: {
+        projectName: this.appName
+      }
     });
   }
 

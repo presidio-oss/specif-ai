@@ -28,6 +28,7 @@ export interface IProjectMetadata {
   UIR: IRequirementConfig;
   NFR: IRequirementConfig;
   BP: IRequirementConfig;
+  TC: IRequirementConfig;
   US: IRequirementConfig;
   TASK: IRequirementConfig;
   isFailed?: boolean;

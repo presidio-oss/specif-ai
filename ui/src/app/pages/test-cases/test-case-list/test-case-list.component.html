@@ -1,0 +1,142 @@
+<div
+  class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full"
+  *ngIf="testCases$ | async as testCases"
+>
+  <div class="mb-4">
+    <div class="flex items-center mt-2 justify-between">
+      <div class="flex flex-col gap-2 min-w-0">
+        <h1
+          class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
+        >
+          Test Cases for {{ navigation.selectedRequirement?.id }}:
+          {{ navigation.selectedRequirement?.name }}
+        </h1>
+
+        <div class="flex items-center">
+          <h2 class="text-md font-semibold text-secondary-600">Test Cases</h2>
+          <app-badge [badgeText]="testCases.length"></app-badge>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex gap-2">
+          <app-button
+            [buttonContent]="
+              testCases.length === 0
+                ? 'Generate Test Cases'
+                : 'Regenerate Test Cases'
+            "
+            theme="secondary"
+            size="sm"
+            (click)="addMoreContext(testCases.length > 0)"
+            rounded="lg"
+            matTooltip="Add screens and context information for test case generation"
+          />
+          <app-button
+            buttonContent="Add Test Case"
+            theme="primary"
+            size="sm"
+            (click)="navigateToAddTestCase()"
+            rounded="lg"
+            matTooltip="Add a new test case manually"
+          />
+        </div>
+        <!-- TODO export feature -->
+        <!-- <app-export-dropdown
+          [disabled]="testCases.length === 0"
+          [options]="exportOptions"
+        /> -->
+      </div>
+    </div>
+
+    <!-- Search and filters -->
+    <div *ngIf="testCases.length > 0" class="mb-4">
+      <app-search-input
+        placeholder="Search..."
+        (searchChange)="onSearch($event)"
+        class="mb-6"
+      ></app-search-input>
+
+      <div class="grid grid-cols-3 gap-4 mt-4">
+        <!-- Priority filter -->
+        <app-select
+          [options]="priorityOptions"
+          [placeholder]="'Filter by priority'"
+          (selectionChange)="onPriorityFilterChange($event)"
+          [clearable]="true"
+        ></app-select>
+
+        <!-- Type filter -->
+        <app-select
+          [options]="typeOptions"
+          [placeholder]="'Filter by type'"
+          (selectionChange)="onTypeFilterChange($event)"
+          [clearable]="true"
+        ></app-select>
+
+        <!-- Steps count filter -->
+        <app-select
+          [options]="stepsCountOptions"
+          [placeholder]="'Filter by steps count'"
+          (selectionChange)="onStepsCountFilterChange($event)"
+          [clearable]="true"
+        ></app-select>
+      </div>
+    </div>
+  </div>
+
+  <div class="h-full overflow-y-auto">
+    <!-- User Story specific view -->
+    <ng-container
+      *ngIf="((filteredTestCases$ | async)?.length ?? 0) > 0; else noTestCases"
+    >
+      <app-unified-card
+        *ngFor="let testCase of filteredTestCases$ | async"
+        [id]="testCase.id"
+        [title]="testCase.title"
+        [description]="testCase.description"
+        [borderClass]="getTestCaseBorderClass(testCase)"
+        [statusIndicator]="getTestCaseStatusIndicator(testCase)"
+        [badges]="getTestCaseBadges(testCase)"
+        [actionButtonText]="'View Details'"
+        [copyTooltip]="'Copy test case content'"
+        (viewItem)="navigateToEditTestCase(testCase)"
+        (copyContent)="copyTestCaseContent($event, testCase)"
+      ></app-unified-card>
+    </ng-container>
+
+    <!-- Empty State Message -->
+    <ng-template #noTestCases>
+      <div
+        class="flex flex-col justify-center items-center min-h-[50vh] text-center"
+      >
+        <img
+          src="assets/img/empty-states/no-data.svg"
+          alt="No Test Cases Available"
+          class="w-80 h-80 mx-auto"
+        />
+        <h1 class="font-semibold text-secondary-700 text-xl mb-2">
+          No Test Cases Found
+        </h1>
+        <p class="text-secondary-500 text-sm">
+          Generate test cases by clicking the
+          <strong>"Generate Test Cases"</strong> button.
+        </p>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<app-workflow-progress-dialog
+  [isVisible]="showProgressDialog"
+  [projectId]="userStoryId"
+  [workflowType]="WorkflowType.TestCase"
+  [isCompleted]="testCaseGenerationComplete"
+  [initialTitle]="thinkingProcessConfig.title"
+  [completedTitle]="'Test Cases Generated Successfully!'"
+  [subtitle]="thinkingProcessConfig.subtitle"
+  completionButtonText="View Generated Test Cases"
+  completionButtonIcon="heroArrowRight"
+  [showCancelButton]="false"
+  (closeDialog)="closeProgressDialog()"
+></app-workflow-progress-dialog>
