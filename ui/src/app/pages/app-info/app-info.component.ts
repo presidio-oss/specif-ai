@@ -79,6 +79,7 @@ import {
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { ProjectFailureMessageComponent } from '../../components/project-failure-message/project-failure-message.component';
 import { ProjectCreationService } from '../../services/project-creation/project-creation.service';
+import { PmoIntegrationComponent } from '../../components/pmo-integration/pmo-integration.component';
 
 @Component({
   selector: 'app-info',
@@ -101,6 +102,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
     McpIntegrationConfiguratorComponent,
     WorkflowProgressComponent,
     ProjectFailureMessageComponent,
+    PmoIntegrationComponent,
   ],
   providers: [
     provideIcons({

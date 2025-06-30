@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg fill="#000000" width="20" height="20" viewBox="0 0 24 24" id="roadmap-3" data-name="Flat Line"
+    xmlns="http://www.w3.org/2000/svg" class="icon flat-line">
+    <path id="secondary" d="M15,7V3H9V7Zm6,14V17H17v4ZM3,21H7V17H3Zm9-4.17L14.83,14,12,11.17,9.17,14Z"
+        style="fill: rgb(44, 169, 188); stroke-width: 2;"></path>
+    <polyline id="primary" points="15 14 19 14 19 17"
+        style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;">
+    </polyline>
+    <polyline id="primary-2" data-name="primary" points="5 17 5 14 9 14"
+        style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;">
+    </polyline>
+    <path id="primary-3" data-name="primary"
+        d="M12,7v4M9,7V3h6V7Zm8,14V17h4v4ZM3,17H7v4H3Zm6.17-3L12,11.17,14.83,14,12,16.83Z"
+        style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;">
+    </path>
+</svg>
