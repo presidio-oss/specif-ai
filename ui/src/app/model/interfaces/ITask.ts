@@ -1,5 +1,6 @@
 export interface ITask {
     subTaskTicketId?: string;
+    userStoryId?: string;
     id: string;
     list: string;
     acceptance: string;

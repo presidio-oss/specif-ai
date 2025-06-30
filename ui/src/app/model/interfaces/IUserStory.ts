@@ -2,6 +2,7 @@ import { ITask } from "./ITask";
 
 export interface IUserStory {
     storyTicketId?: string;
+    platformFeatureId?: string;
     id: string;
     name: string;
     description: string;
