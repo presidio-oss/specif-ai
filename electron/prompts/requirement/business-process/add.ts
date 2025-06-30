@@ -1,3 +1,6 @@
+import { SPECIAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS } from "../../context/editor-instructions";
+import { CRITICAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS } from "../../context/editor-instructions";
+
 interface AddBusinessProcessPromptParams {
   name: string;
   description: string;
@@ -42,6 +45,8 @@ Provide the Business Process Flow that effectively addresses both the client's r
 final_business_process_flow must be a single paragraph, not a list or json format.
 Generate an apt title for final_business_process_flow. Title should be a one-liner not more than 5 words.
 
+${CRITICAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS}
+
 STRICT: 
 (!) The business process flow MUST be based primarily on the client request description.
 (!) Every sentence in the response MUST describe a distinct STEP/ ACTION within the business process flow.
@@ -55,6 +60,7 @@ STRICT:
 (!) Ensure each step in the generated business process is directly and demonstrably related to fulfilling the actions described in the Client Request. Eliminate any steps that are generic, implied from the app description, product requirements, business requirements or not directly contributing to the Client Request's objective.
 (!) Focus description ONLY on PROCESS FLOW: actions and data. EXCLUDE application properties.
 (!) You are allowed to use Markdown for the requirement of the business process.
+(!) ${SPECIAL_EDITOR_TABLES_AND_LINKS_INSTRUCTIONS}
 
 Output Structure should be a valid JSON: Here is the sample Structure. Follow this exactly. Don't add or change the response JSON:
 
