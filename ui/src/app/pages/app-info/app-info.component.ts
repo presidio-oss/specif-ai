@@ -48,6 +48,7 @@ import {
   heroServerStack,
   heroBeaker,
 } from '@ng-icons/heroicons/outline';
+import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
 import { APP_MESSAGES, FILTER_STRINGS } from '../../constants/app.constants';
 import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
@@ -102,6 +103,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
     McpIntegrationConfiguratorComponent,
     WorkflowProgressComponent,
     ProjectFailureMessageComponent,
+    SidebarComponent,
   ],
   providers: [
     provideIcons({
