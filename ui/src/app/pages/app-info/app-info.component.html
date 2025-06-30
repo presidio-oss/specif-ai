@@ -291,6 +291,8 @@
           <app-pmo-integration
             [projectId]="projectId!"
             [projectMetadata]="appInfo"
+            [isAccordionOpen]="accordionState['pmoIntegration']"
+            (toggleAccordion)="toggleAccordion('pmoIntegration')"
           ></app-pmo-integration>
 
           <app-accordion

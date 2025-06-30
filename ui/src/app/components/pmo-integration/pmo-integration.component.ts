@@ -1,6 +1,8 @@
 import {
   Component,
   Input,
+  Output,
+  EventEmitter,
   signal,
   computed,
   OnInit,
@@ -37,9 +39,10 @@ import { IProjectMetadata } from '../../model/interfaces/projects.interface';
 export class PmoIntegrationComponent implements OnInit, OnDestroy {
   @Input() projectId!: string;
   @Input() projectMetadata!: IProjectMetadata;
+  @Input() isAccordionOpen: boolean = false;
+  @Output() toggleAccordion = new EventEmitter<void>();
 
   selectedIntegrationType = new FormControl<string>('');
-  accordionOpen = signal(false);
   private destroy$ = new Subject<void>();
 
   availableIntegrations = signal<PmoIntegrationConfig[]>([]);
@@ -143,9 +146,6 @@ export class PmoIntegrationComponent implements OnInit, OnDestroy {
     }
   }
 
-  onToggleAccordion(): void {
-    this.accordionOpen.update((open) => !open);
-  }
 
   onConnectionStatusChange(event: PmoIntegrationEvent): void {
     const availableIntegrations = this.availableIntegrations();

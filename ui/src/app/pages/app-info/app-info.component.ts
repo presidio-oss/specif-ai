@@ -155,6 +155,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   mcpForm!: FormGroup;
 
   accordionState: { [key: string]: boolean } = {
+    pmoIntegration: false,
     knowledgeBase: false,
     mcp: false,
   };

@@ -5,8 +5,8 @@
     [title]="accordionTitle()"
     dynamicClass="text-sm font-medium text-secondary-950 ml-3"
     [iconImage]="accordionIcon()"
-    [isOpen]="accordionOpen()"
-    (toggleAccordion)="onToggleAccordion()"
+    [isOpen]="isAccordionOpen"
+    (toggleAccordion)="toggleAccordion.emit()"
   >
     <div
       class="mb-6"
