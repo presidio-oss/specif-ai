@@ -388,7 +388,7 @@ export const buildEvaluateTestCasesNode = (
       await workflowEvents.dispatchThinking(
         "evaluate-test-cases",
         {
-          title: `Evaluating ${state.testCases.length} test cases for user story: ${state.userStoryTitle} (Iteration ${state.feedbackLoops})`,
+          title: `Evaluating ${state.testCases.length} test cases for user story (Iteration ${state.feedbackLoops})`,
           input: JSON.stringify({
             testCaseCount: state.testCases.length,
             userStoryTitle: state.userStoryTitle,
@@ -451,10 +451,10 @@ export const buildEvaluateTestCasesNode = (
         "evaluate-test-cases",
         {
           title: isApproved
-            ? `${state.testCases.length} test cases approved for user story: ${state.userStoryTitle}`
+            ? `${state.testCases.length} test cases approved for user story`
             : isComplete
-            ? `Completing evaluation after ${state.feedbackLoops} iterations for user story: ${state.userStoryTitle}`
-            : `Test cases need refinement for user story: ${state.userStoryTitle} (Iteration ${state.feedbackLoops} of 3)`,
+            ? `Completing evaluation after ${state.feedbackLoops} iterations for user story`
+            : `Test cases need refinement for user story (Iteration ${state.feedbackLoops} of 3)`,
           output: isApproved 
             ? "All test cases meet quality standards and cover the user story requirements adequately."
             : isComplete
