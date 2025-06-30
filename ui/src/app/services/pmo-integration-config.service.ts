@@ -33,35 +33,4 @@ export class PmoIntegrationConfigService {
       .filter((config) => config.isEnabled)
       .sort((a, b) => a.order - b.order);
   }
-
-  getIntegrationById(id: string): PmoIntegrationConfig | undefined {
-    return this.integrationConfigs.find((config) => config.id === id);
-  }
-
-  addIntegration(config: PmoIntegrationConfig): void {
-    if (this.integrationConfigs.some((existing) => existing.id === config.id)) {
-      throw new Error(`Integration with ID '${config.id}' already exists`);
-    }
-    this.integrationConfigs.push(config);
-  }
-
-  updateIntegration(id: string, updates: Partial<PmoIntegrationConfig>): void {
-    const index = this.integrationConfigs.findIndex(
-      (config) => config.id === id,
-    );
-    if (index !== -1) {
-      this.integrationConfigs[index] = {
-        ...this.integrationConfigs[index],
-        ...updates,
-      };
-    }
-  }
-
-  disableIntegration(id: string): void {
-    this.updateIntegration(id, { isEnabled: false });
-  }
-
-  enableIntegration(id: string): void {
-    this.updateIntegration(id, { isEnabled: true });
-  }
 }

@@ -20,15 +20,19 @@ export function setupAdoHandlers() {
     try {
       const auth = Buffer.from(`:${personalAccessToken}`).toString("base64");
 
-      const apiUrl = `https://dev.azure.com/${organization}/_apis/projects/${projectName}`;
+      const apiUrl = `https://dev.azure.com/${organization}/_apis/projects/${projectName}?api-version=7.1`;
 
-      await axios.get(apiUrl, {
+      const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Basic ${auth}`,
           "Content-Type": "application/json",
         },
         timeout: 10000,
       });
+
+      if (response.status !== 200) {
+        throw new Error(`Unexpected response status: ${response.status}`);
+      }
 
       return {
         isValid: true,
