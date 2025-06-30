@@ -44,7 +44,7 @@
             : connectedPmoTool() === 'jira'
         "
         [projectId]="projectId"
-        [projectMetadata]="appInfo"
+        [projectMetadata]="projectMetadata"
         (connectionStatusChange)="createConnectionStatusHandler('jira')($event)"
       />
 
@@ -56,7 +56,7 @@
             : connectedPmoTool() === 'ado'
         "
         [projectId]="projectId"
-        [projectMetadata]="appInfo"
+        [projectMetadata]="projectMetadata"
         (connectionStatusChange)="createConnectionStatusHandler('ado')($event)"
       />
     </div>
