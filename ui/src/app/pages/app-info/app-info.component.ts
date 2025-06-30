@@ -1,7 +1,6 @@
 import {
   Component,
   ElementRef,
-  HostListener,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -59,11 +58,6 @@ import { ChatSettings } from 'src/app/model/interfaces/ChatSettings';
 import { ChatSettingsState } from 'src/app/store/chat-settings/chat-settings.state';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { APP_INTEGRATIONS } from 'src/app/constants/toast.constant';
-import {
-  getJiraTokenInfo,
-  storeJiraToken,
-  resetJiraToken,
-} from '../../integrations/jira/jira.utils';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { FeatureService } from '../../services/feature/feature.service';
 import { LLMConfigModel } from 'src/app/model/interfaces/ILLMConfig';
@@ -79,6 +73,7 @@ import {
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { ProjectFailureMessageComponent } from '../../components/project-failure-message/project-failure-message.component';
 import { ProjectCreationService } from '../../services/project-creation/project-creation.service';
+import { PmoIntegrationComponent } from '../../components/pmo-integration/pmo-integration.component';
 
 @Component({
   selector: 'app-info',
@@ -101,6 +96,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
     McpIntegrationConfiguratorComponent,
     WorkflowProgressComponent,
     ProjectFailureMessageComponent,
+    PmoIntegrationComponent,
   ],
   providers: [
     provideIcons({
@@ -140,7 +136,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   currentLLMConfig!: LLMConfigModel;
   public loading: boolean = false;
   appName: string = '';
-  jiraForm!: FormGroup;
   bedrockForm!: FormGroup;
   useBedrockConfig: boolean = false;
   editButtonDisabled: boolean = false;
@@ -152,7 +147,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   projectId = this.route.snapshot.paramMap.get('id');
   destroy$: Subject<boolean> = new Subject<boolean>();
   navigationState: any;
-  isJiraConnected: boolean = false;
   isBedrockConnected: boolean = false;
   currentSettings?: ChatSettings;
   mcpServers: MCPServerDetails[] = [];
@@ -161,7 +155,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   mcpForm!: FormGroup;
 
   accordionState: { [key: string]: boolean } = {
-    jira: false,
+    pmoIntegration: false,
     knowledgeBase: false,
     mcp: false,
   };
@@ -305,30 +299,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       ),
     });
 
-    this.jiraForm = new FormGroup({
-      jiraProjectKey: new FormControl(
-        this.appInfo.integration?.jira?.jiraProjectKey || '',
-        Validators.required,
-      ),
-      clientId: new FormControl(
-        this.appInfo.integration?.jira?.clientId || '',
-        Validators.required,
-      ),
-      clientSecret: new FormControl(
-        this.appInfo.integration?.jira?.clientSecret || '',
-        Validators.required,
-      ),
-      redirectUrl: new FormControl(
-        this.appInfo.integration?.jira?.redirectUrl || '',
-        Validators.required,
-      ),
-    });
-
-    this.editButtonDisabled = !this.jiraForm.valid;
-    this.jiraForm.statusChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.editButtonDisabled = !this.jiraForm.valid;
-    });
-
     this.chatSettings$.subscribe((settings) => {
       this.currentSettings = settings;
     });
@@ -340,86 +310,10 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         this.bedrockEditButtonDisabled = !this.bedrockForm.valid;
       });
 
-    this.isJiraConnected = (() => {
-      const tokenInfo = getJiraTokenInfo(this.projectId as string);
-      return (
-        tokenInfo.projectKey ===
-          this.appInfo.integration?.jira?.jiraProjectKey &&
-        !!tokenInfo.token &&
-        this.isTokenValid()
-      );
-    })();
-
-    this.handleIntegrationNavState();
     this.isBedrockConnected = !!this.appInfo.integration?.bedrock?.kbId;
-    this.isJiraConnected && this.jiraForm.disable();
     this.isBedrockConnected && this.bedrockForm.disable();
 
     this.initMcpForm();
-  }
-
-  isTokenValid(): boolean {
-    const { token, tokenExpiration } = getJiraTokenInfo(
-      this.projectId as string,
-    );
-    return (
-      !!token && !!tokenExpiration && new Date() < new Date(tokenExpiration)
-    );
-  }
-
-  handleJiraAuthentication(): void {
-    const { jiraProjectKey, clientId, clientSecret, redirectUrl } =
-      this.jiraForm.getRawValue();
-
-    const oauthParams = {
-      clientId: clientId,
-      clientSecret: clientSecret,
-      redirectUri: redirectUrl,
-    };
-    this.electronService
-      .startJiraOAuth(oauthParams)
-      .then((authResponse) => {
-        storeJiraToken(authResponse, jiraProjectKey, this.projectId as string);
-        console.debug('Token received and stored.', authResponse.accessToken);
-        this.saveJiraData();
-        this.toast.showSuccess(APP_INTEGRATIONS.JIRA.SUCCESS);
-      })
-      .catch((error) => {
-        console.error('Error during OAuth process:', error);
-        this.toast.showError(APP_INTEGRATIONS.JIRA.ERROR);
-      });
-  }
-
-  saveJiraData() {
-    const { jiraProjectKey, clientId, clientSecret, redirectUrl } =
-      this.jiraForm.getRawValue();
-    const tokenInfo = getJiraTokenInfo(this.projectId as string);
-
-    const updatedMetadata = {
-      ...this.appInfo,
-      integration: {
-        ...this.appInfo.integration,
-        jira: { jiraProjectKey, clientId, clientSecret, redirectUrl },
-      },
-    };
-
-    this.store
-      .dispatch(new UpdateMetadata(this.appInfo.id, updatedMetadata))
-      .subscribe(() => {
-        this.logger.debug('Jira metadata updated successfully');
-        this.jiraForm.disable();
-        this.isJiraConnected =
-          tokenInfo.projectKey === jiraProjectKey && !!tokenInfo.token;
-        this.editButtonDisabled = true;
-      });
-  }
-
-  disconnectJira(): void {
-    resetJiraToken(this.projectId as string);
-    this.jiraForm.enable();
-    this.isJiraConnected = false;
-    this.editButtonDisabled = false;
-    this.toast.showSuccess(APP_INTEGRATIONS.JIRA.DISCONNECT);
   }
 
   saveBedrockData() {
@@ -655,13 +549,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         },
       },
     });
-  }
-
-  handleIntegrationNavState(): void {
-    if (this.navigationState && this.navigationState['openAppIntegrations']) {
-      this.selectFolder({ name: 'app-integrations', children: [] });
-      this.toggleAccordion('jira');
-    }
   }
 
   getIconName(key: string): string {

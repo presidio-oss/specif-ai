@@ -14,6 +14,7 @@ import {
   getActiveContentGenerationProcessNames,
 } from "./handlers/content-generation-handler";
 import { setupJiraHandlers } from "./handlers/jira-handler";
+import { setupAdoHandlers } from "./handlers/ado-handler";
 import { setupAppUpdateHandler } from "./handlers/app-update-handler";
 import { setupMcpHandlers } from "./handlers/mcp-handler";
 import { MCPHub } from "./mcp/mcp-hub";
@@ -304,6 +305,7 @@ app.whenReady().then(async () => {
     setupFileSystemHandlers();
     setupUIHandlers(indexPath, themeConfiguration);
     setupJiraHandlers(mainWindow);
+    setupAdoHandlers();
     setupCoreHandlers();
     setupRequirementHandlers();
     setupVisualizationHandlers();

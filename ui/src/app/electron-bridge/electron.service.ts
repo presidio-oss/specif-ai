@@ -475,6 +475,21 @@ export class ElectronService {
     }
   }
 
+  async validateAdoCredentials(
+    organization: string,
+    projectName: string,
+    personalAccessToken: string,
+  ): Promise<{ isValid: boolean; error?: string }> {
+    if (this.electronAPI) {
+      return this.electronAPI.invoke('validate-ado-credentials', {
+        organization,
+        projectName,
+        personalAccessToken,
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async openDirectory(): Promise<Array<string>> {
     if (this.electronAPI) {
       return await this.electronAPI.openDirectory();
