@@ -1,0 +1,71 @@
+<section class="space-y-4 mb-6" aria-labelledby="ado-info">
+  <div class="text-sm text-secondary-500">
+    <p>{{ APP_MESSAGES.ADO_ACCORDION }}</p>
+  </div>
+  <div class="text-sm text-secondary-500">
+    <p [innerHTML]="APP_MESSAGES.ADO_PREREQUISITE"></p>
+  </div>
+</section>
+
+<form [formGroup]="adoForm" class="space-y-6" novalidate>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <app-input-field
+        formControlName="organization"
+        elementId="adoOrganization"
+        elementName="Organization Name"
+        elementPlaceHolder="Enter Azure DevOps Organization"
+        [required]="true"
+        aria-describedby="org-help"
+      />
+      <small id="org-help" class="sr-only">
+        Enter your Azure DevOps organization name
+      </small>
+    </div>
+
+    <div>
+      <app-input-field
+        formControlName="projectName"
+        elementId="adoProjectName"
+        elementName="Project Name"
+        elementPlaceHolder="Enter Project Name"
+        [required]="true"
+        aria-describedby="project-help"
+      />
+      <small id="project-help" class="sr-only">
+        Enter your Azure DevOps project name
+      </small>
+    </div>
+  </div>
+
+  <div>
+    <app-input-field
+      formControlName="personalAccessToken"
+      elementId="adoPersonalAccessToken"
+      elementName="Personal Access Token"
+      elementPlaceHolder="Enter Personal Access Token"
+      elementType="password"
+      [required]="true"
+      aria-describedby="token-help"
+    />
+    <small id="token-help" class="sr-only">
+      Enter your Azure DevOps personal access token with appropriate permissions
+    </small>
+  </div>
+
+  <div class="flex justify-end pt-4">
+    <app-button
+      [buttonContent]="getButtonText()"
+      [theme]="isConnected() ? 'danger' : 'primary'"
+      size="sm"
+      (click)="isConnected() ? onDisconnect() : onConnect()"
+      [disabled]="buttonDisabled()"
+      [attr.aria-label]="
+        isConnected()
+          ? 'Disconnect from Azure DevOps'
+          : 'Connect to Azure DevOps'
+      "
+    >
+    </app-button>
+  </div>
+</form>
