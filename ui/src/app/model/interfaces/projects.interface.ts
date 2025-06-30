@@ -23,10 +23,15 @@ export interface JiraIntegrationConfig {
   readonly redirectUrl: string;
 }
 
+export interface WorkItemTypeMapping {
+  [key: string]: string;
+}
+
 export interface AdoIntegrationConfig {
   readonly organization: string;
   readonly projectName: string;
   readonly personalAccessToken: string;
+  readonly workItemTypeMapping?: WorkItemTypeMapping;
 }
 
 export interface IProjectMetadata {
