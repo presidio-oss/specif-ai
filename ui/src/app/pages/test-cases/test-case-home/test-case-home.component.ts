@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
+import { ElectronService } from '../../../electron-bridge/electron.service';
 import { ProjectsState } from '../../../store/projects/projects.state';
 import { GetProjectFiles, BulkReadFiles, ClearBRDPRDState } from '../../../store/projects/projects.actions';
 import { GetUserStories, SetSelectedUserStory } from '../../../store/user-stories/user-stories.actions';
@@ -26,12 +27,20 @@ import { AppSystemService } from '../../../services/app-system/app-system.servic
 import { SummaryCardComponent } from "../../../components/summary-card/summary-card.component";
 import { FormsModule } from '@angular/forms';
 import { joinPaths } from 'src/app/utils/path.utils';
+import { ButtonComponent } from "../../../components/core/button/button.component";
 
 interface IPrdInfo {
   id: string;
   name: string;
   description?: string;
   selected?: boolean;
+}
+
+interface SummaryCardData {
+  icon: string;
+  title: string;
+  color?: string;
+  countFn: () => number;
 }
 
 @Component({
@@ -50,7 +59,8 @@ interface IPrdInfo {
     SearchInputComponent,
     MatTooltipModule,
     AppSelectComponent,
-    FormsModule
+    FormsModule,
+    ButtonComponent
 ],
   providers: [
     provideIcons({
@@ -70,6 +80,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   store = inject(Store);
   searchService = inject(SearchService);
   testCaseService = inject(TestCaseService);
+  electronService = inject(ElectronService);
   
   userStories: IUserStory[] = [];
   isLoading: boolean = false;
@@ -111,6 +122,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   originalDocumentList$ = this.store.select(ProjectsState.getSelectedFileContents);
+  projectMetadata$ = this.store.select(ProjectsState.getMetadata);
   
   constructor(
     private clipboardService: ClipboardService,
@@ -417,11 +429,31 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
-}
 
-interface SummaryCardData {
-  icon: string;
-  title: string;
-  color?: string;
-  countFn: () => number;
+ navigateToAppInfo() {
+  // Get the full project metadata from the store
+  this.projectMetadata$.pipe(takeUntil(this.destroy$)).subscribe(projectMetadata => {
+      // Create metadata object with project details including description
+      const metadata = {
+        id: this.currentProject,
+        name: projectMetadata.name || this.currentProject,
+        description: projectMetadata.description || '',
+        technicalDetails: projectMetadata.technicalDetails || '',
+      };
+      
+      this.router.navigate([`/apps/${this.currentProject}`], {
+        state: {
+          data: metadata,
+          breadcrumb: {
+            name: metadata.name,
+            link: '/',
+            icon: '',
+          },
+        },
+      }).then(async () => {
+        // Call setMCPProjectId with the project ID
+        await this.electronService.setMCPProjectId(this.currentProject);
+      });
+  });
+}
 }
