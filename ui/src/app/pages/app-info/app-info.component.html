@@ -1,7 +1,7 @@
 <div *ngIf="directories$ | async as directories" class="h-full w-full">
   <!-- Main 3 column grid -->
-  <div class="grid items-start gap-4 grid-cols-3 h-full">
-    <section aria-labelledby="navigation" class="h-full">
+  <div class="grid items-start gap-4 grid-cols-9 h-full">
+    <section aria-labelledby="navigation" class="h-full col-span-2">
       <app-sidebar
         [directories]="directories"
         [selectedFolder]="selectedFolder"
@@ -15,7 +15,7 @@
     </section>
     <section
       aria-labelledby="Main Content"
-      class="col-span-2 h-[calc(100vh-80px)] overflow-hidden"
+      class="col-span-4 h-[calc(100vh-80px)] overflow-hidden"
     >
       <div class="overflow-auto rounded-lg bg-white border h-full">
         <div
@@ -331,8 +331,8 @@
     </section>
 
     <!-- AI Chat Section -->
-    <section aria-labelledby="AI Chat" class="col-span-4 h-full min-h-0">
-      <div class="overflow-hidden rounded-lg bg-white border h-full">
+    <section aria-labelledby="AI Chat" class="col-span-3 h-[calc(100vh-80px)] flex flex-col">
+      <div class="rounded-lg bg-white border h-full overflow-hidden">
         <app-chat
           [id]="appInfo.id"
           [name]="appInfo.name"
