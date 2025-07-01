@@ -22,7 +22,9 @@ export const buildLLMNode = (modelProvider: LangChainModelProvider) => {
 
     try {
       // TODO: we can try using structured output here
-      const response = await model.invoke(state.messages);
+      const response = await model.invoke(state.messages, {
+        signal: runnableConfig?.signal,
+      });
 
       generation?.end({
         usage: {

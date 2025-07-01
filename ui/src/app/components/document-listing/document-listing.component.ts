@@ -22,7 +22,7 @@ import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
 import { processPRDContentForView } from '../../utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
-import { ExportDropdownComponent } from "../../export-dropdown/export-dropdown.component";
+import { DropdownOptionGroup, ExportDropdownComponent } from "../../export-dropdown/export-dropdown.component";
 
 @Component({
   selector: 'app-document-listing',
@@ -75,7 +75,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   // For Export Dropdown Options
-  exportOptions: { label: string; callback: () => void }[] = [];
+  exportOptions: DropdownOptionGroup[] = [];
   exportedFolderName: string = '';
 
   currentRoute: string;
@@ -242,13 +242,13 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
         req: {
           ...item.content,
           selectedBRDs:
-            item?.content?.selectedBRDs?.map(
-              (brd: SelectedDocument) => brd?.requirement || brd,
-            ) || [],
+            (item.content?.selectedBRDs ?? []).map(
+              ({ requirement }: SelectedDocument) => requirement,
+            ),
           selectedPRDs:
-            item?.content?.selectedPRDs?.map(
-              (prd: SelectedDocument) => prd?.requirement || prd,
-            ) || [],
+            (item.content?.selectedPRDs ?? []).map(
+              ({ requirement }: SelectedDocument) => requirement,
+            ),
         },
         selectedFolder: {
           title: item.folderName,
@@ -309,12 +309,23 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     this.exportedFolderName = folderName;
     this.exportOptions = [
       {
-        label: 'Copy JSON to Clipboard',
-        callback: exportJson.bind(this)
-      },
-      {
-        label: 'Download as Excel (.xlsx)',
-        callback: exportExcel.bind(this)
+        groupName: 'Export',
+        options: [
+          {
+            label: 'Copy to Clipboard',
+            callback: exportJson.bind(this),
+            icon: 'heroPaperClip',
+            additionalInfo: "JSON Format",
+            isTimestamp: false,
+          },
+          {
+            label: 'Download',
+            callback: exportExcel.bind(this),
+            icon: 'heroDocumentText',
+            additionalInfo: "Excel (.xlsx)",
+            isTimestamp: false,
+          }
+        ]
       }
     ];
     return this.exportOptions;

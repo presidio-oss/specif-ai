@@ -1,214 +1,17 @@
 <div *ngIf="directories$ | async as directories" class="h-full w-full">
   <!-- Main 3 column grid -->
-  <div class="grid items-start gap-3 grid-cols-12 h-full min-h-0">
-    <!-- Navigation Section -->
-    <section aria-labelledby="navigation" class="col-span-3 h-full min-h-0">
-      <div class="overflow-hidden rounded-lg bg-white border flex flex-col py-4 px-3 space-y-4">
-        <h1 class="font-semibold text-normal capitalize">{{ appName }}</h1>
-        <ul role="list" class="min-h space-y-1.5">
-          <li
-            class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
-            [ngClass]="{
-              'bg-secondary-50 border-secondary-200':
-                selectedFolder?.title === 'solution',
-              'bg-white border-transparent':
-                selectedFolder?.title !== 'solution',
-            }"
-            (click)="selectFolder({ name: 'solution', children: [] })"
-            (keydown.enter)="selectFolder({ name: 'solution', children: [] })"
-            (keydown.space)="
-              selectFolder({ name: 'solution', children: [] });
-              $event.preventDefault()
-            "
-            role="button"
-            tabindex="0"
-          >
-            <div class="flex items-center">
-              <ng-icon
-                class="size-4 mr-2"
-                strokeWidth="2"
-                [ngClass]="{
-                  'text-primary-600': selectedFolder?.title === 'solution',
-                  'text-secondary-500': selectedFolder?.title !== 'solution',
-                }"
-                name="heroArchiveBox"
-              ></ng-icon>
-              <h4
-                class="text-sm font-medium"
-                [ngClass]="{
-                  'text-primary-600': selectedFolder?.title === 'solution',
-                  'text-secondary-500': selectedFolder?.title !== 'solution',
-                }"
-              >
-                Solution
-              </h4>
-            </div>
-          </li>
-
-          <ng-container *ngFor="let folder of directories; index as i">
-            <li
-              *ngIf="!isArchived(folder)"
-              class="flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer hover:bg-secondary-50 border"
-              [ngClass]="{
-                'bg-secondary-50 border-secondary-200':
-                  selectedFolder?.title === folder.name,
-                'bg-white border-transparent':
-                  selectedFolder?.title !== folder.name,
-              }"
-              (click)="selectFolder(folder)"
-              (keydown.enter)="selectFolder(folder)"
-              (keydown.space)="selectFolder(folder); $event.preventDefault()"
-              role="button"
-              tabindex="0"
-            >
-              <div class="flex items-center">
-                <ng-icon
-                  class="size-4 mr-2"
-                  strokeWidth="2"
-                  *ngIf="folder.name === 'BRD'"
-                  [ngClass]="{
-                    'text-primary-600': selectedFolder?.title === folder.name,
-                    'text-secondary-500': selectedFolder?.title !== folder.name,
-                  }"
-                  name="heroBriefcase"
-                ></ng-icon>
-                <ng-icon
-                  class="size-4 mr-2"
-                  strokeWidth="2"
-                  *ngIf="folder.name === 'PRD'"
-                  [ngClass]="{
-                    'text-primary-600': selectedFolder?.title === folder.name,
-                    'text-secondary-500': selectedFolder?.title !== folder.name,
-                  }"
-                  name="heroSquares2x2"
-                ></ng-icon>
-                <ng-icon
-                  class="size-4 mr-2"
-                  strokeWidth="2"
-                  *ngIf="folder.name === 'NFR'"
-                  [ngClass]="{
-                    'text-primary-600': selectedFolder?.title === folder.name,
-                    'text-secondary-500': selectedFolder?.title !== folder.name,
-                  }"
-                  name="heroCube"
-                ></ng-icon>
-
-                <ng-icon
-                  class="size-4 mr-2"
-                  strokeWidth="2"
-                  *ngIf="folder.name === 'UIR'"
-                  [ngClass]="{
-                    'text-primary-600': selectedFolder?.title === folder.name,
-                    'text-secondary-500': selectedFolder?.title !== folder.name,
-                  }"
-                  name="heroWindow"
-                ></ng-icon>
-                <ng-icon
-                  *ngIf="folder.name === 'BP'"
-                  class="text-xl w-5 h-5 mr-2"
-                  [ngClass]="{
-                    'text-primary-600': selectedFolder?.title === folder.name,
-                    'text-secondary-500': selectedFolder?.title !== folder.name,
-                  }"
-                  name="heroSquare3Stack3d"
-                >
-                </ng-icon>
-                <h4
-                  class="text-sm font-medium"
-                  [ngClass]="{
-                    'text-primary-600': selectedFolder?.title === folder.name,
-                    'text-secondary-500': selectedFolder?.title !== folder.name,
-                  }"
-                >
-                  {{ getDescription(folder.name) }}
-                </h4>
-              </div>
-              <app-badge [badgeText]="folder.children.length" />
-            </li>
-          </ng-container>
-          <ng-container *ngFor="let folder of haiFolder">
-            <li
-              *ngIf="!directoryContainsFolder(folder.key, directories)"
-              class="flex items-center justify-between px-2 py-2 rounded-lg bg-white"
-            >
-              <div class="flex items-center">
-                <ng-icon
-                  class="size-4 mr-2 text-secondary-500"
-                  strokeWidth="2"
-                  [name]="getIconName(folder.key)"
-                ></ng-icon>
-                <h4 class="text-sm text-secondary-500 font-medium">
-                  {{ folder.value }}
-                </h4>
-              </div>
-              <app-button
-                buttonContent="Add"
-                theme="secondary"
-                size="xs"
-                rounded="lg"
-                [disabled]="isCreatingSolution"
-                tooltip="Add new document"
-                tooltipDisabled="Generating your solution. Please wait..."
-                (click)="
-                  folder.key === 'BP'
-                    ? navigateToBPAdd()
-                    : navigateToAdd(folder.key)
-                "
-              />
-            </li>
-          </ng-container>
-          <li
-            (click)="
-              !isCreatingSolution &&
-                selectFolder({ name: 'app-integrations', children: [] })
-            "
-            (keydown.enter)="
-              !isCreatingSolution &&
-                selectFolder({ name: 'app-integrations', children: [] })
-            "
-            (keydown.space)="
-              !isCreatingSolution &&
-                selectFolder({ name: 'app-integrations', children: [] });
-              $event.preventDefault()
-            "
-            role="button"
-            tabindex="0"
-            [ngClass]="{
-              'bg-secondary-50 border-secondary-200':
-                selectedFolder?.title === 'app-integrations',
-              'bg-white border-transparent':
-                selectedFolder?.title !== 'app-integrations',
-              'cursor-not-allowed': isCreatingSolution,
-            }"
-            class="flex cursor-pointer items-center justify-between px-2 py-2 rounded-lg bg-white hover:bg-secondary-50 border"
-          >
-            <div class="flex items-center">
-              <ng-icon
-                class="size-4 mr-2"
-                strokeWidth="2"
-                [ngClass]="{
-                  'text-primary-600':
-                    selectedFolder?.title === 'app-integrations',
-                  'text-secondary-500':
-                    selectedFolder?.title !== 'app-integrations',
-                }"
-                name="heroLink"
-              ></ng-icon>
-              <h4
-                class="text-sm font-medium"
-                [ngClass]="{
-                  'text-primary-600':
-                    selectedFolder?.title === 'app-integrations',
-                  'text-secondary-500':
-                    selectedFolder?.title !== 'app-integrations',
-                }"
-              >
-                Integrations
-              </h4>
-            </div>
-          </li>
-        </ul>
-      </div>
+  <div class="grid items-start gap-4 grid-cols-3 h-full">
+    <section aria-labelledby="navigation" class="h-full">
+      <app-sidebar
+        [directories]="directories"
+        [selectedFolder]="selectedFolder"
+        [appName]="appName"
+        [haiFolder]="haiFolder"
+        [isCreatingSolution]="isCreatingSolution"
+        (folderSelected)="selectFolder($event)"
+        (addDocument)="navigateToAdd($event)"
+        (addBPDocument)="navigateToBPAdd()"
+      ></app-sidebar>
     </section>
     <section
       aria-labelledby="Main Content"
@@ -234,21 +37,28 @@
           </div>
         </div>
         <div *ngIf="selectedFolder?.title === 'solution'">
+          <app-project-failure-message
+            *ngIf="isProjectFailed && !isCreatingSolution"
+            [failureInfo]="projectFailureInfo"
+            [projectId]="projectId!"
+            [workflowType]="WorkflowType.Solution"
+            (retryClicked)="retryProjectCreation()"
+          ></app-project-failure-message>
+
           <app-workflow-progress
             [projectId]="projectId!"
             [workflowType]="WorkflowType.Solution"
             [isVisible]="isCreatingSolution || solutionCreationComplete"
             [isCompleted]="solutionCreationComplete"
-            title="Creating Solution..."
-            subtitle="Relax while SpecifAI takes care of the rest..."
+            initialTitle="Creating Solution..."
             completedTitle="Solution Created Successfully!"
-            completedSubtitle="Your solution has been generated and is ready to view"
+            subtitle="Relax while SpecifAI takes care of the rest..."
           >
           </app-workflow-progress>
 
           <div
             class="flex-grow h-px bg-gray-300 ml-6 mr-6"
-            *ngIf="isCreatingSolution"
+            *ngIf="isCreatingSolution || solutionCreationComplete"
           ></div>
 
           <h1 class="text-title font-semibold p-4">Solution Information</h1>
