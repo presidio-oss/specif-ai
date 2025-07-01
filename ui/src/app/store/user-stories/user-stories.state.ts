@@ -132,6 +132,7 @@ export class UserStoriesState {
           archivedTasks: story.archivedTasks,
           chatHistory: story.chatHistory,
           storyTicketId: story.storyTicketId,
+          platformFeatureId: story.platformFeatureId,
         });
         this.logger.debug('story ==>', story);
         taskMap[story.id] = story.tasks as ITask[];

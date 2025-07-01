@@ -64,6 +64,8 @@ import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dro
 import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
+import { getAdoTokenInfo } from 'src/app/integrations/ado/ado.utils';
+import { AdoService } from 'src/app/integrations/ado/ado.service';
 
 @Component({
   selector: 'app-user-stories',
@@ -136,7 +138,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   filteredUserStories$ = this.searchService.filterItems(
     this.userStories$,
     this.searchTerm$,
-    (story: IUserStory) => [story.id, story.name, story.storyTicketId],
+    (story: IUserStory) => [story.id, story.name, story.storyTicketId, story.platformFeatureId],
   );
 
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
@@ -159,6 +161,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     private featureService: FeatureService,
     private clipboardService: ClipboardService,
     private jiraService: JiraService,
+    private adoService: AdoService,
     private electronService: ElectronService,
     private toast: ToasterService,
     private requirementIdService: RequirementIdService,
@@ -556,6 +559,34 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       });
   }
 
+  syncRequirementWithAdo(): void {
+    this.dialogService
+      .confirm({
+        title: 'Push to ADO',
+        description: 'This action will override the existing content in Azure DevOps with your local changes. Any updates made directly in ADO will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Push to ADO',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.syncAdo();
+      });
+  }
+
+  syncRequirementFromAdo(): void {
+    this.dialogService
+      .confirm({
+        title: 'Pull from ADO',
+        description: 'This action will override your local content with the latest updates from Azure DevOps. Any unsaved local changes will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Pull from ADO',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.syncFromAdo();
+      });
+  }
+
   promptReauthentication(): void {
     const jiraIntegration = this.metadata?.integration?.jira;
 
@@ -748,6 +779,171 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     });
   }
 
+  syncAdo(): void {
+    const adoInfo = getAdoTokenInfo(this.navigation.projectId);
+    const token = adoInfo.token;
+    const adoURL = adoInfo.adoURL;
+    const organization = adoInfo.organization;
+    const projectName = adoInfo.projectName;
+
+    if (!token || !adoURL || !organization || !projectName) {
+      this.toast.showError('Azure DevOps configuration is incomplete');
+      return;
+    }
+
+    const requestPayload: any = {
+      epicName: '',
+      epicDescription: '',
+      featureId: '',
+      adoURL: adoURL,
+      organization: organization,
+      projectName: projectName,
+      token: token,
+      features: [],
+    };
+
+    requestPayload.epicName = this.requirementFile.title;
+    requestPayload.epicDescription = this.requirementFile.requirement;
+    requestPayload.featureId = this.requirementFile.featureId
+      ? this.requirementFile.featureId
+      : '';
+
+    this.userStories = this.userStoriesInState;
+
+    requestPayload.features = this.userStories.map((story) => {
+      return {
+        id: story.id,
+        name: story.name,
+        description: story.description,
+        platformFeatureId: story.platformFeatureId ? story.platformFeatureId : '',
+        tasks: story?.tasks?.map((task) => {
+          return {
+            list: task.list,
+            acceptance: task.acceptance,
+            id: task.id,
+            userStoryId: task.userStoryId ? task.userStoryId : '',
+          };
+        }),
+      };
+    });
+
+    this.adoService.createOrUpdateTickets(requestPayload).subscribe({
+      next: (response) => {
+        console.debug('ADO API Response:', response);
+
+        const matchedFeature = response.featureName === this.requirementFile.title;
+
+        if (matchedFeature) {
+          this.requirementFile.featureId = response.featureId;
+        }
+
+        this.requirementFile.lastPushToAdoTimestamp = new Date().toISOString();
+
+        this.updateExportOptionsTimestamps();
+
+        const updatedFeatures = this.userStories.map((existingFeature: any) => {
+          const matchedFeature = response.features.find(
+            (responseFeature: any) =>
+              responseFeature.platformFeatureName === existingFeature.name,
+          );
+
+          if (matchedFeature) {
+            existingFeature.platformFeatureId = matchedFeature.platformFeatureId;
+            existingFeature.tasks.forEach((existingTask: any) => {
+              const matchedTask = matchedFeature.tasks.find(
+                (responseTask: any) =>
+                  responseTask.userStoryName === existingTask.list,
+              );
+
+              if (matchedTask) {
+                existingTask.userStoryId = matchedTask.userStoryId;
+              }
+            });
+          }
+
+          return existingFeature;
+        });
+
+        this.store.dispatch(
+          new UpdateFile(
+            `${this.navigation.folderName}/${this.navigation.fileName}`,
+            this.requirementFile,
+          ),
+        );
+
+        this.store.dispatch(
+          new BulkEditUserStories(
+            `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
+            updatedFeatures,
+          ),
+        );
+        this.toast.showSuccess('Successfully pushed to Azure DevOps');
+      },
+      error: (error) => {
+        console.error('Error updating feature.json:', error);
+        this.toast.showError('Failed to push to Azure DevOps');
+      },
+    });
+  }
+
+  private syncFromAdo(): void {
+    const adoInfo = getAdoTokenInfo(this.navigation.projectId);
+    const token = adoInfo.token;
+    const adoURL = adoInfo.adoURL;
+    const organization = adoInfo.organization;
+    const projectName = adoInfo.projectName;
+
+    if (!token || !adoURL || !organization || !projectName) {
+      this.toast.showError('Azure DevOps configuration is incomplete');
+      return;
+    }
+
+    const requestPayload: any = {
+      epicName: '',
+      epicDescription: '',
+      featureId: '',
+      adoURL: adoURL,
+      organization: organization,
+      projectName: projectName,
+      token: token,
+      features: [],
+    };
+
+    requestPayload.epicName = this.requirementFile.title;
+    requestPayload.epicDescription = this.requirementFile.requirement;
+    requestPayload.featureId = this.requirementFile.featureId || '';
+
+    this.userStories = this.userStoriesInState;
+
+    requestPayload.features = this.userStories.map((story) => ({
+      id: story.id,
+      name: story.name,
+      description: story.description,
+      platformFeatureId: story.platformFeatureId || '',
+      tasks: story?.tasks?.map((task) => ({
+        id: task.id,
+        list: task.list,
+        acceptance: task.acceptance,
+        userStoryId: task.userStoryId || '',
+      })) || [],
+    }));
+
+    this.adoService.syncFromAdo(requestPayload).subscribe({
+      next: (response) => {
+        console.debug('ADO Sync Response:', response);
+        this.requirementFile.lastPullFromAdoTimestamp = new Date().toISOString();
+        this.updateExportOptionsTimestamps();
+        this.updateLocalContentFromAdo(response);
+        this.toast.showSuccess('Successfully synced from Azure DevOps');
+      },
+      error: (error) => {
+        console.error('Error syncing from ADO:', error);
+        this.toast.showError('Failed to sync from Azure DevOps');
+      },
+    });
+  }
+
+
   private formatDescriptionForView(
     description: string | undefined,
   ): string | null {
@@ -830,6 +1026,80 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     }
   }
 
+  private updateLocalContentFromAdo(syncResponse: any): void {
+    if (syncResponse.feature) {
+      const updatedRequirementFile = {
+        ...this.requirementFile,
+        title: syncResponse.feature.title,
+        requirement: syncResponse.feature.requirement,
+        featureId: syncResponse.feature.featureId,
+        lastPullFromAdoTimestamp: this.requirementFile.lastPullFromAdoTimestamp
+      };
+
+      this.store.dispatch(
+        new UpdateFile(
+          `${this.navigation.folderName}/${this.navigation.fileName}`,
+          updatedRequirementFile,
+        ),
+      );
+    }
+
+    if (syncResponse.features && syncResponse.features.length > 0) {
+      const updatedUserStories = this.userStories.map((existingStory) => {
+        const syncedStory = syncResponse.features.find(
+          (feature: any) =>
+            feature.platformFeatureId === existingStory.platformFeatureId ||
+            feature.id === existingStory.id
+        );
+
+        if (syncedStory) {
+          const updatedTasks = existingStory.tasks?.map((existingTask) => {
+            const syncedTask = syncedStory.tasks?.find(
+              (task: any) =>
+                task.userStoryId === existingTask.userStoryId ||
+                task.id === existingTask.id
+            );
+
+            if (syncedTask) {
+              return {
+                ...existingTask,
+                list: syncedTask.list || existingTask.list,
+                acceptance: syncedTask.acceptance || existingTask.acceptance,
+                userStoryId: syncedTask.userStoryId || existingTask.userStoryId,
+                status: syncedTask.status,
+                lastUpdated: syncedTask.lastUpdated,
+              };
+            }
+            return existingTask;
+          }) || [];
+
+          return {
+            ...existingStory,
+            name: syncedStory.name,
+            description: syncedStory.description,
+            platformFeatureId: syncedStory.platformFeatureId,
+            status: syncedStory.status,
+            lastUpdated: syncedStory.lastUpdated,
+            tasks: updatedTasks,
+          };
+        }
+
+        return existingStory;
+      });
+
+      this.store.dispatch(
+        new BulkEditUserStories(
+          `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
+          updatedUserStories,
+        ),
+      );
+
+      // Refresh the user stories view
+      setTimeout(() => {
+        this.getLatestUserStories();
+      }, 1000);
+    }
+  }
 
   private updateExportOptionsTimestamps(): void {
     if (this.exportOptions && this.exportOptions.length > 1) {
@@ -845,6 +1115,19 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           jiraOptions[1].additionalInfo = this.requirementFile.lastPullFromJiraTimestamp;
         } else {
           jiraOptions[1].additionalInfo = undefined;
+        }
+      }
+      const adoOptions = this.exportOptions.find(group => group.groupName === 'Azure DevOps')?.options;
+      if (adoOptions && adoOptions.length > 0) {
+        if (this.requirementFile?.lastPushToAdoTimestamp) {
+          adoOptions[0].additionalInfo = this.requirementFile.lastPushToAdoTimestamp;
+        } else {
+          adoOptions[0].additionalInfo = undefined;
+        }
+        if (adoOptions.length > 1 && this.requirementFile?.lastPullFromAdoTimestamp) {
+          adoOptions[1].additionalInfo = this.requirementFile.lastPullFromAdoTimestamp;
+        } else if (adoOptions.length > 1) {
+          adoOptions[1].additionalInfo = undefined;
         }
       }
     }
@@ -1002,7 +1285,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           callback: pushToJira.bind(this),
           icon: 'heroArrowUpTray',
           additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
-          isTimestamp:true
+          isTimestamp: true
         }
       ];
 
@@ -1012,7 +1295,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           callback: pullFromJira.bind(this),
           icon: 'heroArrowDownTray',
           additionalInfo: this.requirementFile?.lastPullFromJiraTimestamp || undefined,
-          isTimestamp:true
+          isTimestamp: true
         });
       }
 
@@ -1020,6 +1303,32 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         groupName: 'JIRA',
         options: jiraOptions,
       });
+
+      const adoOptions = [
+        {
+          label: 'Push to ADO',
+          callback: this.syncRequirementWithAdo.bind(this),
+          icon: 'heroArrowUpTray',
+          additionalInfo: this.requirementFile?.lastPushToAdoTimestamp || undefined,
+          isTimestamp: true
+        }
+      ];
+
+      if (this.requirementFile?.featureId) {
+        adoOptions.push({
+          label: 'Pull from ADO',
+          callback: this.syncRequirementFromAdo.bind(this),
+          icon: 'heroArrowDownTray',
+          additionalInfo: this.requirementFile?.lastPullFromAdoTimestamp || undefined,
+          isTimestamp: true
+        });
+      }
+
+      this.exportOptions.push({
+        groupName: 'Azure DevOps',
+        options: adoOptions,
+      });
+
     }
 
     return this.exportOptions;
