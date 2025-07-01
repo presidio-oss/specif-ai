@@ -11,6 +11,8 @@ import {
 } from 'rxjs/operators';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { environment } from '../../../environments/environment';
+import { convertHtmlToMarkdown, convertMarkdownToHtml } from './ado.utils';
+
 
 @Injectable({
     providedIn: 'root',
@@ -34,7 +36,7 @@ export class AdoService {
         });
     }
 
-    private createFeature(payload: any, token: string): Observable<any> {
+    private createFeature(payload: any, token: string, htmlContent: string): Observable<any> {
         const { adoURL, organization, projectName } = payload;
         const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/$Feature?api-version=7.0`;
 
@@ -48,7 +50,7 @@ export class AdoService {
             {
                 op: "add",
                 path: "/fields/System.Description",
-                value: payload.epicDescription
+                value: htmlContent
             }
         ];
 
@@ -60,7 +62,7 @@ export class AdoService {
         );
     }
 
-    private updateFeature(payload: any, token: string): Observable<any> {
+    private updateFeature(payload: any, token: string, htmlContent: string): Observable<any> {
         const { adoURL, organization, projectName, featureId } = payload;
         const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/${featureId}?api-version=7.0`;
 
@@ -74,7 +76,7 @@ export class AdoService {
             {
                 op: "add",
                 path: "/fields/System.Description",
-                value: payload.epicDescription
+                value: htmlContent
             }
         ];
 
@@ -88,13 +90,33 @@ export class AdoService {
 
     createOrUpdateFeature(payload: any, token: string): Observable<any> {
         if (payload.featureId) {
-            return this.updateFeature(payload, token);
+            const issueUrl = `${payload.adoURL}/${payload.organization}/${payload.projectName}/_apis/wit/workitems/${payload.featureId}?api-version=7.0`;
+            return this.http.get(issueUrl, { headers: this.getHeaders(token) }).pipe(
+                switchMap((issue: any) => {
+                    return convertMarkdownToHtml(payload.epicDescription).pipe(
+                        switchMap((newHtml) => {
+                            return this.updateFeature(payload, token, newHtml);
+                        })
+                    );
+                }),
+                catchError((error) => {
+                    if (error.status === 404) {
+                        return convertMarkdownToHtml(payload.epicDescription).pipe(
+                            switchMap((htmlContent) => this.createFeature(payload, token, htmlContent))
+                        );
+                    } else {
+                        return throwError(() => error);
+                    }
+                }),
+            );
         } else {
-            return this.createFeature(payload, token);
+            return convertMarkdownToHtml(payload.epicDescription).pipe(
+                switchMap((htmlContent) => this.createFeature(payload, token, htmlContent))
+            );
         }
     }
 
-    private createPlatformFeature(payload: any, feature: any, token: string): Observable<any> {
+    private createPlatformFeature(payload: any, feature: any, token: string, htmlContent: string): Observable<any> {
         const { adoURL, organization, projectName } = payload;
         const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/$Platform Feature?api-version=7.0`;
 
@@ -108,7 +130,7 @@ export class AdoService {
             {
                 op: "add",
                 path: "/fields/System.Description",
-                value: feature.description
+                value: htmlContent
             },
             {
                 op: "add",
@@ -128,7 +150,7 @@ export class AdoService {
         );
     }
 
-    private updatePlatformFeature(payload: any, feature: any, token: string): Observable<any> {
+    private updatePlatformFeature(payload: any, feature: any, token: string, htmlContent: string): Observable<any> {
         const { adoURL, organization, projectName } = payload;
         const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/${feature.platformFeatureId}?api-version=7.0`;
 
@@ -142,7 +164,7 @@ export class AdoService {
             {
                 op: "add",
                 path: "/fields/System.Description",
-                value: feature.description
+                value: htmlContent
             }
         ];
 
@@ -156,13 +178,33 @@ export class AdoService {
 
     createOrUpdatePlatformFeature(payload: any, feature: any, token: string): Observable<any> {
         if (feature.platformFeatureId) {
-            return this.updatePlatformFeature(payload, feature, token);
+            const issueUrl = `${payload.adoURL}/${payload.organization}/${payload.projectName}/_apis/wit/workitems/${feature.platformFeatureId}?api-version=7.0`;
+            return this.http.get(issueUrl, { headers: this.getHeaders(token) }).pipe(
+                switchMap((issue: any) => {
+                    return convertMarkdownToHtml(feature.description).pipe(
+                        switchMap((newHtml) => {
+                            return this.updatePlatformFeature(payload, feature, token, newHtml);
+                        })
+                    );
+                }),
+                catchError((error) => {
+                    if (error.status === 404) {
+                        return convertMarkdownToHtml(feature.description).pipe(
+                            switchMap((htmlContent) => this.createPlatformFeature(payload, feature, token, htmlContent))
+                        );
+                    } else {
+                        return throwError(() => error);
+                    }
+                }),
+            );
         } else {
-            return this.createPlatformFeature(payload, feature, token);
+            return convertMarkdownToHtml(feature.description).pipe(
+                switchMap((htmlContent) => this.createPlatformFeature(payload, feature, token, htmlContent))
+            );
         }
     }
 
-    private createUserStory(payload: any, platformFeatureId: string, task: any, token: string): Observable<any> {
+    private createUserStory(payload: any, platformFeatureId: string, task: any, token: string, htmlContent: string): Observable<any> {
         const { adoURL, organization, projectName } = payload;
         const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/$User Story?api-version=7.0`;
 
@@ -176,7 +218,7 @@ export class AdoService {
             {
                 op: "add",
                 path: "/fields/System.Description",
-                value: task.acceptance
+                value: htmlContent
             },
             {
                 op: "add",
@@ -196,7 +238,7 @@ export class AdoService {
         );
     }
 
-    private updateUserStory(payload: any, task: any, token: string): Observable<any> {
+    private updateUserStory(payload: any, task: any, token: string, htmlContent: string): Observable<any> {
         const { adoURL, organization, projectName } = payload;
         const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/${task.userStoryId}?api-version=7.0`;
 
@@ -210,7 +252,7 @@ export class AdoService {
             {
                 op: "add",
                 path: "/fields/System.Description",
-                value: task.acceptance
+                value: htmlContent
             }
         ];
 
@@ -224,9 +266,29 @@ export class AdoService {
 
     createOrUpdateUserStory(payload: any, platformFeatureId: string, task: any, token: string): Observable<any> {
         if (task.userStoryId) {
-            return this.updateUserStory(payload, task, token);
+            const issueUrl = `${payload.adoURL}/${payload.organization}/${payload.projectName}/_apis/wit/workitems/${task.userStoryId}?api-version=7.0`;
+            return this.http.get(issueUrl, { headers: this.getHeaders(token) }).pipe(
+                switchMap((issue: any) => {
+                    return convertMarkdownToHtml(task.acceptance).pipe(
+                        switchMap((newHtml) => {
+                            return this.updateUserStory(payload, task, token, newHtml);
+                        })
+                    );
+                }),
+                catchError((error) => {
+                    if (error.status === 404) {
+                        return convertMarkdownToHtml(task.acceptance).pipe(
+                            switchMap((htmlContent) => this.createUserStory(payload, platformFeatureId, task, token, htmlContent))
+                        );
+                    } else {
+                        return throwError(() => error);
+                    }
+                }),
+            );
         } else {
-            return this.createUserStory(payload, platformFeatureId, task, token);
+            return convertMarkdownToHtml(task.acceptance).pipe(
+                switchMap((htmlContent) => this.createUserStory(payload, platformFeatureId, task, token, htmlContent))
+            );
         }
     }
 
@@ -302,11 +364,166 @@ export class AdoService {
 
     syncFromAdo(payload: any): Observable<any> {
         this.toast.showInfo('Syncing from Azure DevOps...');
-        // This will be implemented later
-        return of({
-            feature: null,
-            features: []
+
+        const syncRequests: Observable<any>[] = [];
+
+        if (payload.featureId) {
+            syncRequests.push(this.getFeatureFromAdo(payload, payload.token));
+        }
+
+        payload.features.forEach((feature: any) => {
+            if (feature.platformFeatureId) {
+                syncRequests.push(this.getPlatformFeatureFromAdo(payload, feature, payload.token));
+            }
         });
+
+        return from(syncRequests).pipe(
+            mergeMap((request: Observable<any>) => request, 5), // Limit concurrent requests
+            toArray(),
+            map((results: any[]) => {
+                const syncResult = {
+                    feature: null as any,
+                    features: [] as any[]
+                };
+
+                results.forEach(result => {
+                    if (result.type === 'feature') {
+                        syncResult.feature = result.data;
+                    } else if (result.type === 'platformFeature') {
+                        syncResult.features.push(result.data);
+                    }
+                });
+
+                return syncResult;
+            }),
+            catchError(this.handleError)
+        );
+    }
+
+    private getFeatureFromAdo(payload: any, token: string): Observable<any> {
+        const { adoURL, organization, projectName, featureId } = payload;
+        const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/${featureId}?api-version=7.0`;
+
+        return this.http.get(apiUrl, { headers: this.getHeaders(token) }).pipe(
+            switchMap((feature: any) => {
+                return convertHtmlToMarkdown(feature.fields['System.Description'] || '').pipe(
+                    map((markdownDescription) => ({
+                        type: 'feature',
+                        data: {
+                            title: feature.fields['System.Title'],
+                            requirement: markdownDescription,
+                            featureId: feature.id,
+                            status: feature.fields['System.State'],
+                            lastUpdated: feature.fields['System.ChangedDate']
+                        }
+                    }))
+                );
+            }),
+            catchError((error) => {
+                console.error(`Error fetching feature ${featureId}:`, error);
+                return of({ type: 'feature', data: null });
+            })
+        );
+    }
+
+    private getPlatformFeatureFromAdo(payload: any, feature: any, token: string): Observable<any> {
+        const { adoURL, organization, projectName } = payload;
+        const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/${feature.platformFeatureId}?api-version=7.0`;
+
+        return this.http.get(apiUrl, { headers: this.getHeaders(token) }).pipe(
+            switchMap((platformFeature: any) => {
+                return convertHtmlToMarkdown(platformFeature.fields['System.Description'] || '').pipe(
+                    map((markdownDescription) => {
+                        const platformFeatureData = {
+                            type: 'platformFeature',
+                            data: {
+                                id: feature.id,
+                                name: platformFeature.fields['System.Title'],
+                                description: markdownDescription,
+                                platformFeatureId: platformFeature.id,
+                                status: platformFeature.fields['System.State'],
+                                lastUpdated: platformFeature.fields['System.ChangedDate'],
+                                tasks: [...(feature.tasks || [])]
+                            }
+                        };
+                        return platformFeatureData;
+                    }),
+                    switchMap((platformFeatureData) => {
+                        // Get related user stories
+                        const relationsUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/${feature.platformFeatureId}?$expand=relations&api-version=7.0`;
+
+                        return this.http.get(relationsUrl, { headers: this.getHeaders(token) }).pipe(
+                            switchMap((relationResponse: any) => {
+                                const childRelations = relationResponse.relations?.filter((relation: any) =>
+                                    relation.rel === 'System.LinkTypes.Hierarchy-Forward'
+                                ) || [];
+
+                                if (childRelations.length > 0) {
+                                    const userStoryRequests = childRelations.map((relation: any) => {
+                                        const userStoryId = relation.url.split('/').pop();
+                                        return this.getUserStoryFromAdo(payload, userStoryId, token);
+                                    });
+                                    return from(userStoryRequests as Observable<any>[]).pipe(
+                                        mergeMap((request: Observable<any>) => request, 5), // Limit concurrent requests
+                                        toArray(),
+                                        map((userStories: any[]) => {
+                                            // Update existing tasks with ADO data
+                                            platformFeatureData.data.tasks = platformFeatureData.data.tasks.map((existingTask: any) => {
+                                                const matchingUserStory = userStories.find(us =>
+                                                    us && us.userStoryId === existingTask.userStoryId
+                                                );
+
+                                                if (matchingUserStory) {
+                                                    return {
+                                                        ...existingTask,
+                                                        list: matchingUserStory.title,
+                                                        acceptance: matchingUserStory.description,
+                                                        status: matchingUserStory.status,
+                                                        lastUpdated: matchingUserStory.lastUpdated
+                                                    };
+                                                }
+                                                return existingTask;
+                                            });
+
+                                            return platformFeatureData;
+                                        })
+                                    );
+                                }
+
+                                return of(platformFeatureData);
+                            })
+                        );
+                    })
+                );
+            }),
+            catchError((error) => {
+                console.error(`Error fetching platform feature ${feature.platformFeatureId}:`, error);
+                return of({ type: 'platformFeature', data: null });
+            })
+        );
+    }
+
+    private getUserStoryFromAdo(payload: any, userStoryId: string, token: string): Observable<any> {
+        const { adoURL, organization, projectName } = payload;
+        const apiUrl = `${adoURL}/${organization}/${projectName}/_apis/wit/workitems/${userStoryId}?api-version=7.0`;
+
+        return this.http.get(apiUrl, { headers: this.getHeaders(token) }).pipe(
+            switchMap((userStory: any) => {
+                return convertHtmlToMarkdown(userStory.fields['System.Description'] || '').pipe(
+                    map((markdownDescription) => ({
+                        userStoryId: userStory.id,
+                        title: userStory.fields['System.Title'],
+                        description: markdownDescription,
+                        status: userStory.fields['System.State'],
+                        lastUpdated: userStory.fields['System.ChangedDate']
+                    }))
+                );
+            }),
+            catchError((error) => {
+                console.error(`Error fetching user story ${userStoryId}:`, error);
+                return of(null);
+            })
+        );
     }
 
     private handleError(error: any): Observable<never> {
