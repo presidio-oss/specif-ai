@@ -1,0 +1,206 @@
+<div class="bg-white rounded-lg shadow-md w-full">
+  <div class="flex items-center justify-between p-6 border-b border-gray-200">
+    <h2 class="text-xl font-semibold text-gray-900">Pull from ADO</h2>
+    <button
+      (click)="onClose()"
+      class="text-gray-400 hover:text-gray-600 transition-colors"
+      aria-label="Close modal"
+    >
+      <ng-icon name="heroXMark" class="size-6"></ng-icon>
+    </button>
+  </div>
+
+  <div class="p-6 space-y-6">
+    <!-- Status Section -->
+    <div class="flex items-start space-x-2">
+      <div class="flex-shrink-0">
+        <ng-icon 
+          [name]="statusIcon()" 
+          [ngClass]="statusColor()"
+          class="text-2xl mt-1"
+          [class.animate-spin]="isLoading()"
+        ></ng-icon>
+      </div>
+      <div>
+        <h3 class="text-lg font-medium text-gray-900">Connection Status</h3>
+        <p [ngClass]="statusColor()" class="text-sm font-medium">{{ statusText() }}</p>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="!isLoading() && connectionStatus().errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div class="flex items-center space-x-2">
+        <ng-icon name="heroExclamationTriangle" class="size-5 text-red-500"></ng-icon>
+        <h4 class="text-sm font-medium text-red-800">Error</h4>
+      </div>
+      <p class="text-sm text-red-700 mt-1">{{ connectionStatus().errorMessage }}</p>
+    </div>
+    
+    <!-- Work Items Section -->
+    <div *ngIf="connectionStatus().isConnected" class="bg-white border border-gray-200 rounded-lg overflow-hidden mt-4">
+      <div class="border-b border-gray-200 p-4 bg-gray-50">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-medium text-gray-900">Work Items from ADO</h4>
+            <p class="text-xs text-gray-600 mt-1">Features and their child items</p>
+          </div>
+          <div class="flex items-center">
+            <input 
+              type="checkbox" 
+              id="selectAllItems"
+              [checked]="allItemsSelected()" 
+              (click)="toggleSelectAllItems($event)" 
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            >
+            <label for="selectAllItems" class="ml-2 text-sm text-gray-700 cursor-pointer">Select All</label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Loading State -->
+      <div *ngIf="isLoadingWorkItems()" class="flex items-center justify-center p-8">
+        <ng-icon name="heroArrowPath" class="animate-spin text-blue-600 size-6"></ng-icon>
+        <span class="ml-3 text-gray-600">Loading work items...</span>
+      </div>
+      
+      <!-- No Items State -->
+      <div *ngIf="!isLoadingWorkItems() && featuresWithChildren().length === 0" class="p-8 text-center">
+        <p class="text-gray-600">No work items found in this ADO project</p>
+      </div>
+      
+      <!-- Work Items List -->
+      <div *ngIf="!isLoadingWorkItems() && featuresWithChildren().length > 0" class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+        <div *ngFor="let feature of featuresWithChildren()" class="py-2 px-4">
+          <!-- Feature (Top-level) Item -->
+          <div 
+            (click)="toggleFeatureExpansion(parseInt(feature.pmoId))"
+            class="flex items-center py-2 cursor-pointer hover:bg-gray-50"
+          >
+            <!-- Checkbox -->
+            <input 
+              type="checkbox" 
+              [id]="'feature-' + feature.pmoId"
+              [checked]="isFeatureSelected(parseInt(feature.pmoId))" 
+              (click)="toggleFeatureSelection($event, parseInt(feature.pmoId))" 
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
+            >
+            
+            <ng-icon 
+              [name]="isFeatureExpanded(parseInt(feature.pmoId)) ? 'heroChevronDown' : 'heroChevronRight'" 
+              class="size-4 text-gray-500 mr-2">
+            </ng-icon>
+            <div class="flex-grow">
+              <div class="flex items-center">
+                <span class="text-sm font-medium text-gray-900">{{ feature.title }}</span>
+                <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                  Feature #{{ feature.pmoId }}
+                </span>
+              </div>
+              <p class="text-xs text-gray-600 mt-1">{{ feature.pmoIssueType }}</p>
+            </div>
+          </div>
+          
+          <!-- PlatformFeatures -->
+          <div *ngIf="isFeatureExpanded(parseInt(feature.pmoId))" class="ml-6 pl-4 border-l border-gray-200">
+            <!-- No PlatformFeatures State -->
+            <div *ngIf="!feature.child || feature.child.length === 0" class="py-2 text-center">
+              <span class="text-xs text-gray-500">No Platform Features</span>
+            </div>
+            
+            <!-- PlatformFeature Items -->
+            <div *ngFor="let platformFeature of feature.child" class="py-2">
+              <!-- PlatformFeature Item -->
+              <div 
+                (click)="togglePlatformFeatureExpansion(parseInt(platformFeature.pmoId))"
+                class="flex items-center py-2 cursor-pointer hover:bg-gray-50"
+              >
+                <!-- Checkbox -->
+                <input 
+                  type="checkbox" 
+                  [id]="'platform-feature-' + platformFeature.pmoId"
+                  [checked]="isPlatformFeatureSelected(parseInt(platformFeature.pmoId))" 
+                  (click)="togglePlatformFeatureSelection($event, parseInt(platformFeature.pmoId))" 
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
+                >
+                
+                <ng-icon 
+                  [name]="isPlatformFeatureExpanded(parseInt(platformFeature.pmoId)) ? 'heroChevronDown' : 'heroChevronRight'" 
+                  class="size-4 text-gray-500 mr-2">
+                </ng-icon>
+                <div class="flex-grow">
+                  <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-800">{{ platformFeature.title }}</span>
+                    <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                      PlatformFeature #{{ platformFeature.pmoId }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-600 mt-1">{{ platformFeature.pmoIssueType }}</p>
+                </div>
+              </div>
+              
+              <!-- UserStories -->
+              <div *ngIf="isPlatformFeatureExpanded(parseInt(platformFeature.pmoId))" class="ml-6 pl-4 border-l border-gray-200">
+                <!-- No UserStories State -->
+                <div *ngIf="!platformFeature.child || platformFeature.child.length === 0" class="py-2 text-center">
+                  <span class="text-xs text-gray-500">No User Stories</span>
+                </div>
+                
+                <!-- UserStory Items -->
+                <div *ngFor="let userStory of platformFeature.child" class="py-2">
+                  <div class="flex items-center">
+                    <!-- Checkbox -->
+                    <input 
+                      type="checkbox" 
+                      [id]="'user-story-' + userStory.pmoId"
+                      [checked]="isUserStorySelected(parseInt(userStory.pmoId))" 
+                      (click)="toggleUserStorySelection($event, parseInt(userStory.pmoId))" 
+                      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
+                    >
+                    
+                    <div class="flex-grow">
+                      <div class="flex items-center">
+                        <span class="text-sm font-medium text-gray-800">{{ userStory.title }}</span>
+                        <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                          User Story #{{ userStory.pmoId }}
+                        </span>
+                      </div>
+                      <p class="text-xs text-gray-600 mt-1">{{ userStory.pmoIssueType }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+    <app-button
+      buttonContent="Cancel"
+      theme="secondary"
+      size="sm"
+      (click)="onClose()"
+    >
+    </app-button>
+    
+    <app-button
+      *ngIf="!connectionStatus().isConnected"
+      buttonContent="Configure Integration"
+      theme="primary"
+      size="sm"
+      (click)="onConfigureIntegration()"
+    >
+    </app-button>
+    
+    <app-button
+      *ngIf="connectionStatus().isConnected"
+      buttonContent="Proceed"
+      theme="primary"
+      size="sm"
+      (click)="onProceed()"
+    >
+    </app-button>
+  </div>
+</div>

@@ -319,7 +319,15 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   navigateToAppIntegrations() {
     this.router.navigate([`/apps/${this.navigation.projectId}`], {
-      state: { openAppIntegrations: 'true' },
+      state: { 
+        data: this.navigation,
+        selectedFolder: {
+          title: 'app-integrations',
+          id: this.navigation.projectId
+        },
+        selectedIntegration: 'jira',
+        openPmoAccordion: true 
+      }
     });
   }
 
