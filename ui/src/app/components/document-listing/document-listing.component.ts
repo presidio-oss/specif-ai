@@ -25,7 +25,7 @@ import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-edit
 import { processPRDContentForView } from '../../utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 import { DropdownOptionGroup, ExportDropdownComponent } from "../../export-dropdown/export-dropdown.component";
-import { AdoIntegrationModalComponent } from '../ado-integration-modal/ado-integration-modal.component';
+import { PmoIntegrationModalComponent } from '../pmo-integration-modal/pmo-integration-modal.component';
 
 @Component({
   selector: 'app-document-listing',
@@ -277,20 +277,20 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
    * Handle Pull from ADO action with integration status check
    */
   pullFromAdo(folderName: string) {
-    this.openAdoIntegrationModal(folderName, 'pull');
+    this.openPmoIntegrationModal(folderName, 'pull', 'ado');
   }
 
   /**
    * Handle Push to ADO action with integration status check
    */
   pushToAdo(folderName: string) {
-    this.openAdoIntegrationModal(folderName, 'push');
+    this.openPmoIntegrationModal(folderName, 'push', 'ado');
   }
 
   /**
-   * Opens the ADO integration status modal and handles the result
+   * Opens the PMO integration status modal and handles the result
    */
-  private openAdoIntegrationModal(folderName: string, action: 'pull' | 'push') {
+  private openPmoIntegrationModal(folderName: string, action: 'pull' | 'push', pmoType: 'ado' | 'jira') {
     // Use the project ID from appInfo which is set from the folder metadata
     const projectId = this.appInfo?.id;
     
@@ -299,12 +299,13 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
       return;
     }
 
-    const dialogRef = this.dialog.open(AdoIntegrationModalComponent, {
+    const dialogRef = this.dialog.open(PmoIntegrationModalComponent, {
       width: '75%',
       maxHeight: '90vh',
       data: {
         projectId,
-        folderName
+        folderName,
+        pmoType
       }
     });
 
