@@ -628,6 +628,36 @@ export class ElectronService {
     });
   }
 
+  /**
+   * Checks if MCP settings exist for a project and if they include the SPECIFAI_MCP_CONFIG
+   * @param projectId The project ID to check
+   * @returns Promise resolving to an object with hasMCPSettings and hasSpecifAIConfig flags
+   */
+  async checkProjectMCPSettings(projectId: string): Promise<{ hasMCPSettings: boolean; hasSpecifAIConfig: boolean }> {
+    if (!this.electronAPI) {
+      throw new Error('Electron is not available');
+    }
+
+    try {
+      const response = await this.getProjectMCPSettings(projectId);
+      
+      if (!response.success || !response.settings) {
+        return { hasMCPSettings: false, hasSpecifAIConfig: false };
+      }
+      
+      const hasSpecifAIConfig = response.settings.mcpServers && 
+                               'specifai' in response.settings.mcpServers;
+      
+      return { 
+        hasMCPSettings: true, 
+        hasSpecifAIConfig 
+      };
+    } catch (error) {
+      console.error('Error checking project MCP settings:', error);
+      return { hasMCPSettings: false, hasSpecifAIConfig: false };
+    }
+  }
+
   listenChatEvents(id: string, callback: (event: IpcRendererEvent, response: any) => void): void {
     if (this.electronAPI) {
       this.electronAPI.on(this.buildChatStreamChannel(id), callback);

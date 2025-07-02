@@ -28,7 +28,8 @@ import {
   heroDocumentText,
   heroHandThumbUp,
   heroHandThumbDown,
-  heroWrench
+  heroWrench,
+  heroServerStack
 } from '@ng-icons/heroicons/outline';
 import { heroHandThumbDownSolid, heroHandThumbUpSolid, heroSparklesSolid } from '@ng-icons/heroicons/solid'
 import { environment } from '../../../environments/environment';
@@ -79,7 +80,8 @@ import { ThreeBounceLoaderComponent } from "../three-bounce-loader/three-bounce-
       heroDocumentText,
       heroHandThumbUpSolid,
       heroHandThumbDownSolid,
-      heroWrench
+      heroWrench,
+      heroServerStack
     })
   ]
 })
@@ -228,7 +230,15 @@ export class AiChatComponent implements OnInit {
         requirementAbbr: this.requirementAbbrivation,
         appId: this.metadata.id
       };
-      this.getSuggestion();
+      
+      // Skip loading suggestions for empty solution chats
+      if (!(this.requirementAbbrivation === 'SOLUTION' && this.chatHistory.length === 0)) {
+        this.getSuggestion();
+      } else {
+        // For empty solution chats, just ensure loading states are off
+        this.loadingChat = false;
+        this.responseStatus = false;
+      }
     }, 1000);
   }
 
@@ -696,6 +706,12 @@ export class AiChatComponent implements OnInit {
   }
 
   get isSendDisabled(): boolean {
+    // Disable input when it's a solution chat with no messages (project path needs to be set first)
+    if (this.requirementAbbrivation === 'SOLUTION' && this.chatHistory.length === 0) {
+      return true;
+    }
+    
+    // Otherwise, use the standard logic
     return this.generateLoader || (!this.message?.trim() && this.selectedFiles.length === 0);
   }
 
@@ -716,6 +732,55 @@ export class AiChatComponent implements OnInit {
     if (event.key === 'Enter' && !event.shiftKey && !this.isSendDisabled) {
       event.preventDefault(); // Prevent new line
       this.converse(this.message);
+    }
+  }
+
+  /**
+   * Sends a message to set up the project path for the solution
+   * This is shown as the first action for solution chats when chat history is empty
+   * 
+   * Before setting the project path, it checks if MCP settings exist for the project
+   * and if they include the SPECIFAI_MCP_CONFIG. If not, it adds the SPECIFAI_MCP_CONFIG
+   * to the MCP settings before setting the project path.
+   */
+  async sendSetProjectPathMessage() {
+    // Show loading state
+    this.generateLoader = true;
+    
+    try {
+      // Get root directory from localStorage
+      const rootDir = localStorage.getItem('WORKING_DIR') || '';
+      
+      // Construct the project path using the solution name
+      const projectPath = rootDir ? `${rootDir}/${this.name}` : this.name;
+      
+      // Check if MCP settings exist for the project and if they include the SPECIFAI_MCP_CONFIG
+      const response = await this.electronService.checkProjectMCPSettings(this.metadata.id);
+      
+      // If MCP settings don't exist or don't include SPECIFAI_MCP_CONFIG, add it
+      if (!response.hasMCPSettings || !response.hasSpecifAIConfig) {
+        console.log('Adding SPECIFAI_MCP_CONFIG to project MCP settings');
+        const success = await this.chatService.addSpecifAIConfigToProject(this.metadata.id);
+        
+        if (!success) {
+          this.toastService.showError('Failed to add SPECIFAI_MCP_CONFIG to project MCP settings');
+          this.generateLoader = false;
+          return;
+        }
+      }
+      
+      // Create a message that will trigger the set-project-path action
+      const message = `Please set up the project path for this solution to: ${projectPath}`;
+      
+      // Hide loading state
+      this.generateLoader = false;
+      
+      // Send the message through the regular chat flow
+      this.converse(message);
+    } catch (error) {
+      console.error('Error in sendSetProjectPathMessage:', error);
+      this.toastService.showError('Failed to set up project path');
+      this.generateLoader = false;
     }
   }
 }

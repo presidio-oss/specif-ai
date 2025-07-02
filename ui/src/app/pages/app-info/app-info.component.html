@@ -333,7 +333,13 @@
     <!-- AI Chat Section -->
     <section aria-labelledby="AI Chat" class="col-span-3 h-[calc(100vh-80px)] flex flex-col">
       <div class="rounded-lg bg-white border h-full overflow-hidden">
+        <div *ngIf="isCreatingSolution && !solutionCreationComplete" class="flex flex-col items-center justify-center h-full p-6 text-center">
+          <ng-icon name="heroServerStack" class="text-4xl text-secondary-400 mb-4"></ng-icon>
+          <h3 class="text-lg font-medium text-secondary-900 mb-2">Chat is not available yet</h3>
+          <p class="text-secondary-500">Please wait until solution creation is completed to use the chat feature.</p>
+        </div>
         <app-chat
+          *ngIf="!isCreatingSolution || solutionCreationComplete"
           [id]="appInfo.id"
           [name]="appInfo.name"
           [description]="appInfo.description"

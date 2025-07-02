@@ -142,43 +142,11 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
     try {
       const settingsManager = MCPSettingsManager.getInstance();
-      
-      try {
-        const mcpSettings = {
-          ...validatedData.mcpSettings,
-          mcpServers: {
-            ...validatedData.mcpSettings.mcpServers,
-            specifai: SPECIFAI_MCP_CONFIG
-          }
-        };
-        
-        await settingsManager.writeProjectMCPSettings(validatedData.id, mcpSettings);
-        
-        const mcpHub = MCPHub.getInstance();
-        await mcpHub.setProjectId(validatedData.id);
-        const mcpTools = await getMcpToolsForActiveProvider();
-        const setProjectPathTool = mcpTools.find(tool => tool.name === 'set-project-path');
-        
-        const appConfig = store.get<AppConfig>("APP_CONFIG");
-        if (!appConfig?.directoryPath) {
-          throw new Error('APP_CONFIG.directoryPath is not set');
-        }
-
-        const projectPath = path.join(appConfig.directoryPath, validatedData.name);
-        
-        if (!setProjectPathTool) {
-          throw new Error('set-project-path tool not found in MCP tools');
-        }
-
-        await setProjectPathTool.call({ path: projectPath });
-        console.log(`[create-solution] Successfully set project path to: ${projectPath}`);
-      } catch (error: any) {
-        console.error('[create-solution] Error setting up MCP and project path:', error);
-        throw new Error(`Failed to set up MCP and project path: ${error?.message || String(error)}`);
-      }
+      // Write initial MCP settings without specifai config
+      await settingsManager.writeProjectMCPSettings(validatedData.id, validatedData.mcpSettings);
       
       mcpSettingsSpan.end({
-        statusMessage: "Written successfully and project path set"
+        statusMessage: "Written successfully"
       });
     } catch (error) {
       console.error("Error writing the mcp settings to project location", error);
@@ -279,6 +247,29 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
       const generatedRequirements = response.values.generatedRequirements;
 
+      // After solution creation is complete, update MCP settings to add specifai config
+      try {
+        const settingsManager = MCPSettingsManager.getInstance();
+        // Read current project MCP settings
+        const currentSettings = await settingsManager.readProjectMCPSettings(validatedData.id);
+        
+        // Add specifai config
+        const updatedSettings = {
+          ...currentSettings,
+          mcpServers: {
+            ...currentSettings.mcpServers,
+            specifai: SPECIFAI_MCP_CONFIG
+          }
+        };
+        
+        // Write updated settings back
+        await settingsManager.writeProjectMCPSettings(validatedData.id, updatedSettings);
+        console.log(`[create-solution] Updated project MCP settings with specifai config`);
+      } catch (error) {
+        console.error("[create-solution] Error updating project MCP settings with specifai config:", error);
+        // Don't throw error here to avoid failing the solution creation process
+      }
+
       return {
         createReqt: validatedData.createReqt ?? false,
         description: validatedData.description,
@@ -330,6 +321,29 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       }
     }
 
+    // After solution creation is complete, update MCP settings to add specifai config
+    try {
+      const settingsManager = MCPSettingsManager.getInstance();
+      // Read current project MCP settings
+      const currentSettings = await settingsManager.readProjectMCPSettings(validatedData.id);
+      
+      // Add specifai config
+      const updatedSettings = {
+        ...currentSettings,
+        mcpServers: {
+          ...currentSettings.mcpServers,
+          specifai: SPECIFAI_MCP_CONFIG
+        }
+      };
+      
+      // Write updated settings back
+      await settingsManager.writeProjectMCPSettings(validatedData.id, updatedSettings);
+      console.log(`[create-solution] Updated project MCP settings with specifai config`);
+    } catch (error) {
+      console.error("[create-solution] Error updating project MCP settings with specifai config:", error);
+      // Don't throw error here to avoid failing the solution creation process
+    }
+    
     return results;
   } catch (error) {
     if (validatedData && validatedData.id) {
