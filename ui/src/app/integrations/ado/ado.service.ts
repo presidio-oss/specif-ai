@@ -1,23 +1,27 @@
-// ADO service for integrating with Azure DevOps
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { Ticket } from '../../services/pmo-integration/pmo-integration.service';
+import { PmoService } from '../../services/pmo-integration/pmo-service.interface';
+import { ElectronService } from '../../electron-bridge/electron.service';
 
 interface AdoConfiguration {
   personalAccessToken: string;
   organization: string;
-  project: string;
+  projectName: string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class AdoService {
+export class AdoService implements PmoService {
   private baseUrl: string | null = null;
   private config: AdoConfiguration | null = null;
-  
-  constructor(private http: HttpClient) { }
+
+  constructor(
+    private http: HttpClient,
+    private electronService: ElectronService,
+  ) {}
 
   /**
    * Configure the ADO service with your organization, project and PAT
@@ -25,9 +29,31 @@ export class AdoService {
   configure(config: AdoConfiguration): void {
     this.config = config;
     // Set the full absolute URL to Azure DevOps API
-    this.baseUrl = `https://dev.azure.com/${config.organization}/${config.project}`;
-    
+    this.baseUrl = `https://dev.azure.com/${config.organization}/${config.projectName}`;
+
     console.log(`ADO service configured with URL: ${this.baseUrl}`);
+  }
+
+  /**
+   * Validate ADO credentials and connection
+   */
+  async validateCredentials(
+    config: AdoConfiguration,
+  ): Promise<{ isValid: boolean; errorMessage?: string }> {
+    try {
+      return await this.electronService.validateAdoCredentials(
+        config.organization,
+        config.projectName,
+        config.personalAccessToken!,
+      );
+    } catch (error) {
+      console.error('ADO credentials validation failed:', error);
+      return {
+        isValid: false,
+        errorMessage:
+          'Failed to connect to Azure DevOps. Please check your credentials and try again.',
+      };
+    }
   }
 
   /**
