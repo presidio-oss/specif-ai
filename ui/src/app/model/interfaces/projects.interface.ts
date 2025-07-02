@@ -1,4 +1,4 @@
-import { RequirementType } from 'src/app/constants/app.constants';
+import { WorkflowErrorEvent } from './workflow-progress.interface';
 
 export interface IProject {
   project: string;
@@ -15,16 +15,13 @@ export interface IRequirementConfig {
   minCount?: number;
   count: number;
 }
-
 export interface IProjectMetadata {
-  name?: string;
-  description: string;
-  frontend?: boolean;
-  backend?: boolean;
-  database?: boolean;
-  deployment?: boolean;
-  createReqt?: boolean;
   id: string;
+  name: string;
+  description: string;
+  technicalDetails: string;
+  createReqt?: boolean;
+  cleanSolution?: boolean;
   createdAt: string;
   BRD: IRequirementConfig;
   PRD: IRequirementConfig;
@@ -33,6 +30,8 @@ export interface IProjectMetadata {
   BP: IRequirementConfig;
   US: IRequirementConfig;
   TASK: IRequirementConfig;
+  isFailed?: boolean;
+  failureInfo?: WorkflowErrorEvent;
 }
 
 export interface ICreateSolutionRequest {

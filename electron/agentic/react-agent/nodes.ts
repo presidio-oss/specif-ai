@@ -72,7 +72,9 @@ export const buildSummarizeNode = (
       });
 
       // Generate new summary
-      const response = await modelWithTools.invoke(allMessages);
+      const response = await modelWithTools.invoke(allMessages, {
+        signal: runnableConfig?.signal,
+      });
       const newSummary =
         typeof response.content === "string"
           ? response.content
@@ -206,7 +208,9 @@ export const buildLLMNode = (
         input: sendMessagesInTelemetry ? messages : undefined,
       });
 
-      const response = await modelWithTools.invoke(messages);
+      const response = await modelWithTools.invoke(messages, {
+        signal: runnableConfig?.signal,
+      });
 
       // FIX for bedrock - duplicate tool_use calls issue - to test for other ones as well
       if (typeof response.content !== "string") {
@@ -286,7 +290,9 @@ export const buildGenerateStructuredResponseNode = (
         model: modelProvider.getModel().provider,
       });
 
-      const response = await modelWithStructuredOutput.invoke(messages);
+      const response = await modelWithStructuredOutput.invoke(messages, {
+        signal: runnableConfig?.signal,
+      });
 
       generation?.end({
         usage: {

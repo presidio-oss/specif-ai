@@ -1,7 +1,20 @@
 <div
-  class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full"
+  class="bg-white border rounded-lg p-5 flex flex-col h-[calc(100vh-80px)] lg:col-span-2 w-full relative"
   *ngIf="userStories$ | async as userStories"
 >
+  <app-workflow-progress-dialog
+    [isVisible]="showProgressDialog"
+    [projectId]="navigation.projectId"
+    [workflowType]="WorkflowType.Story"
+    [isCompleted]="storyGenerationComplete"
+    initialTitle="Generating User Stories..."
+    completedTitle="User Stories Generated Successfully!"
+    subtitle="Creating user stories and tasks..."
+    completionButtonText="View Generated Stories"
+    [showCancelButton]="false"
+    (closeDialog)="closeProgressDialog()"
+  />
+
   <div class="mb-4">
     <div class="flex items-center mt-2 justify-between">
       <div class="flex flex-col gap-2 min-w-0">
@@ -20,19 +33,17 @@
 
       <div class="flex items-center justify-between gap-3">
         <app-button
-          [buttonContent]="
-            userStories.length === 0
-              ? 'Generate User Stories'
-              : 'Regenerate User Stories'
-          "
+          *ngIf="userStories.length === 0"
+          buttonContent="Generate User Stories"
           theme="secondary"
           size="sm"
           (click)="addMoreContext(userStories.length > 0)"
           rounded="lg"
+          [disabled]="isGeneratingStories"
         />
         <app-export-dropdown
-          [disabled]="userStories.length === 0"
-          [options]="exportOptions"
+          [disabled]="userStories.length === 0 || isGeneratingStories"
+          [groupedOptions]="exportOptions"
         />
         <app-button
           buttonContent="Add New"
@@ -40,6 +51,7 @@
           size="sm"
           rounded="lg"
           (click)="navigateToAddUserStory()"
+          [disabled]="isGeneratingStories"
         />
       </div>
     </div>
@@ -90,9 +102,3 @@
     </h1>
   </div>
 </div>
-
-<app-thinking-process
-  [show]="showThinkingProcess"
-  [progress]="storyCreationProgress"
-  [config]="thinkingProcessConfig"
-></app-thinking-process>

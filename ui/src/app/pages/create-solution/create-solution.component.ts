@@ -7,7 +7,6 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
-import { CreateProject } from '../../store/projects/projects.actions';
 import { v4 as uuid } from 'uuid';
 import { AddBreadcrumbs } from '../../store/breadcrumb/breadcrumb.actions';
 import { NGXLogger } from 'ngx-logger';
@@ -35,7 +34,7 @@ import { heroChevronDown } from '@ng-icons/heroicons/outline';
 import { CustomAccordionComponent } from '../../components/custom-accordion/custom-accordion.component';
 import { McpIntegrationConfiguratorComponent } from '../../components/mcp-integration-configurator/mcp-integration-configurator.component';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
-import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
+import { ProjectCreationService } from '../../services/project-creation/project-creation.service';
 
 @Component({
   selector: 'app-create-solution',
@@ -70,6 +69,7 @@ export class CreateSolutionComponent implements OnInit {
   router = inject(Router);
   store = inject(Store);
   workflowProgressService = inject(WorkflowProgressService);
+  projectCreationService = inject(ProjectCreationService);
 
   ngOnInit() {
     this.solutionForm = this.createSolutionForm();
@@ -169,43 +169,21 @@ export class CreateSolutionComponent implements OnInit {
       const data = this.solutionForm.getRawValue();
       data.createReqt = !data.cleanSolution;
 
-      if (
-        data?.id &&
-        !this.workflowProgressService.hasGlobalListener(
-          data?.id,
-          WorkflowType.Solution,
-        )
-      ) {
-        this.workflowProgressService.registerGlobalListener(
-          data?.id,
-          WorkflowType.Solution,
-          this.electronService,
-        );
+      try {
+        await this.projectCreationService.createProject({
+          projectData: data,
+          projectName: data.name,
+          onSuccess: () => {
+            this.addOrUpdate = false;
+          },
+          onError: () => {
+            this.addOrUpdate = false;
+          },
+        });
+      } catch (error: any) {
+        this.addOrUpdate = false;
+        this.toast.showError(error.message);
       }
-      await this.workflowProgressService.setCreating(
-        data.id,
-        WorkflowType.Solution,
-      );
-
-      this.store.dispatch(new CreateProject(data.name, data)).subscribe({
-        next: async () => {
-          this.toast.showSuccess(
-            `All set! Your ${data.name} solution is ready to roll.`,
-          );
-          await this.workflowProgressService.setComplete(
-            data.id,
-            WorkflowType.Solution,
-          );
-        },
-        error: async (error) => {
-          this.addOrUpdate = false;
-          this.toast.showError(error.message);
-          await this.workflowProgressService.setFailed(
-            data.id,
-            WorkflowType.Solution,
-          );
-        },
-      });
     }
   }
 

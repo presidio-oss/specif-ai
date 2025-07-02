@@ -1,6 +1,6 @@
 <div
   class="mb-4 bg-white rounded-lg border h-full relative min-h-96"
-  *ngIf="projectList$ | async as apps"
+  *ngIf="projectsWithStatus$ | async as apps"
 >
   <div
     class="flex items-center justify-between p-4 sticky top-0 bg-white rounded-t-lg"
@@ -39,11 +39,17 @@
             >
               {{ app.project }}
             </p>
-            <!-- <p
-                class="rounded-md whitespace-nowrap mt-0.5 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset text-success-700 bg-success-50 ring-success-600/20"
+            <ng-container *ngIf="app.workflowStatus$ | async as workflowStatus">
+              <p
+                *ngIf="getBadgeConfig(workflowStatus) as badgeConfig"
+                class="rounded-md whitespace-nowrap mt-0.5 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset flex items-center gap-1 {{
+                  badgeConfig.classes
+                }}"
               >
-                Complete
-              </p> -->
+                <ng-icon [name]="badgeConfig.icon" size="12"></ng-icon>
+                {{ badgeConfig.text }}
+              </p>
+            </ng-container>
           </div>
           <div
             class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-secondary-500"

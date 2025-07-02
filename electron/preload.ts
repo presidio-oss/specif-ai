@@ -19,8 +19,12 @@ const electronListeners = {
   invoke: (channel: string, ...args: any[]) =>
     ipcRenderer.invoke(channel, ...args),
   send: (channel: string, ...args: any[]) => ipcRenderer.send(channel, ...args),
-  on: (channel: string, listener: IpcListener) =>
-    ipcRenderer.on(channel, listener),
+  on: (channel: string, listener: IpcListener) => {
+    const registeredListener = (event: IpcRendererEvent, ...args: any[]) =>
+      listener(event, ...args);
+    ipcRenderer.on(channel, registeredListener);
+    return registeredListener;
+  },
   once: (channel: string, listener: IpcListener) =>
     ipcRenderer.once(channel, listener),
   removeListener: (channel: string, listener: IpcListener) =>

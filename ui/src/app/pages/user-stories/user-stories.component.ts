@@ -1,10 +1,9 @@
-import { Component, ElementRef, HostListener, inject, OnInit, ViewChild, OnDestroy, NgZone } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
 import { UserStoriesState } from '../../store/user-stories/user-stories.state';
 import {
-  EditUserStory,
   ExportUserStories,
   GetUserStories,
   SetCurrentConfig,
@@ -25,7 +24,6 @@ import {
 import { ClipboardService } from '../../services/clipboard.service';
 import { ITaskRequest, ITasksResponse } from '../../model/interfaces/ITask';
 import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
-import { LoadingService } from '../../services/loading.service';
 import { DialogService } from '../../services/dialog/dialog.service';
 import {
   getJiraTokenInfo,
@@ -40,7 +38,8 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
@@ -50,16 +49,21 @@ import {
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
-import { BehaviorSubject, map } from 'rxjs';
-import { ExportFileFormat } from 'src/app/constants/export.constants';
+import {
+  BehaviorSubject,
+  map,
+  Subject,
+  takeUntil,
+  distinctUntilChanged,
+} from 'rxjs';
+import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
-import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
-import { ThinkingProcessComponent } from '../../components/thinking-process/thinking-process.component';
-import { WorkflowType, WorkflowProgressEvent } from '../../model/interfaces/workflow-progress.interface';
-import { ThinkingProcessConfig } from '../../components/thinking-process/thinking-process.config';
-import { environment } from '../../../environments/environment';
+import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
+import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
+import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
+import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 
 @Component({
   selector: 'app-user-stories',
@@ -78,22 +82,32 @@ import { environment } from '../../../environments/environment';
     SearchInputComponent,
     ExportDropdownComponent,
     MatTooltipModule,
-    ThinkingProcessComponent,
+    WorkflowProgressDialogComponent,
+  ],
+  providers: [
+    provideIcons({
+      heroArrowRight,
+    }),
   ],
 })
 export class UserStoriesComponent implements OnInit, OnDestroy {
+  protected readonly WorkflowType = WorkflowType;
   currentProject!: string;
   newFileName: string = '';
   entityType: string = 'US';
   selectedRequirement: any = {};
   metadata: any = {};
   private searchTerm$ = new BehaviorSubject<string>('');
+  private destroy$ = new Subject<void>();
   router = inject(Router);
   logger = inject(NGXLogger);
   store = inject(Store);
   searchService = inject(SearchService);
   requirementFile: any = [];
   userStories: IUserStory[] = [];
+  isGeneratingStories: boolean = false;
+  storyGenerationComplete: boolean = false;
+  showProgressDialog: boolean = false;
 
   isTokenAvailable: boolean = true;
   navigation: {
@@ -103,12 +117,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     selectedRequirement: any;
     data: any;
   } = {
-    projectId: '',
-    folderName: '',
-    fileName: '',
-    selectedRequirement: {},
-    data: {},
-  };
+      projectId: '',
+      folderName: '',
+      fileName: '',
+      selectedRequirement: {},
+      data: {},
+    };
 
   userStories$ = this.store.select(UserStoriesState.getUserStories).pipe(
     map((stories) =>
@@ -132,37 +146,23 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   userStoriesInState: IUserStory[] = [];
 
-  storyCreationProgress: WorkflowProgressEvent[] = [];
-  showThinkingProcess: boolean = false;
-  thinkingProcessConfig: ThinkingProcessConfig = {
-    title: 'Creating User Stories',
-    subtitle: `Sit back & let the ${environment.ThemeConfiguration.appName} do its job...`,
-  };
-  zone = inject(NgZone);
-
-  private workflowProgressListener = (
-    event: any,
-    data: WorkflowProgressEvent,
-  ) => {
-    this.zone.run(() => {
-      this.storyCreationProgress = [...this.storyCreationProgress, data];
-    });
-  };
-
   readonly dialogService = inject(DialogService);
 
   onSearch(term: string) {
     this.searchTerm$.next(term);
   }
 
+  exportOptions: DropdownOptionGroup[] = [];
+  exportedProjectId: string = '';
+
   constructor(
     private featureService: FeatureService,
     private clipboardService: ClipboardService,
-    private loadingService: LoadingService,
     private jiraService: JiraService,
     private electronService: ElectronService,
     private toast: ToasterService,
     private requirementIdService: RequirementIdService,
+    private workflowProgressService: WorkflowProgressService,
   ) {
     this.navigation = getNavigationParams(this.router.getCurrentNavigation());
     this.store.dispatch(
@@ -222,9 +222,36 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       const tokenInfo = getJiraTokenInfo(this.navigation.projectId);
       return (
         tokenInfo.projectKey ===
-          this.metadata.integration?.jira?.jiraProjectKey && !!tokenInfo.token
+        this.metadata.integration?.jira?.jiraProjectKey && !!tokenInfo.token
       );
     })();
+
+    if (this.navigation.projectId) {
+      this.workflowProgressService
+        .getCreationStatusObservable(
+          this.navigation.projectId,
+          WorkflowType.Story,
+        )
+        .pipe(
+          takeUntil(this.destroy$),
+          distinctUntilChanged(
+            (prev, curr) =>
+              prev.isCreating === curr.isCreating &&
+              prev.isComplete === curr.isComplete &&
+              prev.isFailed === curr.isFailed,
+          ),
+        )
+        .subscribe((status) => {
+          const wasGenerating = this.isGeneratingStories;
+          this.isGeneratingStories = status.isCreating;
+          this.storyGenerationComplete = status.isComplete;
+
+          this.showProgressDialog = status.isCreating || status.isComplete;
+          if (wasGenerating && !status.isCreating && status.isComplete) {
+            this.resetStoryProgress();
+          }
+        });
+    }
 
     this.selectedProject$.subscribe((project) => {
       this.currentProject = project;
@@ -236,23 +263,13 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     this.selectedFileContent$.subscribe((res: any) => {
       this.requirementFile = res;
+      this.updateExportOptionsTimestamps();
     });
 
     this.userStories$.subscribe((userStories: IUserStory[]) => {
       this.userStoriesInState = userStories;
+      this.getExportOptions();
     });
-
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.Story,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
-    
-    this.electronService.listenWorkflowProgress(
-      WorkflowType.Task,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
   }
 
   navigateToAddUserStory() {
@@ -306,7 +323,16 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     });
   }
 
-  generateUserStories(regenerate: boolean = false, extraContext: string = '') {
+  async generateUserStories(
+    regenerate: boolean = false,
+    extraContext: string = '',
+  ) {
+    this.setupStoryProgressListener();
+    await this.workflowProgressService.setCreating(
+      this.navigation.projectId,
+      WorkflowType.Story,
+    );
+
     let request: IUserStoriesRequest = {
       appId: this.navigation.projectId,
       appName: this.metadata.name,
@@ -319,25 +345,36 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       extraContext: extraContext,
     };
 
-    this.storyCreationProgress = [];
-    this.showThinkingProcess = true;
-
-    this.featureService.generateUserStories(request).then((response) => {
-      this.userStories = response;
-      this.generateTasks(regenerate).then(() => {
-        this.updateWithUserStories(this.userStories, regenerate);
+    this.featureService
+      .generateUserStories(request)
+      .then((response) => {
+        this.userStories = response;
+        this.generateTasks(regenerate).then(() => {
+          this.updateWithUserStories(this.userStories, regenerate);
+        });
+      })
+      .catch(async (error) => {
+        await this.workflowProgressService.setFailed(
+          this.navigation.projectId,
+          WorkflowType.Story,
+          {
+            timestamp: new Date().toISOString(),
+            reason: error?.message || 'Failed to generate user stories',
+          },
+        );
+        this.toast.showError(
+          TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
+        );
       });
-    })
-    .catch((error) => {
-      this.showThinkingProcess = false;
-      this.toast.showError(
-        TOASTER_MESSAGES.ENTITY.GENERATE.FAILURE(this.entityType, regenerate),
-      );
-    })
     this.dialogService.closeAll();
   }
 
-  generateTasks(regenerate: boolean): Promise<void[]> {
+  async generateTasks(regenerate: boolean): Promise<void[]> {
+    await this.workflowProgressService.setCreating(
+      this.navigation.projectId,
+      WorkflowType.Task,
+    );
+
     const requests = this.userStories.map(async (userStory: IUserStory) => {
       let request: ITaskRequest = {
         appId: this.navigation.projectId,
@@ -364,7 +401,25 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           );
         });
     });
-    return Promise.all(requests);
+
+    try {
+      const result = await Promise.all(requests);
+      await this.workflowProgressService.setComplete(
+        this.navigation.projectId,
+        WorkflowType.Task,
+      );
+      return result;
+    } catch (error: any) {
+      await this.workflowProgressService.setFailed(
+        this.navigation.projectId,
+        WorkflowType.Task,
+        {
+          timestamp: new Date().toISOString(),
+          reason: error?.message || 'Failed to generate tasks',
+        },
+      );
+      throw error;
+    }
   }
 
   updateWithUserStories(
@@ -404,9 +459,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       })
       .then();
 
-    setTimeout(() => {
+    setTimeout(async () => {
       this.getLatestUserStories();
-      this.showThinkingProcess = false;
+      await this.workflowProgressService.setComplete(
+        this.navigation.projectId,
+        WorkflowType.Story,
+      );
       this.toast.showSuccess(
         TOASTER_MESSAGES.ENTITY.GENERATE.SUCCESS(this.entityType, regenerate),
       );
@@ -419,7 +477,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         `${this.currentProject}/${this.navigation.folderName}/${this.newFileName}`,
       ),
     );
-    this.loadingService.setLoading(false);
   }
 
   copyUserStoryContent(event: Event, userStory: IUserStory) {
@@ -466,40 +523,37 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   }
 
   syncRequirementWithJira(): void {
-    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
-      this.navigation.projectId,
-    );
-    const isJiraTokenValid =
-      token &&
-      tokenExpiration &&
-      new Date() < new Date(tokenExpiration) &&
-      this.isTokenAvailable;
-
-    if (isJiraTokenValid) {
-      console.log('Token exists and is valid, making API call', token);
-      this.syncJira(token as string, jiraURL as string);
-    } else if (refreshToken) {
-      this.electronService
-        .refreshJiraToken(refreshToken)
-        .then((authResponse) => {
-          storeJiraToken(
-            authResponse,
-            this.metadata?.integration?.jira?.jiraProjectKey,
-            this.navigation.projectId,
-          );
-          console.debug(
-            'Token refreshed, making API call',
-            authResponse.accessToken,
-          );
-          this.syncJira(authResponse.accessToken, jiraURL as string);
-        })
-        .catch((error) => {
-          console.error('Error during token refresh:', error);
-          this.promptReauthentication();
+    this.dialogService
+      .confirm({
+        title: 'Push to JIRA',
+        description: 'This action will override the existing content in JIRA with your local changes. Any updates made directly in JIRA will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Push to JIRA',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
+          console.log('Token exists and is valid, making API call', token);
+          this.syncJira(token, jiraUrl);
         });
-    } else {
-      this.promptReauthentication();
-    }
+      });
+  }
+
+  syncRequirementFromJira(): void {
+    this.dialogService
+      .confirm({
+        title: 'Pull from JIRA',
+        description: 'This action will override your local content with the latest updates from JIRA. Any unsaved local changes will be lost. Do you want to continue?',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Pull from JIRA',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
+          console.log('Token exists and is valid, syncing from JIRA', token);
+          this.syncFromJira(token, jiraUrl);
+        });
+      });
   }
 
   promptReauthentication(): void {
@@ -601,6 +655,10 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           this.requirementFile.epicTicketId = response.epicTicketId;
         }
 
+        this.requirementFile.lastPushToJiraTimestamp = new Date().toISOString();
+
+        this.updateExportOptionsTimestamps();
+
         const updatedFeatures = this.userStories.map((existingFeature: any) => {
           const matchedFeature = response.features.find(
             (responseFeature: any) =>
@@ -645,6 +703,51 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     });
   }
 
+  private syncFromJira(token: string, jiraUrl: string): void {
+    const requestPayload: any = {
+      epicName: '',
+      epicDescription: '',
+      epicTicketId: '',
+      jiraUrl: jiraUrl,
+      token: token,
+      projectKey: this.metadata.integration.jira.jiraProjectKey,
+      features: [],
+    };
+
+    requestPayload.epicName = this.requirementFile.title;
+    requestPayload.epicDescription = this.requirementFile.requirement;
+    requestPayload.epicTicketId = this.requirementFile.epicTicketId || '';
+
+    this.userStories = this.userStoriesInState;
+
+    requestPayload.features = this.userStories.map((story) => ({
+      id: story.id,
+      name: story.name,
+      description: story.description,
+      storyTicketId: story.storyTicketId || '',
+      tasks: story?.tasks?.map((task) => ({
+        id: task.id,
+        list: task.list,
+        acceptance: task.acceptance,
+        subTaskTicketId: task.subTaskTicketId || '',
+      })) || [],
+    }));
+
+    this.jiraService.syncFromJira(requestPayload).subscribe({
+      next: (response) => {
+        console.debug('JIRA Sync Response:', response);
+        this.requirementFile.lastPullFromJiraTimestamp = new Date().toISOString();
+        this.updateExportOptionsTimestamps();
+        this.updateLocalContentFromJira(response);
+        this.toast.showSuccess('Successfully synced from JIRA');
+      },
+      error: (error) => {
+        console.error('Error syncing from JIRA:', error);
+        this.toast.showError('Failed to sync from JIRA');
+      },
+    });
+  }
+
   private formatDescriptionForView(
     description: string | undefined,
   ): string | null {
@@ -652,31 +755,279 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     return processUserStoryContentForView(description, 180);
   }
 
-  exportOptions = [
-    {
-      label: 'Copy JSON to Clipboard',
-      callback: () => this.exportUserStories('json')
-    },
-    {
-      label: 'Download as Excel (.xlsx)',
-      callback: () => this.exportUserStories('xlsx')
-    },
-    {
-      label: 'Sync with Jira',
-      callback: () => this.syncRequirementWithJira()
+  private updateLocalContentFromJira(syncResponse: any): void {
+    if (syncResponse.epic) {
+      const updatedRequirementFile = {
+        ...this.requirementFile,
+        title: syncResponse.epic.title,
+        requirement: syncResponse.epic.requirement,
+        epicTicketId: syncResponse.epic.epicTicketId,
+        lastPullFromJiraTimestamp: this.requirementFile.lastPullFromJiraTimestamp
+      };
+
+      this.store.dispatch(
+        new UpdateFile(
+          `${this.navigation.folderName}/${this.navigation.fileName}`,
+          updatedRequirementFile,
+        ),
+      );
     }
-  ];
+
+    if (syncResponse.features && syncResponse.features.length > 0) {
+      const updatedUserStories = this.userStories.map((existingStory) => {
+        const syncedStory = syncResponse.features.find(
+          (feature: any) =>
+            feature.storyTicketId === existingStory.storyTicketId ||
+            feature.id === existingStory.id
+        );
+
+        if (syncedStory) {
+          const updatedTasks = existingStory.tasks?.map((existingTask) => {
+            const syncedTask = syncedStory.tasks?.find(
+              (task: any) =>
+                task.subTaskTicketId === existingTask.subTaskTicketId ||
+                task.id === existingTask.id
+            );
+
+            if (syncedTask) {
+              return {
+                ...existingTask,
+                list: syncedTask.list || existingTask.list,
+                acceptance: syncedTask.acceptance || existingTask.acceptance,
+                subTaskTicketId: syncedTask.subTaskTicketId || existingTask.subTaskTicketId,
+                status: syncedTask.status,
+                lastUpdated: syncedTask.lastUpdated,
+              };
+            }
+            return existingTask;
+          }) || [];
+
+          return {
+            ...existingStory,
+            name: syncedStory.name,
+            description: syncedStory.description,
+            storyTicketId: syncedStory.storyTicketId,
+            status: syncedStory.status,
+            lastUpdated: syncedStory.lastUpdated,
+            tasks: updatedTasks,
+          };
+        }
+
+        return existingStory;
+      });
+
+      this.store.dispatch(
+        new BulkEditUserStories(
+          `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
+          updatedUserStories,
+        ),
+      );
+
+      // Refresh the user stories view
+      setTimeout(() => {
+        this.getLatestUserStories();
+      }, 1000);
+    }
+  }
+
+
+  private updateExportOptionsTimestamps(): void {
+    if (this.exportOptions && this.exportOptions.length > 1) {
+      const jiraOptions = this.exportOptions[2].options;
+      if (jiraOptions && jiraOptions.length > 1) {
+        if (this.requirementFile?.lastPushToJiraTimestamp) {
+          jiraOptions[0].additionalInfo = this.requirementFile.lastPushToJiraTimestamp;
+        } else {
+          jiraOptions[0].additionalInfo = undefined;
+        }
+
+        if (this.requirementFile?.lastPullFromJiraTimestamp) {
+          jiraOptions[1].additionalInfo = this.requirementFile.lastPullFromJiraTimestamp;
+        } else {
+          jiraOptions[1].additionalInfo = undefined;
+        }
+      }
+    }
+  }
+
+  private validateAndExecuteWithJiraToken(callback: (token: string, jiraUrl: string) => void): void {
+    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
+      this.navigation.projectId,
+    );
+    const isJiraTokenValid =
+      token &&
+      tokenExpiration &&
+      new Date() < new Date(tokenExpiration) &&
+      this.isTokenAvailable;
+
+    if (isJiraTokenValid) {
+      callback(token as string, jiraURL as string);
+    } else if (refreshToken) {
+      this.electronService
+        .refreshJiraToken(refreshToken)
+        .then((authResponse) => {
+          storeJiraToken(
+            authResponse,
+            this.metadata?.integration?.jira?.jiraProjectKey,
+            this.navigation.projectId,
+          );
+          callback(authResponse.accessToken, jiraURL as string);
+        })
+        .catch((error) => {
+          console.error('Error during token refresh:', error);
+          this.promptReauthentication();
+        });
+    } else {
+      this.promptReauthentication();
+    }
+  }
+
+  private setupStoryProgressListener(): void {
+    if (!this.navigation.projectId) return;
+
+    const workflowTypes = [WorkflowType.Story, WorkflowType.Task];
+
+    workflowTypes.forEach((workflowType) => {
+      if (
+        !this.workflowProgressService.hasGlobalListener(
+          this.navigation.projectId!,
+          workflowType,
+        )
+      ) {
+        this.workflowProgressService.registerGlobalListener(
+          this.navigation.projectId!,
+          workflowType,
+        );
+      }
+
+      this.workflowProgressService.clearProgressEvents(
+        this.navigation.projectId!,
+        workflowType,
+      );
+    });
+  }
+
+  private resetStoryProgress(): void {
+    if (!this.navigation.projectId) return;
+
+    const workflowTypes = [WorkflowType.Story, WorkflowType.Task];
+
+    workflowTypes.forEach((workflowType) => {
+      this.workflowProgressService.removeGlobalListener(
+        this.navigation.projectId!,
+        workflowType,
+      );
+    });
+  }
+
+  closeProgressDialog(): void {
+    this.showProgressDialog = false;
+
+    if (this.navigation.projectId) {
+      const workflowTypes = [WorkflowType.Story, WorkflowType.Task];
+      workflowTypes.forEach((workflowType) => {
+        this.workflowProgressService.clearCreationStatus(
+          this.navigation.projectId!,
+          workflowType,
+        );
+        this.workflowProgressService.clearProgressEvents(
+          this.navigation.projectId!,
+          workflowType,
+        );
+      });
+    }
+  }
+
+  getExportOptions() {
+    this.exportOptions = [];
+
+    const addMoreContext = () => {
+      this.addMoreContext(this.userStoriesInState.length > 0);
+    };
+
+    const exportJson = () => {
+      this.exportUserStories(EXPORT_FILE_FORMATS.JSON);
+    };
+
+    const exportExcel = () => {
+      this.exportUserStories(EXPORT_FILE_FORMATS.EXCEL);
+    };
+
+    const pushToJira = () => {
+      this.syncRequirementWithJira();
+    };
+
+    const pullFromJira = () => {
+      this.syncRequirementFromJira();
+    };
+
+    if (this.userStoriesInState.length > 0) {
+      this.exportOptions.push(
+        {
+          groupName: 'HAI Actions',
+          options: [
+            {
+              label: 'Regenerate',
+              callback: addMoreContext.bind(this),
+              icon: 'heroDocument',
+              additionalInfo: 'User Stories & Tasks',
+              isTimestamp: false,
+            },
+          ],
+        },
+        {
+          groupName: 'Export',
+          options: [
+            {
+              label: 'Copy to Clipboard',
+              callback: exportJson.bind(this),
+              icon: 'heroPaperClip',
+              additionalInfo: "JSON Format",
+              isTimestamp: false,
+            },
+            {
+              label: 'Download',
+              callback: exportExcel.bind(this),
+              icon: 'heroDocumentText',
+              additionalInfo: "Excel (.xlsx)",
+              isTimestamp: false,
+            },
+          ],
+        }
+      );
+
+      const jiraOptions = [
+        {
+          label: 'Push to JIRA',
+          callback: pushToJira.bind(this),
+          icon: 'heroArrowUpTray',
+          additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
+          isTimestamp:true
+        }
+      ];
+
+      if (this.requirementFile?.epicTicketId) {
+        jiraOptions.push({
+          label: 'Pull from JIRA',
+          callback: pullFromJira.bind(this),
+          icon: 'heroArrowDownTray',
+          additionalInfo: this.requirementFile?.lastPullFromJiraTimestamp || undefined,
+          isTimestamp:true
+        });
+      }
+
+      this.exportOptions.push({
+        groupName: 'JIRA',
+        options: jiraOptions,
+      });
+    }
+
+    return this.exportOptions;
+  }
+
 
   ngOnDestroy() {
-    this.electronService.removeWorkflowProgressListener(
-      WorkflowType.Story,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
-    this.electronService.removeWorkflowProgressListener(
-      WorkflowType.Task,
-      this.navigation.projectId,
-      this.workflowProgressListener,
-    );
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

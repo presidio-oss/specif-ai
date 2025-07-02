@@ -1,0 +1,31 @@
+<div class="p-6 flex flex-col justify-start">
+  <h1 class="text-lg font-medium mb-4">{{ data.isEdit ? 'Edit Link' : 'Insert Link' }}</h1>
+  <div class="mb-4">
+    <label for="url-input" class="block text-sm font-medium mb-1">URL</label>
+    <input 
+      id="url-input"
+      type="url" 
+      [(ngModel)]="data.url" 
+      placeholder="https://example.com" 
+      [class]="urlError ? 'w-full px-3 py-2 border border-red-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500' : 'w-full px-3 py-2 border border-secondary-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500'"
+    >
+    <div *ngIf="urlError" class="text-red-500 text-sm mt-1">{{ urlError }}</div>
+  </div>
+  <div class="flex justify-end gap-4">
+    <app-button
+      buttonContent="Cancel"
+      theme="secondary"
+      size="sm"
+      rounded="lg"
+      (click)="onCancel()"
+    />
+    <app-button
+      buttonContent="{{ data.isEdit ? 'Update' : 'Insert' }}"
+      theme="primary"
+      size="sm"
+      rounded="lg"
+      [disabled]="!data.url"
+      (click)="onConfirm()"
+    />
+  </div>
+</div>

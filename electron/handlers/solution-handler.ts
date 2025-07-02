@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { createSolution } from "../api/solution/create";
+import { createSolution, abortSolutionCreation } from "../api/solution/create";
 import { validateBedrock } from "../api/solution/validate-bedrock";
 
 export function setupSolutionHandlers() {
@@ -9,6 +9,16 @@ export function setupSolutionHandlers() {
       return result;
     } catch (error: any) {
       console.error('Error handling solution:createSolution:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('solution:abortSolutionCreation', async (_event, data: any) => {
+    try {
+      const result = await abortSolutionCreation(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling solution:abortSolutionCreation:', error.message);
       throw error;
     }
   });

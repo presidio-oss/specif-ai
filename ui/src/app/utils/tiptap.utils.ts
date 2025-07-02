@@ -11,6 +11,14 @@ import ListKeyMap from '@tiptap/extension-list-keymap';
 import OrderedList from '@tiptap/extension-ordered-list';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
+import Link from '@tiptap/extension-link';
+import Table from '@tiptap/extension-table'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
+import TableRow from '@tiptap/extension-table-row'
+import Gapcursor from '@tiptap/extension-gapcursor'
+
+
 
 const TiptapExtensions = [
   Document,
@@ -25,7 +33,27 @@ const TiptapExtensions = [
   Bold,
   Italic,
   ListKeyMap,
-  History
+  History,
+  Link.configure({
+    openOnClick: true,
+    defaultProtocol: 'https',
+    HTMLAttributes: {
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      class: 'cursor-pointer text-primary-500 hover:underline'
+    },
+  }),
+  Table.configure({
+    resizable: true,
+    HTMLAttributes: {
+      class: 'table-wrapper',
+    },
+  }),
+
+  TableRow,
+  TableHeader,
+  TableCell,
+  Gapcursor
 ];
 
 export { TiptapExtensions };

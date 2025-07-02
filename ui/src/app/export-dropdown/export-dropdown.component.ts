@@ -1,10 +1,30 @@
-import { Component, Input, ElementRef, HostListener, ViewChild} from '@angular/core';
+import { Component, Input, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { ButtonComponent } from "../components/core/button/button.component";
 import { CommonModule } from '@angular/common';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroPaperClip,
+  heroDocumentText,
+  heroArrowUpTray,
+  heroArrowDownTray,
+  heroEllipsisVertical,
+  heroChevronDown,
+  heroChevronRight,
+  heroDocument
+} from '@ng-icons/heroicons/outline';
+import { TimeZonePipe } from '../pipes/timezone-pipe';
 
 export interface DropdownOption {
   label: string;
   callback: () => void;
+  additionalInfo?: string;
+  isTimestamp?: boolean;
+  icon?: string;
+}
+
+export interface DropdownOptionGroup {
+  groupName: string;
+  options: DropdownOption[];
 }
 
 @Component({
@@ -12,12 +32,25 @@ export interface DropdownOption {
   templateUrl: './export-dropdown.component.html',
   styleUrls: ['./export-dropdown.component.scss'],
   standalone: true,
-  imports: [ButtonComponent, CommonModule],
+  imports: [ButtonComponent, CommonModule, NgIconComponent, TimeZonePipe],
+  providers: [
+    provideIcons({
+      heroPaperClip,
+      heroDocumentText,
+      heroArrowUpTray,
+      heroArrowDownTray,
+      heroEllipsisVertical,
+      heroChevronDown,
+      heroChevronRight,
+      heroDocument
+    })
+  ]
 })
 export class ExportDropdownComponent {
   @Input() disabled: boolean = false;
   @Input() options: DropdownOption[] = [];
-  @Input() buttonLabel: string = 'Export';  
+  @Input() groupedOptions: DropdownOptionGroup[] = [];
+  @Input() buttonLabel: string = 'Options';  
 
   isOpen = false;
 
@@ -48,6 +81,10 @@ export class ExportDropdownComponent {
   closeDropdown(): void {
     this.isOpen = false;
   }
+
+  hasAnyOptions(): boolean {
+  return this.groupedOptions?.some(group => group.options && group.options.length > 0) || false;
+}
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {

@@ -33,3 +33,9 @@ export interface ITask {
   id?: string;
   chatHistory?: [];
 }
+
+export interface ISelectedFolder {
+  title: string;
+  id?: string;
+  metadata?: any;
+}

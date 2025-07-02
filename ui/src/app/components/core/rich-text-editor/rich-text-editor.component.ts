@@ -24,20 +24,41 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   heroBold,
   heroChevronDown,
+  heroChevronUp,
+  heroChevronLeft,
+  heroChevronRight,
   heroItalic,
   heroListBullet,
   heroNumberedList,
+  heroLink,
+  heroLinkSlash,
+  heroPlus,
+  heroMinus,
+  heroTrash,
+  heroDocument,
+  heroDocumentDuplicate,
+  heroViewColumns,
+  heroRectangleGroup,
+  heroSquares2x2,
+  heroTableCells,
+  heroRectangleStack,
+  heroBars3,
+  heroFunnel
+  
 } from '@ng-icons/heroicons/outline';
 import { Editor } from '@tiptap/core';
 import type { Level as HeadingLevel } from '@tiptap/extension-heading';
 import { NGXLogger } from 'ngx-logger';
 import { debounce, Subject, Subscription, timer } from 'rxjs';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { htmlToMarkdown } from 'src/app/utils/html.utils';
 import {
   markdownToHtml,
   MarkdownToHtmlOptions,
 } from 'src/app/utils/markdown.utils';
 import { TiptapExtensions } from 'src/app/utils/tiptap.utils';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { LinkDialogComponent } from './link-dialog/link-dialog.component';
 
 // It could be markdown or plain text
 type ValueType = string;
@@ -62,8 +83,8 @@ type OnTouchedCallback = () => void;
       useExisting: RichTextEditorComponent,
     },
   ],
-  imports: [CdkMenuModule, NgClass, NgIf, NgIcon, MatTooltipModule],
-  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList })],
+  imports: [CdkMenuModule, NgClass, NgIf, NgIcon, MatTooltipModule, MatDialogModule],
+  viewProviders: [provideIcons({ heroChevronDown, heroItalic, heroBold, heroListBullet, heroNumberedList, heroLink, heroLinkSlash, heroPlus, heroMinus, heroTrash, heroDocument, heroDocumentDuplicate, heroRectangleGroup, heroChevronUp, heroChevronLeft, heroChevronRight, heroViewColumns, heroSquares2x2, heroTableCells, heroRectangleStack, heroBars3, heroFunnel })],
 })
 export class RichTextEditorComponent
   implements
@@ -89,6 +110,7 @@ export class RichTextEditorComponent
   private editorUpdate$ = new Subject<string>();
   private changeSubscription?: Subscription;
   private touchedSubscription?: Subscription;
+  private linkClickHandler: ((event: MouseEvent) => void) | null = null
 
   isEmpty = true;
   isInvalid = false;
@@ -97,7 +119,7 @@ export class RichTextEditorComponent
   @Output('change') onChange = new EventEmitter<ValueType>();
   @Output('touch') onTouched = new EventEmitter();
 
-  constructor(private logger: NGXLogger) {
+  constructor(private logger: NGXLogger, private electronService: ElectronService, private dialog: MatDialog) {
     this.setupEditorUpdateSubscription();
   }
 
@@ -160,6 +182,7 @@ export class RichTextEditorComponent
 
     this.isEmpty = this.editor.$doc.textContent.length === 0;
     this.onChange.emit(this.value);
+    this.setupLinkHandler();
   }
 
   toggleBold() {
@@ -178,6 +201,42 @@ export class RichTextEditorComponent
     this.editor?.chain().focus().toggleOrderedList().run();
   }
 
+  unsetLink() {
+    this.editor?.chain().focus().unsetLink().run();
+  }
+
+
+  toggleLink() {
+    const linkAttributes = this.editor?.getAttributes('link');
+    const isLinkActive = this.editor?.isActive('link');
+    const currentUrl = isLinkActive ? linkAttributes?.['href'] || '' : '';
+
+    const selectedText = this.editor?.state.doc.textBetween(
+      this.editor.state.selection.from,
+      this.editor.state.selection.to,
+      ' '
+    );
+
+    if (!selectedText && !isLinkActive) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(LinkDialogComponent, {
+      width: '500px',
+      data: {
+        url: currentUrl,
+        isEdit: isLinkActive
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.url) {
+        this.editor?.chain().focus().setLink({ href: result.url }).run();
+      }
+    });
+  }
+
+
   setHeadingLevel(level?: HeadingLevel) {
     if (level) {
       this.editor?.chain().focus().toggleHeading({ level }).run();
@@ -190,6 +249,66 @@ export class RichTextEditorComponent
     this.onTouched.emit();
     this.touched = true;
   }
+
+  // Table methods
+  
+  insertTable() {
+    this.editor?.chain().focus().insertTable({
+      rows: 3,
+      cols: 3,
+      withHeaderRow: true
+    }).run();
+  }
+
+
+  addColumnBefore() {
+    this.editor?.chain().focus().addColumnBefore().run();
+  }
+
+  addColumnAfter() {
+    this.editor?.chain().focus().addColumnAfter().run();
+  }
+
+  deleteColumn() {
+    this.editor?.chain().focus().deleteColumn().run();
+  }
+
+  addRowBefore() {
+    this.editor?.chain().focus().addRowBefore().run();
+  }
+
+  addRowAfter() {
+    this.editor?.chain().focus().addRowAfter().run();
+  }
+
+  deleteRow() {
+    this.editor?.chain().focus().deleteRow().run();
+  }
+
+  deleteTable() {
+    this.editor?.chain().focus().deleteTable().run();
+  }
+
+  mergeCells() {
+    this.editor?.chain().focus().mergeCells().run();
+  }
+
+  splitCell() {
+    this.editor?.chain().focus().splitCell().run();
+  }
+
+  toggleHeaderColumn() {
+    this.editor?.chain().focus().toggleHeaderColumn().run();
+  }
+
+  toggleHeaderRow() {
+    this.editor?.chain().focus().toggleHeaderRow().run();
+  }
+
+  toggleHeaderCell() {
+    this.editor?.chain().focus().toggleHeaderCell().run();
+  }
+
 
   // ControlValueAccessor methods
 
@@ -257,7 +376,27 @@ export class RichTextEditorComponent
     }
   }
 
+  private setupLinkHandler() {
+    if (this.editor) {
+      const editorElement = this.editor.view.dom;
+      this.linkClickHandler = (event: MouseEvent) => {
+        const linkElement = (event.target as HTMLElement).closest('a');
+        if (linkElement && linkElement.href) {
+          event.preventDefault();
+          this.electronService.openExternalUrl(linkElement.href)
+            .catch(error => {
+              this.logger.error('Error opening link:', error);
+            });
+        }
+      };
+      editorElement.addEventListener('click', this.linkClickHandler);
+    }
+  }
+
   ngOnDestroy() {
+    if (this.editor && this.linkClickHandler) {
+      this.editor.view.dom.removeEventListener('click', this.linkClickHandler);
+    }
     this.editor?.destroy();
     this.editorUpdate$.complete();
     this.changeSubscription?.unsubscribe();

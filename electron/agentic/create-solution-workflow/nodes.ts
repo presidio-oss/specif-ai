@@ -3,7 +3,7 @@ import { BaseCheckpointSaver } from "@langchain/langgraph-checkpoint";
 import { z } from "zod";
 import { v4 as uuid } from "uuid";
 import { WorkflowEventsService } from "../../services/events/workflow-events.service";
-import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
+import { REQUIREMENT_TYPE, REQUIREMENT_DISPLAY_NAME_MAP } from "../../constants/requirement.constants";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { IRequirementType, ITool } from "../common/types";
 import { buildReactAgent } from "../react-agent";
@@ -67,7 +67,7 @@ export const buildResearchNode = ({
     await workflowEvents.dispatchThinking(
       "research",
       {
-        title: "Researching relevant technical context based on app details",
+        title: "Researching based on solution context",
       },
       runnableConfig,
       researchCorrelationId
@@ -109,6 +109,7 @@ export const buildResearchNode = ({
           thread_id: runnableConfig.configurable?.thread_id,
           sendMessagesInTelemetry: sendMessagesInTelemetry
         },
+        signal: runnableConfig.signal,
       }
     );
 
@@ -116,7 +117,7 @@ export const buildResearchNode = ({
       "research",
       {
         title:
-          "Finished research - summarized findings ready for requirement generation",
+          "Research completed and prepared summary for requirement generation",
         output: response.structuredResponse.referenceInformation,
       },
       runnableConfig,
@@ -184,7 +185,7 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
       await workflowEvents.dispatchThinking(
         "requirement-generation",
         {
-          title: `Preparing input context for ${type} requirement generation`,
+          title: `Generating ${REQUIREMENT_DISPLAY_NAME_MAP[type]} (${type})`,
         },
         runnableConfig,
         reqGenerationCorrelationId
@@ -222,12 +223,13 @@ export const buildReqGenerationNode = (params: BuildGenerationNodeParams) => {
           thread_id: runnableConfig.configurable?.thread_id,
           sendMessagesInTelemetry: sendMessagesInTelemetry
         },
+        signal: runnableConfig.signal,
       });
 
       await workflowEvents.dispatchAction(
         "requirement-generation",
         {
-          title: `Successfully generated and validated ${type} requirements`,
+          title: `${REQUIREMENT_DISPLAY_NAME_MAP[type]} (${type}) generated successfully`,
           input: requirementTypePrompt,
           output: response.requirements
         },

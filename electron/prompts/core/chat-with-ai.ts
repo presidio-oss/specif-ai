@@ -65,6 +65,8 @@ const getPersona = (requirementType: keyof typeof REQUIREMENT_TYPE) => {
     case "US":
     case "TASK":
       return "Product Manager";
+    case "SOLUTION":
+      return "Solution Architect";
     default:
       return "";
   }

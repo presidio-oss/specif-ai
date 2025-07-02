@@ -10,7 +10,7 @@ import { createUIRPrompt } from '../../prompts/solution/create-uir';
 import { createNFRPrompt } from '../../prompts/solution/create-nfr';
 import { extractRequirementsFromResponse } from '../../utils/custom-json-parser';
 import { traceBuilder } from '../../utils/trace-builder';
-import { OPERATIONS } from '../../helper/constants';
+import { OPERATIONS, OPERATION_ID, WORKFLOW_CHANNEL } from '../../helper/constants';
 import { buildCreateSolutionWorkflow } from '../../agentic/create-solution-workflow';
 import { buildLangchainModelProvider } from '../../services/llm/llm-langchain';
 import { ICreateSolutionWorkflowStateAnnotation } from '../../agentic/create-solution-workflow/state';
@@ -22,6 +22,11 @@ import { ObservabilityManager } from '../../services/observability/observability
 import { MCPHub } from '../../mcp/mcp-hub';
 import { MCPSettingsManager } from '../../mcp/mcp-settings-manager';
 import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
+import { AppConfig } from '../../schema/core/store.schema';
+import path from 'node:path';
+import { SPECIFAI_MCP_CONFIG } from '../../constants/mcp.constants';
+import { OperationRegistry } from '../../services/content-generation/operation-registry';
+import { WorkflowEventsService, WorkflowEventType } from '../../services/events/workflow-events.service';
 
 // types
 
@@ -39,8 +44,6 @@ type GenerateRequirementParams = RequirementTypeMeta & {
 
 // types
 
-// constants
-
 const requirementTypes: Array<RequirementTypeMeta> = [
   { key: 'brd', generatePrompt: createBRDPrompt, preferencesKey: 'brdPreferences' },
   { key: 'uir', generatePrompt: createUIRPrompt, preferencesKey: 'uirPreferences' },
@@ -50,6 +53,8 @@ const requirementTypes: Array<RequirementTypeMeta> = [
 const prdRequirementType = { key: 'prd', generatePrompt: createPRDPrompt, preferencesKey: 'prdPreferences' } as const;
 
 // constants
+
+const workflowEvents = new WorkflowEventsService("create-solution");
 
 const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, llmHandler, brds }: GenerateRequirementParams) => {
   console.log(`[create-solution] Generating ${key.toUpperCase()} requirements...`);
@@ -97,6 +102,10 @@ const generateRequirement = async ({ key, generatePrompt, preferencesKey, data, 
 }
 
 export async function createSolution(event: IpcMainInvokeEvent, data: unknown): Promise<SolutionResponse> {
+  const operationRegistry = OperationRegistry.getInstance();
+  let operationId: string | null = null;
+  let validatedData: CreateSolutionRequest | null = null;
+
   try {
     const o11y = ObservabilityManager.getInstance();
     const trace = o11y.createTrace('create-solution');
@@ -110,8 +119,11 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
     console.log("[create-solution] Using LLM config:", llmConfig);
 
     const validationSpan = trace.span({name: "input-validation"})
-    const validatedData = await createSolutionSchema.parseAsync(data);
+    validatedData = await createSolutionSchema.parseAsync(data);
     validationSpan.end();
+
+    operationId = OPERATION_ID.CREATE_SOLUTION(validatedData.id);
+    const abortController = operationRegistry.createController(operationId);
 
     const results: SolutionResponse = {
       createReqt: validatedData.createReqt ?? false,
@@ -130,7 +142,9 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
 
     try {
       const settingsManager = MCPSettingsManager.getInstance();
+      // Write initial MCP settings without specifai config
       await settingsManager.writeProjectMCPSettings(validatedData.id, validatedData.mcpSettings);
+      
       mcpSettingsSpan.end({
         statusMessage: "Written successfully"
       });
@@ -186,36 +200,45 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
           trace: trace,
           sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
         },
+        signal: abortController.signal,
       };
 
-      const stream = createSolutionWorkflow.streamEvents(initialState, {
-        version: "v2",
-        streamMode: "messages",
-        ...config,
-      })
+      try {
+        const stream = createSolutionWorkflow.streamEvents(initialState, {
+          version: "v2",
+          streamMode: "messages",
+          ...config,
+        });
 
-      for await (const streamEvent of stream) {
-        const channel = `solution:${validatedData.id}-workflow-progress`;
-        const timestamp = Date.now();
-
-        switch (streamEvent.event) {
-          case "on_tool_end":
-            event.sender.send(channel, {
-              node: "tools_end",
-              type: "mcp",
-              message: {
-                title: `Completed tool execution: ${streamEvent.name}`,
-                input: streamEvent.data?.input,
-                output: streamEvent.data?.output?.content,
-              },
-              timestamp,
-            });
+        for await (const streamEvent of stream) {
+          if (abortController.signal.aborted) {
+            console.log("[create-solution] Workflow streaming cancelled");
             break;
+          }
 
-          case "on_custom_event":
-            event.sender.send(channel, streamEvent.data);
-            break;
+          const channel = WORKFLOW_CHANNEL.SOLUTION_PROGRESS(validatedData.id);
+          switch (streamEvent.event) {
+            case "on_tool_end":
+              const toolEndEvent = workflowEvents.createEvent(
+                "tools_end",
+                WorkflowEventType.Mcp,
+                {
+                  title: `Executed MCP Tool: ${streamEvent.name}`,
+                  input: streamEvent.data?.input,
+                  output: streamEvent.data?.output?.content,
+                }
+              );
+              event.sender.send(channel, toolEndEvent);
+              break;
+
+            case "on_custom_event":
+              event.sender.send(channel, streamEvent.data);
+              break;
+          }
         }
+      } catch(error) {
+        console.error("[create-solution] Error during workflow streaming");
+        throw error;
       }
 
       const response = await createSolutionWorkflow.getState({
@@ -223,6 +246,29 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       })
 
       const generatedRequirements = response.values.generatedRequirements;
+
+      // After solution creation is complete, update MCP settings to add specifai config
+      try {
+        const settingsManager = MCPSettingsManager.getInstance();
+        // Read current project MCP settings
+        const currentSettings = await settingsManager.readProjectMCPSettings(validatedData.id);
+        
+        // Add specifai config
+        const updatedSettings = {
+          ...currentSettings,
+          mcpServers: {
+            ...currentSettings.mcpServers,
+            specifai: SPECIFAI_MCP_CONFIG
+          }
+        };
+        
+        // Write updated settings back
+        await settingsManager.writeProjectMCPSettings(validatedData.id, updatedSettings);
+        console.log(`[create-solution] Updated project MCP settings with specifai config`);
+      } catch (error) {
+        console.error("[create-solution] Error updating project MCP settings with specifai config:", error);
+        // Don't throw error here to avoid failing the solution creation process
+      }
 
       return {
         createReqt: validatedData.createReqt ?? false,
@@ -275,9 +321,85 @@ export async function createSolution(event: IpcMainInvokeEvent, data: unknown): 
       }
     }
 
+    // After solution creation is complete, update MCP settings to add specifai config
+    try {
+      const settingsManager = MCPSettingsManager.getInstance();
+      // Read current project MCP settings
+      const currentSettings = await settingsManager.readProjectMCPSettings(validatedData.id);
+      
+      // Add specifai config
+      const updatedSettings = {
+        ...currentSettings,
+        mcpServers: {
+          ...currentSettings.mcpServers,
+          specifai: SPECIFAI_MCP_CONFIG
+        }
+      };
+      
+      // Write updated settings back
+      await settingsManager.writeProjectMCPSettings(validatedData.id, updatedSettings);
+      console.log(`[create-solution] Updated project MCP settings with specifai config`);
+    } catch (error) {
+      console.error("[create-solution] Error updating project MCP settings with specifai config:", error);
+      // Don't throw error here to avoid failing the solution creation process
+    }
+    
     return results;
   } catch (error) {
-    console.error('Error in createSolution:', error);
+    if (validatedData && validatedData.id) {
+      const channel = WORKFLOW_CHANNEL.SOLUTION_PROGRESS(validatedData.id);
+
+      let title = "Error occurred during solution creation";
+      if (
+        error instanceof Error &&
+        (error.name === "AbortError" || error.message === "Aborted")
+      ) {
+        title = "Solution creation was aborted by user";
+      } 
+
+      const errorEvent = workflowEvents.createEvent(
+        "error_occurred",
+        WorkflowEventType.Error,
+        {
+          title,
+          output: error instanceof Error ? error.message : String(error),
+        }
+      );
+
+      event.sender.send(channel, errorEvent);
+    }
+
+    throw error;
+  } finally {
+    if (operationId) {
+      operationRegistry.remove(operationId);
+    }
+  }
+}
+
+export async function abortSolutionCreation(
+  event: IpcMainInvokeEvent,
+  data: { projectId: string }
+): Promise<boolean> {
+  try {
+    const operationRegistry = OperationRegistry.getInstance();
+    const operationId = OPERATION_ID.CREATE_SOLUTION(data.projectId);
+
+    return operationRegistry.cancel(operationId);
+  } catch (error) {
+    console.error("Error in abortSolutionCreation:", error);
+    const channel = WORKFLOW_CHANNEL.SOLUTION_PROGRESS(data.projectId);
+
+    const errorEvent = workflowEvents.createEvent(
+      "abort_failed",
+      WorkflowEventType.Error,
+      {
+        title: "Failed to abort solution creation",
+        output: error instanceof Error ? error.message : String(error),
+      }
+    );
+    event.sender.send(channel, errorEvent);
+
     throw error;
   }
 }

@@ -48,7 +48,7 @@ View all versions on our [releases page](https://github.com/presidio-oss/specif-
 
 When you first launch Specifai, you'll see the welcome screen, guiding you through a quick setup process. Here's what you need to do:
 
-![Welcome Screen](/img/welcome-page.png)
+![Welcome Screen](../../static/img/welcome-page.png)
 
 ### 1. User Profile
 - Choose a username that identifies your work.
@@ -65,7 +65,7 @@ Choose a workspace directory that is:
 ### 3. AI Model Configuration 🤖
 
 1. Access **Settings** ⚙️ (top right corner).
-![Settings Screen](/gif/specifai-settings.gif)
+![Settings Screen](../../static/gif/specifai-settings.gif)
 
 2. Select AI model provider:
 * **Anthropic**
@@ -107,7 +107,7 @@ Choose a workspace directory that is:
 * **Ollama**
 
 3. Enter model credentials.
-![Settings LLM Configuration](/img/settings-screen-llm-config.png)
+![Settings LLM Configuration](../../static/img/settings-screen-llm-config.png)
 
 4. Click "**Save**" to apply your model settings.
 

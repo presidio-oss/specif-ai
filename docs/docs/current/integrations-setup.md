@@ -10,7 +10,7 @@ Integrate JIRA to transform Specifai-generated requirements into actionable JIRA
 
 <div align="center">
 
-![JIRA Integration](/img/specifai-jira-integration.png)
+![JIRA Integration](../../static/img/specifai-jira-integration.png)
 *Manage JIRA integrations within Specifai*
 
 </div>
@@ -32,7 +32,7 @@ Integrate JIRA to transform Specifai-generated requirements into actionable JIRA
     * Click **Export** and choose **Sync to JIRA**.
         <div align="center">
 
-        ![Sync to JIRA Option](/img/specifai-sync-with-jira-option.png)
+        ![Sync to JIRA Option](../../static/img/specifai-sync-with-jira-option.png)
         *Initiate sync to JIRA from the Export menu*
 
         </div>
@@ -43,7 +43,7 @@ Integrate JIRA to transform Specifai-generated requirements into actionable JIRA
     * You'll receive a notification upon sync completion. JIRA Ticket IDs are displayed in Specifai next to corresponding requirements for easy reference and search.
         <div align="center">
 
-        ![After Successful JIRA Sync](/img/specifai-post-jira-sync.png)
+        ![After Successful JIRA Sync](../../static/img/specifai-post-jira-sync.png)
         *Synced JIRA tickets displayed in Specifai*
 
         </div>
@@ -65,7 +65,7 @@ Connect your enterprise knowledge base to Specifai's AI chat, enhancing suggesti
 1.  **Prerequisites:** You'll need an AWS Knowledge Base containing relevant context (domain info, past requirements) and an IAM key with `bedrock:ListKnowledgeBases`, `bedrock:GetKnowledgeBase`, `bedrock:Retrieve` permissions.
     <div align="center">
 
-    ![AWS Bedrock Configuration](/img/specifai-aws-bedrock-kb-integration.png)
+    ![AWS Bedrock Configuration](../../static/img/specifai-aws-bedrock-kb-integration.png)
     *Configure your AWS Bedrock Knowledge Base connection*
 
     </div>
@@ -99,7 +99,7 @@ Specifai natively supports **AWS Bedrock Knowledge Base (KB)** as a built-in MCP
 
 <div align="center">
 
-![AWS Bedrock KB Configuration](/img/mcp/aws-bedrock-kb-config.png)
+![AWS Bedrock KB Configuration](../../static/img/mcp/aws-bedrock-kb-config.png)
 *Interface for AWS Bedrock KB configuration*
 
 </div>
@@ -114,7 +114,7 @@ Beyond built-in options, Specifai enables custom MCP server integration, extendi
 
     <div align="center">
 
-    ![MCP Server Integration in Create Solution](/img/mcp/custom-server-management.png)
+    ![MCP Server Integration in Create Solution](../../static/img/mcp/custom-server-management.png)
     *Access MCP server integrations during solution creation*
 
     </div>
@@ -123,7 +123,7 @@ Beyond built-in options, Specifai enables custom MCP server integration, extendi
 
     <div align="center">
 
-    ![MCP Server Integration in Solution](/img/mcp/custom-server-management.png)
+    ![MCP Server Integration in Solution](../../static/img/mcp/custom-server-management.png)
     *Manage MCP server integrations for an existing solution*
 
     </div>
@@ -146,7 +146,7 @@ Beyond built-in options, Specifai enables custom MCP server integration, extendi
 
     <div align="center">
 
-    ![Custom MCP Server Configuration](/img/mcp/custom-mcp-config.png)
+    ![Custom MCP Server Configuration](../../static/img/mcp/custom-mcp-config.png)
     *Interface for configuring custom MCP server integrations*
 
     </div>
@@ -163,7 +163,7 @@ All MCP integrations are managed from a single **Integrations** page, providing 
 
 <div align="center">
 
-![Custom Server Management Interface](/img/mcp/custom-server-management.png)
+![Custom Server Management Interface](../../static/img/mcp/custom-server-management.png)
 *Manage all MCP integrations from a single, centralized location*
 
 </div>

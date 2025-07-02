@@ -20,7 +20,7 @@ Specifai is built as a robust Electron application, combining a modern frontend 
 
 <div align="center">
 
-![Application Architecture](/img/specifai-architecture.png)  
+![Application Architecture](../../static/img/specifai-architecture.png)
 *Specifai's core architectural components*
 
 </div>
@@ -51,7 +51,7 @@ Specifai's solution creation leverages an advanced agentic workflow, intelligent
 
 <div align="center">
 
-![Solution Creation Flow](/img/specifai-create-solution-agentic-flow.png)  
+![Solution Creation Flow](../../static/img/specifai-create-solution-agentic-flow.png)
 *Agentic workflow for solution creation*
 
 </div>

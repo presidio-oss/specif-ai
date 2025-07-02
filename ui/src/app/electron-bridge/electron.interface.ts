@@ -47,7 +47,7 @@ export interface ElectronAPI {
   on: (
     channel: string,
     listener: (event: IpcRendererEvent, ...args: any[]) => void,
-  ) => void;
+  ) => (event: IpcRendererEvent, ...args: any[]) => void;
   once: (
     channel: string,
     listener: (event: IpcRendererEvent, ...args: any[]) => void,
