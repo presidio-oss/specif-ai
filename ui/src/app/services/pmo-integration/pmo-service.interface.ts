@@ -2,17 +2,15 @@ import { Ticket } from './pmo-integration.service';
 
 export interface PmoConnectionStatus {
   isConnected: boolean;
-  organization?: string;
-  projectName?: string;
-  hasValidCredentials?: boolean;
   errorMessage?: string;
 }
 
 export interface PmoService {
   /**
    * Configure the PMO service with credentials and connection details
+   * Gets configuration from project metadata
    */
-  configure(config: any): void;
+  configure(): Promise<void>;
 
   /**
    * Get features hierarchy from the PMO system
@@ -22,6 +20,7 @@ export interface PmoService {
 
   /**
    * Validate PMO credentials and connection
+   * Gets configuration from project metadata
    */
-  validateCredentials(config: any): Promise<{ isValid: boolean; errorMessage?: string }>;
+  validateCredentials(): Promise<{ isValid: boolean; errorMessage?: string }>;
 }

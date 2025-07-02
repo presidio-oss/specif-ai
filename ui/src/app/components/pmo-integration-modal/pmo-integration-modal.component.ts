@@ -2,12 +2,8 @@ import { Component, Inject, OnInit, signal, computed } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NgIf, NgClass, NgFor } from '@angular/common';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { ElectronService } from '../../electron-bridge/electron.service';
 import { ButtonComponent } from '../core/button/button.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { Store } from '@ngxs/store';
-import { ProjectsState } from '../../store/projects/projects.state';
-import { take } from 'rxjs/operators';
 import {
   heroXMark,
   heroEllipsisHorizontal,
@@ -102,11 +98,8 @@ export class PmoIntegrationModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: PmoIntegrationData,
     private dialogRef: MatDialogRef<PmoIntegrationModalComponent>,
     private toasterService: ToasterService,
-    private electronService: ElectronService,
-    private store: Store,
     private pmoServiceFactory: PmoServiceFactory,
   ) {
-    // Get the appropriate PMO service and configuration
     this.pmoService = this.pmoServiceFactory.getPmoService(this.data.pmoType);
     this.config = PMO_MODAL_CONFIGS[this.data.pmoType];
 
@@ -115,80 +108,32 @@ export class PmoIntegrationModalComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    this.checkPmoIntegrationStatus();
-  }
-
-  private async checkPmoIntegrationStatus(): Promise<void> {
+  async ngOnInit(): Promise<void> {
     try {
-      // Get project metadata to check PMO configuration
-      this.store
-        .select(ProjectsState.getMetadata)
-        .pipe(take(1))
-        .subscribe(async (metadata) => {
-          const integrationConfig = metadata?.integration?.[this.data.pmoType];
+      await this.pmoService.configure();
+      const validationResult = await this.pmoService.validateCredentials();
 
-          if (!integrationConfig) {
-            this.connectionStatus.set({
-              isConnected: false,
-              errorMessage: this.getPmoDetailsMessage(),
-            });
-            this.isLoading.set(false);
-            return;
-          }
+      this.connectionStatus.set({
+        isConnected: validationResult.isValid,
+        errorMessage: validationResult.isValid
+          ? undefined
+          : validationResult.errorMessage ||
+            this.getInvalidCredentialsMessage(),
+      });
 
-          try {
-            // Validate PMO credentials
-            const validationResult =
-              await this.pmoService.validateCredentials(integrationConfig);
-
-            this.connectionStatus.set({
-              isConnected: validationResult.isValid,
-              organization: integrationConfig.organization,
-              projectName:
-                integrationConfig.projectName || integrationConfig.projectKey,
-              hasValidCredentials: validationResult.isValid,
-              errorMessage: validationResult.isValid
-                ? undefined
-                : validationResult.errorMessage ||
-                  this.getInvalidCredentialsMessage(),
-            });
-
-            // If credentials are valid, configure the PMO service and fetch features
-            if (validationResult.isValid) {
-              this.isLoading.set(false);
-              this.pmoService.configure(integrationConfig);
-
-              // Fetch features hierarchy
-              await this.loadFeaturesHierarchy();
-            }
-          } catch (error) {
-            console.error(
-              `Error validating ${this.data.pmoType.toUpperCase()} credentials:`,
-              error,
-            );
-            this.connectionStatus.set({
-              isConnected: false,
-              organization:
-                integrationConfig.organization || integrationConfig.jiraUrl,
-              projectName:
-                integrationConfig.projectName || integrationConfig.projectKey,
-              hasValidCredentials: false,
-              errorMessage: 'Connection test failed. Please try again.',
-            });
-          }
-
-          this.isLoading.set(false);
-        });
+      if (validationResult.isValid) {
+        this.isLoading.set(false);
+        await this.loadFeaturesHierarchy();
+      }
     } catch (error) {
-      console.error(
-        `Error checking ${this.data.pmoType.toUpperCase()} integration status:`,
-        error,
-      );
       this.connectionStatus.set({
         isConnected: false,
-        errorMessage: 'Failed to check integration status',
+        errorMessage:
+          error instanceof Error
+            ? error.message
+            : 'Connection test failed. Please try again.',
       });
+    } finally {
       this.isLoading.set(false);
     }
   }

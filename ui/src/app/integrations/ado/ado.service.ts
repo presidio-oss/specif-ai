@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, take } from 'rxjs';
 import { Ticket } from '../../services/pmo-integration/pmo-integration.service';
 import { PmoService } from '../../services/pmo-integration/pmo-service.interface';
 import { ElectronService } from '../../electron-bridge/electron.service';
+import { Store } from '@ngxs/store';
+import { ProjectsState } from 'src/app/store/projects/projects.state';
 
 interface AdoConfiguration {
   personalAccessToken: string;
@@ -21,33 +23,46 @@ export class AdoService implements PmoService {
   constructor(
     private http: HttpClient,
     private electronService: ElectronService,
+    private store: Store,
   ) {}
 
   /**
    * Configure the ADO service with your organization, project and PAT
    */
-  configure(config: AdoConfiguration): void {
-    this.config = config;
-    // Set the full absolute URL to Azure DevOps API
-    this.baseUrl = `https://dev.azure.com/${config.organization}/${config.projectName}`;
+  async configure(): Promise<void> {
+    const metadata = await lastValueFrom(
+      this.store.select(ProjectsState.getMetadata).pipe(take(1)),
+    );
 
-    console.log(`ADO service configured with URL: ${this.baseUrl}`);
+    this.config = metadata?.integration?.ado;
+
+    if (!this.config) {
+      throw new Error(
+        'Azure DevOps credentials not configured. Please configure the integration first.',
+      );
+    }
+    this.baseUrl = `https://dev.azure.com/${this.config.organization}/${this.config.projectName}`;
   }
 
   /**
    * Validate ADO credentials and connection
    */
-  async validateCredentials(
-    config: AdoConfiguration,
-  ): Promise<{ isValid: boolean; errorMessage?: string }> {
+  async validateCredentials(): Promise<{
+    isValid: boolean;
+    errorMessage?: string;
+  }> {
     try {
+      if (!this.config) {
+        throw new Error(
+          'Azure DevOps service not configured. Call configure() first.',
+        );
+      }
       return await this.electronService.validateAdoCredentials(
-        config.organization,
-        config.projectName,
-        config.personalAccessToken!,
+        this.config.organization,
+        this.config.projectName,
+        this.config.personalAccessToken!,
       );
     } catch (error) {
-      console.error('ADO credentials validation failed:', error);
       return {
         isValid: false,
         errorMessage:
