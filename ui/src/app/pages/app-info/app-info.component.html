@@ -22,7 +22,8 @@
         <div
           *ngIf="
             selectedFolder?.title !== 'solution' &&
-            selectedFolder?.title !== 'app-integrations'
+            selectedFolder?.title !== 'app-integrations' &&
+            selectedFolder?.title !== 'TC'
           "
           class="h-full"
         >
@@ -36,6 +37,11 @@
           >
             No documents available.
           </div>
+        </div>
+        
+        <!-- Test Cases Component -->
+        <div *ngIf="selectedFolder?.title === 'TC'" class="h-full">
+          <app-test-cases-home></app-test-cases-home>
         </div>
         <div *ngIf="selectedFolder?.title === 'solution'">
           <app-project-failure-message

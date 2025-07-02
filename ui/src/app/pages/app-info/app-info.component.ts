@@ -6,6 +6,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import { TestCaseHomeComponent } from '../test-cases/test-case-home/test-case-home.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import mermaid from 'mermaid';
 import { Store } from '@ngxs/store';
@@ -104,6 +105,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
     WorkflowProgressComponent,
     ProjectFailureMessageComponent,
     SidebarComponent,
+    TestCaseHomeComponent,
   ],
   providers: [
     provideIcons({
@@ -662,11 +664,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
   
   navigateToTestCasesHome() {
-    this.router.navigate(['/test-cases-home'], {
-      queryParams: {
-        projectName: this.appName
-      }
-    });
+    this.selectFolder({ name: 'TC', children: [] });
   }
 
   handleIntegrationNavState(): void {

@@ -101,7 +101,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     },
     {
       icon: 'heroBeaker',
-      title: 'Total Test Cases',
+      title: 'Total Test Cases Present',
       color: 'success',
       countFn: () => this.getTotalTestCases()
     }
