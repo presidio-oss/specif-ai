@@ -155,6 +155,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   mcpServersLoading: boolean = false;
   isEditingMcpSettings: boolean = false;
   mcpForm!: FormGroup;
+  selectedIntegration: string | null = null;
 
   accordionState: { [key: string]: boolean } = {
     pmoIntegration: false,
@@ -196,6 +197,9 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       this.isBedrockConfigPresent =
         this.currentLLMConfig?.providerConfigs['bedrock'] !== undefined;
     });
+
+    // Add event listener for direct PMO integration opening
+    this.setupCustomEventListeners();
 
     if (this.projectId) {
       this.workflowProgressService
@@ -261,6 +265,15 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         if (this.navigationState && this.navigationState['selectedFolder']) {
           this.selectedFolder = this.navigationState['selectedFolder'];
         }
+
+        if (this.navigationState && this.navigationState['openPmoAccordion']) {
+          this.accordionState['pmoIntegration'] = true;
+        }
+
+        if (this.navigationState && this.navigationState.selectedIntegration) {
+          this.selectedIntegration = this.navigationState.selectedIntegration;
+        }
+
         // Sort directories based on predefined order
         directories.sort((a, b) => {
           return (
@@ -316,6 +329,31 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.isBedrockConnected && this.bedrockForm.disable();
 
     this.initMcpForm();
+  }  
+
+  private setupCustomEventListeners(): void {
+    // Listen for open-pmo-integration event
+    window.addEventListener('open-pmo-integration', (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const state = customEvent.detail;
+      
+      if (state) {
+        // Update selected folder if provided
+        if (state.selectedFolder) {
+          this.selectedFolder = state.selectedFolder;
+        }
+        
+        // Open PMO integration accordion if requested
+        if (state.openPmoAccordion) {
+          this.accordionState['pmoIntegration'] = true;
+        }
+
+        // set the selected integration if provided
+        if(state.selectedIntegration) {
+          this.selectedIntegration = state.selectedIntegration;
+        }
+      }
+    });
   }
 
   saveBedrockData() {
@@ -701,5 +739,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.complete();
+    
+    // Remove custom event listeners
+    window.removeEventListener('open-pmo-integration', () => {});
   }
 }

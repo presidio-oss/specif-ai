@@ -40,6 +40,7 @@ export class PmoIntegrationComponent implements OnInit, OnDestroy {
   @Input() projectId!: string;
   @Input() projectMetadata!: IProjectMetadata;
   @Input() isAccordionOpen: boolean = false;
+  @Input() selectedIntegration: string | null = null;
   @Output() toggleAccordion = new EventEmitter<void>();
 
   selectedIntegrationType = new FormControl<string>('');
@@ -140,7 +141,7 @@ export class PmoIntegrationComponent implements OnInit, OnDestroy {
       this.selectedIntegrationType.setValue(connectedPmoTool);
       this.selectedType.set(connectedPmoTool);
     } else if (integrations.length > 0) {
-      const defaultIntegration = integrations[0].id;
+      const defaultIntegration = this.selectedIntegration ? this.selectedIntegration : integrations[0].id;
       this.selectedIntegrationType.setValue(defaultIntegration);
       this.selectedType.set(defaultIntegration);
     }

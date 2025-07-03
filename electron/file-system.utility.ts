@@ -297,7 +297,7 @@ function readFileChunk(
           if (parsed.selectedPRDs && !dataExtracted.selectedPRDs) {
             dataExtracted.selectedPRDs = parsed.selectedPRDs;
           }
-          if (dataExtracted.requirement && dataExtracted.title) {
+          if (dataExtracted.title) {
             fs.close(fd, () => {});
             resolve(dataExtracted);
           }
@@ -316,7 +316,7 @@ function readFileChunk(
           if (nread === 0) {
             fs.close(fd, (err) => {
               if (err) reject(err);
-              if (!dataExtracted.requirement || !dataExtracted.title) {
+              if (!dataExtracted.title) {
                 reject(
                   new Error(
                     "Could not find 'requirement' or 'title' field in the available data."
@@ -331,7 +331,7 @@ function readFileChunk(
           accumulatedData += chunk;
           tryParse();
 
-          if (!dataExtracted.requirement || !dataExtracted.title) {
+          if (!dataExtracted.title) {
             readNextChunk();
           }
         });
