@@ -1,0 +1,142 @@
+<div
+  class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full"
+>
+  <div class="mb-4">
+    <div class="flex items-center mt-2 justify-between">
+      <div class="flex flex-col gap-2 min-w-0">
+        <h1
+          class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
+        >
+          Test Cases
+        </h1>
+
+        <div class="flex items-center">
+          <h2 class="text-md font-semibold text-secondary-600">User Stories</h2>
+          <app-badge
+            *ngIf="filteredUserStories$ | async as userStories"
+            [badgeText]="userStories.length"
+          ></app-badge>
+        </div>
+        <div class="text-xs text-secondary-500 mb-2">
+          Each user story contains its own test cases. View or create test cases
+          by choosing a user story.
+        </div>
+        <div *ngIf="selectedPrdTitle" class="text-sm text-secondary-500">
+          {{ selectedPrdTitle }}
+        </div>
+      </div>
+    </div>
+
+    <!-- PRD Filter and Search -->
+    <ng-container *ngIf="prdList.length > 0; else noPrds">
+      <div class="flex gap-3 mt-4 mb-4 items-end">
+        <div
+          class="w-1/3 flex items-end"
+          *ngIf="(filteredUserStories$ | async)?.length"
+        >
+          <app-search-input
+            class="w-full"
+            placeholder="Search user stories..."
+            (searchChange)="onSearch($event)"
+            label="Search"
+          ></app-search-input>
+        </div>
+        <div [class]="(filteredUserStories$ | async)?.length ? 'w-2/3' : 'w-full'" class="relative z-50">
+          <app-select
+            [options]="getPrdSelectOptions()"
+            [(ngModel)]="selectedPrdId"
+            (ngModelChange)="selectPrd($event)"
+            [clearable]="false"
+          ></app-select>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- No PRDs message -->
+    <ng-template #noPrds>
+      <div
+        class="flex flex-col justify-center items-center min-h-[50vh] mt-4 mb-4 text-center"
+      >
+        <img
+          src="assets/img/empty-states/no-data.svg"
+          alt="No PRD Available"
+          class="w-80 h-80 mx-auto"
+        />
+        <h1 class="font-semibold text-secondary-700 text-xl mb-2">
+          No PRD is available.
+        </h1>
+        <p class="text-secondary-500 text-sm">
+          Please check if PRD documents exist for this project.
+        </p>
+        <app-button
+          class="mt-4"
+          buttonContent="Go to Solution"
+          [size]="'sm'"
+          (click)="navigateToAppInfo()"
+        ></app-button>
+      </div>
+    </ng-template>
+
+    <!-- Summary Cards -->
+    <div
+      class="grid grid-cols-3 gap-4 mb-6"
+      *ngIf="!isLoading && (userStories?.length ?? 0) > 0"
+    >
+      <app-summary-card
+        *ngFor="let card of summaryCards"
+        [icon]="card.icon"
+        [count]="card.countFn()"
+        [title]="card.title"
+        [color]="card.color"
+      ></app-summary-card>
+    </div>
+
+    <!-- User stories list or empty state -->
+    <div class="flex-1 overflow-y-auto">
+      <ng-container *ngIf="!isLoading && prdList.length > 0">
+        <ng-container *ngIf="filteredUserStories$ | async as userStories">
+          <ng-container *ngIf="userStories.length > 0; else noUserStories">
+            <app-unified-card
+              *ngFor="let userStory of userStories"
+              [id]="userStory.id"
+              [title]="userStory.name"
+              [description]="userStory.description"
+              [borderClass]="getUserStoryBorderClass(userStory.id)"
+              [statusIndicator]="getUserStoryStatusIndicator(userStory.id)"
+              [actionButtonText]="'View Tests'"
+              [copyTooltip]="'Copy user story content'"
+              (viewItem)="navigateToTestCases(userStory)"
+              (copyContent)="copyUserStoryContent($event, userStory)"
+            ></app-unified-card>
+          </ng-container>
+        </ng-container>
+
+        <ng-template #noUserStories>
+          <div
+            class="flex flex-col justify-center items-center min-h-[50vh] text-center"
+          >
+            <div class="">
+              <img
+                src="assets/img/empty-states/no-data.svg"
+                alt="No User Stories Available"
+                class="w-80 h-80 mx-auto"
+              />
+            </div>
+            <h1 class="font-semibold text-secondary-700 text-xl mb-2">
+              No User Stories Available for the selected PRD.
+            </h1>
+            <p class="text-secondary-500 text-sm">
+              Try selecting a different PRD or create user stories for the PRD.
+            </p>
+            <app-button
+              class="mt-4"
+              buttonContent="Go to Solution"
+              [size]="'sm'"
+              (click)="navigateToAppInfo()"
+            ></app-button>
+          </div>
+        </ng-template>
+      </ng-container>
+    </div>
+  </div>
+</div>

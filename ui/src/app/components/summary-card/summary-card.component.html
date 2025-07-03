@@ -1,0 +1,17 @@
+<div 
+  class="rounded-lg p-5 shadow-sm hover:shadow-md transition-all duration-200 h-full"
+  [ngClass]="getBackgroundClass()"
+>
+  <div class="flex items-center">
+    <div 
+      class="rounded-full p-2.5 mr-4 flex items-center justify-center w-12 h-12"
+      [ngClass]="getIconBgClass()"
+    >
+      <ng-icon [name]="icon" size="22" [ngClass]="getTextColorClass()"></ng-icon>
+    </div>
+    <div>
+      <div class="text-sm font-medium mb-1" [ngClass]="getTextColorClass()">{{ title }}</div>
+      <div class="text-3xl font-bold">{{ count }}</div>
+    </div>
+  </div>
+</div>

@@ -13,7 +13,7 @@ export interface SelectOption {
   selector: 'app-select',
   templateUrl: './app-select.component.html',
   standalone: true,
-  imports: [NgForOf, NgIf, NgIconComponent],
+  imports: [NgForOf, NgIf, NgIconComponent, NgClass],
   providers: [
     provideIcons({ heroXMark }),
     {
