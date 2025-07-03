@@ -92,7 +92,7 @@
 
       <!-- No Items State -->
       <div
-        *ngIf="!isLoadingWorkItems() && featuresWithChildren().length === 0"
+        *ngIf="!isLoadingWorkItems() && prdsWithChildren().length === 0"
         class="p-8 text-center"
       >
         <p class="text-gray-600">
@@ -102,27 +102,27 @@
 
       <!-- Work Items List -->
       <div
-        *ngIf="!isLoadingWorkItems() && featuresWithChildren().length > 0"
+        *ngIf="!isLoadingWorkItems() && prdsWithChildren().length > 0"
         class="divide-y divide-gray-100 max-h-96 overflow-y-auto"
       >
-        <div *ngFor="let feature of featuresWithChildren()" class="py-2 px-4">
-          <!-- Feature (Top-level) Item -->
+        <div *ngFor="let prd of prdsWithChildren()" class="py-2 px-4">
+          <!-- PRD (Top-level) Item -->
           <div
-            (click)="toggleFeatureExpansion(parseInt(feature.pmoId))"
+            (click)="togglePrdExpansion(parseInt(prd.pmoId))"
             class="flex items-center py-2 cursor-pointer hover:bg-gray-50"
           >
             <!-- Checkbox -->
             <input
               type="checkbox"
-              [id]="'feature-' + feature.pmoId"
-              [checked]="isFeatureSelected(parseInt(feature.pmoId))"
-              (click)="toggleFeatureSelection($event, parseInt(feature.pmoId))"
+              [id]="'prd-' + prd.pmoId"
+              [checked]="isPrdSelected(parseInt(prd.pmoId))"
+              (click)="togglePrdSelection($event, parseInt(prd.pmoId))"
               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
             />
 
             <ng-icon
               [name]="
-                isFeatureExpanded(parseInt(feature.pmoId))
+                isPrdExpanded(parseInt(prd.pmoId))
                   ? 'heroChevronDown'
                   : 'heroChevronRight'
               "
@@ -132,29 +132,29 @@
             <div class="flex-grow">
               <div class="flex items-center">
                 <span class="text-sm font-medium text-gray-900">{{
-                  feature.title
+                  prd.title
                 }}</span>
                 <span
                   class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full"
                   [ngClass]="getTopLevelBadgeColor()"
                 >
-                  {{ config.itemLabels.topLevel }} #{{ feature.pmoId }}
+                  {{ config.itemLabels.topLevel }} #{{ prd.pmoId }}
                 </span>
               </div>
               <p class="text-xs text-gray-600 mt-1">
-                {{ feature.pmoIssueType }}
+                {{ prd.pmoIssueType }}
               </p>
             </div>
           </div>
 
           <!-- Mid-level Items (Platform Features / Stories) -->
           <div
-            *ngIf="isFeatureExpanded(parseInt(feature.pmoId))"
+            *ngIf="isPrdExpanded(parseInt(prd.pmoId))"
             class="ml-6 pl-4 border-l border-gray-200"
           >
             <!-- No Mid-level Items State -->
             <div
-              *ngIf="!feature.child || feature.child.length === 0"
+              *ngIf="!prd.child || prd.child.length === 0"
               class="py-2 text-center"
             >
               <span class="text-xs text-gray-500"
@@ -163,13 +163,11 @@
             </div>
 
             <!-- Mid-level Items -->
-            <div *ngFor="let platformFeature of feature.child" class="py-2">
+            <div *ngFor="let platformFeature of prd.child" class="py-2">
               <!-- Mid-level Item -->
               <div
                 (click)="
-                  togglePlatformFeatureExpansion(
-                    parseInt(platformFeature.pmoId)
-                  )
+                  toggleUserStoryExpansion(parseInt(platformFeature.pmoId))
                 "
                 class="flex items-center py-2 cursor-pointer hover:bg-gray-50"
               >
@@ -178,10 +176,10 @@
                   type="checkbox"
                   [id]="'platform-feature-' + platformFeature.pmoId"
                   [checked]="
-                    isPlatformFeatureSelected(parseInt(platformFeature.pmoId))
+                    isUserStorySelected(parseInt(platformFeature.pmoId))
                   "
                   (click)="
-                    togglePlatformFeatureSelection(
+                    toggleUserStorySelection(
                       $event,
                       parseInt(platformFeature.pmoId)
                     )
@@ -191,7 +189,7 @@
 
                 <ng-icon
                   [name]="
-                    isPlatformFeatureExpanded(parseInt(platformFeature.pmoId))
+                    isUserStoryExpanded(parseInt(platformFeature.pmoId))
                       ? 'heroChevronDown'
                       : 'heroChevronRight'
                   "
@@ -220,9 +218,7 @@
 
               <!-- Bottom-level Items (User Stories / Sub-tasks) -->
               <div
-                *ngIf="
-                  isPlatformFeatureExpanded(parseInt(platformFeature.pmoId))
-                "
+                *ngIf="isUserStoryExpanded(parseInt(platformFeature.pmoId))"
                 class="ml-6 pl-4 border-l border-gray-200"
               >
                 <!-- No Bottom-level Items State -->
@@ -247,12 +243,9 @@
                     <input
                       type="checkbox"
                       [id]="'user-story-' + userStory.pmoId"
-                      [checked]="isUserStorySelected(parseInt(userStory.pmoId))"
+                      [checked]="isTaskSelected(parseInt(userStory.pmoId))"
                       (click)="
-                        toggleUserStorySelection(
-                          $event,
-                          parseInt(userStory.pmoId)
-                        )
+                        toggleTaskSelection($event, parseInt(userStory.pmoId))
                       "
                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
                     />

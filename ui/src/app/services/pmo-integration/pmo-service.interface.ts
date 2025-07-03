@@ -16,7 +16,7 @@ export interface PmoService {
    * Get features hierarchy from the PMO system
    * Returns a hierarchical structure of tickets (Features -> User Stories -> Tasks)
    */
-  getFeaturesHierarchy(): Promise<Ticket[]>;
+  getWorkPlanItemsHierarchy(): Promise<Ticket[]>;
 
   /**
    * Validate PMO credentials and connection
