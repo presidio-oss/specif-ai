@@ -1,6 +1,8 @@
 <div class="bg-white rounded-lg shadow-md w-full">
   <div class="flex items-center justify-between p-6 border-b border-gray-200">
-    <h2 class="text-xl font-semibold text-gray-900">{{ config.title }}</h2>
+    <h2 class="text-xl font-semibold text-gray-900">
+      {{ action() === 'pull' ? config.title : 'Push to ' + config.serviceName }}
+    </h2>
     <button
       (click)="onClose()"
       class="text-gray-400 hover:text-gray-600 transition-colors"
@@ -55,10 +57,12 @@
         <div class="flex items-center justify-between">
           <div>
             <h4 class="font-medium text-gray-900">
-              Work Items from {{ config.serviceName }}
+              {{ action() === 'pull' ? 'Work Items from ' + config.serviceName : 'Items to Push to ' + config.serviceName }}
             </h4>
             <p class="text-xs text-gray-600 mt-1">
-              {{ config.itemLabels.topLevel }}s and their child items
+              {{ action() === 'pull' ? 
+                config.itemLabels.topLevel + 's and their child items' : 
+                'Select items to push to ' + config.serviceName }}
             </p>
           </div>
           <div class="flex items-center">
@@ -108,21 +112,21 @@
         <div *ngFor="let prd of prdsWithChildren()" class="py-2 px-4">
           <!-- PRD (Top-level) Item -->
           <div
-            (click)="togglePrdExpansion(parseInt(prd.pmoId))"
+            (click)="togglePrdExpansion(prd.specifaiId)"
             class="flex items-center py-2 cursor-pointer hover:bg-gray-50"
           >
             <!-- Checkbox -->
             <input
               type="checkbox"
-              [id]="'prd-' + prd.pmoId"
-              [checked]="isPrdSelected(parseInt(prd.pmoId))"
-              (click)="togglePrdSelection($event, parseInt(prd.pmoId))"
+              [id]="'prd-' + prd.specifaiId"
+              [checked]="isPrdSelected(prd.specifaiId)"
+              (click)="togglePrdSelection($event, prd.specifaiId)"
               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
             />
 
             <ng-icon
               [name]="
-                isPrdExpanded(parseInt(prd.pmoId))
+                isPrdExpanded(prd.specifaiId)
                   ? 'heroChevronDown'
                   : 'heroChevronRight'
               "
@@ -138,7 +142,7 @@
                   class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full"
                   [ngClass]="getTopLevelBadgeColor()"
                 >
-                  {{ config.itemLabels.topLevel }} #{{ prd.pmoId }}
+                  {{ config.itemLabels.topLevel }} #{{ prd.specifaiId }}
                 </span>
               </div>
               <p class="text-xs text-gray-600 mt-1">
@@ -149,7 +153,7 @@
 
           <!-- Mid-level Items (Platform Features / Stories) -->
           <div
-            *ngIf="isPrdExpanded(parseInt(prd.pmoId))"
+            *ngIf="isPrdExpanded(prd.specifaiId)"
             class="ml-6 pl-4 border-l border-gray-200"
           >
             <!-- No Mid-level Items State -->
@@ -166,30 +170,21 @@
             <div *ngFor="let platformFeature of prd.child" class="py-2">
               <!-- Mid-level Item -->
               <div
-                (click)="
-                  toggleUserStoryExpansion(parseInt(platformFeature.pmoId))
-                "
+                (click)="toggleUserStoryExpansion(platformFeature.specifaiId)"
                 class="flex items-center py-2 cursor-pointer hover:bg-gray-50"
               >
                 <!-- Checkbox -->
                 <input
                   type="checkbox"
-                  [id]="'platform-feature-' + platformFeature.pmoId"
-                  [checked]="
-                    isUserStorySelected(parseInt(platformFeature.pmoId))
-                  "
-                  (click)="
-                    toggleUserStorySelection(
-                      $event,
-                      parseInt(platformFeature.pmoId)
-                    )
-                  "
+                  [id]="'platform-feature-' + platformFeature.specifaiId"
+                  [checked]="isUserStorySelected(platformFeature.specifaiId)"
+                  (click)="toggleUserStorySelection($event, platformFeature.specifaiId)"
                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
                 />
 
                 <ng-icon
                   [name]="
-                    isUserStoryExpanded(parseInt(platformFeature.pmoId))
+                    isUserStoryExpanded(platformFeature.specifaiId)
                       ? 'heroChevronDown'
                       : 'heroChevronRight'
                   "
@@ -206,7 +201,7 @@
                       [ngClass]="getMidLevelBadgeColor()"
                     >
                       {{ config.itemLabels.midLevel }} #{{
-                        platformFeature.pmoId
+                        platformFeature.specifaiId
                       }}
                     </span>
                   </div>
@@ -218,7 +213,7 @@
 
               <!-- Bottom-level Items (User Stories / Sub-tasks) -->
               <div
-                *ngIf="isUserStoryExpanded(parseInt(platformFeature.pmoId))"
+                *ngIf="isUserStoryExpanded(platformFeature.specifaiId)"
                 class="ml-6 pl-4 border-l border-gray-200"
               >
                 <!-- No Bottom-level Items State -->
@@ -242,11 +237,9 @@
                     <!-- Checkbox -->
                     <input
                       type="checkbox"
-                      [id]="'user-story-' + userStory.pmoId"
-                      [checked]="isTaskSelected(parseInt(userStory.pmoId))"
-                      (click)="
-                        toggleTaskSelection($event, parseInt(userStory.pmoId))
-                      "
+                      [id]="'user-story-' + userStory.specifaiId"
+                      [checked]="isTaskSelected(userStory.specifaiId)"
+                      (click)="toggleTaskSelection($event, userStory.specifaiId)"
                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
                     />
 
@@ -260,7 +253,7 @@
                           [ngClass]="getBottomLevelBadgeColor()"
                         >
                           {{ config.itemLabels.bottomLevel }} #{{
-                            userStory.pmoId
+                            userStory.specifaiId
                           }}
                         </span>
                       </div>
@@ -300,7 +293,7 @@
 
     <app-button
       *ngIf="connectionStatus().isConnected"
-      buttonContent="Proceed"
+      [buttonContent]="action() === 'pull' ? 'Pull Items' : 'Push Items'"
       theme="primary"
       size="sm"
       (click)="onProceed()"

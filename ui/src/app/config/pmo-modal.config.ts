@@ -29,7 +29,7 @@ export const PMO_MODAL_CONFIGS: { [key: string]: PmoModalConfig } = {
     },
     itemLabels: {
       topLevel: 'Feature',
-      midLevel: 'PlatformFeature',
+      midLevel: 'Platform Feature',
       bottomLevel: 'User Story',
     },
     badgeColors: {

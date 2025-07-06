@@ -361,6 +361,7 @@ export class DocumentListingComponent
         projectId,
         folderName,
         pmoType,
+        action, // Pass the action to the modal
       },
     });
 
