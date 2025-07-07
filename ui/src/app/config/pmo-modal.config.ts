@@ -28,9 +28,9 @@ export const PMO_MODAL_CONFIGS: { [key: string]: PmoModalConfig } = {
       checking: 'Checking ADO integration status...',
     },
     itemLabels: {
-      topLevel: 'Feature',
-      midLevel: 'Platform Feature',
-      bottomLevel: 'User Story',
+      topLevel: 'Product Requirement',
+      midLevel: 'User Story',
+      bottomLevel: 'Task',
     },
     badgeColors: {
       topLevel: 'bg-purple-100 text-purple-800',
@@ -47,9 +47,9 @@ export const PMO_MODAL_CONFIGS: { [key: string]: PmoModalConfig } = {
       checking: 'Checking Jira integration status...',
     },
     itemLabels: {
-      topLevel: 'Epic',
-      midLevel: 'Story',
-      bottomLevel: 'Sub-task',
+      topLevel: 'Product Requirement',
+      midLevel: 'User Story',
+      bottomLevel: 'Task',
     },
     badgeColors: {
       topLevel: 'bg-indigo-100 text-indigo-800',
