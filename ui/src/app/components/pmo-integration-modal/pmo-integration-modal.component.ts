@@ -123,7 +123,7 @@ export class PmoIntegrationModalComponent implements OnInit {
         errorMessage: validationResult.isValid
           ? undefined
           : validationResult.errorMessage ||
-          this.getInvalidCredentialsMessage(),
+            this.getInvalidCredentialsMessage(),
       });
 
       if (validationResult.isValid) {
@@ -156,11 +156,11 @@ export class PmoIntegrationModalComponent implements OnInit {
     try {
       this.isLoadingWorkItems.set(true);
 
-      // Get the ADO service to load current document hierarchy
-      const adoService = this.pmoService as any;
-
-      if (adoService.getCurrentDocumentHierarchy) {
-        const documentHierarchy = await adoService.getCurrentDocumentHierarchy(this.data.folderName);
+      if (this.pmoService.getCurrentDocumentHierarchy) {
+        const documentHierarchy =
+          await this.pmoService.getCurrentDocumentHierarchy(
+            this.data.folderName,
+          );
         console.log('Loaded current document hierarchy:', documentHierarchy);
         this.prdsWithChildren.set(documentHierarchy);
 
@@ -168,16 +168,13 @@ export class PmoIntegrationModalComponent implements OnInit {
         this.expandAllItemsByDefault(documentHierarchy);
       } else {
         this.toasterService.showError(
-          `This PMO service doesn't support pushing documents to ${this.data.pmoType.toUpperCase()}`
+          `This PMO service doesn't support pushing documents to ${this.data.pmoType.toUpperCase()}`,
         );
       }
     } catch (error) {
-      console.error(
-        `Error loading current document hierarchy:`,
-        error,
-      );
+      console.error(`Error loading current document hierarchy:`, error);
       this.toasterService.showError(
-        `Failed to load current document hierarchy`
+        `Failed to load current document hierarchy`,
       );
     } finally {
       this.isLoadingWorkItems.set(false);
@@ -576,9 +573,7 @@ export class PmoIntegrationModalComponent implements OnInit {
     for (const prd of prds) {
       if (!prd.child) continue;
 
-      const us = prd.child.find(
-        (us: Ticket) => us.specifaiId === userStoryId,
-      );
+      const us = prd.child.find((us: Ticket) => us.specifaiId === userStoryId);
       if (us) {
         foundUserStory = us;
         break;
