@@ -30,6 +30,7 @@ interface PmoIntegrationData {
   projectId: string;
   folderName: string;
   pmoType: 'ado' | 'jira';
+  action?: 'pull' | 'push';
 }
 
 @Component({
@@ -58,14 +59,17 @@ export class PmoIntegrationModalComponent implements OnInit {
     isConnected: false,
   });
 
+  // Current action (pull or push)
+  action = signal<'pull' | 'push'>('pull');
+
   prdsWithChildren = signal<Ticket[]>([]);
-  expandedPrdIds = signal<Set<number>>(new Set());
-  expandedUserStoryIds = signal<Set<number>>(new Set());
+  expandedPrdIds = signal<Set<string>>(new Set());
+  expandedUserStoryIds = signal<Set<string>>(new Set());
 
   // Selected items
-  selectedPrdIds = signal<Set<number>>(new Set());
-  selectedUserStoryIds = signal<Set<number>>(new Set());
-  selectedTaskIds = signal<Set<number>>(new Set());
+  selectedPrdIds = signal<Set<string>>(new Set());
+  selectedUserStoryIds = signal<Set<string>>(new Set());
+  selectedTaskIds = signal<Set<string>>(new Set());
 
   // Select all state
   allItemsSelected = signal<boolean>(false);
@@ -102,6 +106,7 @@ export class PmoIntegrationModalComponent implements OnInit {
   ) {
     this.pmoService = this.pmoServiceFactory.getPmoService(this.data.pmoType);
     this.config = PMO_MODAL_CONFIGS[this.data.pmoType];
+    this.action.set(this.data.action || 'pull');
 
     if (!this.config) {
       throw new Error(`Unsupported PMO type: ${this.data.pmoType}`);
@@ -118,12 +123,18 @@ export class PmoIntegrationModalComponent implements OnInit {
         errorMessage: validationResult.isValid
           ? undefined
           : validationResult.errorMessage ||
-            this.getInvalidCredentialsMessage(),
+          this.getInvalidCredentialsMessage(),
       });
 
       if (validationResult.isValid) {
         this.isLoading.set(false);
-        await this.loadPrdsHierarchy();
+
+        // Load appropriate data based on action
+        if (this.action() === 'pull') {
+          await this.loadPrdsHierarchy();
+        } else {
+          await this.loadCurrentDocumentHierarchy();
+        }
       }
     } catch (error) {
       this.connectionStatus.set({
@@ -138,10 +149,46 @@ export class PmoIntegrationModalComponent implements OnInit {
     }
   }
 
+  /**
+   * Load the current document hierarchy from SpecifAI for push action
+   */
+  async loadCurrentDocumentHierarchy(): Promise<void> {
+    try {
+      this.isLoadingWorkItems.set(true);
+
+      // Get the ADO service to load current document hierarchy
+      const adoService = this.pmoService as any;
+
+      if (adoService.getCurrentDocumentHierarchy) {
+        const documentHierarchy = await adoService.getCurrentDocumentHierarchy(this.data.folderName);
+        console.log('Loaded current document hierarchy:', documentHierarchy);
+        this.prdsWithChildren.set(documentHierarchy);
+
+        // Expand all PRDs and user stories by default
+        this.expandAllItemsByDefault(documentHierarchy);
+      } else {
+        this.toasterService.showError(
+          `This PMO service doesn't support pushing documents to ${this.data.pmoType.toUpperCase()}`
+        );
+      }
+    } catch (error) {
+      console.error(
+        `Error loading current document hierarchy:`,
+        error,
+      );
+      this.toasterService.showError(
+        `Failed to load current document hierarchy`
+      );
+    } finally {
+      this.isLoadingWorkItems.set(false);
+    }
+  }
+
   async loadPrdsHierarchy(): Promise<void> {
     try {
       this.isLoadingWorkItems.set(true);
       const prdsHierarchy = await this.pmoService.getWorkPlanItemsHierarchy();
+      console.log('Loaded PRDs hierarchy:', prdsHierarchy);
       this.prdsWithChildren.set(prdsHierarchy);
 
       // Expand all PRDs and user stories by default
@@ -161,17 +208,17 @@ export class PmoIntegrationModalComponent implements OnInit {
 
   private expandAllItemsByDefault(prdsHierarchy: Ticket[]): void {
     // Create new Sets to store the expanded IDs
-    const prdIds = new Set<number>();
-    const userStoryIds = new Set<number>();
+    const prdIds = new Set<string>();
+    const userStoryIds = new Set<string>();
 
     // Add all PRD IDs to the expanded set
     prdsHierarchy.forEach((prd) => {
-      prdIds.add(parseInt(prd.pmoId));
+      prdIds.add(prd.specifaiId);
 
       // Add all user story IDs under each PRD to the expanded set
       if (prd.child && prd.child.length > 0) {
         prd.child.forEach((userStory: Ticket) => {
-          userStoryIds.add(parseInt(userStory.pmoId));
+          userStoryIds.add(userStory.specifaiId);
         });
       }
     });
@@ -181,7 +228,7 @@ export class PmoIntegrationModalComponent implements OnInit {
     this.expandedUserStoryIds.set(userStoryIds);
   }
 
-  togglePrdExpansion(prdId: number): void {
+  togglePrdExpansion(prdId: string): void {
     const currentExpanded = this.expandedPrdIds();
     const newExpanded = new Set(currentExpanded);
 
@@ -194,7 +241,7 @@ export class PmoIntegrationModalComponent implements OnInit {
     this.expandedPrdIds.set(newExpanded);
   }
 
-  toggleUserStoryExpansion(userStoryId: number): void {
+  toggleUserStoryExpansion(userStoryId: string): void {
     const currentExpanded = this.expandedUserStoryIds();
     const newExpanded = new Set(currentExpanded);
 
@@ -207,11 +254,11 @@ export class PmoIntegrationModalComponent implements OnInit {
     this.expandedUserStoryIds.set(newExpanded);
   }
 
-  isPrdExpanded(prdId: number): boolean {
+  isPrdExpanded(prdId: string): boolean {
     return this.expandedPrdIds().has(prdId);
   }
 
-  isUserStoryExpanded(userStoryId: number): boolean {
+  isUserStoryExpanded(userStoryId: string): boolean {
     return this.expandedUserStoryIds().has(userStoryId);
   }
 
@@ -226,6 +273,8 @@ export class PmoIntegrationModalComponent implements OnInit {
         // Get all selected features (PRDs), platform features (User Stories), and user stories (Tasks)
         const selectedItems = this.getSelectedTickets();
 
+        console.log('Selected items to proceed with:', selectedItems);
+
         if (Object.values(selectedItems).every((array) => array.length === 0)) {
           this.toasterService.showWarning(
             'No items selected. Please select at least one item to import.',
@@ -236,7 +285,8 @@ export class PmoIntegrationModalComponent implements OnInit {
         // Let the dialog caller know we have data to save
         this.dialogRef.close({
           proceed: true,
-          action: this.data.folderName,
+          action: this.action(), // Use the current action (pull or push)
+          folderName: this.data.folderName,
           selectedItems,
           pmoType: this.data.pmoType,
         });
@@ -268,16 +318,14 @@ export class PmoIntegrationModalComponent implements OnInit {
 
     // Loop through all PRDs
     prds.forEach((prd: Ticket) => {
-      const prdId = parseInt(prd.pmoId);
-
       // If this PRD is selected, add it to PRDs
-      if (this.isPrdSelected(prdId)) {
+      if (this.isPrdSelected(prd.specifaiId)) {
         // Create a copy of the PRD with mapped properties
         const prdTicket: Ticket = {
           pmoId: prd.pmoId,
           pmoIssueType: prd.pmoIssueType,
           pmoParentId: prd.pmoParentId,
-          specifaiId: prd.specifaiId || `PRD${prd.pmoId}`,
+          specifaiId: prd.specifaiId,
           specifaiType: 'PRD', // Explicitly set to PRD
           specifaiParentId: null,
           title: prd.title,
@@ -290,16 +338,14 @@ export class PmoIntegrationModalComponent implements OnInit {
         // Process User Stories if they exist
         if (prd.child && prd.child.length > 0) {
           prd.child.forEach((userStory: Ticket) => {
-            const usId = parseInt(userStory.pmoId);
-
             // If this user story is selected, add it to User Stories
-            if (this.isUserStorySelected(usId)) {
+            if (this.isUserStorySelected(userStory.specifaiId)) {
               // Create a copy of the user story with mapped properties
               const userStoryTicket: Ticket = {
                 pmoId: userStory.pmoId,
                 pmoIssueType: userStory.pmoIssueType,
                 pmoParentId: userStory.pmoParentId,
-                specifaiId: userStory.specifaiId || `US${userStory.pmoId}`,
+                specifaiId: userStory.specifaiId,
                 specifaiType: 'User Story', // Map to User Story
                 specifaiParentId: prdTicket.specifaiId, // Link to parent PRD
                 title: userStory.title,
@@ -312,19 +358,16 @@ export class PmoIntegrationModalComponent implements OnInit {
               // Process Tasks if they exist
               if (userStory.child && userStory.child.length > 0) {
                 userStory.child.forEach((task: Ticket) => {
-                  const taskId = parseInt(task.pmoId);
-
                   // If this task is selected, add it to Tasks
-                  if (this.isTaskSelected(taskId)) {
+                  if (this.isTaskSelected(task.specifaiId)) {
                     // Create a copy of the task with mapped properties
                     const taskTicket: Ticket = {
                       pmoId: task.pmoId,
                       pmoIssueType: task.pmoIssueType,
                       pmoParentId: task.pmoParentId,
-                      specifaiId: task.specifaiId || `TASK${task.pmoId}`,
+                      specifaiId: task.specifaiId,
                       specifaiType: 'Task', // Map to Task
-                      specifaiParentId:
-                        userStory.specifaiId || `US${userStory.pmoId}`, // Link to parent User Story
+                      specifaiParentId: userStory.specifaiId, // Link to parent User Story
                       title: task.title,
                       description: task.description,
                       child: [], // No children for tasks
@@ -365,22 +408,22 @@ export class PmoIntegrationModalComponent implements OnInit {
     const prds = this.prdsWithChildren();
 
     // New sets for selected items
-    const prdIds = new Set<number>();
-    const userStoryIds = new Set<number>();
-    const taskIds = new Set<number>();
+    const prdIds = new Set<string>();
+    const userStoryIds = new Set<string>();
+    const taskIds = new Set<string>();
 
     if (isChecked) {
       // Add all items to their respective sets
       prds.forEach((prd: Ticket) => {
-        prdIds.add(parseInt(prd.pmoId));
+        prdIds.add(prd.specifaiId);
 
         if (prd.child && prd.child.length > 0) {
           prd.child.forEach((userStory: Ticket) => {
-            userStoryIds.add(parseInt(userStory.pmoId));
+            userStoryIds.add(userStory.specifaiId);
 
             if (userStory.child && userStory.child.length > 0) {
               userStory.child.forEach((task: Ticket) => {
-                taskIds.add(parseInt(task.pmoId));
+                taskIds.add(task.specifaiId);
               });
             }
           });
@@ -394,7 +437,7 @@ export class PmoIntegrationModalComponent implements OnInit {
     this.selectedTaskIds.set(taskIds);
   }
 
-  togglePrdSelection(event: Event, prdId: number): void {
+  togglePrdSelection(event: Event, prdId: string): void {
     // Stop the click event from propagating to parent elements
     event.stopPropagation();
 
@@ -423,9 +466,9 @@ export class PmoIntegrationModalComponent implements OnInit {
   /**
    * Cascade PRD selection to all its user stories and tasks
    */
-  private cascadePrdSelection(prdId: number, isSelected: boolean): void {
+  private cascadePrdSelection(prdId: string, isSelected: boolean): void {
     const prds = this.prdsWithChildren();
-    const prd = prds.find((p: Ticket) => parseInt(p.pmoId) === prdId);
+    const prd = prds.find((p: Ticket) => p.specifaiId === prdId);
 
     if (!prd || !prd.child) {
       return;
@@ -437,7 +480,7 @@ export class PmoIntegrationModalComponent implements OnInit {
 
     // Loop through all children and apply selection
     prd.child.forEach((userStory: Ticket) => {
-      const usId = parseInt(userStory.pmoId);
+      const usId = userStory.specifaiId;
       if (isSelected) {
         userStoryIds.add(usId);
       } else {
@@ -446,7 +489,7 @@ export class PmoIntegrationModalComponent implements OnInit {
 
       if (userStory.child && userStory.child.length > 0) {
         userStory.child.forEach((task: Ticket) => {
-          const taskId = parseInt(task.pmoId);
+          const taskId = task.specifaiId;
           if (isSelected) {
             taskIds.add(taskId);
           } else {
@@ -461,7 +504,7 @@ export class PmoIntegrationModalComponent implements OnInit {
     this.selectedTaskIds.set(taskIds);
   }
 
-  toggleUserStorySelection(event: Event, userStoryId: number): void {
+  toggleUserStorySelection(event: Event, userStoryId: string): void {
     // Stop the click event from propagating to parent elements
     event.stopPropagation();
 
@@ -494,7 +537,7 @@ export class PmoIntegrationModalComponent implements OnInit {
   /**
    * Find and select the parent PRD of a user story
    */
-  private selectParentPrd(userStoryId: number): void {
+  private selectParentPrd(userStoryId: string): void {
     const prds = this.prdsWithChildren();
     let parentPrd: Ticket | null = null;
 
@@ -503,7 +546,7 @@ export class PmoIntegrationModalComponent implements OnInit {
       if (!prd.child) continue;
 
       const hasUserStory = prd.child.some(
-        (us: Ticket) => parseInt(us.pmoId) === userStoryId,
+        (us: Ticket) => us.specifaiId === userStoryId,
       );
       if (hasUserStory) {
         parentPrd = prd;
@@ -514,7 +557,7 @@ export class PmoIntegrationModalComponent implements OnInit {
     if (parentPrd) {
       // Select the parent PRD
       const prdIds = new Set(this.selectedPrdIds());
-      prdIds.add(parseInt(parentPrd.pmoId));
+      prdIds.add(parentPrd.specifaiId);
       this.selectedPrdIds.set(prdIds);
     }
   }
@@ -523,7 +566,7 @@ export class PmoIntegrationModalComponent implements OnInit {
    * Cascade user story selection to all its tasks
    */
   private cascadeUserStorySelection(
-    userStoryId: number,
+    userStoryId: string,
     isSelected: boolean,
   ): void {
     // Find the user story in the hierarchy
@@ -534,7 +577,7 @@ export class PmoIntegrationModalComponent implements OnInit {
       if (!prd.child) continue;
 
       const us = prd.child.find(
-        (us: Ticket) => parseInt(us.pmoId) === userStoryId,
+        (us: Ticket) => us.specifaiId === userStoryId,
       );
       if (us) {
         foundUserStory = us;
@@ -552,9 +595,9 @@ export class PmoIntegrationModalComponent implements OnInit {
     // Apply selection to all tasks
     foundUserStory.child.forEach((task: Ticket) => {
       if (isSelected) {
-        taskIds.add(parseInt(task.pmoId));
+        taskIds.add(task.specifaiId);
       } else {
-        taskIds.delete(parseInt(task.pmoId));
+        taskIds.delete(task.specifaiId);
       }
     });
 
@@ -562,7 +605,7 @@ export class PmoIntegrationModalComponent implements OnInit {
     this.selectedTaskIds.set(taskIds);
   }
 
-  toggleTaskSelection(event: Event, taskId: number): void {
+  toggleTaskSelection(event: Event, taskId: string): void {
     // Stop the click event from propagating to parent elements
     event.stopPropagation();
 
@@ -592,7 +635,7 @@ export class PmoIntegrationModalComponent implements OnInit {
    * Automatically selects the entire parent hierarchy of a task
    * (both user story and PRD)
    */
-  private selectParentHierarchyForTask(taskId: number): void {
+  private selectParentHierarchyForTask(taskId: string): void {
     const prds = this.prdsWithChildren();
     let foundUserStory: Ticket | undefined = undefined;
     let foundPrd: Ticket | undefined = undefined;
@@ -605,7 +648,7 @@ export class PmoIntegrationModalComponent implements OnInit {
         if (!userStory.child) continue;
 
         const foundTask = userStory.child.find(
-          (t: Ticket) => parseInt(t.pmoId) === taskId,
+          (t: Ticket) => t.specifaiId === taskId,
         );
         if (foundTask) {
           foundUserStory = userStory;
@@ -619,31 +662,26 @@ export class PmoIntegrationModalComponent implements OnInit {
     if (foundUserStory && foundPrd) {
       // Select the user story
       const userStoryIds = new Set(this.selectedUserStoryIds());
-      userStoryIds.add(parseInt(foundUserStory.pmoId));
+      userStoryIds.add(foundUserStory.specifaiId);
       this.selectedUserStoryIds.set(userStoryIds);
 
       // Select the PRD
       const prdIds = new Set(this.selectedPrdIds());
-      prdIds.add(parseInt(foundPrd.pmoId));
+      prdIds.add(foundPrd.specifaiId);
       this.selectedPrdIds.set(prdIds);
     }
   }
 
-  isPrdSelected(prdId: number): boolean {
+  isPrdSelected(prdId: string): boolean {
     return this.selectedPrdIds().has(prdId);
   }
 
-  isUserStorySelected(userStoryId: number): boolean {
+  isUserStorySelected(userStoryId: string): boolean {
     return this.selectedUserStoryIds().has(userStoryId);
   }
 
-  isTaskSelected(taskId: number): boolean {
+  isTaskSelected(taskId: string): boolean {
     return this.selectedTaskIds().has(taskId);
-  }
-
-  // Helper method to make parseInt accessible from the template
-  parseInt(value: string): number {
-    return parseInt(value);
   }
 
   private updateAllSelectedState(): void {
@@ -654,21 +692,21 @@ export class PmoIntegrationModalComponent implements OnInit {
     const prds = this.prdsWithChildren();
     prds.forEach((prd: Ticket) => {
       totalItemCount++; // Count the PRD
-      if (this.isPrdSelected(parseInt(prd.pmoId))) {
+      if (this.isPrdSelected(prd.specifaiId)) {
         selectedItemCount++;
       }
 
       if (prd.child && prd.child.length > 0) {
         prd.child.forEach((userStory: Ticket) => {
           totalItemCount++; // Count the user story
-          if (this.isUserStorySelected(parseInt(userStory.pmoId))) {
+          if (this.isUserStorySelected(userStory.specifaiId)) {
             selectedItemCount++;
           }
 
           if (userStory.child && userStory.child.length > 0) {
             userStory.child.forEach((task: Ticket) => {
               totalItemCount++; // Count the task
-              if (this.isTaskSelected(parseInt(task.pmoId))) {
+              if (this.isTaskSelected(task.specifaiId)) {
                 selectedItemCount++;
               }
             });

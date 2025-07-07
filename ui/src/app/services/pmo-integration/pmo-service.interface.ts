@@ -19,6 +19,12 @@ export interface PmoService {
   getWorkPlanItemsHierarchy(): Promise<Ticket[]>;
 
   /**
+   * Get current document hierarchy from SpecifAI for pushing to PMO system
+   * @param folderName The folder name (PRD, User Story, etc.)
+   */
+  getCurrentDocumentHierarchy?(folderName: string): Promise<Ticket[]>;
+
+  /**
    * Validate PMO credentials and connection
    * Gets configuration from project metadata
    */

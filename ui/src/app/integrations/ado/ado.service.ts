@@ -6,7 +6,7 @@ import { PmoService } from '../../services/pmo-integration/pmo-service.interface
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from 'src/app/store/projects/projects.state';
-import { BulkUpdateFiles, GetProjectFiles, ReadFile } from '../../store/projects/projects.actions';
+import { BulkReadFiles, BulkUpdateFiles, GetProjectFiles, ReadFile } from '../../store/projects/projects.actions';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { Router } from '@angular/router';
 import { EXPORT_FILE_FORMATS, ExportFileFormat } from '../../constants/export.constants';
@@ -15,6 +15,11 @@ interface AdoConfiguration {
   personalAccessToken: string;
   organization: string;
   projectName: string;
+  workItemTypeMapping?: {
+    PRD: string;
+    US: string;
+    TASK: string;
+  };
 }
 
 @Injectable({
@@ -30,7 +35,7 @@ export class AdoService implements PmoService {
     private store: Store,
     private toast: ToasterService,
     private router: Router,
-  ) {}
+  ) { }
 
   /**
    * Configure the ADO service with your organization, project and PAT
@@ -879,7 +884,142 @@ export class AdoService implements PmoService {
       }
     }
   }
-  
+
+  /**
+   * Get current document hierarchy from SpecifAI for pushing to ADO
+   * @param folderName The folder name (PRD, User Story, etc.)
+   * @returns Promise with the document hierarchy
+   */
+  async getCurrentDocumentHierarchy(folderName: string): Promise<Ticket[]> {
+    try {
+
+      await this.store.dispatch(new BulkReadFiles('PRD')).pipe(first()).toPromise();
+
+      const prds = await lastValueFrom(
+        this.store.select(ProjectsState.getSelectedFileContents).pipe(first())
+      );
+
+      console.log('Current PRDs:', prds);
+
+      // Transform PRDs into the Ticket structure
+      const prdTickets: Ticket[] = [];
+
+      for (const prd of prds) {
+        // Skip if not a base file or if archived
+        if (!prd.fileName.includes('-base.json') || prd.fileName.includes('-archived')) {
+          continue;
+        }
+
+        const prdContent = prd.content;
+        if (!prdContent) continue;
+
+        // Extract PRD ID from filename (e.g., "PRD01" from "PRD01-base.json")
+        const prdIdMatch = prd.fileName.match(/^(PRD\d+)/);
+        if (!prdIdMatch) continue;
+
+        const prdId = prdIdMatch[1];
+
+        // Map PRD to Ticket structure
+        const prdTicket: Ticket = {
+          pmoId: (prdContent as any).pmoId || '', // Use existing pmoId if available
+          pmoIssueType: (prdContent as any).pmoIssueType || this.config?.workItemTypeMapping?.['PRD'] || 'Feature',
+          pmoParentId: null,
+          specifaiId: prdId,
+          specifaiType: 'PRD',
+          specifaiParentId: null,
+          title: prdContent.title || 'Untitled PRD',
+          description: prdContent.requirement || '',
+          child: []
+        };
+
+        console.log(`Processing PRD: `, prdTicket);
+
+        // Get user stories for this PRD
+        const userStories = await this.getUserStoriesForPrd(prdId);
+        prdTicket.child = userStories;
+
+        prdTickets.push(prdTicket);
+      }
+
+      return prdTickets;
+    } catch (error) {
+      console.error('Error getting current document hierarchy:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get user stories for a specific PRD
+   * @param prdId The PRD ID
+   * @returns Promise with user stories as Tickets
+   */
+  private async getUserStoriesForPrd(prdId: string): Promise<Ticket[]> {
+    try {
+      // Read the feature file for this PRD
+      const featureFilePath = `prd/${prdId}-feature.json`;
+
+      await this.store.dispatch(new ReadFile(featureFilePath)).pipe(first()).toPromise();
+
+      const featureContent = await lastValueFrom(
+        this.store.select(ProjectsState.getSelectedFileContent).pipe(first())
+      );
+
+      if (!featureContent || !featureContent.features) {
+        return [];
+      }
+
+      // Transform features into user story tickets
+      const userStoryTickets: Ticket[] = [];
+
+      for (const feature of featureContent.features) {
+        if (!feature.id) continue;
+
+        const userStoryTicket: Ticket = {
+          pmoId: feature.pmoId || '', // Use existing pmoId if available
+          pmoIssueType: feature.pmoIssueType || this.config?.workItemTypeMapping?.['US'] || 'Platform Feature',
+          pmoParentId: null, // Will be set by ADO when creating
+          specifaiId: feature.id,
+          specifaiType: 'User Story',
+          specifaiParentId: prdId,
+          title: feature.name || 'Untitled User Story',
+          description: feature.description || '',
+          child: []
+        };
+
+        // Transform tasks into task tickets
+        const taskTickets: Ticket[] = [];
+
+        if (feature.tasks && Array.isArray(feature.tasks)) {
+          for (const task of feature.tasks) {
+            if (!task.id) continue;
+
+            const taskTicket: Ticket = {
+              pmoId: task.pmoId || '', // Use existing pmoId if available
+              pmoIssueType: task.pmoIssueType || this.config?.workItemTypeMapping?.['TASK'] || 'User Story',
+              pmoParentId: null, // Will be set by ADO when creating
+              specifaiId: task.id,
+              specifaiType: 'Task',
+              specifaiParentId: userStoryTicket.specifaiId,
+              title: task.list || 'Untitled Task',
+              description: task.acceptance || '',
+              child: []
+            };
+
+            taskTickets.push(taskTicket);
+          }
+        }
+
+        userStoryTicket.child = taskTickets;
+        userStoryTickets.push(userStoryTicket);
+      }
+
+      return userStoryTickets;
+    } catch (error) {
+      console.error(`Error getting user stories for PRD ${prdId}:`, error);
+      return [];
+    }
+  }
+
   /**
    * Group tickets by their parent-child relationships
    * @param selectedItems Selected tickets from ADO
