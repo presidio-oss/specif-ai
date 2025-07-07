@@ -83,7 +83,7 @@ export class EditUserStoriesComponent implements OnDestroy {
     id: '',
     name: '',
     chatHistory: [],
-    storyTicketId: '',
+    pmoId: '',
   };
   loading: boolean = false;
   uploadedFileContent = '';
@@ -188,7 +188,7 @@ export class EditUserStoriesComponent implements OnDestroy {
               description: featureDescription,
               name: featureName!,
               id: this.data.id,
-              storyTicketId: this.data.storyTicketId,
+              pmoId: this.data.pmoId,
               chatHistory: this.chatHistory,
             }),
           );

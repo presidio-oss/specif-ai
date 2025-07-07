@@ -12,7 +12,7 @@ export interface SelectedDocument {
 export interface IProjectDocument {
   requirement?: string;
   title?: string;
-  epicTicketId?: string;
+  pmoId?: string;
   features?: IFeature[];
   linkedBRDIds?: string[];
   selectedBRDs?: SelectedDocument[];

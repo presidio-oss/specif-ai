@@ -245,7 +245,7 @@ type FileChunk = {
   title: string | null;
   message?: string;
   linkedBRDIds?: Array<string>;
-  epicTicketId?: string | null;
+  pmoId?: string | null;
   selectedBRDs?: Array<ISelectedRequirement>;
   selectedPRDs?: Array<ISelectedRequirement>;
 };
@@ -257,7 +257,7 @@ function readFileChunk(
   const CHUNK_SIZE = 400;
   const buffer = Buffer.alloc(CHUNK_SIZE);
   let accumulatedData = "";
-  let dataExtracted: FileChunk = { requirement: null, title: null, epicTicketId: null };
+  let dataExtracted: FileChunk = { requirement: null, title: null, pmoId: null };
   const fileName = path.split("/").pop() || "";
 
   // Build regex based on the filter string
@@ -284,8 +284,8 @@ function readFileChunk(
           if (parsed.title && !dataExtracted.title) {
             dataExtracted.title = parsed.title;
           }
-          if (parsed.epicTicketId && !dataExtracted.epicTicketId) {
-            dataExtracted.epicTicketId = parsed.epicTicketId;
+          if (parsed.pmoId && !dataExtracted.pmoId) {
+            dataExtracted.pmoId = parsed.pmoId;
           }
           // populated linked brd ids in prd base files
           if (parsed.linkedBRDIds && !dataExtracted.linkedBRDIds) {

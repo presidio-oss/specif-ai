@@ -146,7 +146,7 @@ export class DocumentListingComponent
     this.filteredDocumentList$ = this.searchService.filterItems(
       this.documentList$,
       this.searchTerm$,
-      (doc) => [doc.fileName, doc.content?.title, doc.content?.epicTicketId],
+      (doc) => [doc.fileName, doc.content?.title, doc.content?.pmoId],
     );
   }
 
@@ -408,6 +408,18 @@ export class DocumentListingComponent
       maxChars: 180,
       ellipsis: true,
     });
+  }
+
+  getPmoLogo(): string | null {
+    const selectedPmoTool = this.appInfo?.integration?.selectedPmoTool;
+    
+    if (selectedPmoTool === 'ado') {
+      return 'assets/img/logo/azure_devops_logo.svg';
+    } else if (selectedPmoTool === 'jira') {
+      return 'assets/img/logo/mark_gradient_blue_jira.svg';
+    }
+    
+    return null;
   }
 
   getExportOptions(folderName: string) {

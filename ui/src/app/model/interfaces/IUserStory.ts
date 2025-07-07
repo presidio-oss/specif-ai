@@ -1,7 +1,7 @@
 import { ITask } from "./ITask";
 
 export interface IUserStory {
-    storyTicketId?: string;
+    pmoId?: string;
     id: string;
     name: string;
     description: string;
@@ -67,5 +67,5 @@ export interface IUpdateUserStoryRequest{
 
 export interface EpicResponse {
   epicName: string;
-  epicTicketId: string;
+  pmoId: string;
 }
