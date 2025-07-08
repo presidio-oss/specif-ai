@@ -13,6 +13,7 @@ import { chatWithAIPrompt } from "../../prompts/core/chat-with-ai";
 import {
   ChatWithAIParams,
   ChatWithAISchema,
+  UCParams,
 } from "../../schema/core/chat-with-ai.schema";
 import { buildLangchainModelProvider } from "../../services/llm/llm-langchain";
 import { LLMConfigModel } from "../../services/llm/llm-types";
@@ -22,6 +23,7 @@ import { z } from "zod";
 import { APP_MESSAGES } from '../../constants/message.constants';
 import { GuardrailsShouldBlock, validateGuardrails } from "../../guardrails";
 import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
+import { getUCPrompt } from "../../prompts/core/usecase";
 
 // Message type mapping
 const MESSAGE_TYPES = {
@@ -101,8 +103,14 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
     };
 
     const messages = transformToLangchainMessages(validatedData.chatHistory);
+    const prompt = new SystemMessage(
+      validatedData.requirementAbbr === "UC"
+        ? getUCPrompt(validatedData as UCParams)
+        : chatWithAIPrompt(validatedData)
+    );
+
     const allMessages = [
-      new SystemMessage(chatWithAIPrompt(validatedData)),
+      prompt,
       ...messages,
     ];
 
@@ -280,6 +288,20 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       );
 
       tools.push(getLinkedUS, getLinkedPRD);
+      break;
+    }
+    case "UC": {
+      const getContextLinks = tool(
+        () => {
+          return JSON.stringify(data.context || []);
+        },
+        {
+          name: "get_context_links",
+          description: "Returns the list of organizational context links provided by the user (e.g., company website or docs)."
+        }
+      );
+
+      tools.push(getContextLinks);
       break;
     }
   }

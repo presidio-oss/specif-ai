@@ -1,7 +1,9 @@
 import { app } from "electron";
-import fs from "node:fs/promises";
+import fs, { appendFile } from "node:fs/promises";
 import path from "node:path";
 import { PATHS } from "../constants/app.constants";
+import { UsecaseDraft } from "../schema/core/usecase.schema";
+import * as mammoth from "mammoth";
 
 export const joinPaths = (...segments: string[]): string => {
   return path.join(...segments);
@@ -49,4 +51,20 @@ const normalizePath = (p: string): string => {
     normalized = normalized.slice(0, -1);
   }
   return normalized;
+};
+
+export const appendUsecaseRequirement = async (
+  workingDir: string,
+  data: Omit<UsecaseDraft, "id">
+): Promise<Omit<UsecaseDraft, "id">> => {
+  const filePath = path.join(workingDir, "UC");
+  console.log("Appending proposal requirement to:", filePath);
+  await appendFile(filePath, JSON.stringify(data) + "\n");
+  return { ...data };
+};
+
+export const extractTextFromDocx = async (filePath: string): Promise<string> => {
+  const buffer = await fs.readFile(filePath);
+  const result = await mammoth.extractRawText({ buffer });
+  return result.value.replace(/\s|/g, " ").trim().slice(0,4000);
 };

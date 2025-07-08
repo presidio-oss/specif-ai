@@ -1,3 +1,4 @@
+import { USE_CASE_DEFINITION_CONTEXT } from "../../prompts/context/usecase";
 import { REQUIREMENT_DISPLAY_NAME_MAP, REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 import { BP_DEFINITION_CONTEXT } from "../../prompts/context/bp";
 import { BRD_DEFINITION_CONTEXT } from "../../prompts/context/brd";
@@ -65,6 +66,8 @@ const getPersona = (requirementType: keyof typeof REQUIREMENT_TYPE) => {
     case "US":
     case "TASK":
       return "Product Manager";
+    case "UC":
+      return "Business Development Consultant";
     default:
       return "";
   }
@@ -86,6 +89,9 @@ const getRequirementTypeContext = (params: ChatWithAIParams) => {
     }
     case "US": {
       return USER_STORY_DEFINITION_CONTEXT;
+    }
+    case "UC": {
+      return USE_CASE_DEFINITION_CONTEXT;
     }
     default: {
       return "";
