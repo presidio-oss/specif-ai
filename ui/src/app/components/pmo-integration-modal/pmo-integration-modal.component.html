@@ -162,6 +162,20 @@
             ></ng-icon>
             <div class="flex-grow">
               <div class="flex items-center">
+                <span *ngIf="prd.pmoId; else newPrd" class="flex items-center">
+                  <ng-icon
+                    name="heroDocumentCheck"
+                    class="w-5 h-5 text-gray-400 mr-1"
+                  ></ng-icon>
+                </span>
+                <ng-template #newPrd>
+                  <span class="flex items-center">
+                    <ng-icon
+                      name="heroDocumentPlus"
+                      class="w-5 h-5 text-green-600 mr-1"
+                    ></ng-icon>
+                  </span>
+                </ng-template>
                 <span class="text-base font-medium text-gray-900 truncate">{{
                   prd.title
                 }}</span>
@@ -228,6 +242,23 @@
                 ></ng-icon>
                 <div class="flex-grow">
                   <div class="flex items-center">
+                    <span
+                      *ngIf="platformFeature.pmoId; else newMid"
+                      class="flex items-center"
+                    >
+                      <ng-icon
+                        name="heroDocumentCheck"
+                        class="w-4 h-4 text-gray-400 mr-1"
+                      ></ng-icon>
+                    </span>
+                    <ng-template #newMid>
+                      <span class="flex items-center">
+                        <ng-icon
+                          name="heroDocumentPlus"
+                          class="w-4 h-4 text-green-600 mr-1"
+                        ></ng-icon>
+                      </span>
+                    </ng-template>
                     <span class="text-sm font-medium text-gray-800 truncate">{{
                       platformFeature.title
                     }}</span>
@@ -286,6 +317,23 @@
                     />
                     <div class="flex-grow">
                       <div class="flex items-center">
+                        <span
+                          *ngIf="userStory.pmoId; else newBottom"
+                          class="flex items-center"
+                        >
+                          <ng-icon
+                            name="heroDocumentCheck"
+                            class="w-4 h-4 text-gray-400 mr-1"
+                          ></ng-icon>
+                        </span>
+                        <ng-template #newBottom>
+                          <span class="flex items-center">
+                            <ng-icon
+                              name="heroDocumentPlus"
+                              class="w-4 h-4 text-green-600 mr-1"
+                            ></ng-icon>
+                          </span>
+                        </ng-template>
                         <span
                           class="text-sm font-medium text-gray-800 truncate"
                           >{{ userStory.title }}</span

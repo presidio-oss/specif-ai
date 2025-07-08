@@ -13,6 +13,8 @@ import {
   heroChevronDown,
   heroChevronRight,
   heroArrowPath,
+  heroDocumentPlus,
+  heroDocumentCheck,
 } from '@ng-icons/heroicons/outline';
 import { APP_MESSAGES } from 'src/app/constants/app.constants';
 import { Ticket } from '../../services/pmo-integration/pmo-integration.service';
@@ -49,6 +51,8 @@ interface PmoIntegrationData {
       heroChevronDown,
       heroChevronRight,
       heroArrowPath,
+      heroDocumentPlus,
+      heroDocumentCheck,
     }),
   ],
 })
