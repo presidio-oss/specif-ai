@@ -19,6 +19,7 @@ import { MainLayoutComponent } from './layouts/main-layout/main-layout.component
 import { TestCaseListComponent } from './pages/test-cases/test-case-list/test-case-list.component';
 import { TestCaseDetailPageComponent } from './pages/test-cases/test-case-detail/test-case-detail.component';
 import { TestCaseHomeComponent } from './pages/test-cases/test-case-home/test-case-home.component';
+import { UseCaseComponent } from './pages/use-case/use-case.component';
 
 const routes: Routes = [
   {
@@ -178,6 +179,18 @@ const routes: Routes = [
             icon: 'test',
           },
         },
+      },
+      {
+        path: 'use-case/:mode',
+        component: UseCaseComponent,
+        canActivate: [UserGuard],
+        canDeactivate: [CanDeactivateGuard],
+      },
+      {
+        path: 'use-case/:mode/:fileName',
+        component: UseCaseComponent,
+        canActivate: [UserGuard],
+        canDeactivate: [CanDeactivateGuard],
       },
     ],
   },

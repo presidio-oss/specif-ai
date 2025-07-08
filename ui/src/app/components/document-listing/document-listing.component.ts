@@ -163,7 +163,14 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   navigateToEdit({ id, folderName, fileName, content }: any) {
-    const url = folderName === this.requirementTypes.BP ? '/bp-edit' : '/edit';
+    let url = '/edit';
+    
+    if (folderName === this.requirementTypes.BP) {
+      url = '/bp-edit';
+    } else if (folderName === this.requirementTypes.UC) {
+      url = `/use-case/edit/${fileName}`;
+    }
+    
     this.router.navigate([url], {
       state: { data: this.appInfo, id, folderName, fileName, req: content },
     });
@@ -215,6 +222,20 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
             },
           },
         });
+      });
+    } else if (folderName === this.requirementTypes.UC) {
+      // Special handling for Use Case add
+      this.router.navigate(['/use-case/add'], {
+        state: {
+          data: this.appInfo,
+          id,
+          folderName,
+          breadcrumb: {
+            name: 'Add Use Case',
+            link: this.currentRoute,
+            icon: 'add',
+          },
+        },
       });
     } else {
       this.router.navigate(['/add'], {

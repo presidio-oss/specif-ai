@@ -1,0 +1,18 @@
+// Styles for the Use Case component
+:host {
+  display: block;
+  height: 100%;
+}
+
+.context-item {
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+}
+
+// Fix for the rich text editor to ensure proper height
+::ng-deep .ql-container {
+  min-height: 150px;
+}

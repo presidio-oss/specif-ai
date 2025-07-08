@@ -47,6 +47,7 @@ import {
 import { AutoUpdateModalComponent } from '../components/auto-update-modal/auto-update-modal.component';
 import { htmlToMarkdown } from '../utils/html.utils';
 import { WorkflowType } from '../model/interfaces/workflow-progress.interface';
+import { IAddUseCaseRequest, IUpdateUseCaseRequest, IUseCaseResponse } from '../model/interfaces/IUseCase';
 
 @Injectable({
   providedIn: 'root',
@@ -314,6 +315,30 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'task:update',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async addUseCase(
+    request: IAddUseCaseRequest,
+  ): Promise<IUseCaseResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'usecase:add',
+        args: [request],
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async updateUseCase(
+    request: IUpdateUseCaseRequest,
+  ): Promise<IUseCaseResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'usecase:update',
         args: [request],
       });
     }

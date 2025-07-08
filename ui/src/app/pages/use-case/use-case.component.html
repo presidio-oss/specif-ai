@@ -1,0 +1,248 @@
+<div class="w-full h-full px-0">
+  <div class="grid grid-cols-12 gap-4 h-full">
+    <!-- Left Panel: Organizational Context -->
+    <div class="bg-white border rounded-lg flex flex-col col-span-12 lg:col-span-3 h-[calc(100vh-80px)]">
+      <header class="flex justify-between items-center p-4 border-b border-secondary-200">
+        <h1 class="text-lg font-semibold">Organizational Context</h1>
+      </header>
+      
+      <div class="p-4 flex flex-col gap-4">
+        <!-- URL Input -->
+        <div class="flex flex-col gap-2">
+          <div class="flex gap-2">
+            <app-button
+              buttonContent="Add Link"
+              icon="heroLink"
+              theme="secondary_outline"
+              size="sm"
+              rounded="md"
+              class="w-full"
+              (click)="addUrlPrompt()"
+            ></app-button>
+          </div>
+        </div>
+
+        <!-- File Upload -->
+        <div class="flex flex-col gap-2">
+          <div class="flex gap-2">
+            <input
+              type="file"
+              accept=".docx"
+              class="hidden"
+              #fileInput
+              (change)="onFileSelected($event)"
+            />
+            <app-button
+              buttonContent="Upload Word"
+              icon="heroDocumentTextSolid"
+              theme="secondary_outline"
+              size="sm"
+              rounded="md"
+              class="w-full"
+              (click)="fileInput.click()"
+            ></app-button>
+          </div>
+        </div>
+
+        <!-- Context Items List -->
+        <div class="mt-2 flex-1 overflow-y-auto">
+          <h3 class="text-sm font-medium text-secondary-900 mb-2">Added Context</h3>
+          <div class="flex flex-col gap-2">
+            <div 
+              *ngFor="let item of contextItems; let i = index" 
+              class="flex justify-between items-center p-3 border border-secondary-200 rounded-md"
+            >
+              <div class="flex items-center gap-2">
+                <ng-icon 
+                  [name]="item.type === 'url' ? 'heroLink' : 'heroDocumentTextSolid'" 
+                  class="text-lg text-secondary-500"
+                ></ng-icon>
+                <span class="text-sm truncate max-w-[120px]">{{ item.source }}</span>
+              </div>
+              <div class="text-xs px-2 py-1 bg-secondary-100 rounded">Summarized</div>
+            </div>
+            
+            <div *ngIf="contextItems.length === 0" class="text-center text-secondary-500 py-4">
+              No context items added yet
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle Panel: Proposal Chat (only in edit mode) -->
+    <div *ngIf="mode === 'edit'" class="bg-white border rounded-lg flex flex-col col-span-12 lg:col-span-5 h-[calc(100vh-80px)]">
+      <header class="flex justify-between items-center p-4 border-b border-secondary-200">
+        <h1 class="text-lg font-semibold">Proposal Chat</h1>
+      </header>
+      
+      <div class="flex-1 min-h-0">
+        <app-chat
+          class="h-full block"
+          chatType="requirement"
+          [name]="name"
+          [description]="requirement"
+          [fileName]="fileName"
+          [chatHistory]="chatHistory"
+          [supportsAddFromCode]="false"
+          [baseContent]="useCaseForm.getRawValue().requirement"
+          (getContent)="appendRequirement($event)"
+          (updateChatHistory)="updateChatHistory($event)"
+          [containerClass]="'border-none h-full'"
+        />
+      </div>
+    </div>
+
+    <!-- Right Panel: Live Proposal Draft -->
+    <div [ngClass]="{'lg:col-span-4': mode === 'edit', 'lg:col-span-9': mode === 'add'}" 
+         class="bg-white border rounded-lg flex flex-col col-span-12 h-[calc(100vh-80px)]">
+      <header class="flex justify-between items-center p-4 border-b border-secondary-200">
+        <div class="flex items-center">
+          <h1 class="text-lg font-semibold">
+            {{ mode === 'add' ? (folderName | expandDescription) : ucRequirementId }}
+          </h1>
+          <span 
+            *ngIf="mode === 'edit'"
+            class="ml-2 px-2 py-1 text-xs font-medium rounded-full"
+            [ngClass]="{
+              'bg-yellow-100 text-yellow-800': useCaseForm.get('status')?.value === 'DRAFT',
+              'bg-green-100 text-green-800': useCaseForm.get('status')?.value === 'COMPLETE'
+            }"
+          >
+            {{ useCaseForm.get('status')?.value }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <app-button
+            *ngIf="mode === 'edit' && useCaseForm.get('status')?.value === 'DRAFT'"
+            buttonContent="Finalize"
+            theme="secondary"
+            size="sm"
+            rounded="md"
+            (click)="finalizeUseCase()"
+          />
+          <app-button
+            *ngIf="mode === 'edit'"
+            [isIconButton]="true"
+            icon="heroTrash"
+            theme="danger"
+            size="sm"
+            rounded="md"
+            (click)="deleteUseCase()"
+          ></app-button>
+          <app-button
+            buttonContent="Export"
+            theme="secondary_outline"
+            size="sm"
+            rounded="md"
+          />
+        </div>
+      </header>
+
+      <form [formGroup]="useCaseForm" class="flex flex-col h-full overflow-hidden">
+        <div class="p-4 flex flex-col gap-4 flex-1 overflow-y-auto">
+          <!-- Title -->
+          <div class="flex flex-col">
+            <app-input-field
+              elementPlaceHolder="Title"
+              elementId="title"
+              elementName="Title"
+              formControlName="title"
+              [required]="true"
+            />
+            <div
+              *ngIf="
+                useCaseForm.get('title')?.errors?.['required'] &&
+                useCaseForm.get('title')?.touched
+              "
+              class="text-danger-500 text-sm"
+            >
+              Title is required
+            </div>
+          </div>
+
+          <!-- Requirement -->
+          <div class="flex flex-col gap-1.5">
+            <label class="block text-sm font-medium text-secondary-500">
+              Requirement
+              <span class="text-red-500 text-xs">*</span>
+            </label>
+            <div class="flex flex-col gap-1.5">
+              <app-rich-text-editor
+                formControlName="requirement"
+                [editorClass]="'h-[calc(100vh-600px)] min-h-24 overflow-y-auto'"
+              ></app-rich-text-editor>
+              <ng-container *ngIf="useCaseForm.get('requirement')?.touched">
+                <span
+                  *ngIf="useCaseForm.get('requirement')?.errors?.['required']"
+                  class="text-red-500 text-sm"
+                >
+                  Requirement is required
+                </span>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- No additional sections - description field already contains the full proposal -->
+        </div>
+
+        <div class="flex justify-end gap-2 p-4 border-t border-secondary-200">
+          <app-button
+            buttonContent="Cancel"
+            theme="secondary_outline"
+            size="sm"
+            rounded="md"
+            (click)="navigateBackToDocumentList(data)"
+          />
+          <app-button
+            buttonContent="Update"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'edit'"
+            (click)="updateUseCase()"
+            [disabled]="checkFormValidity()"
+          />
+          <app-button
+            buttonContent="Add"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'add'"
+            [disabled]="checkFormValidity()"
+            (click)="addUseCase()"
+          />
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- URL Input Dialog -->
+<div *ngIf="showUrlDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-96">
+    <h2 class="text-lg font-semibold mb-4">Add External URL</h2>
+    <input 
+      type="text" 
+      [(ngModel)]="urlInput"
+      placeholder="https://example.com"
+      class="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm mb-4"
+    />
+    <div class="flex justify-end gap-2">
+      <app-button
+        buttonContent="Cancel"
+        theme="secondary_outline"
+        size="sm"
+        rounded="md"
+        (click)="cancelUrlDialog()"
+      />
+      <app-button
+        buttonContent="Add"
+        theme="primary"
+        size="sm"
+        rounded="md"
+        (click)="addUrlContext()"
+      />
+    </div>
+  </div>
+</div>

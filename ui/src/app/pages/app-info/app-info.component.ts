@@ -48,6 +48,7 @@ import {
   heroChevronUp,
   heroServerStack,
   heroBeaker,
+  heroDocument,
 } from '@ng-icons/heroicons/outline';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
@@ -119,6 +120,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
       heroChevronDown,
       heroChevronUp,
       heroServerStack,
+      heroDocument,
       heroBeaker
     }),
   ],
@@ -177,7 +179,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
 
   // Predefined order of folders
-  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC'];
+  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC', 'UC'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
@@ -629,22 +631,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     });
   }
 
-  navigateToAdd(folderName: string) {
-    this.router
-      .navigate(['/add'], {
-        state: {
-          data: this.appInfo,
-          id: this.projectId,
-          folderName: folderName,
-          breadcrumb: {
-            name: 'Add Document',
-            link: this.router.url,
-            icon: 'add',
-          },
-        },
-      })
-      .then();
-  }
 
   navigateToBPFlow(item: any) {
     this.router.navigate(['/bp-flow/view', item.id], {
@@ -665,6 +651,40 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   
   navigateToTestCasesHome() {
     this.selectFolder({ name: 'TC', children: [] });
+  }
+
+  navigateToAdd(folderName: string) {
+    if (folderName === 'UC') {
+      this.router
+        .navigate(['/use-case/add'], {
+          state: {
+            data: this.appInfo,
+            id: this.projectId,
+            folderName: folderName,
+            breadcrumb: {
+              name: 'Add Document',
+              link: this.router.url,
+              icon: 'add',
+            },
+          },
+        })
+        .then();
+    } else {
+      this.router
+        .navigate(['/add'], {
+          state: {
+            data: this.appInfo,
+            id: this.projectId,
+            folderName: folderName,
+            breadcrumb: {
+              name: 'Add Document',
+              link: this.router.url,
+              icon: 'add',
+            },
+          },
+        })
+        .then();
+    }
   }
 
   handleIntegrationNavState(): void {
