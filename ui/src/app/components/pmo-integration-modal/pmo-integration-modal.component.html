@@ -1,7 +1,7 @@
 <div class="bg-white rounded-lg shadow-md w-full">
   <div class="flex items-center justify-between p-6 border-b border-gray-200">
     <h2 class="text-xl font-semibold text-gray-900">
-      {{ action() === 'pull' ? config.title : 'Push to ' + config.serviceName }}
+      {{ action() === "pull" ? config.title : "Push to " + config.serviceName }}
     </h2>
     <button
       (click)="onClose()"
@@ -13,24 +13,6 @@
   </div>
 
   <div class="p-6 space-y-6">
-    <!-- Status Section -->
-    <div class="flex items-start space-x-2">
-      <div class="flex-shrink-0">
-        <ng-icon
-          [name]="statusIcon()"
-          [ngClass]="statusColor()"
-          class="text-2xl mt-1"
-          [class.animate-spin]="isLoading()"
-        ></ng-icon>
-      </div>
-      <div>
-        <h3 class="text-lg font-medium text-gray-900">Connection Status</h3>
-        <p [ngClass]="statusColor()" class="text-sm font-medium">
-          {{ statusText() }}
-        </p>
-      </div>
-    </div>
-
     <!-- Error Message -->
     <div
       *ngIf="!isLoading() && connectionStatus().errorMessage"
@@ -57,12 +39,18 @@
         <div class="flex items-center justify-between">
           <div>
             <h4 class="font-medium text-gray-900">
-              {{ action() === 'pull' ? 'Work Items from ' + config.serviceName : 'Items to Push to ' + config.serviceName }}
+              {{
+                action() === "pull"
+                  ? "Work Items from " + config.serviceName
+                  : "Items to Push to " + config.serviceName
+              }}
             </h4>
             <p class="text-xs text-gray-600 mt-1">
-              {{ action() === 'pull' ? 
-                config.itemLabels.topLevel + 's and their child items' : 
-                'Select items to push to ' + config.serviceName }}
+              {{
+                action() === "pull"
+                  ? config.itemLabels.topLevel + "s and their child items"
+                  : "Select items to push to " + config.serviceName
+              }}
             </p>
           </div>
           <div class="flex items-center">
@@ -178,7 +166,9 @@
                   type="checkbox"
                   [id]="'platform-feature-' + platformFeature.specifaiId"
                   [checked]="isUserStorySelected(platformFeature.specifaiId)"
-                  (click)="toggleUserStorySelection($event, platformFeature.specifaiId)"
+                  (click)="
+                    toggleUserStorySelection($event, platformFeature.specifaiId)
+                  "
                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
                 />
 
@@ -239,7 +229,9 @@
                       type="checkbox"
                       [id]="'user-story-' + userStory.specifaiId"
                       [checked]="isTaskSelected(userStory.specifaiId)"
-                      (click)="toggleTaskSelection($event, userStory.specifaiId)"
+                      (click)="
+                        toggleTaskSelection($event, userStory.specifaiId)
+                      "
                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2"
                     />
 

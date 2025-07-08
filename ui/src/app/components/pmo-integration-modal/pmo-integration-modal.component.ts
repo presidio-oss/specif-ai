@@ -78,26 +78,6 @@ export class PmoIntegrationModalComponent implements OnInit {
   private pmoService: PmoService;
   public config: PmoModalConfig;
 
-  statusIcon = computed(() => {
-    const status = this.connectionStatus();
-    if (this.isLoading()) return 'heroArrowPath';
-    return status.isConnected ? 'heroCheckCircle' : 'heroXCircle';
-  });
-
-  statusText = computed(() => {
-    if (this.isLoading()) return this.config.connectionLabels.checking;
-    const status = this.connectionStatus();
-    return status.isConnected
-      ? this.config.connectionLabels.connected
-      : this.config.connectionLabels.disconnected;
-  });
-
-  statusColor = computed(() => {
-    if (this.isLoading()) return 'text-blue-600';
-    const status = this.connectionStatus();
-    return status.isConnected ? 'text-green-600' : 'text-red-600';
-  });
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: PmoIntegrationData,
     private dialogRef: MatDialogRef<PmoIntegrationModalComponent>,

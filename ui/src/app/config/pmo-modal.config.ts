@@ -1,11 +1,6 @@
 export interface PmoModalConfig {
   title: string;
   serviceName: string;
-  connectionLabels: {
-    connected: string;
-    disconnected: string;
-    checking: string;
-  };
   itemLabels: {
     topLevel: string;
     midLevel: string;
@@ -22,11 +17,6 @@ export const PMO_MODAL_CONFIGS: { [key: string]: PmoModalConfig } = {
   ado: {
     title: 'Pull from ADO',
     serviceName: 'Azure DevOps',
-    connectionLabels: {
-      connected: 'ADO integration is connected and ready',
-      disconnected: 'ADO integration is not configured or connection failed',
-      checking: 'Checking ADO integration status...',
-    },
     itemLabels: {
       topLevel: 'Product Requirement',
       midLevel: 'User Story',
@@ -41,11 +31,6 @@ export const PMO_MODAL_CONFIGS: { [key: string]: PmoModalConfig } = {
   jira: {
     title: 'Pull from Jira',
     serviceName: 'Jira',
-    connectionLabels: {
-      connected: 'Jira integration is connected and ready',
-      disconnected: 'Jira integration is not configured or connection failed',
-      checking: 'Checking Jira integration status...',
-    },
     itemLabels: {
       topLevel: 'Product Requirement',
       midLevel: 'User Story',
