@@ -14,10 +14,7 @@ import {
 } from '../../store/projects/projects.actions';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { Router } from '@angular/router';
-import {
-  EXPORT_FILE_FORMATS,
-  ExportFileFormat,
-} from '../../constants/export.constants';
+import { IProjectMetadata } from 'src/app/model/interfaces/projects.interface';
 
 const ADO_API_VERSION = '7.1';
 
@@ -715,10 +712,7 @@ export class AdoService implements PmoService {
             task.pmoId = adoId.toString();
           }
 
-          // Update local files with new pmoIds
-          this.updateLocalFilesWithAdoIds(selectedItems);
-
-          this.toast.showSuccess('Successfully pushed selected items to ADO');
+          this.updateLocalFilesWithAdoIds(selectedItems, appInfo);
         } catch (error) {
           console.error('Error pushing items to ADO:', error);
           this.toast.showError('Failed to push items to ADO');
@@ -1334,39 +1328,27 @@ export class AdoService implements PmoService {
    * @param selectedItems The selected PRDs, User Stories, and Tasks
    * @param appInfo The application info/metadata
    */
-  private updateLocalFilesWithAdoIds(selectedItems: {
-    prds: Ticket[];
-    userStories: Ticket[];
-    tasks: Ticket[];
-  }) {
-    // Update PRD base files
+  private updateLocalFilesWithAdoIds(
+    selectedItems: {
+      prds: Ticket[];
+      userStories: Ticket[];
+      tasks: Ticket[];
+    },
+    appInfo: IProjectMetadata,
+  ): void {
+    const updates: { path: string; content: any }[] = [];
+
+    // Prepare PRD base file updates
     selectedItems.prds.forEach((prd) => {
       const prdId = prd.specifaiId;
       const baseFilePath = `prd/${prdId}-base.json`;
-      this.store
-        .dispatch(new ReadFile(baseFilePath))
-        .pipe(first())
-        .subscribe(() => {
-          this.store
-            .select(ProjectsState.getSelectedFileContent)
-            .pipe(first())
-            .subscribe((content) => {
-              if (content) {
-                // Only update pmoId if changed
-                if (content.pmoId !== prd.pmoId) {
-                  const updated = { ...content, pmoId: prd.pmoId };
-                  this.store.dispatch(
-                    new BulkUpdateFiles([
-                      { path: baseFilePath, content: updated },
-                    ]),
-                  );
-                }
-              }
-            });
-        });
+      updates.push({
+        path: baseFilePath,
+        content: { ...prd, specifaiId: prdId },
+      });
     });
 
-    // Update PRD feature files (user stories and tasks)
+    // Prepare PRD feature file updates (user stories and tasks)
     // Group user stories and tasks by PRD
     const userStoriesByPrd: { [prdId: string]: Ticket[] } = {};
     selectedItems.userStories.forEach((us) => {
@@ -1375,6 +1357,7 @@ export class AdoService implements PmoService {
       if (!userStoriesByPrd[prdId]) userStoriesByPrd[prdId] = [];
       userStoriesByPrd[prdId].push(us);
     });
+
     const tasksByUserStory: { [usId: string]: Ticket[] } = {};
     selectedItems.tasks.forEach((task) => {
       const usId = task.specifaiParentId;
@@ -1382,58 +1365,40 @@ export class AdoService implements PmoService {
       if (!tasksByUserStory[usId]) tasksByUserStory[usId] = [];
       tasksByUserStory[usId].push(task);
     });
+
     Object.keys(userStoriesByPrd).forEach((prdId) => {
       const featureFilePath = `prd/${prdId}-feature.json`;
-      this.store
-        .dispatch(new ReadFile(featureFilePath))
-        .pipe(first())
-        .subscribe(() => {
-          this.store
-            .select(ProjectsState.getSelectedFileContent)
-            .pipe(first())
-            .subscribe((content) => {
-              if (content && Array.isArray(content.features)) {
-                let updated = false;
-                const updatedFeatures = content.features.map((feature: any) => {
-                  // Update user story pmoId if selected
-                  const us = userStoriesByPrd[prdId].find(
-                    (u) => u.specifaiId === feature.id,
-                  );
-                  let featureChanged = false;
-                  if (us && feature.pmoId !== us.pmoId) {
-                    featureChanged = true;
-                    feature = { ...feature, pmoId: us.pmoId };
-                  }
-                  // Update tasks pmoId if selected
-                  if (Array.isArray(feature.tasks)) {
-                    const updatedTasks = feature.tasks.map((task: any) => {
-                      const t = (tasksByUserStory[feature.id] || []).find(
-                        (sel) => sel.specifaiId === task.id,
-                      );
-                      if (t && task.pmoId !== t.pmoId) {
-                        featureChanged = true;
-                        return { ...task, pmoId: t.pmoId };
-                      }
-                      return task;
-                    });
-                    if (featureChanged) {
-                      feature = { ...feature, tasks: updatedTasks };
-                    }
-                  }
-                  if (featureChanged) updated = true;
-                  return feature;
-                });
-                if (updated) {
-                  const newContent = { ...content, features: updatedFeatures };
-                  this.store.dispatch(
-                    new BulkUpdateFiles([
-                      { path: featureFilePath, content: newContent },
-                    ]),
-                  );
-                }
-              }
-            });
-        });
+      // Build features array
+      const features = userStoriesByPrd[prdId].map((feature) => {
+        const tasks = (tasksByUserStory[feature.specifaiId] || []).map(
+          (task) => ({
+            id: task.specifaiId,
+            list: task.title,
+            acceptance: task.description || '',
+            status: 'Active',
+            pmoId: task.pmoId,
+          }),
+        );
+        return {
+          id: feature.specifaiId,
+          name: feature.title,
+          description: feature.description || '',
+          pmoId: feature.pmoId,
+          tasks,
+        };
+      });
+      updates.push({ path: featureFilePath, content: { features } });
     });
+
+    this.store
+      .dispatch(new BulkUpdateFiles(updates))
+      .pipe(first())
+      .subscribe(() => {
+        this.toast.showSuccess('Successfully pushed selected items to ADO');
+        const projectId = appInfo?.id;
+        if (projectId) {
+          this.store.dispatch(new GetProjectFiles(projectId));
+        }
+      });
   }
 }
