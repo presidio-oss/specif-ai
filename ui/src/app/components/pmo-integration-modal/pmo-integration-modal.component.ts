@@ -74,6 +74,13 @@ export class PmoIntegrationModalComponent implements OnInit {
   // Select all state
   allItemsSelected = signal<boolean>(false);
 
+  selectedCount = computed(
+    () =>
+      this.selectedPrdIds().size +
+      this.selectedUserStoryIds().size +
+      this.selectedTaskIds().size,
+  );
+
   // PMO service and configuration
   private pmoService: PmoService;
   public config: PmoModalConfig;
@@ -188,19 +195,18 @@ export class PmoIntegrationModalComponent implements OnInit {
     const prdIds = new Set<string>();
     const userStoryIds = new Set<string>();
 
-    // Add all PRD IDs to the expanded set
+    // Only expand PRDs and user stories that have children
     prdsHierarchy.forEach((prd) => {
-      prdIds.add(prd.specifaiId);
-
-      // Add all user story IDs under each PRD to the expanded set
       if (prd.child && prd.child.length > 0) {
+        prdIds.add(prd.specifaiId);
         prd.child.forEach((userStory: Ticket) => {
-          userStoryIds.add(userStory.specifaiId);
+          if (userStory.child && userStory.child.length > 0) {
+            userStoryIds.add(userStory.specifaiId);
+          }
         });
       }
     });
 
-    // Update the signals with all items expanded
     this.expandedPrdIds.set(prdIds);
     this.expandedUserStoryIds.set(userStoryIds);
   }
@@ -694,6 +700,10 @@ export class PmoIntegrationModalComponent implements OnInit {
     this.allItemsSelected.set(
       totalItemCount > 0 && selectedItemCount === totalItemCount,
     );
+  }
+
+  someItemsSelected(): boolean {
+    return this.selectedCount() > 0 && !this.allItemsSelected();
   }
 
   // Helper methods for PMO-specific messages
