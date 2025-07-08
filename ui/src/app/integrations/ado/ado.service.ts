@@ -427,27 +427,6 @@ export class AdoService implements PmoService {
   }
 
   /**
-   * Execute the actual ADO action (pull or push)
-   */
-  executeAdoAction(folderName: string, action: 'pull' | 'push'): void {
-    // For now, we'll use the existing export functionality
-    // TODO: Implement actual ADO pull/push logic
-    this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.JSON);
-
-    const actionText = action === 'pull' ? 'Pulling from' : 'Pushing to';
-    this.toast.showSuccess(`${actionText} ADO for ${folderName}`);
-  }
-
-  /**
-   * Export document list (placeholder for actual export functionality)
-   */
-  private exportDocumentList(folder: string, format: ExportFileFormat): void {
-    // This would need to be implemented to actually export the document list
-    // For now, it's a placeholder
-    console.log(`Exporting ${folder} in ${format} format`);
-  }
-
-  /**
    * Navigate to ADO configuration page or open settings
    */
   navigateToAdoConfiguration(appInfo: any): void {

@@ -367,24 +367,17 @@ export class DocumentListingComponent
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result?.proceed) {
-        // ADO is connected, proceed with the action
         if (result?.selectedItems) {
-          // If we have selected items, process them
           this.adoService.processAdoSelectedItems(
             folderName,
             action,
             result.selectedItems,
             this.appInfo,
           );
-        } else {
-          // Fall back to old behavior if no selected items
-          this.adoService.executeAdoAction(folderName, action);
         }
       } else if (result?.configure) {
-        // User wants to configure ADO integration
         this.adoService.navigateToAdoConfiguration(this.appInfo);
       }
-      // If no result or cancelled, do nothing
     });
   }
 
@@ -412,13 +405,13 @@ export class DocumentListingComponent
 
   getPmoLogo(): string | null {
     const selectedPmoTool = this.appInfo?.integration?.selectedPmoTool;
-    
+
     if (selectedPmoTool === 'ado') {
       return 'assets/img/logo/azure_devops_logo.svg';
     } else if (selectedPmoTool === 'jira') {
       return 'assets/img/logo/mark_gradient_blue_jira.svg';
     }
-    
+
     return null;
   }
 
