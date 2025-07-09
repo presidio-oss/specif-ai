@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export interface ContextItem {
-  type: "url" | "docx";
+  type: string;
   source: string;
   summary?: string;
 }
@@ -36,7 +36,7 @@ export const UsecaseDraftSchema = z.object({
   requirement: z.string(),
   requirementAbbr: z.literal("UC"),
   context: z.array(z.object({
-    type: z.enum(["url", "docx"]),
+    type: z.string(),
     source: z.string(),
     summary: z.string().optional()
   })).default([]),

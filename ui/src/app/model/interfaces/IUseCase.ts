@@ -1,5 +1,5 @@
 export interface ContextItem {
-  type: "url" | "docx";
+  type: string;
   source: string;
   summary?: string;
 }

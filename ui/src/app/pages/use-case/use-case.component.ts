@@ -111,9 +111,6 @@ export class UseCaseComponent implements OnInit {
 
   chatHistory: any = [];
   contextItems: ContextItem[] = [];
-  urlInput: string = '';
-  fileInput: any = null;
-  showUrlDialog: boolean = false;
 
   constructor(
     private store: Store,
@@ -377,58 +374,6 @@ export class UseCaseComponent implements OnInit {
     return !this.useCaseForm.valid;
   }
 
-  // Context panel methods
-  addUrlContext() {
-    if (this.urlInput && this.urlInput.trim()) {
-      this.contextItems.push({
-        type: 'url',
-        source: this.urlInput.trim()
-      });
-      
-      this.urlInput = '';
-      
-      if (this.mode === 'edit') {
-        this.updateContextInFile();
-      }
-    }
-  }
-  
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file && file.name.toLowerCase().endsWith('.docx')) {
-      // In a real implementation, you would upload the file to the server
-      // For now, we'll just add it to the context items
-      this.contextItems.push({
-        type: 'docx',
-        source: file.name
-      });
-      
-      if (this.mode === 'edit') {
-        this.updateContextInFile();
-      }
-    } else {
-      this.toastService.showError('Please select a valid .docx file');
-    }
-  }
-
-  removeContextItem(index: number) {
-    this.contextItems.splice(index, 1);
-    
-    if (this.mode === 'edit') {
-      this.updateContextInFile();
-    }
-  }
-  
-  updateContextInFile() {
-    this.store.dispatch(
-      new UpdateFile(this.absoluteFilePath, {
-        ...this.useCaseForm.getRawValue(),
-        requirementAbbr: 'UC',
-        context: this.contextItems,
-        chatHistory: this.chatHistory,
-      }),
-    );
-  }
 
   switchTab(tab: string) {
     this.activeTab = tab;
@@ -448,14 +393,4 @@ export class UseCaseComponent implements OnInit {
     return !this.allowForceRedirect && this.useCaseForm.dirty;
   }
 
-  // URL Dialog methods
-  addUrlPrompt() {
-    this.showUrlDialog = true;
-    this.urlInput = '';
-  }
-
-  cancelUrlDialog() {
-    this.showUrlDialog = false;
-    this.urlInput = '';
-  }
 }

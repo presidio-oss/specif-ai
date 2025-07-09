@@ -1,77 +1,7 @@
 <div class="w-full h-full px-0">
   <div class="grid grid-cols-12 gap-4 h-full">
-    <!-- Left Panel: Organizational Context -->
-    <div class="bg-white border rounded-lg flex flex-col col-span-12 lg:col-span-3 h-[calc(100vh-80px)]">
-      <header class="flex justify-between items-center p-4 border-b border-secondary-200">
-        <h1 class="text-lg font-semibold">Organizational Context</h1>
-      </header>
-      
-      <div class="p-4 flex flex-col gap-4">
-        <!-- URL Input -->
-        <div class="flex flex-col gap-2">
-          <div class="flex gap-2">
-            <app-button
-              buttonContent="Add Link"
-              icon="heroLink"
-              theme="secondary_outline"
-              size="sm"
-              rounded="md"
-              class="w-full"
-              (click)="addUrlPrompt()"
-            ></app-button>
-          </div>
-        </div>
-
-        <!-- File Upload -->
-        <div class="flex flex-col gap-2">
-          <div class="flex gap-2">
-            <input
-              type="file"
-              accept=".docx"
-              class="hidden"
-              #fileInput
-              (change)="onFileSelected($event)"
-            />
-            <app-button
-              buttonContent="Upload Word"
-              icon="heroDocumentTextSolid"
-              theme="secondary_outline"
-              size="sm"
-              rounded="md"
-              class="w-full"
-              (click)="fileInput.click()"
-            ></app-button>
-          </div>
-        </div>
-
-        <!-- Context Items List -->
-        <div class="mt-2 flex-1 overflow-y-auto">
-          <h3 class="text-sm font-medium text-secondary-900 mb-2">Added Context</h3>
-          <div class="flex flex-col gap-2">
-            <div 
-              *ngFor="let item of contextItems; let i = index" 
-              class="flex justify-between items-center p-3 border border-secondary-200 rounded-md"
-            >
-              <div class="flex items-center gap-2">
-                <ng-icon 
-                  [name]="item.type === 'url' ? 'heroLink' : 'heroDocumentTextSolid'" 
-                  class="text-lg text-secondary-500"
-                ></ng-icon>
-                <span class="text-sm truncate max-w-[120px]">{{ item.source }}</span>
-              </div>
-              <div class="text-xs px-2 py-1 bg-secondary-100 rounded">Summarized</div>
-            </div>
-            
-            <div *ngIf="contextItems.length === 0" class="text-center text-secondary-500 py-4">
-              No context items added yet
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Middle Panel: Proposal Chat (only in edit mode) -->
-    <div *ngIf="mode === 'edit'" class="bg-white border rounded-lg flex flex-col col-span-12 lg:col-span-5 h-[calc(100vh-80px)]">
+    <div *ngIf="mode === 'edit'" class="bg-white border rounded-lg flex flex-col col-span-12 lg:col-span-6 h-[calc(100vh-80px)]">
       <header class="flex justify-between items-center p-4 border-b border-secondary-200">
         <h1 class="text-lg font-semibold">Proposal Chat</h1>
       </header>
@@ -94,7 +24,7 @@
     </div>
 
     <!-- Right Panel: Live Proposal Draft -->
-    <div [ngClass]="{'lg:col-span-4': mode === 'edit', 'lg:col-span-9': mode === 'add'}" 
+    <div [ngClass]="{'lg:col-span-6': mode === 'edit', 'lg:col-span-12': mode === 'add'}" 
          class="bg-white border rounded-lg flex flex-col col-span-12 h-[calc(100vh-80px)]">
       <header class="flex justify-between items-center p-4 border-b border-secondary-200">
         <div class="flex items-center">
@@ -214,35 +144,6 @@
           />
         </div>
       </form>
-    </div>
-  </div>
-</div>
-
-<!-- URL Input Dialog -->
-<div *ngIf="showUrlDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg p-6 w-96">
-    <h2 class="text-lg font-semibold mb-4">Add External URL</h2>
-    <input 
-      type="text" 
-      [(ngModel)]="urlInput"
-      placeholder="https://example.com"
-      class="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm mb-4"
-    />
-    <div class="flex justify-end gap-2">
-      <app-button
-        buttonContent="Cancel"
-        theme="secondary_outline"
-        size="sm"
-        rounded="md"
-        (click)="cancelUrlDialog()"
-      />
-      <app-button
-        buttonContent="Add"
-        theme="primary"
-        size="sm"
-        rounded="md"
-        (click)="addUrlContext()"
-      />
     </div>
   </div>
 </div>
