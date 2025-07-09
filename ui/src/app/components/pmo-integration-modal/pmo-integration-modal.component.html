@@ -162,7 +162,10 @@
             ></ng-icon>
             <div class="flex-grow">
               <div class="flex items-center">
-                <span *ngIf="prd.pmoId; else newPrd" class="flex items-center">
+                <span
+                  *ngIf="prd.isUpdate; else newPrd"
+                  class="flex items-center"
+                >
                   <ng-icon
                     name="heroDocumentCheck"
                     class="w-5 h-5 text-amber-600 mr-1"
@@ -184,11 +187,11 @@
                 <span
                   class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-blue-200 bg-blue-50 text-blue-700"
                 >
-                  {{ config.itemLabels.topLevel }} #{{ prd.specifaiId }}
+                  {{ prd.pmoIssueType }} &bull; {{ prd.pmoId }}
                 </span>
               </div>
               <p class="text-xs text-gray-500 mt-1 truncate">
-                {{ prd.pmoIssueType }}
+                #{{ prd.specifaiId }}
               </p>
             </div>
           </div>
@@ -245,7 +248,7 @@
                 <div class="flex-grow">
                   <div class="flex items-center">
                     <span
-                      *ngIf="platformFeature.pmoId; else newMid"
+                      *ngIf="platformFeature.isUpdate; else newMid"
                       class="flex items-center"
                     >
                       <ng-icon
@@ -269,13 +272,12 @@
                     <span
                       class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-green-200 bg-green-50 text-green-700"
                     >
-                      {{ config.itemLabels.midLevel }} #{{
-                        platformFeature.specifaiId
-                      }}
+                      {{ platformFeature.pmoIssueType }} &bull;
+                      {{ platformFeature.pmoId }}
                     </span>
                   </div>
                   <p class="text-xs text-gray-500 mt-1 truncate">
-                    {{ platformFeature.pmoIssueType }}
+                    #{{ platformFeature.specifaiId }}
                   </p>
                 </div>
               </div>
@@ -322,7 +324,7 @@
                     <div class="flex-grow">
                       <div class="flex items-center">
                         <span
-                          *ngIf="userStory.pmoId; else newBottom"
+                          *ngIf="userStory.isUpdate; else newBottom"
                           class="flex items-center"
                         >
                           <ng-icon
@@ -347,13 +349,12 @@
                         <span
                           class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-yellow-200 bg-yellow-50 text-yellow-700"
                         >
-                          {{ config.itemLabels.bottomLevel }} #{{
-                            userStory.specifaiId
-                          }}
+                          {{ userStory.pmoIssueType }} &bull;
+                          {{ userStory.pmoId }}
                         </span>
                       </div>
                       <p class="text-xs text-gray-500 mt-1 truncate">
-                        {{ userStory.pmoIssueType }}
+                        #{{ userStory.specifaiId }}
                       </p>
                     </div>
                   </div>

@@ -142,7 +142,36 @@ export class AdoService implements PmoService {
     }
 
     try {
-      // 1. Get Features
+      // 1. Get current document hierarchy from SpecifAI to determine existing mappings
+      const currentHierarchy = await this.getCurrentDocumentHierarchy('PRD');
+
+      const existingPmoToSpecifaiMap = new Map<
+        string,
+        {
+          specifaiId: string;
+          specifaiType: string;
+          specifaiParentId: string | null;
+        }
+      >();
+
+      const buildMappingFromHierarchy = (tickets: Ticket[]) => {
+        tickets.forEach((ticket) => {
+          if (ticket.pmoId) {
+            existingPmoToSpecifaiMap.set(ticket.pmoId, {
+              specifaiId: ticket.specifaiId,
+              specifaiType: ticket.specifaiType,
+              specifaiParentId: ticket.specifaiParentId,
+            });
+          }
+          // Recursively process children
+          if (ticket.child && ticket.child.length > 0) {
+            buildMappingFromHierarchy(ticket.child);
+          }
+        });
+      };
+      buildMappingFromHierarchy(currentHierarchy);
+
+      // 2. Get Features from ADO
       const query = `
         SELECT [System.Id]
         FROM WorkItems
@@ -158,10 +187,15 @@ export class AdoService implements PmoService {
 
       const features = await this.getWorkItemsByIds(featureIds);
 
-      // 2. Build the hierarchy
+      // 3. Build the hierarchy using existing mappings where available
       const hierarchy = await Promise.all(
         features.map(async (feature: any) => {
           try {
+            const featurePmoId = feature.id.toString();
+            const existingFeatureMapping =
+              existingPmoToSpecifaiMap.get(featurePmoId);
+            const isFeatureUpdate = !!existingFeatureMapping;
+
             // Get PlatformFeatures for this Feature
             const platformFeatures = await this.getPlatformFeaturesByParentId(
               feature.id,
@@ -171,6 +205,12 @@ export class AdoService implements PmoService {
             const platformFeaturesWithUserStories = await Promise.all(
               platformFeatures.map(async (platformFeature: any) => {
                 try {
+                  const platformFeaturePmoId = platformFeature.id.toString();
+                  const existingPlatformFeatureMapping =
+                    existingPmoToSpecifaiMap.get(platformFeaturePmoId);
+                  const isPlatformFeatureUpdate =
+                    !!existingPlatformFeatureMapping;
+
                   const userStories = await this.getUserStoriesByParentId(
                     platformFeature.id,
                   );
@@ -178,16 +218,26 @@ export class AdoService implements PmoService {
                   // Map User Stories to Ticket structure
                   const userStoryTickets: Ticket[] = userStories.map(
                     (userStory: any) => {
+                      const userStoryPmoId = userStory.id.toString();
+                      const existingUserStoryMapping =
+                        existingPmoToSpecifaiMap.get(userStoryPmoId);
+                      const isUserStoryUpdate = !!existingUserStoryMapping;
+
                       return {
                         // PMO details
-                        pmoId: userStory.id.toString(),
+                        pmoId: userStoryPmoId,
                         pmoIssueType: userStory.fields['System.WorkItemType'],
-                        pmoParentId: platformFeature.id.toString(),
+                        pmoParentId: platformFeaturePmoId,
 
                         // Specifai mapping
-                        specifaiId: `TASK${userStory.id}`, // Generate a temporary Specifai ID
-                        specifaiType: 'Task', // Map User Stories to Tasks in Specifai
-                        specifaiParentId: `US${platformFeature.id}`, // Reference to parent User Story in Specifai
+                        specifaiId:
+                          existingUserStoryMapping?.specifaiId || `New Task`,
+                        specifaiType:
+                          existingUserStoryMapping?.specifaiType || 'Task',
+                        specifaiParentId:
+                          existingPlatformFeatureMapping?.specifaiId ||
+                          `US${platformFeature.id}`,
+                        isUpdate: isUserStoryUpdate,
 
                         // Common details
                         title: userStory.fields['System.Title'],
@@ -203,14 +253,19 @@ export class AdoService implements PmoService {
                   // Map Platform Feature to Ticket structure
                   return {
                     // PMO details
-                    pmoId: platformFeature.id.toString(),
+                    pmoId: platformFeaturePmoId,
                     pmoIssueType: platformFeature.fields['System.WorkItemType'],
-                    pmoParentId: feature.id.toString(),
+                    pmoParentId: featurePmoId,
 
                     // Specifai mapping
-                    specifaiId: `US${platformFeature.id}`, // Generate a temporary Specifai ID
-                    specifaiType: 'User Story', // Map Platform Features to User Stories in Specifai
-                    specifaiParentId: `PRD${feature.id}`, // Reference to parent PRD in Specifai
+                    specifaiId:
+                      existingPlatformFeatureMapping?.specifaiId ||
+                      `New User Story`,
+                    specifaiType:
+                      existingPlatformFeatureMapping?.specifaiType ||
+                      'User Story',
+                    specifaiParentId:
+                      existingFeatureMapping?.specifaiId || `PRD${feature.id}`,
 
                     // Common details
                     title: platformFeature.fields['System.Title'],
@@ -219,22 +274,35 @@ export class AdoService implements PmoService {
 
                     // Children are User Stories
                     child: userStoryTickets,
+                    isUpdate: isPlatformFeatureUpdate,
                   };
                 } catch (error) {
                   console.error(
                     `Error fetching UserStories for PlatformFeature ${platformFeature.id}`,
                   );
+                  const platformFeaturePmoId = platformFeature.id.toString();
+                  const existingPlatformFeatureMapping =
+                    existingPmoToSpecifaiMap.get(platformFeaturePmoId);
+                  const isPlatformFeatureUpdate =
+                    !!existingPlatformFeatureMapping;
+
                   return {
-                    pmoId: platformFeature.id.toString(),
+                    pmoId: platformFeaturePmoId,
                     pmoIssueType: platformFeature.fields['System.WorkItemType'],
-                    pmoParentId: feature.id.toString(),
-                    specifaiId: `US${platformFeature.id}`,
-                    specifaiType: 'User Story',
-                    specifaiParentId: `PRD${feature.id}`,
+                    pmoParentId: featurePmoId,
+                    specifaiId:
+                      existingPlatformFeatureMapping?.specifaiId ||
+                      `New User Story`,
+                    specifaiType:
+                      existingPlatformFeatureMapping?.specifaiType ||
+                      'User Story',
+                    specifaiParentId:
+                      existingFeatureMapping?.specifaiId || `PRD${feature.id}`,
                     title: platformFeature.fields['System.Title'],
                     description:
                       platformFeature.fields['System.Description'] || null,
                     child: [],
+                    isUpdate: isPlatformFeatureUpdate,
                   };
                 }
               }),
@@ -243,13 +311,13 @@ export class AdoService implements PmoService {
             // Map Feature to Ticket structure
             return {
               // PMO details
-              pmoId: feature.id.toString(),
+              pmoId: featurePmoId,
               pmoIssueType: feature.fields['System.WorkItemType'],
               pmoParentId: null, // Top-level items have no parent
 
               // Specifai mapping
-              specifaiId: `PRD${feature.id}`, // Generate a temporary Specifai ID
-              specifaiType: 'PRD', // Map Features to PRDs in Specifai
+              specifaiId: existingFeatureMapping?.specifaiId || `New PRD`,
+              specifaiType: existingFeatureMapping?.specifaiType || 'PRD',
               specifaiParentId: null, // Top-level items have no parent
 
               // Common details
@@ -258,21 +326,28 @@ export class AdoService implements PmoService {
 
               // Children are Platform Features
               child: platformFeaturesWithUserStories,
+              isUpdate: isFeatureUpdate,
             };
           } catch (error) {
             console.error(
               `Error fetching PlatformFeatures for Feature ${feature.id}`,
             );
+            const featurePmoId = feature.id.toString();
+            const existingFeatureMapping =
+              existingPmoToSpecifaiMap.get(featurePmoId);
+            const isFeatureUpdate = !!existingFeatureMapping;
+
             return {
-              pmoId: feature.id.toString(),
+              pmoId: featurePmoId,
               pmoIssueType: feature.fields['System.WorkItemType'],
               pmoParentId: null,
-              specifaiId: `PRD${feature.id}`,
-              specifaiType: 'PRD',
+              specifaiId: existingFeatureMapping?.specifaiId || `New PRD`,
+              specifaiType: existingFeatureMapping?.specifaiType || 'PRD',
               specifaiParentId: null,
               title: feature.fields['System.Title'],
               description: feature.fields['System.Description'] || null,
               child: [],
+              isUpdate: isFeatureUpdate,
             };
           }
         }),
@@ -743,7 +818,7 @@ export class AdoService implements PmoService {
           (directories) => {
             try {
               // Find the PRD directory
-              const prdDir = directories.find((dir) => dir.name === 'prd');
+              const prdDir = directories.find((dir) => dir.name === 'PRD');
 
               if (!prdDir || !prdDir.children || prdDir.children.length === 0) {
                 // No PRD files exist yet
@@ -1022,6 +1097,7 @@ export class AdoService implements PmoService {
           specifaiParentId: null,
           title: prdContent.title || 'Untitled PRD',
           description: prdContent.requirement || '',
+          isUpdate: !!prdContent.pmoId,
           child: [],
         };
 
@@ -1082,6 +1158,7 @@ export class AdoService implements PmoService {
           specifaiParentId: prdId,
           title: feature.name || 'Untitled User Story',
           description: feature.description || '',
+          isUpdate: !!feature.pmoId,
           child: [],
         };
 
@@ -1104,6 +1181,7 @@ export class AdoService implements PmoService {
               specifaiParentId: userStoryTicket.specifaiId,
               title: task.list || 'Untitled Task',
               description: task.acceptance || '',
+              isUpdate: !!task.pmoId,
               child: [],
             };
 

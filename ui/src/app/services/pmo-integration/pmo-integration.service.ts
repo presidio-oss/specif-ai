@@ -19,6 +19,7 @@ export interface SpecifaiTicket {
 
 export interface Ticket extends TicketDetails, PmoTicket, SpecifaiTicket {
   child: Ticket[];
+  isUpdate?: boolean;
 }
 
 export interface PmoTicketCategory {
