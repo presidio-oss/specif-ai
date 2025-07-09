@@ -623,7 +623,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .subscribe((confirmed) => {
         if (!confirmed) return;
         this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
-          console.log('Token exists and is valid, making API call', token);
+          console.log('Token exists and is valid, making API call');
           this.syncJira(token, jiraUrl);
         });
       });
@@ -640,7 +640,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .subscribe((confirmed) => {
         if (!confirmed) return;
         this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
-          console.log('Token exists and is valid, syncing from JIRA', token);
+          console.log('Token exists and is valid, syncing from JIRA');
           this.syncFromJira(token, jiraUrl);
         });
       });

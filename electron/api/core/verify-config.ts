@@ -38,7 +38,7 @@ export async function verifyConfig(event: IpcMainInvokeEvent, data: any): Promis
     };
 
   } catch (error: any) {
-    console.error('[verify-config] Error during verification:', error);
+    console.error('[verify-config] Error during verification');
     
     return {
       status: 'failed',
