@@ -228,6 +228,16 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (testCase) => {
             this.testCase = testCase;
+            
+            const userStoryLabel = `${this.userStoryId} - Test Cases`;
+            this.store.dispatch(
+              new AddBreadcrumb({
+                label: userStoryLabel,
+                tooltipLabel: `Test Cases for ${this.userStoryId}`,
+                url: `/test-cases/${this.userStoryId}`
+              })
+            );
+            
             this.breadcrumbLabel = `${testCase.id}: ${testCase.title}`;
             this.store.dispatch(
               new AddBreadcrumb({ label: this.breadcrumbLabel, tooltipLabel: testCase.description })
