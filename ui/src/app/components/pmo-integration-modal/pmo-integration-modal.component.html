@@ -187,7 +187,8 @@
                 <span
                   class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-blue-200 bg-blue-50 text-blue-700"
                 >
-                  {{ prd.pmoIssueType }} &bull; {{ prd.pmoId }}
+                  {{ prd.pmoIssueType
+                  }}<span *ngIf="prd.pmoId"> &bull; {{ prd.pmoId }}</span>
                 </span>
               </div>
               <p class="text-xs text-gray-500 mt-1 truncate">
@@ -272,8 +273,10 @@
                     <span
                       class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-green-200 bg-green-50 text-green-700"
                     >
-                      {{ platformFeature.pmoIssueType }} &bull;
-                      {{ platformFeature.pmoId }}
+                      {{ platformFeature.pmoIssueType }}
+                      <span *ngIf="platformFeature.pmoId">
+                        &bull; {{ platformFeature.pmoId }}</span
+                      >
                     </span>
                   </div>
                   <p class="text-xs text-gray-500 mt-1 truncate">
@@ -349,8 +352,10 @@
                         <span
                           class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-yellow-200 bg-yellow-50 text-yellow-700"
                         >
-                          {{ userStory.pmoIssueType }} &bull;
-                          {{ userStory.pmoId }}
+                          {{ userStory.pmoIssueType }}
+                          <span *ngIf="userStory.pmoId">
+                            &bull; {{ userStory.pmoId }}</span
+                          >
                         </span>
                       </div>
                       <p class="text-xs text-gray-500 mt-1 truncate">
