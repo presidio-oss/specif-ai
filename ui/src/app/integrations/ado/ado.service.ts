@@ -429,6 +429,7 @@ export class AdoService implements PmoService {
       Authorization: `Basic ${base64Pat}`,
       // Add header to disable interceptors if they're causing issues
       'X-Skip-Interceptor': 'true',
+      'skipLoader': 'true',
       // CORS headers
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
