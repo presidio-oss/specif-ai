@@ -430,30 +430,30 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
- navigateToAppInfo() {
-  // Get the full project metadata from the store
-  this.projectMetadata$.pipe(takeUntil(this.destroy$)).subscribe(projectMetadata => {
-      // Create metadata object with project details including description
-      const metadata = {
-        id: this.currentProject,
-        name: projectMetadata.name || this.currentProject,
-        description: projectMetadata.description || '',
-        technicalDetails: projectMetadata.technicalDetails || '',
-      };
+//  navigateToAppInfo() {
+//   // Get the full project metadata from the store
+//   this.projectMetadata$.pipe(takeUntil(this.destroy$)).subscribe(projectMetadata => {
+//       // Create metadata object with project details including description
+//       const metadata = {
+//         id: this.currentProject,
+//         name: projectMetadata.name || this.currentProject,
+//         description: projectMetadata.description || '',
+//         technicalDetails: projectMetadata.technicalDetails || '',
+//       };
       
-      this.router.navigate([`/apps/${this.currentProject}`], {
-        state: {
-          data: metadata,
-          breadcrumb: {
-            name: metadata.name,
-            link: '/',
-            icon: '',
-          },
-        },
-      }).then(async () => {
-        // Call setMCPProjectId with the project ID
-        await this.electronService.setMCPProjectId(this.currentProject);
-      });
-  });
-}
+//       this.router.navigate([`/apps/${this.currentProject}`], {
+//         state: {
+//           data: metadata,
+//           breadcrumb: {
+//             name: metadata.name,
+//             link: '/',
+//             icon: '',
+//           },
+//         },
+//       }).then(async () => {
+//         // Call setMCPProjectId with the project ID
+//         await this.electronService.setMCPProjectId(this.currentProject);
+//       });
+//   });
+//  }
 }
