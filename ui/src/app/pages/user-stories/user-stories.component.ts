@@ -1024,10 +1024,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         });
       }
 
-      this.exportOptions.push({
-        groupName: 'JIRA',
-        options: jiraOptions,
-      });
+      if (this.metadata?.integration?.selectedPmoTool === 'jira') {
+        this.exportOptions.push({
+          groupName: 'JIRA',
+          options: jiraOptions,
+        });
+      }
     }
 
     return this.exportOptions;

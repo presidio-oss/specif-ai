@@ -462,7 +462,9 @@ export class DocumentListingComponent
           },
         ],
       },
-      {
+    ];
+    if (this.appInfo?.integration?.selectedPmoTool === 'ado') {
+      this.exportOptions.push({
         groupName: 'ADO',
         options: [
           {
@@ -480,8 +482,8 @@ export class DocumentListingComponent
             isTimestamp: true,
           },
         ],
-      },
-    ];
+      });
+    }
     return this.exportOptions;
   }
 }
