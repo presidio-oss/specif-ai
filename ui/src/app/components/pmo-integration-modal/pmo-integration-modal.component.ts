@@ -15,6 +15,7 @@ import {
   heroArrowPath,
   heroDocumentPlus,
   heroDocumentCheck,
+  heroCog6Tooth,
 } from '@ng-icons/heroicons/outline';
 import { APP_MESSAGES } from 'src/app/constants/app.constants';
 import { Ticket } from '../../services/pmo-integration/pmo-integration.service';
@@ -53,6 +54,7 @@ interface PmoIntegrationData {
       heroArrowPath,
       heroDocumentPlus,
       heroDocumentCheck,
+      heroCog6Tooth,
     }),
   ],
 })
