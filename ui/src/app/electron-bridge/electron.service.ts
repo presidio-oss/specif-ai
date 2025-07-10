@@ -345,6 +345,19 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async generateUseCase(
+    request: any,
+  ): Promise<{title: string; requirement: string; status: string}> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'usecase:generate',
+        args: [request],
+        skipLoading: true
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async addUserStory(
     request: IUpdateUserStoryRequest,
   ): Promise<IUserStoryResponse> {

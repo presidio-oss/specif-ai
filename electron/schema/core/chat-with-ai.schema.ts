@@ -92,14 +92,6 @@ const TaskParamsSchema = BaseParamsSchema.extend({
 
 const UCParamsSchema = BaseParamsSchema.extend({
   requirementAbbr: z.literal("UC"),
-  context: z
-    .array(
-      z.object({
-        name: z.string().optional(),
-        url: z.string().optional(),
-      })
-    )
-    .optional(),
 });
 
 export type UCParams = z.infer<typeof UCParamsSchema>;

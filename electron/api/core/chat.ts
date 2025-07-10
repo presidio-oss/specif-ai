@@ -199,14 +199,16 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
   );
 
   const addToRequirementDescription = tool(
-    ({ }: { contentToAdd: string }): string => {
-      return "Tool called successfully, The user is notified that you've suggested adding content to the description";
+    ({ }: { contentToAdd: string, sectionToReplace?: string, isFullReplacement?: boolean }): string => {
+      return "Tool called successfully, The user is notified that you've suggested adding or updating content in the description";
     },
     {
       name: "add_to_requirement_description",
-      description: "Suggest adding content to the current requirement description",
+      description: "Suggest adding or updating content in the requirement description. Use this for adding new content or editing specific sections.",
       schema: z.object({
-        contentToAdd: z.string()
+        contentToAdd: z.string().describe("The content to add or the updated content for a section"),
+        sectionToReplace: z.string().optional().describe("The section title or text to identify which part of the content to replace. Leave empty for appending new content."),
+        isFullReplacement: z.boolean().optional().describe("Set to true if this is a complete replacement of the entire content")
       })
     }
   );
@@ -288,20 +290,6 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       );
 
       tools.push(getLinkedUS, getLinkedPRD);
-      break;
-    }
-    case "UC": {
-      const getContextLinks = tool(
-        () => {
-          return JSON.stringify(data.context || []);
-        },
-        {
-          name: "get_context_links",
-          description: "Returns the list of organizational context links provided by the user (e.g., company website or docs)."
-        }
-      );
-
-      tools.push(getContextLinks);
       break;
     }
   }

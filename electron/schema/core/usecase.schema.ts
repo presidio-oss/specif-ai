@@ -12,15 +12,6 @@ export interface ChatMessage {
   id?: string;
 }
 
-export interface Approach {
-  how: string;
-  who: string;
-  when: string;
-  investment: string;
-  complexity: string;
-  sustainability: string;
-}
-
 export interface UsecaseDraft {
   id: string;
   title: string;

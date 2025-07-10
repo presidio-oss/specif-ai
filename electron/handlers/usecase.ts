@@ -3,6 +3,7 @@ import { store } from "../services/store";
 import { AppConfig } from "../schema/core/store.schema";
 import { appendUsecaseRequirement } from "../utils/file";
 import { UsecaseDraftSchema } from "../schema/core/usecase.schema";
+import { generateUseCase } from "../api/core/usecase";
 
 export function setupUsecaseHandlers() {
   ipcMain.handle("usecase:add", async (_, payload) => {
@@ -14,4 +15,7 @@ export function setupUsecaseHandlers() {
     const parsed = await UsecaseDraftSchema.parseAsync(payload);
     return appendUsecaseRequirement(WORKING_DIR, parsed);
   });
+
+  // Register the new agentic use case generation endpoint
+  ipcMain.handle("usecase:generate", generateUseCase);
 }
