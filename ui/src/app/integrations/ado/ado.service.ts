@@ -230,8 +230,7 @@ export class AdoService implements PmoService {
                         pmoParentId: platformFeaturePmoId,
 
                         // Specifai mapping
-                        specifaiId:
-                          existingUserStoryMapping?.specifaiId || `New Task`,
+                        specifaiId: `TASK${userStory.id}`,
                         specifaiType:
                           existingUserStoryMapping?.specifaiType || 'Task',
                         specifaiParentId:
@@ -258,9 +257,7 @@ export class AdoService implements PmoService {
                     pmoParentId: featurePmoId,
 
                     // Specifai mapping
-                    specifaiId:
-                      existingPlatformFeatureMapping?.specifaiId ||
-                      `New User Story`,
+                    specifaiId: `US${platformFeature.id}`,
                     specifaiType:
                       existingPlatformFeatureMapping?.specifaiType ||
                       'User Story',
@@ -290,9 +287,7 @@ export class AdoService implements PmoService {
                     pmoId: platformFeaturePmoId,
                     pmoIssueType: platformFeature.fields['System.WorkItemType'],
                     pmoParentId: featurePmoId,
-                    specifaiId:
-                      existingPlatformFeatureMapping?.specifaiId ||
-                      `New User Story`,
+                    specifaiId: `US${platformFeature.id}`,
                     specifaiType:
                       existingPlatformFeatureMapping?.specifaiType ||
                       'User Story',
@@ -316,7 +311,7 @@ export class AdoService implements PmoService {
               pmoParentId: null, // Top-level items have no parent
 
               // Specifai mapping
-              specifaiId: existingFeatureMapping?.specifaiId || `New PRD`,
+              specifaiId: `PRD${feature.id}`,
               specifaiType: existingFeatureMapping?.specifaiType || 'PRD',
               specifaiParentId: null, // Top-level items have no parent
 
@@ -341,7 +336,7 @@ export class AdoService implements PmoService {
               pmoId: featurePmoId,
               pmoIssueType: feature.fields['System.WorkItemType'],
               pmoParentId: null,
-              specifaiId: existingFeatureMapping?.specifaiId || `New PRD`,
+              specifaiId: `PRD${feature.id}`,
               specifaiType: existingFeatureMapping?.specifaiType || 'PRD',
               specifaiParentId: null,
               title: feature.fields['System.Title'],
@@ -429,7 +424,7 @@ export class AdoService implements PmoService {
       Authorization: `Basic ${base64Pat}`,
       // Add header to disable interceptors if they're causing issues
       'X-Skip-Interceptor': 'true',
-      'skipLoader': 'true',
+      skipLoader: 'true',
       // CORS headers
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
