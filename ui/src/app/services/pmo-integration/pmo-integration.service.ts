@@ -13,6 +13,7 @@ export interface PmoTicket {
 
 export interface SpecifaiTicket {
   specifaiId: string;
+  reqId: string
   specifaiType: string;
   specifaiParentId: string | null;
 }

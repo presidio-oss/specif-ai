@@ -231,11 +231,10 @@ export class AdoService implements PmoService {
 
                         // Specifai mapping
                         specifaiId: `TASK${userStory.id}`,
-                        specifaiType:
-                          existingUserStoryMapping?.specifaiType || 'Task',
-                        specifaiParentId:
-                          existingPlatformFeatureMapping?.specifaiId ||
-                          `US${platformFeature.id}`,
+                        reqId:
+                          existingUserStoryMapping?.specifaiId || `New Task`,
+                        specifaiType: 'Task',
+                        specifaiParentId: `US${platformFeature.id}`,
                         isUpdate: isUserStoryUpdate,
 
                         // Common details
@@ -258,11 +257,11 @@ export class AdoService implements PmoService {
 
                     // Specifai mapping
                     specifaiId: `US${platformFeature.id}`,
-                    specifaiType:
-                      existingPlatformFeatureMapping?.specifaiType ||
-                      'User Story',
-                    specifaiParentId:
-                      existingFeatureMapping?.specifaiId || `PRD${feature.id}`,
+                    reqId:
+                      existingPlatformFeatureMapping?.specifaiId ||
+                      `New User Story`,
+                    specifaiType: 'User Story',
+                    specifaiParentId: `PRD${feature.id}`,
 
                     // Common details
                     title: platformFeature.fields['System.Title'],
@@ -288,11 +287,11 @@ export class AdoService implements PmoService {
                     pmoIssueType: platformFeature.fields['System.WorkItemType'],
                     pmoParentId: featurePmoId,
                     specifaiId: `US${platformFeature.id}`,
-                    specifaiType:
-                      existingPlatformFeatureMapping?.specifaiType ||
-                      'User Story',
-                    specifaiParentId:
-                      existingFeatureMapping?.specifaiId || `PRD${feature.id}`,
+                    reqId:
+                      existingPlatformFeatureMapping?.specifaiId ||
+                      `New User Story`,
+                    specifaiType: 'User Story',
+                    specifaiParentId: `PRD${feature.id}`,
                     title: platformFeature.fields['System.Title'],
                     description:
                       platformFeature.fields['System.Description'] || null,
@@ -312,7 +311,8 @@ export class AdoService implements PmoService {
 
               // Specifai mapping
               specifaiId: `PRD${feature.id}`,
-              specifaiType: existingFeatureMapping?.specifaiType || 'PRD',
+              reqId: existingFeatureMapping?.specifaiId || `New PRD`,
+              specifaiType: 'PRD',
               specifaiParentId: null, // Top-level items have no parent
 
               // Common details
@@ -337,7 +337,8 @@ export class AdoService implements PmoService {
               pmoIssueType: feature.fields['System.WorkItemType'],
               pmoParentId: null,
               specifaiId: `PRD${feature.id}`,
-              specifaiType: existingFeatureMapping?.specifaiType || 'PRD',
+              reqId: existingFeatureMapping?.specifaiId || `New PRD`,
+              specifaiType: 'PRD',
               specifaiParentId: null,
               title: feature.fields['System.Title'],
               description: feature.fields['System.Description'] || null,
@@ -1089,6 +1090,7 @@ export class AdoService implements PmoService {
             'Feature',
           pmoParentId: null,
           specifaiId: prdId,
+          reqId: prdId,
           specifaiType: 'PRD',
           specifaiParentId: null,
           title: prdContent.title || 'Untitled PRD',
@@ -1150,6 +1152,7 @@ export class AdoService implements PmoService {
             'Platform Feature',
           pmoParentId: null, // Will be set by ADO when creating
           specifaiId: feature.id,
+          reqId: feature.id,
           specifaiType: 'User Story',
           specifaiParentId: prdId,
           title: feature.name || 'Untitled User Story',
@@ -1173,6 +1176,7 @@ export class AdoService implements PmoService {
                 'User Story',
               pmoParentId: null, // Will be set by ADO when creating
               specifaiId: task.id,
+              reqId: task.id,
               specifaiType: 'Task',
               specifaiParentId: userStoryTicket.specifaiId,
               title: task.list || 'Untitled Task',

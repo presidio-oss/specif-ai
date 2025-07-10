@@ -315,6 +315,7 @@ export class PmoIntegrationModalComponent implements OnInit {
           pmoIssueType: prd.pmoIssueType,
           pmoParentId: prd.pmoParentId,
           specifaiId: prd.specifaiId,
+          reqId: prd.specifaiId,
           specifaiType: 'PRD', // Explicitly set to PRD
           specifaiParentId: null,
           title: prd.title,
@@ -335,6 +336,7 @@ export class PmoIntegrationModalComponent implements OnInit {
                 pmoIssueType: userStory.pmoIssueType,
                 pmoParentId: userStory.pmoParentId,
                 specifaiId: userStory.specifaiId,
+                reqId: userStory.specifaiId,
                 specifaiType: 'User Story', // Map to User Story
                 specifaiParentId: prdTicket.specifaiId, // Link to parent PRD
                 title: userStory.title,
@@ -355,6 +357,7 @@ export class PmoIntegrationModalComponent implements OnInit {
                       pmoIssueType: task.pmoIssueType,
                       pmoParentId: task.pmoParentId,
                       specifaiId: task.specifaiId,
+                      reqId: task.specifaiId,
                       specifaiType: 'Task', // Map to Task
                       specifaiParentId: userStory.specifaiId, // Link to parent User Story
                       title: task.title,
