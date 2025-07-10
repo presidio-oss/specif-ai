@@ -40,12 +40,9 @@ import { WorkflowType } from '../model/interfaces/workflow-progress.interface';
 export interface DocumentUpdateRequest {
   requestId: string;
   documentId: string;
-  updateType: 'search_replace' | 'range_replace';
-  searchText?: string;
-  replaceText: string;
-  startPosition?: number;
-  endPosition?: number;
-  highlightChanges: boolean;
+  updateType: 'text_block_replace';
+  searchBlock: string;
+  replaceBlock: string;
 }
 
 /**
@@ -54,16 +51,13 @@ export interface DocumentUpdateRequest {
 export interface DocumentUpdateResponse {
   requestId: string;
   documentId: string;
-  updateType: 'search_replace' | 'range_replace';
+  updateType: 'text_block_replace';
   success: boolean;
   error?: string;
   changes?: {
-    original: string;
-    replacement: string;
-    startPosition?: number;
-    endPosition?: number;
+    searchBlock: string;
+    replaceBlock: string;
   };
-  highlightChanges: boolean;
 }
 
 export interface ElectronAPI {
@@ -136,8 +130,6 @@ export interface ElectronAPI {
 
   // Document Update Methods
   updateDocument(request: DocumentUpdateRequest): Promise<DocumentUpdateResponse>;
-  searchAndReplaceText(documentId: string, searchText: string, replaceText: string, highlightChanges?: boolean): Promise<DocumentUpdateResponse>;
-  replaceTextRange(documentId: string, startPosition: number, endPosition: number, replaceText: string, highlightChanges?: boolean): Promise<DocumentUpdateResponse>;
 
   // Content Generation Process Management
   setContentGenerationStatus(

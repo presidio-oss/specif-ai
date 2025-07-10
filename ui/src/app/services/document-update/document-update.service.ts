@@ -28,52 +28,6 @@ export class DocumentUpdateService {
     }
   }
 
-  /**
-   * Search for text in a document and replace it with new text
-   * @param documentId The ID of the document to update
-   * @param searchText The text to search for
-   * @param replaceText The text to replace it with
-   * @param highlightChanges Whether to highlight the changes in the UI
-   * @returns A promise that resolves with the update response
-   */
-  public searchAndReplace(
-    documentId: string,
-    searchText: string,
-    replaceText: string,
-    highlightChanges: boolean = true
-  ): Promise<DocumentUpdateResponse> {
-    return this.electronService.searchAndReplaceText(
-      documentId,
-      searchText,
-      replaceText,
-      highlightChanges
-    );
-  }
-
-  /**
-   * Replace text within a specific character range in a document
-   * @param documentId The ID of the document to update
-   * @param startPosition The starting character position
-   * @param endPosition The ending character position
-   * @param replaceText The text to replace the selected range with
-   * @param highlightChanges Whether to highlight the changes in the UI
-   * @returns A promise that resolves with the update response
-   */
-  public replaceRange(
-    documentId: string,
-    startPosition: number,
-    endPosition: number,
-    replaceText: string,
-    highlightChanges: boolean = true
-  ): Promise<DocumentUpdateResponse> {
-    return this.electronService.replaceTextRange(
-      documentId,
-      startPosition,
-      endPosition,
-      replaceText,
-      highlightChanges
-    );
-  }
 
   /**
    * Apply a document update request

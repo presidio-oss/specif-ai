@@ -41,11 +41,8 @@ export class DocumentUpdateHandler {
         const currentContent = getCurrentContent();
         
         // Apply the update based on the update type
-        if (updateRequest.updateType === 'search_replace') {
-          this.handleSearchReplace(updateRequest, currentContent, onContentUpdated);
-          return true;
-        } else if (updateRequest.updateType === 'range_replace') {
-          this.handleRangeReplace(updateRequest, currentContent, onContentUpdated);
+        if (updateRequest.updateType === 'text_block_replace') {
+          this.handleTextBlockReplace(updateRequest, currentContent, onContentUpdated);
           return true;
         }
       }
@@ -57,126 +54,54 @@ export class DocumentUpdateHandler {
   }
 
   /**
-   * Handle a search and replace update
+   * Handle a text block replace update
    * @param updateRequest The update request
    * @param currentContent The current content of the document
    * @param onContentUpdated Callback function to be called when content is updated
    */
-  private handleSearchReplace(
+  private handleTextBlockReplace(
     updateRequest: any, 
     currentContent: string,
     onContentUpdated: (content: string, replacementInfo?: { 
-      searchText: string, 
-      replaceText: string,
-      positions: number[] 
+      searchBlock: string, 
+      replaceBlock: string
     }) => void
   ): void {
-    const { searchText, replaceText, documentId, highlightChanges } = updateRequest;
+    const { searchBlock, replaceBlock, documentId } = updateRequest;
     
     // Show a toast message with the update details
-    this.toasterService.showInfo(`Replacing "${searchText}" with "${replaceText}"`);
+    this.toasterService.showInfo(`Replacing specific text block with new content.`);
     
     try {
-      // Find all occurrences of the search text to get positions
-      const positions: number[] = [];
-      const regex = new RegExp(this.escapeRegExp(searchText), 'g');
-      let match;
-      
-      while ((match = regex.exec(currentContent)) !== null) {
-        positions.push(match.index);
-      }
-      
-      if (positions.length === 0) {
-        this.toasterService.showWarning(`Text "${searchText}" not found in the document`);
+      // Check if the search block exists in the content
+      if (!currentContent.includes(searchBlock)) {
+        this.toasterService.showWarning(`Text block not found in the document`);
         return;
       }
       
-      // Replace all occurrences of the search text with the replace text
-      const updatedContent = currentContent.replace(
-        new RegExp(this.escapeRegExp(searchText), 'g'), 
-        replaceText
-      );
+      // Replace the text block with the replacement block
+      const updatedContent = currentContent.replace(searchBlock, replaceBlock);
       
       // Call the callback function with the updated content and replacement info
       onContentUpdated(updatedContent, {
-        searchText,
-        replaceText,
-        positions
+        searchBlock,
+        replaceBlock
       });
       
       // Show success message
-      this.toasterService.showSuccess(`Successfully replaced "${searchText}" with "${replaceText}"`);
+      this.toasterService.showSuccess(`Successfully replaced text block`);
       
       // Apply the update using the document update service for tracking purposes
-      this.documentUpdateService.searchAndReplace(
+      this.documentUpdateService.applyUpdate({
+        requestId: updateRequest.requestId,
         documentId,
-        searchText,
-        replaceText,
-        highlightChanges
-      );
-    } catch (error) {
-      console.error('Error replacing text:', error);
-      this.toasterService.showError(`Failed to replace text: ${error}`);
-    }
-  }
-  
-  /**
-   * Escape special characters in a string for use in a regular expression
-   * @param string The string to escape
-   * @returns The escaped string
-   */
-  private escapeRegExp(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  /**
-   * Handle a range replace update
-   * @param updateRequest The update request
-   * @param currentContent The current content of the document
-   * @param onContentUpdated Callback function to be called when content is updated
-   */
-  private handleRangeReplace(
-    updateRequest: any, 
-    currentContent: string,
-    onContentUpdated: (content: string, replacementInfo?: { 
-      startPosition: number, 
-      endPosition: number,
-      replaceText: string 
-    }) => void
-  ): void {
-    const { startPosition, endPosition, replaceText, documentId, highlightChanges } = updateRequest;
-    
-    // Show a toast message with the update details
-    this.toasterService.showInfo(`Replacing text at positions ${startPosition}-${endPosition}`);
-    
-    try {
-      // Replace the text within the specified range
-      const updatedContent = 
-        currentContent.substring(0, startPosition) + 
-        replaceText + 
-        currentContent.substring(endPosition);
-      
-      // Call the callback function with the updated content and replacement info
-      onContentUpdated(updatedContent, {
-        startPosition,
-        endPosition,
-        replaceText
+        updateType: 'text_block_replace',
+        searchBlock,
+        replaceBlock
       });
-      
-      // Show success message
-      this.toasterService.showSuccess(`Successfully replaced text at positions ${startPosition}-${endPosition}`);
-      
-      // Apply the update using the document update service for tracking purposes
-      this.documentUpdateService.replaceRange(
-        documentId,
-        startPosition,
-        endPosition,
-        replaceText,
-        highlightChanges
-      );
     } catch (error) {
-      console.error('Error replacing text range:', error);
-      this.toasterService.showError(`Failed to replace text range: ${error}`);
+      console.error('Error replacing text block:', error);
+      this.toasterService.showError(`Failed to replace text block: ${error}`);
     }
   }
 }

@@ -376,60 +376,6 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  /**
-   * Search for text in a document and replace it with new text
-   * @param documentId The ID of the document to update
-   * @param searchText The text to search for
-   * @param replaceText The text to replace it with
-   * @param highlightChanges Whether to highlight the changes in the UI
-   * @returns The document update response
-   */
-  async searchAndReplaceText(
-    documentId: string,
-    searchText: string,
-    replaceText: string,
-    highlightChanges: boolean = true
-  ): Promise<DocumentUpdateResponse> {
-    const request: DocumentUpdateRequest = {
-      requestId: uuidv4(),
-      documentId,
-      updateType: 'search_replace',
-      searchText,
-      replaceText,
-      highlightChanges
-    };
-    
-    return this.updateDocument(request);
-  }
-
-  /**
-   * Replace text within a specific character range in a document
-   * @param documentId The ID of the document to update
-   * @param startPosition The starting character position
-   * @param endPosition The ending character position
-   * @param replaceText The text to replace the selected range with
-   * @param highlightChanges Whether to highlight the changes in the UI
-   * @returns The document update response
-   */
-  async replaceTextRange(
-    documentId: string,
-    startPosition: number,
-    endPosition: number,
-    replaceText: string,
-    highlightChanges: boolean = true
-  ): Promise<DocumentUpdateResponse> {
-    const request: DocumentUpdateRequest = {
-      requestId: uuidv4(),
-      documentId,
-      updateType: 'range_replace',
-      startPosition,
-      endPosition,
-      replaceText,
-      highlightChanges
-    };
-    
-    return this.updateDocument(request);
-  }
 
   async addUserStory(
     request: IUpdateUserStoryRequest,

@@ -190,31 +190,46 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
 };
 
 const buildToolsForRequirement = async (data: ChatWithAIParams) => {
+  // Cache for the current document content
+  let latestContent = data.requirement.description;
+
+  // Tool to get the current requirement content
   const getCurrentRequirementContent = tool(
     () => {
-      return data.requirement.description;
+      console.log("[getCurrentRequirementContent] Returning latest content");
+      return latestContent;
     },
     {
       name: "get_current_requirement_content",
-      description: "Get current requirement content",
+      description: "Get current requirement content. Always use this tool first before attempting to update the document to ensure you're working with the latest content.",
     }
   );
-
-  // Define the search and replace tool
-  const searchAndReplaceSchema = z.object({
-    searchText: z.string().describe("The text to search for in the document"),
-    replaceText: z.string().describe("The text to replace the search text with"),
-    highlightChanges: z.boolean().default(true).describe("Whether to highlight the changes in the UI")
+  
+  // Define the text block replace tool schema
+  const textBlockReplaceSchema = z.object({
+    searchBlock: z.string().describe("The exact text block to search for in the document"),
+    replaceBlock: z.string().describe("The text block to replace the search block with")
   });
 
-  // Tool for searching and replacing text in the document
-  const searchAndReplaceText = tool(
-    async (input: z.infer<typeof searchAndReplaceSchema>) => {
-      const { searchText, replaceText, highlightChanges = true } = input;
-      if (!searchText) {
+  // Tool for replacing a specific text block in the document
+  const replaceTextBlock = tool(
+    async (input: z.infer<typeof textBlockReplaceSchema>) => {
+      const { searchBlock, replaceBlock } = input;
+      
+      if (!searchBlock) {
         return JSON.stringify({
           success: false,
-          error: "searchText is required"
+          error: "searchBlock is required"
+        });
+      }
+
+      // Update the cached content
+      if (latestContent && latestContent.includes(searchBlock)) {
+        latestContent = latestContent.replace(searchBlock, replaceBlock);
+      } else {
+        return JSON.stringify({
+          success: false,
+          error: "Search block not found in the document"
         });
       }
 
@@ -225,75 +240,41 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       const updateRequest = {
         requestId,
         documentId,
-        updateType: "search_replace",
-        searchText,
-        replaceText,
-        highlightChanges
+        updateType: "text_block_replace",
+        searchBlock,
+        replaceBlock
       };
 
       // Return the update request details
       return JSON.stringify({
         success: true,
-        message: `Search and replace request created. Searching for "${searchText}" and replacing with "${replaceText}"`,
+        message: `Text block replace request created. Replacing specific text block with new content.`,
         updateRequest
       });
     },
     {
-      name: "search_and_replace_text",
-      description: "Search for text in the document and replace it with new text",
-      schema: searchAndReplaceSchema,
+      name: "replace_text_block",
+      description: `
+        Purpose: Update specific sections of the document by replacing exact text blocks
+        When to use: 
+        - When you need to update a specific paragraph, section, or code block
+        - When you want to preserve the exact formatting and structure of surrounding content
+        - For precise replacements that maintain document integrity
+        
+        Best practices:
+        - Always get the current document content first using get_current_requirement_content
+        - Provide the exact text block to search for (copy it precisely from the document)
+        - Ensure the replacement text fits contextually with surrounding content
+        - For large documents, focus on replacing one section at a time
+      `,
+      schema: textBlockReplaceSchema,
     }
   );
 
-  // Define the range replace tool schema
-  const rangeReplaceSchema = z.object({
-    startPosition: z.number().describe("The starting character position in the document"),
-    endPosition: z.number().describe("The ending character position in the document"),
-    replaceText: z.string().describe("The text to replace the selected range with"),
-    highlightChanges: z.boolean().default(true).describe("Whether to highlight the changes in the UI")
-  });
+  // Only return the two essential tools as requested
+  const tools = [getCurrentRequirementContent, replaceTextBlock];
 
-  // Tool for replacing text within a specific character range
-  const replaceTextRange = tool(
-    async (input: z.infer<typeof rangeReplaceSchema>) => {
-      const { startPosition, endPosition, replaceText, highlightChanges = true } = input;
-      if (startPosition === undefined || endPosition === undefined) {
-        return JSON.stringify({
-          success: false,
-          error: "startPosition and endPosition are required"
-        });
-      }
-
-      const requestId = uuidv4();
-      const documentId = data.requirement.title || "current-document";
-
-      // Create the update request
-      const updateRequest = {
-        requestId,
-        documentId,
-        updateType: "range_replace",
-        startPosition,
-        endPosition,
-        replaceText,
-        highlightChanges
-      };
-
-      // Return the update request details
-      return JSON.stringify({
-        success: true,
-        message: `Range replace request created. Replacing text from position ${startPosition} to ${endPosition} with "${replaceText}"`,
-        updateRequest
-      });
-    },
-    {
-      name: "replace_text_range",
-      description: "Replace text within a specific character range in the document",
-      schema: rangeReplaceSchema,
-    }
-  );
-
-  const tools = [getCurrentRequirementContent, searchAndReplaceText, replaceTextRange];
-
+  // Add requirement-specific tools based on requirement type
   switch (data.requirementAbbr) {
     case "BP": {
       const getLinkedBRDs = tool(
@@ -348,27 +329,31 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       break;
     }
     case "TASK": {
-      const getLinkedUS = tool(
-        () => {
-          return data.userStory;
-        },
-        {
-          name: "get_linked_us",
-          description: "Get linked US",
-        }
-      );
+      if ('userStory' in data) {
+        const getLinkedUS = tool(
+          () => {
+            return data.userStory;
+          },
+          {
+            name: "get_linked_us",
+            description: "Get linked US",
+          }
+        );
+        tools.push(getLinkedUS);
+      }
 
-      const getLinkedPRD = tool(
-        () => {
-          return data.prd;
-        },
-        {
-          name: "get_linked_prd",
-          description: "Get linked PRD",
-        }
-      );
-
-      tools.push(getLinkedUS, getLinkedPRD);
+      if ('prd' in data) {
+        const getLinkedPRD = tool(
+          () => {
+            return data.prd;
+          },
+          {
+            name: "get_linked_prd",
+            description: "Get linked PRD",
+          }
+        );
+        tools.push(getLinkedPRD);
+      }
       break;
     }
   }
