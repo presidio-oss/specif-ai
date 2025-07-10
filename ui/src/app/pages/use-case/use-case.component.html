@@ -163,9 +163,8 @@
                   [description]="requirement"
                   [fileName]="fileName"
                   [chatHistory]="chatHistory"
-                  [supportsAddFromCode]="true"
+                  [supportsAddFromCode]="false"
                   [baseContent]="useCaseForm.getRawValue().requirement"
-                  (getContent)="appendRequirement($event)"
                   (updateChatHistory)="updateChatHistory($event)"
                   [containerClass]="'border-none h-full overflow-hidden'"
                 />

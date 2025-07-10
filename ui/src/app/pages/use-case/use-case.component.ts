@@ -467,43 +467,6 @@ export class UseCaseComponent implements OnInit {
     }
   }
 
-  appendRequirement(data: any) {
-    let { chat, chatHistory } = data;
-    if (chat.contentToAdd) {
-      this.useCaseForm.patchValue({
-        requirement: `${this.useCaseForm.get('requirement')?.value} ${chat.contentToAdd}`,
-      });
-
-      // Mark the content as added in chat history
-      let newArray = chatHistory.map((item: any) => {
-        if (
-          item.name == chat.tool_name &&
-          item.tool_call_id == chat.tool_call_id
-        ) {
-          return { ...item, isAdded: true };
-        } else {
-          return item;
-        }
-      });
-
-      if (this.mode === 'edit') {
-        this.store.dispatch(
-          new UpdateFile(this.absoluteFilePath, {
-            ...this.useCaseForm.getRawValue(),
-            requirementAbbr: 'UC',
-            chatHistory: newArray,
-          }),
-        );
-        this.updateUseCase();
-      } else {
-        this.chatHistory = newArray;
-      }
-
-      // Show a toast message to indicate what happened
-      this.toastService.showSuccess('Added content to requirement');
-    }
-  }
-
   deleteUseCase() {
     this.dialogService
       .confirm({
@@ -588,10 +551,6 @@ export class UseCaseComponent implements OnInit {
     await this.workflowProgressService.setCreating(
       this.projectId,
       WorkflowType.UseCase,
-    );
-
-    this.toastService.showInfo(
-      'Generating business proposal... This may take a moment.',
     );
 
     try {

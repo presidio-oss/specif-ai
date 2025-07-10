@@ -17,7 +17,7 @@
       border-radius: 0.5rem;
       
       &:focus-within {
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        box-shadow: 0 0 0 2px rgba(118, 59, 246, 0.5);
       }
     }
   }
@@ -53,13 +53,13 @@
       }
       
       &.active {
-        background-color: #e0f2fe;
-        border-left: 3px solid #3b82f6;
+        background-color: #ededfc;
+        border-left: 3px solid #8367f0;
       }
       
       .section-title {
         font-size: 0.875rem;
-        color: #4b5563;
+        color: #524b63;
       }
     }
   }
@@ -148,7 +148,7 @@
       
       .apply-button {
         padding: 0.5rem 1rem;
-        background-color: #3b82f6;
+        background-color: #5a3bf6;
         color: white;
         border: none;
         border-radius: 0.375rem;
@@ -158,7 +158,7 @@
         align-items: center;
         
         &:hover {
-          background-color: #2563eb;
+          background-color: #5025eb;
         }
       }
     }
