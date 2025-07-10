@@ -77,11 +77,11 @@ export class AppSystemService {
     });
   }
 
-  async getFolders(relativePath: string, filterString: string) {
+  async getFolders(relativePath: string, filterString: string, constructTree: boolean = true) {
     const directory = localStorage.getItem(APP_CONSTANTS.WORKING_DIR);
     return this.electronService.invokeFunction('getDirectoryList', {
       path: `${directory}/${relativePath}`,
-      constructTree: true,
+      constructTree,
       filterString,
     });
   }

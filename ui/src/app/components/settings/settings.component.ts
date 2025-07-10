@@ -260,7 +260,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (providerControl) {
       this.subscriptions.add(
         providerControl.valueChanges.subscribe(async(provider) => {
-          console.log("Provider Changed", provider);
           await this.updateConfigFields(provider);
           this.errorMessage = '';
         })
@@ -352,7 +351,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const provider = formValue.provider;
     this.configForm.updateValueAndValidity();
     const latestConfigValues = (this.configForm.get('config') as FormGroup).getRawValue();
-    console.log("latestConfigValues", JSON.stringify(latestConfigValues))
 
     // Save Langfuse config first
     if (this.useLangfuseCustomConfig.value !== this.initialEnableCustomLangfuseToggleState ||
@@ -373,8 +371,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
           },
           isDefault: false
         };
-
-        console.log("New subscribe value", JSON.stringify(newConfig))
 
         this.store.dispatch(new SetLLMConfig(newConfig)).subscribe(() => {
           this.store.dispatch(new SyncLLMConfig()).subscribe(async () => {
@@ -467,8 +463,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
           } else {
             this.useLangfuseCustomConfig.enable();
           }
-          console.log('Analytics enabled:', enabled);
-          console.log('Langfuse enabled:', this.useLangfuseCustomConfig.value);
           this.checkForChanges();
           this.cdr.detectChanges();
         }),
