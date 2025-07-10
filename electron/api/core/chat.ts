@@ -5,6 +5,7 @@ import {
   ToolMessage,
 } from "@langchain/core/messages";
 import { tool } from "@langchain/core/tools";
+import { v4 as uuidv4 } from "uuid";
 import { MemorySaver } from "@langchain/langgraph-checkpoint";
 import { IpcMainInvokeEvent } from "electron/main";
 import { buildReactAgent } from "../../agentic/react-agent";
@@ -100,6 +101,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
         requestId: validatedData.requestId,
         sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
       },
+      recursionLimit: 50,
     };
 
     const messages = transformToLangchainMessages(validatedData.chatHistory);
@@ -198,7 +200,99 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     }
   );
 
-  const tools = [getCurrentRequirementContent];
+  // Define the search and replace tool
+  const searchAndReplaceSchema = z.object({
+    searchText: z.string().describe("The text to search for in the document"),
+    replaceText: z.string().describe("The text to replace the search text with"),
+    highlightChanges: z.boolean().default(true).describe("Whether to highlight the changes in the UI")
+  });
+
+  // Tool for searching and replacing text in the document
+  const searchAndReplaceText = tool(
+    async (input: z.infer<typeof searchAndReplaceSchema>) => {
+      const { searchText, replaceText, highlightChanges = true } = input;
+      if (!searchText) {
+        return JSON.stringify({
+          success: false,
+          error: "searchText is required"
+        });
+      }
+
+      const requestId = uuidv4();
+      const documentId = data.requirement.title || "current-document";
+
+      // Create the update request
+      const updateRequest = {
+        requestId,
+        documentId,
+        updateType: "search_replace",
+        searchText,
+        replaceText,
+        highlightChanges
+      };
+
+      // Return the update request details
+      return JSON.stringify({
+        success: true,
+        message: `Search and replace request created. Searching for "${searchText}" and replacing with "${replaceText}"`,
+        updateRequest
+      });
+    },
+    {
+      name: "search_and_replace_text",
+      description: "Search for text in the document and replace it with new text",
+      schema: searchAndReplaceSchema,
+    }
+  );
+
+  // Define the range replace tool schema
+  const rangeReplaceSchema = z.object({
+    startPosition: z.number().describe("The starting character position in the document"),
+    endPosition: z.number().describe("The ending character position in the document"),
+    replaceText: z.string().describe("The text to replace the selected range with"),
+    highlightChanges: z.boolean().default(true).describe("Whether to highlight the changes in the UI")
+  });
+
+  // Tool for replacing text within a specific character range
+  const replaceTextRange = tool(
+    async (input: z.infer<typeof rangeReplaceSchema>) => {
+      const { startPosition, endPosition, replaceText, highlightChanges = true } = input;
+      if (startPosition === undefined || endPosition === undefined) {
+        return JSON.stringify({
+          success: false,
+          error: "startPosition and endPosition are required"
+        });
+      }
+
+      const requestId = uuidv4();
+      const documentId = data.requirement.title || "current-document";
+
+      // Create the update request
+      const updateRequest = {
+        requestId,
+        documentId,
+        updateType: "range_replace",
+        startPosition,
+        endPosition,
+        replaceText,
+        highlightChanges
+      };
+
+      // Return the update request details
+      return JSON.stringify({
+        success: true,
+        message: `Range replace request created. Replacing text from position ${startPosition} to ${endPosition} with "${replaceText}"`,
+        updateRequest
+      });
+    },
+    {
+      name: "replace_text_range",
+      description: "Replace text within a specific character range in the document",
+      schema: rangeReplaceSchema,
+    }
+  );
+
+  const tools = [getCurrentRequirementContent, searchAndReplaceText, replaceTextRange];
 
   switch (data.requirementAbbr) {
     case "BP": {

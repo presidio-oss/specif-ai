@@ -20,6 +20,17 @@
 
   <!-- Main editor area -->
   <div class="canvas-editor-content flex-1 p-4 overflow-y-auto">
+    <!-- Editor controls -->
+    <div class="editor-controls mb-4 flex justify-end">
+      <button 
+        class="edit-button bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-md flex items-center"
+        (click)="showEditDialog()"
+      >
+        <ng-icon name="heroDocumentPlus" class="mr-1"></ng-icon>
+        Propose Edit
+      </button>
+    </div>
+    
     <app-rich-text-editor
       [content]="content"
       [editable]="editable"

@@ -31,6 +31,7 @@ import { RichTextEditorComponent } from '../rich-text-editor/rich-text-editor.co
 import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
+import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
 
 export interface SectionInfo {
   id: string;
@@ -96,7 +97,8 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
   constructor(
     private logger: NGXLogger,
     private electronService: ElectronService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private documentUpdateService: DocumentUpdateService
   ) {}
   
   ngAfterViewInit(): void {
@@ -259,6 +261,32 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
   
   /**
+   * Show the edit dialog with a form to propose changes
+   */
+  showEditDialog(): void {
+    // Create a default edit proposal for the selected section or full document
+    let editContent = '';
+    let editType: 'append' | 'section' | 'full' = 'append';
+    
+    if (this.selectedSection) {
+      editContent = this.selectedSection.content;
+      editType = 'section';
+    } else {
+      editContent = this.content;
+      editType = 'full';
+    }
+    
+    // Create the edit proposal
+    const edit: EditProposal = {
+      type: editType,
+      content: editContent
+    };
+    
+    // Show the approval dialog
+    this.proposeEdit(edit);
+  }
+  
+  /**
    * Propose an edit to the content
    */
   proposeEdit(edit: EditProposal): void {
@@ -286,11 +314,31 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
         case 'section':
           // Replace a specific section if one is selected
           if (this.selectedSection) {
-            editor.commands.setTextSelection({
-              from: this.selectedSection.startPos,
-              to: this.selectedSection.endPos
+            // Use the document update service to replace the section
+            const startPos = this.selectedSection ? this.selectedSection.startPos : 0;
+            const endPos = this.selectedSection ? this.selectedSection.endPos : 0;
+            
+            this.documentUpdateService.replaceRange(
+              'current-document', // Use a generic document ID
+              startPos,
+              endPos,
+              this.proposedEdit.content,
+              true // Highlight changes
+            ).then(response => {
+              if (response.success) {
+                // Update the editor content
+                if (this.selectedSection) {
+                  editor.commands.setTextSelection({
+                    from: this.selectedSection.startPos,
+                    to: this.selectedSection.endPos
+                  });
+                }
+                editor.commands.insertContent(this.proposedEdit?.content || '');
+                
+                // Emit the content change event
+                this.contentChange.emit(editor.getHTML());
+              }
             });
-            editor.commands.insertContent(this.proposedEdit.content);
           } else {
             // Fallback to append if no section is selected
             editor.commands.setTextSelection(editor.state.doc.content.size);
@@ -321,6 +369,40 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
       this.showApprovalDialog = false;
       this.proposedEdit = null;
     }
+  }
+
+  /**
+   * Search for text in the document and replace it with new text
+   * @param searchText The text to search for
+   * @param replaceText The text to replace it with
+   */
+  searchAndReplaceText(searchText: string, replaceText: string): void {
+    if (!this.richTextEditor?.editor) return;
+    
+    // Use the document update service to search and replace text
+    this.documentUpdateService.searchAndReplace(
+      'current-document', // Use a generic document ID
+      searchText,
+      replaceText,
+      true // Highlight changes
+    ).then(response => {
+      if (response.success) {
+        // Get the current content
+        const content = this.richTextEditor.editor?.getHTML() ?? '';
+        
+        // Replace all occurrences of the search text with the replace text
+        const updatedContent = content.replace(new RegExp(searchText, 'g'), replaceText);
+        
+        // Update the editor content
+        this.richTextEditor.editor?.commands.setContent(updatedContent);
+        
+        // Emit the content change event
+        this.contentChange.emit(updatedContent);
+        
+        // Update the document sections
+        this.parseContentSections();
+      }
+    });
   }
   
   /**
@@ -361,11 +443,13 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
    * Scroll to a specific section in the editor
    * @param section The section to scroll to
    */
-  private scrollToSection(section: SectionInfo): void {
+  private scrollToSection(section: SectionInfo | null): void {
+    if (!section) return;
     setTimeout(() => {
       try {
         // Get the editor element
-        const editorElement = this.richTextEditor?.editorElement?.nativeElement;
+        if (!this.richTextEditor?.editor || !this.richTextEditor.editorElement) return;
+        const editorElement = this.richTextEditor.editorElement.nativeElement;
         if (!editorElement) return;
         
         // First try to find an element with the exact section ID
@@ -377,7 +461,8 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
           
           for (let i = 0; i < headings.length; i++) {
             const heading = headings[i] as HTMLElement;
-            if (heading.textContent?.includes(section.title)) {
+            const headingText = heading.textContent || '';
+            if (headingText && headingText.includes(section.title)) {
               targetElement = heading;
               break;
             }
@@ -401,6 +486,28 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
         this.logger.error('Error scrolling to section:', error);
       }
     }, 100);
+  }
+  
+  /**
+   * Refresh the content of the editor
+   * This method is called when the content is updated externally
+   */
+  refreshContent(): void {
+    if (!this.richTextEditor?.editor) return;
+    
+    try {
+      // Re-parse the content sections
+      this.parseContentSections();
+      
+      // Refresh the editor view
+      const currentContent = this.richTextEditor.editor.getHTML();
+      this.richTextEditor.editor.commands.setContent(currentContent);
+      
+      // Emit the content change event
+      this.contentChange.emit(currentContent);
+    } catch (error) {
+      this.logger.error('Error refreshing content:', error);
+    }
   }
   
   ngOnDestroy(): void {

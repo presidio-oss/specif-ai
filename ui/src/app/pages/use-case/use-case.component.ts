@@ -72,6 +72,8 @@ import {
   EditProposal,
 } from '../../components/core/canvas-editor/canvas-editor.component';
 import { FloatingChatComponent } from '../../components/core/floating-chat/floating-chat.component';
+import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
+import { DocumentUpdateHandlerService } from 'src/app/services/document-update/document-update-handler.service';
 
 @Component({
   selector: 'app-use-case',
@@ -152,6 +154,9 @@ export class UseCaseComponent implements OnInit {
   selectedSection: SectionInfo | null = null;
   documentSections: SectionInfo[] = [];
   isChatExpanded: boolean = true;
+  
+  // Document update handler
+  private documentUpdateHandler: DocumentUpdateHandlerService;
 
   constructor(
     private store: Store,
@@ -160,7 +165,11 @@ export class UseCaseComponent implements OnInit {
     private loggerService: NGXLogger,
     private electronService: ElectronService,
     private workflowProgressService: WorkflowProgressService,
+    private documentUpdateService: DocumentUpdateService
   ) {
+    // Initialize document update handler
+    this.documentUpdateHandler = new DocumentUpdateHandlerService(documentUpdateService, this.toastService);
+    
     // Get mode from route parameters
     this.route.params.subscribe((params) => {
       this.mode = params['mode'] === 'add' ? 'add' : 'edit';
@@ -456,6 +465,10 @@ export class UseCaseComponent implements OnInit {
 
   updateChatHistory(chatHistory: any) {
     this.chatHistory = chatHistory;
+    
+    // Process the chat history for document updates
+    this.processDocumentUpdates();
+    
     if (this.mode === 'edit') {
       this.store.dispatch(
         new UpdateFile(this.absoluteFilePath, {
@@ -464,6 +477,54 @@ export class UseCaseComponent implements OnInit {
           chatHistory: chatHistory,
         }),
       );
+    }
+  }
+  
+  /**
+   * Process the chat history for document updates
+   * This method checks for tool responses in the chat history and applies document updates
+   */
+  private processDocumentUpdates(): void {
+    // Check if there are any tool messages in the chat history
+    const toolMessages = this.chatHistory.filter((message: any) => message.tool);
+    
+    if (toolMessages.length > 0) {
+      // Process each tool message
+      for (const message of toolMessages) {
+        // Check if the message has already been processed
+        if (message.processed) continue;
+        
+        // Try to handle the tool response
+        const handled = this.documentUpdateHandler.handleToolResponse(
+          message.tool,
+          (updatedContent: string, replacementInfo?: any) => {
+            // Update the form with the updated content
+            this.useCaseForm.patchValue({
+              requirement: updatedContent
+            });
+            
+            // Update the document sections
+            this.updateDocumentSections();
+            
+            // If in edit mode, update the use case
+            if (this.mode === 'edit') {
+              this.updateUseCase();
+            }
+            
+            // Handle visual highlighting if replacement info is provided
+            if (replacementInfo) {
+              this.highlightReplacement(replacementInfo);
+            }
+          },
+          // Function to get the current content
+          () => this.useCaseForm.get('requirement')?.value || ''
+        );
+        
+        // Mark the message as processed
+        if (handled) {
+          message.processed = true;
+        }
+      }
     }
   }
 
@@ -902,7 +963,7 @@ export class UseCaseComponent implements OnInit {
 
     this.loggerService.debug('Selected document section:', section);
   }
-
+  
   /**
    * Toggle the expanded state of the chat panel
    */
@@ -934,6 +995,31 @@ export class UseCaseComponent implements OnInit {
       if (!stillExists && this.documentSections.length > 0) {
         this.selectedSection = this.documentSections[0];
       }
+    }
+  }
+  
+  /**
+   * Highlight the replaced text in the document
+   * This is a simplified version that just shows a toast notification
+   * @param replacementInfo Information about the replacement
+   */
+  private highlightReplacement(replacementInfo: any): void {
+    // Show a toast notification with the replacement details
+    if (replacementInfo.searchText && replacementInfo.replaceText) {
+      this.toastService.showSuccess(
+        `Replaced "${replacementInfo.searchText}" with "${replacementInfo.replaceText}"`
+      );
+    } else if (replacementInfo.startPosition !== undefined && replacementInfo.endPosition !== undefined) {
+      this.toastService.showSuccess(
+        `Updated text at positions ${replacementInfo.startPosition}-${replacementInfo.endPosition}`
+      );
+    }
+    
+    // Find the canvas editor component and tell it to focus on the updated section
+    const canvasEditor = document.querySelector('app-canvas-editor');
+    if (canvasEditor && typeof (canvasEditor as any).refreshContent === 'function') {
+      // If the canvas editor has a refreshContent method, call it to refresh the editor
+      (canvasEditor as any).refreshContent();
     }
   }
 }
