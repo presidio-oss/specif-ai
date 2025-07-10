@@ -209,10 +209,19 @@ async function appendFile({
 
     const fileCount = baseFileCount;
 
-    let newFileName =
-      featureFile === ""
-        ? `${keyName}${(fileCount + 1).toString().padStart(2, "0")}-base.json`
-        : `${featureFile}-feature.json`;
+    let newFileName;
+    
+    if (featureFile === "") {
+      // For base files, use the prefix with the counter
+      const countStr = (fileCount + 1).toString().padStart(2, "0");
+        
+      newFileName = `${keyName}${countStr}-base.json`;
+      console.log(`Generated filename: ${newFileName}`);
+    } else {
+      // For feature files, use the standard format
+      newFileName = `${featureFile}-feature.json`;
+    }
+    
     const newFilePath = pathModule.join(path, newFileName);
 
     await fsPromise.writeFile(newFilePath, content, "utf-8");

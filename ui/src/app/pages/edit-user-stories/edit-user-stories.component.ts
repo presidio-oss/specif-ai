@@ -22,6 +22,7 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { NGXLogger } from 'ngx-logger';
 import { AppSystemService } from '../../services/app-system/app-system.service';
+import { firstValueFrom } from 'rxjs';
 import {
   AddBreadcrumb,
   DeleteBreadcrumb,
@@ -36,6 +37,7 @@ import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { MultiUploadComponent } from '../../components/multi-upload/multi-upload.component';
 import {
   CONFIRMATION_DIALOG,
+  REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
@@ -43,6 +45,8 @@ import { ArchiveUserStory } from '../../store/user-stories/user-stories.actions'
 import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
+import { ArchiveFile } from 'src/app/store/projects/projects.actions';
+import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils.service';
 
 @Component({
   selector: 'app-edit-user-stories',
@@ -115,6 +119,7 @@ export class EditUserStoriesComponent implements OnDestroy {
     private featureService: FeatureService,
     private router: Router,
     private toasterService: ToasterService,
+    private testCaseUtilsService: TestCaseUtilsService,
   ) {
     this.mode = this.activatedRoute.snapshot.paramMap.get('mode');
     const navigation = this.router.getCurrentNavigation();
@@ -382,33 +387,58 @@ export class EditUserStoriesComponent implements OnDestroy {
     }
   }
 
-  deleteUserStory() {
-    this.dialogService
-      .confirm({
+  private async checkForLinkedTestCases(userStoryId: string): Promise<boolean> {
+    return this.testCaseUtilsService.checkForLinkedTestCases(this.selectedProject, userStoryId);
+  }
+
+  private async deleteTestCasesForUserStory(userStoryId: string): Promise<void> {
+    await this.testCaseUtilsService.deleteTestCasesForUserStory(this.selectedProject, userStoryId);
+    this.logger.debug(`Deleted test cases for user story ${userStoryId}`);
+  }
+
+  async deleteUserStory() {
+    try {
+      const hasLinkedTestCases = await this.checkForLinkedTestCases(this.existingUserForm.id);
+      
+      let dialogConfig = {
         title: CONFIRMATION_DIALOG.DELETION.TITLE,
-        description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(
-          this.existingUserForm.id,
-        ),
+        description: CONFIRMATION_DIALOG.DELETION.DESCRIPTION(this.existingUserForm.id),
         cancelButtonText: CONFIRMATION_DIALOG.DELETION.CANCEL_BUTTON_TEXT,
         confirmButtonText: CONFIRMATION_DIALOG.DELETION.PROCEED_BUTTON_TEXT,
-      })
-      .subscribe((res) => {
-        if (res) {
-          this.store.dispatch(
-            new ArchiveUserStory(
-              this.absoluteFilePath,
-              this.existingUserForm.id,
-            ),
-          );
-          this.navigateBackToUserStories();
-          this.toasterService.showSuccess(
-            TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
-              this.entityType,
-              this.existingUserForm.id,
-            ),
-          );
+      };
+      
+      if (hasLinkedTestCases) {
+        dialogConfig.description = `${this.existingUserForm.id} has linked test cases that will also be deleted. Are you sure you want to proceed?`;
+      }
+      
+      const confirmed = await firstValueFrom(this.dialogService.confirm(dialogConfig));
+      
+      if (confirmed) {
+        if (hasLinkedTestCases) {
+          await this.deleteTestCasesForUserStory(this.existingUserForm.id);
         }
-      });
+        
+        this.store.dispatch(
+          new ArchiveUserStory(
+            this.absoluteFilePath,
+            this.existingUserForm.id,
+          ),
+        );
+        
+        this.navigateBackToUserStories();
+        this.toasterService.showSuccess(
+          TOASTER_MESSAGES.ENTITY.DELETE.SUCCESS(
+            this.entityType,
+            this.existingUserForm.id,
+          ),
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Error deleting user story ${this.existingUserForm.id}:`, error);
+      this.toasterService.showError(
+        TOASTER_MESSAGES.ENTITY.DELETE.FAILURE(this.entityType, this.existingUserForm.id),
+      );
+    }
   }
 
   enhanceUserStoryWithAI(){

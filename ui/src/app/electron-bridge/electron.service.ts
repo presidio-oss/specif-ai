@@ -280,6 +280,22 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async createTestCases(
+    request: any,
+  ): Promise<any> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'workflow:invoke',
+        args: [{ 
+          type: 'test-case',
+          ...request
+        }],
+        skipLoading: true
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async addTask(
     request: IAddTaskRequest,
   ): Promise<ITasksResponse> {

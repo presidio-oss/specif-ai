@@ -8,6 +8,7 @@ export interface IUserStory {
     tasks?: ITask[];
     archivedTasks?: ITask[];
     chatHistory?: [];
+    prdId?: string; // Added for better identification in test case generation
 }
 
 export interface IUserStoryResponse {
