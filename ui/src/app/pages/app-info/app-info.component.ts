@@ -6,6 +6,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import { TestCaseHomeComponent } from '../test-cases/test-case-home/test-case-home.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import mermaid from 'mermaid';
 import { Store } from '@ngxs/store';
@@ -46,6 +47,7 @@ import {
   heroChevronDown,
   heroChevronUp,
   heroServerStack,
+  heroBeaker,
 } from '@ng-icons/heroicons/outline';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
@@ -103,6 +105,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
     WorkflowProgressComponent,
     ProjectFailureMessageComponent,
     SidebarComponent,
+    TestCaseHomeComponent,
   ],
   providers: [
     provideIcons({
@@ -116,6 +119,7 @@ import { ProjectCreationService } from '../../services/project-creation/project-
       heroChevronDown,
       heroChevronUp,
       heroServerStack,
+      heroBeaker
     }),
   ],
 })
@@ -173,7 +177,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
 
   // Predefined order of folders
-  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP'];
+  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
@@ -657,6 +661,10 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         },
       },
     });
+  }
+  
+  navigateToTestCasesHome() {
+    this.selectFolder({ name: 'TC', children: [] });
   }
 
   handleIntegrationNavState(): void {

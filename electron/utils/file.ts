@@ -3,6 +3,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { PATHS } from "../constants/app.constants";
 
+export const joinPaths = (...segments: string[]): string => {
+  return path.join(...segments);
+};
+
 export const getSpecifaiAppDataPath = () =>
   `${app.getPath("appData")}/${app.getName()}`;
 

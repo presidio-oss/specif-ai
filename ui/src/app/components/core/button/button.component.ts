@@ -18,6 +18,7 @@ export class ButtonComponent {
     | 'secondary'
     | 'secondary_outline'
     | 'danger'
+    | 'danger_outline'
     | 'green' = 'primary';
   @Input() size: 'xs' | 'sm' | 'md' | 'lg' = 'md';
   @Input() rounded: 'none' | 'sm' | 'md' | 'lg' = 'md';
@@ -74,6 +75,14 @@ export class ButtonComponent {
         disabledBg: 'bg-danger-600',
         disabledText: 'text-secondary-50',
         border: '',
+      },
+      danger_outline: {
+        bg: 'bg-transparent',
+        text: 'text-danger-600',
+        hoverBg: 'hover:bg-danger-200',
+        disabledBg: 'bg-transparent',
+        disabledText: 'text-danger-300',
+        border: 'border border-danger-300',
       },
       green: {
         bg: 'bg-success-500',
