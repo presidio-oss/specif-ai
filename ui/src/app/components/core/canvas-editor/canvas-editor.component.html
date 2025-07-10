@@ -1,24 +1,14 @@
-<div class="canvas-editor-container">
-  <!-- Main editor area -->
-  <div class="canvas-editor-content">
-    <app-rich-text-editor
-      [content]="content"
-      [editable]="editable"
-      [editorClass]="'canvas-editor-area'"
-      (change)="onContentChange($event)"
-    ></app-rich-text-editor>
-  </div>
-  
-  <!-- Section outline sidebar (optional) -->
-  <div class="canvas-editor-sidebar" *ngIf="showSidebar && sections.length > 0">
-    <div class="sidebar-header">
+<div class="canvas-editor-container flex flex-row w-full h-full">
+  <!-- Section outline sidebar (now on the left) -->
+  <div class="canvas-editor-sidebar w-1/4 border-r border-gray-200" *ngIf="showSidebar && sections.length > 0">
+    <div class="sidebar-header p-4 border-b">
       <h3 class="text-sm font-medium text-secondary-700">Document Sections</h3>
     </div>
-    <div class="sidebar-content">
-      <ul class="section-list">
+    <div class="sidebar-content p-4 overflow-y-auto">
+      <ul class="section-list space-y-2">
         <li 
           *ngFor="let section of sections" 
-          class="section-item"
+          class="section-item cursor-pointer"
           [class.active]="selectedSection?.id === section.id"
           (click)="selectSection(section.id)"
         >
@@ -27,7 +17,17 @@
       </ul>
     </div>
   </div>
-  
+
+  <!-- Main editor area -->
+  <div class="canvas-editor-content flex-1 p-4 overflow-y-auto">
+    <app-rich-text-editor
+      [content]="content"
+      [editable]="editable"
+      [editorClass]="'canvas-editor-area'"
+      (change)="onContentChange($event)"
+    ></app-rich-text-editor>
+  </div>
+
   <!-- Edit approval dialog -->
   <div *ngIf="showApprovalDialog && proposedEdit" class="edit-approval-dialog">
     <div class="dialog-content">
@@ -40,14 +40,14 @@
           <ng-icon name="heroXMark"></ng-icon>
         </button>
       </div>
-      
+
       <div class="dialog-body">
         <p class="text-sm text-secondary-600 mb-2">
           {{ proposedEdit.type === 'append' ? 'The following content will be added to the end of your document:' : 
              proposedEdit.type === 'section' ? 'The following content will replace the selected section:' : 
              'The following content will replace your entire document:' }}
         </p>
-        
+
         <div class="preview-content">
           <app-rich-text-editor
             [content]="proposedEdit.content"
@@ -57,18 +57,10 @@
           ></app-rich-text-editor>
         </div>
       </div>
-      
+
       <div class="dialog-footer">
-        <button 
-          class="cancel-button"
-          (click)="cancelProposedEdit()"
-        >
-          Cancel
-        </button>
-        <button 
-          class="apply-button"
-          (click)="applyProposedEdit()"
-        >
+        <button class="cancel-button" (click)="cancelProposedEdit()">Cancel</button>
+        <button class="apply-button" (click)="applyProposedEdit()">
           <ng-icon name="heroCheck" class="mr-1"></ng-icon>
           Apply Changes
         </button>

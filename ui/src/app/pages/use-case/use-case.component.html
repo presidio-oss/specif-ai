@@ -109,57 +109,66 @@
           </div>
         </div>
 
-        <!-- Edit Mode: Full-width canvas editor with built-in sidebar -->
+        <!-- Edit Mode: Canvas editor and chat panel side by side -->
         <ng-container *ngIf="mode === 'edit'">
-          <div class="flex-1 overflow-hidden">
-            <div class="h-full flex flex-col">
-              <label class="block text-sm font-medium text-secondary-500 p-3 border-b border-secondary-200">
-                Requirement
-                <span class="text-red-500 text-xs">*</span>
-              </label>
-              <div class="flex-1 overflow-y-auto">
-                <app-canvas-editor
-                  [content]="useCaseForm.get('requirement')?.value"
-                  [editable]="true"
-                  [showSidebar]="true"
-                  (contentChange)="onCanvasContentChange($event)"
-                  (sectionSelected)="onSectionSelected($event)"
-                  (editProposed)="onEditProposed($event)"
-                ></app-canvas-editor>
+          <!-- Main content area with flexible layout -->
+          <div class="flex flex-1 overflow-hidden">
+            <!-- Canvas Editor Panel -->
+            <div class="flex-1 overflow-hidden">
+              <div class="h-full flex flex-col">
+                <label class="block text-sm font-medium text-secondary-500 p-3 border-b border-secondary-200">
+                  Requirement
+                  <span class="text-red-500 text-xs">*</span>
+                </label>
+                <div class="flex-1 overflow-y-auto">
+                  <app-canvas-editor
+                    [content]="useCaseForm.get('requirement')?.value"
+                    [editable]="true"
+                    [showSidebar]="true"
+                    (contentChange)="onCanvasContentChange($event)"
+                    (sectionSelected)="onSectionSelected($event)"
+                    (editProposed)="onEditProposed($event)"
+                  ></app-canvas-editor>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Chat Panel (only shown when expanded) -->
-          <div *ngIf="isChatExpanded" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-            <div class="w-96 bg-white h-full shadow-lg">
-              <div class="h-full flex flex-col">
-                <div class="p-3 border-b border-secondary-200 flex justify-between items-center">
-                  <h3 class="text-sm font-medium text-secondary-700">AI Assistant</h3>
-                  <button 
-                    class="text-secondary-500 hover:text-secondary-700"
-                    (click)="toggleChatExpanded()"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                  <app-chat
-                    class="h-full block"
-                    chatType="requirement"
-                    [name]="name"
-                    [description]="requirement"
-                    [fileName]="fileName"
-                    [chatHistory]="chatHistory"
-                    [supportsAddFromCode]="true"
-                    [baseContent]="useCaseForm.getRawValue().requirement"
-                    (getContent)="appendRequirement($event)"
-                    (updateChatHistory)="updateChatHistory($event)"
-                    [containerClass]="'border-none h-full overflow-hidden'"
-                  />
-                </div>
+            <!-- Chat Panel (side panel that can be collapsed/expanded) -->
+            <div 
+              class="border-l border-secondary-200 bg-white transition-all duration-300 ease-in-out"
+              [ngClass]="{'w-96': isChatExpanded, 'w-10': !isChatExpanded}"
+            >
+              <!-- Collapse/Expand Button -->
+              <div class="p-3 border-b border-secondary-200 flex justify-between items-center">
+                <h3 *ngIf="isChatExpanded" class="text-sm font-medium text-secondary-700">AI Assistant</h3>
+                <button 
+                  class="text-secondary-500 hover:text-secondary-700 ml-auto"
+                  (click)="toggleChatExpanded()"
+                >
+                  <svg *ngIf="isChatExpanded" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  <svg *ngIf="!isChatExpanded" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+              
+              <!-- Chat Content (only visible when expanded) -->
+              <div *ngIf="isChatExpanded" class="flex-1 overflow-hidden h-[calc(100%-48px)]">
+                <app-chat
+                  class="h-full block"
+                  chatType="requirement"
+                  [name]="name"
+                  [description]="requirement"
+                  [fileName]="fileName"
+                  [chatHistory]="chatHistory"
+                  [supportsAddFromCode]="true"
+                  [baseContent]="useCaseForm.getRawValue().requirement"
+                  (getContent)="appendRequirement($event)"
+                  (updateChatHistory)="updateChatHistory($event)"
+                  [containerClass]="'border-none h-full overflow-hidden'"
+                />
               </div>
             </div>
           </div>
@@ -208,16 +217,6 @@
       </div>
     </form>
     
-    <!-- Floating Chat Button (only in edit mode) -->
-    <div *ngIf="mode === 'edit' && !isChatExpanded" class="fixed bottom-6 right-6">
-      <button 
-        class="bg-primary-600 text-white rounded-full p-3 shadow-lg hover:bg-primary-700 transition-colors"
-        (click)="toggleChatExpanded()"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-        </svg>
-      </button>
-    </div>
+    <!-- No floating chat button needed anymore since chat is integrated as a panel -->
   </div>
 </div>

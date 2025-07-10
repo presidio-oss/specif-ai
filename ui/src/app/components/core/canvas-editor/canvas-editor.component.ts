@@ -109,6 +109,9 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
   
   ngOnChanges(): void {
     if (this.richTextEditor?.editor) {
+      if (this.content !== this.richTextEditor.editor.getHTML()) {
+        this.richTextEditor.writeValue(this.content);
+      }
       this.parseContentSections();
     }
   }

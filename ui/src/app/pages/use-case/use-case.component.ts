@@ -151,7 +151,7 @@ export class UseCaseComponent implements OnInit {
   chatHistory: any = [];
   selectedSection: SectionInfo | null = null;
   documentSections: SectionInfo[] = [];
-  isChatExpanded: boolean = false;
+  isChatExpanded: boolean = true;
 
   constructor(
     private store: Store,
@@ -364,6 +364,12 @@ export class UseCaseComponent implements OnInit {
             this.resetUseCaseProgress();
           }
         });
+    }
+    
+    // Initialize document sections when component loads
+    // This is important since chat is expanded by default
+    if (this.mode === 'edit') {
+      this.updateDocumentSections();
     }
   }
 
