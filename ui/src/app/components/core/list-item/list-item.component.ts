@@ -22,7 +22,6 @@ export class ListItemComponent {
   @Input() tag!: string;
 
   getPmoLogo(): string | null {
-    console.log(this.payload);
     const selectedPmoTool =
       this.payload?.metadata?.integration?.selectedPmoTool;
 
