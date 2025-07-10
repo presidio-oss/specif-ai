@@ -737,17 +737,4 @@ export class PmoIntegrationModalComponent implements OnInit {
         return 'Invalid PMO credentials. Please check your credentials and try again.';
     }
   }
-
-  // Helper methods for getting badge colors
-  getTopLevelBadgeColor(): string {
-    return this.config.badgeColors.topLevel;
-  }
-
-  getMidLevelBadgeColor(): string {
-    return this.config.badgeColors.midLevel;
-  }
-
-  getBottomLevelBadgeColor(): string {
-    return this.config.badgeColors.bottomLevel;
-  }
 }
