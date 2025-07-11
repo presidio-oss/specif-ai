@@ -3,6 +3,8 @@ import {
   suggestionPayload,
   conversePayload,
   ChatUpdateRequirementResponse,
+  InlineEditPayload,
+  InlineEditResponse,
 } from 'src/app/model/interfaces/chat.interface';
 import {
   ICreateSolutionRequest,
@@ -130,6 +132,9 @@ export interface ElectronAPI {
 
   // Document Update Methods
   updateDocument(request: DocumentUpdateRequest): Promise<DocumentUpdateResponse>;
+  
+  // Inline Edit Method
+  inlineEditWithAI(request: InlineEditPayload): Promise<InlineEditResponse>;
 
   // Content Generation Process Management
   setContentGenerationStatus(

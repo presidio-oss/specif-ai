@@ -20,6 +20,7 @@ import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import {
   FormControl,
   FormGroup,
+  FormArray,
   ReactiveFormsModule,
   Validators,
   FormsModule,
@@ -185,7 +186,7 @@ export class UseCaseComponent implements OnInit {
       this.selectedRequirement = navigation.extras.state['req'] || {};
     }
 
-    // Set up breadcrumbs
+    // Set up first breadcrumb
     this.store.dispatch(
       new AddBreadcrumb({
         url: `/apps/${this.projectId}`,
@@ -201,7 +202,19 @@ export class UseCaseComponent implements OnInit {
       }),
     );
 
-    this.editLabel = this.mode == 'edit' ? 'Edit' : 'Add';
+    if (this.mode === 'edit') {
+      this.absoluteFilePath = `${this.folderName}/${this.fileName}`;
+      this.name = this.data?.name;
+      this.requirement = this.data?.description; // Access description from data but store in requirement
+      this.ucRequirementId = this.fileName.split('-')[0];
+      
+      // Set edit label with ID after ID is initialized
+      this.editLabel = `Edit ${this.ucRequirementId}`;
+    } else {
+      this.editLabel = 'Add';
+    }
+    
+    // Set up second breadcrumb after ID is initialized
     this.store.dispatch(
       new AddBreadcrumb({
         label: this.editLabel,
@@ -215,13 +228,6 @@ export class UseCaseComponent implements OnInit {
         },
       }),
     );
-
-    if (this.mode === 'edit') {
-      this.absoluteFilePath = `${this.folderName}/${this.fileName}`;
-      this.name = this.data?.name;
-      this.requirement = this.data?.description; // Access description from data but store in requirement
-      this.ucRequirementId = this.fileName.split('-')[0];
-    }
 
     this.initializeUseCaseForm();
 
@@ -243,10 +249,10 @@ export class UseCaseComponent implements OnInit {
 
   private handleUseCaseCreation(fileData: IAddUseCaseRequest) {
     // Format the data for the CreateFile action to match the expected format
-    // The document listing component expects 'requirement' and 'title' fields
+    // The document listing component expects 'title' and 'requirement' fields
     const formattedData = {
-      requirement: fileData.requirement,
       title: fileData.title,
+      requirement: fileData.requirement,
       chatHistory: fileData.chatHistory,
       status: fileData.status,
     };
@@ -304,8 +310,8 @@ export class UseCaseComponent implements OnInit {
     };
 
     const formattedData = {
-      requirement: formValue.requirement,
       title: formValue.title,
+      requirement: formValue.requirement,
       chatHistory: this.chatHistory,
       status: formValue.status,
     };
@@ -331,6 +337,9 @@ export class UseCaseComponent implements OnInit {
         Validators.compose([Validators.required]),
       ),
       status: new FormControl('DRAFT'),
+      researchUrls: new FormArray([
+        new FormControl('', Validators.pattern('https?://.+'))
+      ]),
     });
 
     if (this.mode === 'edit') {
@@ -472,7 +481,9 @@ export class UseCaseComponent implements OnInit {
     if (this.mode === 'edit') {
       this.store.dispatch(
         new UpdateFile(this.absoluteFilePath, {
-          ...this.useCaseForm.getRawValue(),
+          title: this.useCaseForm.get('title')?.value,
+          requirement: this.useCaseForm.get('requirement')?.value,
+          status: this.useCaseForm.get('status')?.value,
           requirementAbbr: 'UC',
           chatHistory: chatHistory,
         }),
@@ -600,6 +611,23 @@ export class UseCaseComponent implements OnInit {
    * Generates a use case draft using the agentic flow
    * This method calls the backend API to generate a use case draft based on the project and requirement information
    */
+  // Getter for the research URLs form array
+  get researchUrlsFormArray(): FormArray {
+    return this.useCaseForm.get('researchUrls') as FormArray;
+  }
+
+  // Add a new research URL field
+  addResearchUrl() {
+    this.researchUrlsFormArray.push(
+      new FormControl('', Validators.pattern('https?://.+'))
+    );
+  }
+
+  // Remove a research URL field
+  removeResearchUrl(index: number) {
+    this.researchUrlsFormArray.removeAt(index);
+  }
+
   async generateUseCaseDraft() {
     // Setup workflow progress
     this.setupUseCaseProgressListener();
@@ -618,6 +646,9 @@ export class UseCaseComponent implements OnInit {
       // Get the current form values
       const formValue = this.useCaseForm.getRawValue();
 
+      // Filter out empty research URLs
+      const researchUrls = formValue.researchUrls.filter((url: string) => url.trim() !== '');
+
       // Prepare the request data
       const requestData = {
         project: {
@@ -633,6 +664,7 @@ export class UseCaseComponent implements OnInit {
         requirement: {
           title: formValue.title,
           description: formValue.requirement || '',
+          researchUrls: researchUrls,
         },
       };
 
@@ -868,6 +900,16 @@ export class UseCaseComponent implements OnInit {
   onCanvasContentChange(content: string): void {
     this.useCaseForm.patchValue({
       requirement: content,
+    });
+  }
+
+  /**
+   * Handle title changes from the canvas editor
+   * @param title The updated title
+   */
+  onTitleChange(title: string): void {
+    this.useCaseForm.patchValue({
+      title: title,
     });
   }
 

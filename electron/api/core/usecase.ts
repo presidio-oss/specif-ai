@@ -1,6 +1,7 @@
 import { IpcMainInvokeEvent } from "electron/main";
 import { v4 as uuid } from "uuid";
 import { createUseCaseWorkflow } from "../../agentic/usecase-workflow";
+import { createUseCaseWorkflowTools } from "../../agentic/usecase-workflow/tools";
 import { getMcpToolsForActiveProvider } from "../../mcp";
 import { buildLangchainModelProvider } from "../../services/llm/llm-langchain";
 import { LLMConfigModel } from "../../services/llm/llm-types";
@@ -48,15 +49,18 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
+    // Get MCP tools and add our custom tools
     const mcpTools = await getMcpToolsForActiveProvider();
-    console.log('[generate-usecase] Got MCP tools:', mcpTools.length);
+    const customTools = createUseCaseWorkflowTools();
+    const allTools = [...mcpTools, ...customTools];
+    console.log('[generate-usecase] Got tools:', allTools.length);
     
     // Create a memory checkpointer for the workflow
     const memoryCheckpointer = new MemorySaver();
     
     const workflow = createUseCaseWorkflow({
       model: model,
-      tools: mcpTools,
+      tools: allTools,
       checkpointer: memoryCheckpointer,
     });
 

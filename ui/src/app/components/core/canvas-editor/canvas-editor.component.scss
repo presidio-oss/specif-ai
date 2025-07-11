@@ -1,92 +1,110 @@
 .canvas-editor-container {
-  display: flex;
   height: 100%;
   position: relative;
-  overflow: hidden;
+}
+
+.canvas-editor-sidebar {
+  background-color: #f9fafb;
   
-  .canvas-editor-content {
-    flex: 1;
-    overflow: auto;
-    padding: 1rem;
-    
-    ::ng-deep .canvas-editor-area {
-      min-height: calc(100vh - 200px);
-      padding: 1.5rem;
-      background-color: white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      border-radius: 0.5rem;
-      
-      &:focus-within {
-        box-shadow: 0 0 0 2px rgba(118, 59, 246, 0.5);
-      }
-    }
+  .sidebar-header h3 {
+    font-size: 0.875rem; // Smaller font size for "Document Sections" heading
   }
   
-  .canvas-editor-sidebar {
-    width: 250px;
-    border-left: 1px solid #e5e7eb;
-    background-color: #f9fafb;
+  .section-item {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s;
+    font-size: 0.875rem; // Smaller font size for section titles
+    
+    &:hover {
+      background-color: #f3f4f6;
+    }
+    
+    &.active {
+      background-color: #e5e7eb;
+      font-weight: 500;
+    }
+  }
+}
+
+.canvas-editor-content {
+  position: relative;
+}
+
+.canvas-editor-area {
+  min-height: 300px;
+  border-radius: 0.375rem;
+}
+
+// Inline edit styles
+.inline-edit-controls {
+  animation: fadeIn 0.2s ease-in-out;
+  
+  button {
+    transition: background-color 0.2s;
+  }
+}
+
+// Explicit selection highlight
+.explicit-selection {
+  background-color: rgba(59, 130, 246, 0.2); /* Light blue background */
+  border-radius: 2px;
+  padding: 1px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.inline-edit-overlay {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.inline-edit-suggestion-container {
+  animation: slideUp 0.3s ease-out;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.improved-text {
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+// Dialog styles
+.edit-approval-dialog,
+.prompt-dialog,
+.inline-edit-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+  
+  .dialog-content {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
     overflow-y: auto;
-    
-    .sidebar-header {
-      padding: 1rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    
-    .sidebar-content {
-      padding: 0.5rem 0;
-    }
-    
-    .section-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .section-item {
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      
-      &:hover {
-        background-color: #f3f4f6;
-      }
-      
-      &.active {
-        background-color: #ededfc;
-        border-left: 3px solid #8367f0;
-      }
-      
-      .section-title {
-        font-size: 0.875rem;
-        color: #524b63;
-      }
-    }
-  }
-  
-  .edit-approval-dialog {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    
-    .dialog-content {
-      width: 90%;
-      max-width: 700px;
-      max-height: 80vh;
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+    animation: slideUp 0.3s ease-out;
     
     .dialog-header {
       padding: 1rem;
@@ -102,26 +120,20 @@
         color: #6b7280;
         
         &:hover {
-          color: #1f2937;
+          color: #374151;
         }
       }
     }
     
     .dialog-body {
       padding: 1rem;
-      overflow-y: auto;
-      flex: 1;
       
       .preview-content {
         border: 1px solid #e5e7eb;
         border-radius: 0.375rem;
         padding: 0.5rem;
-        max-height: 50vh;
+        max-height: 400px;
         overflow-y: auto;
-        
-        ::ng-deep .preview-editor {
-          padding: 0.5rem;
-        }
       }
     }
     
@@ -133,32 +145,39 @@
       gap: 0.5rem;
       
       .cancel-button {
-        padding: 0.5rem 1rem;
-        background-color: #f3f4f6;
-        color: #4b5563;
+        background-color: white;
         border: 1px solid #d1d5db;
         border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
         font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
         cursor: pointer;
         
         &:hover {
-          background-color: #e5e7eb;
+          background-color: #f9fafb;
         }
       }
       
       .apply-button {
-        padding: 0.5rem 1rem;
-        background-color: #5a3bf6;
-        color: white;
+        background-color: #3b82f6;
         border: none;
         border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
         font-size: 0.875rem;
+        font-weight: 500;
+        color: white;
         cursor: pointer;
         display: flex;
         align-items: center;
         
         &:hover {
-          background-color: #5025eb;
+          background-color: #2563eb;
+        }
+        
+        &:disabled {
+          background-color: #93c5fd;
+          cursor: not-allowed;
         }
       }
     }

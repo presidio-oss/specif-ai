@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { DialogService } from '../services/dialog/dialog.service';
 import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
-import { BedrockValidationPayload, ChatWithAIResponse, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
+import { BedrockValidationPayload, ChatWithAIResponse, InlineEditPayload, InlineEditResponse, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import {
   ICreateSolutionRequest,
   ISolutionResponse,
@@ -49,7 +49,6 @@ import { htmlToMarkdown } from '../utils/html.utils';
 import { WorkflowType } from '../model/interfaces/workflow-progress.interface';
 import { IAddUseCaseRequest, IUpdateUseCaseRequest, IUseCaseResponse } from '../model/interfaces/IUseCase';
 import { DocumentUpdateRequest, DocumentUpdateResponse } from './electron.interface';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root',
@@ -406,6 +405,17 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'core:chat',
+        args: [request],
+        skipLoading: true
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async inlineEditWithAI(request: InlineEditPayload): Promise<InlineEditResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'core:inline-edit',
         args: [request],
         skipLoading: true
       });

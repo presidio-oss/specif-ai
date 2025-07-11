@@ -4,6 +4,7 @@ import { getSuggestions } from "../api/core/get-suggestions";
 import { getAppConfig } from "../api/core/get-app-config";
 import { chatWithAI } from "../api/core/chat";
 import { updateDocument } from "../api/core/document-update";
+import { inlineEditWithAI } from "../api/core/inline-edit";
 import { ipcMain, IpcMainInvokeEvent } from "electron";
 
 export function setupCoreHandlers() {
@@ -63,6 +64,16 @@ export function setupCoreHandlers() {
       return result;
     } catch (error: any) {
       console.error('Error handling core:updateDocument:', error.message);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('core:inline-edit', async (_event: IpcMainInvokeEvent, data: any) => {
+    try {
+      const result = await inlineEditWithAI(_event, data);
+      return result;
+    } catch (error: any) {
+      console.error('Error handling core:inline-edit:', error.message);
       throw error;
     }
   });

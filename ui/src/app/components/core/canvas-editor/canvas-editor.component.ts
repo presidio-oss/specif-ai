@@ -22,8 +22,8 @@ import {
   heroLinkSlash,
   heroChevronDown,
   heroDocumentPlus,
-  heroCheck,
-  heroXMark,
+  heroSparkles,
+  heroPencil,
 } from '@ng-icons/heroicons/outline';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { Subscription } from 'rxjs';
@@ -33,6 +33,7 @@ import { NGXLogger } from 'ngx-logger';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
 import { DocumentUpdateResponse } from 'src/app/electron-bridge/electron.interface';
 import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
+import { InlineEditComponent } from 'src/app/components/shared/inline-edit/inline-edit.component';
 
 export interface SectionInfo {
   id: string;
@@ -43,10 +44,15 @@ export interface SectionInfo {
 }
 
 export interface EditProposal {
-  type: 'append' | 'section' | 'full';
+  type: 'append' | 'section' | 'full' | 'inline';
   content: string;
   sectionToReplace?: string;
+  selectionText?: string;
+  selectionStart?: number;
+  selectionEnd?: number;
 }
+
+// Using the imported InlineEditResponse from chat.interface.ts
 
 @Component({
   selector: 'app-canvas-editor',
@@ -60,7 +66,8 @@ export interface EditProposal {
     FormsModule,
     NgIcon,
     MatTooltipModule,
-    RichTextEditorComponent
+    RichTextEditorComponent,
+    InlineEditComponent
   ],
   providers: [
     provideIcons({
@@ -72,9 +79,9 @@ export interface EditProposal {
       heroLinkSlash,
       heroChevronDown,
       heroDocumentPlus,
-      heroCheck,
-      heroXMark,
       heroSparklesSolid,
+      heroSparkles,
+      heroPencil,
     })
   ]
 })
@@ -82,16 +89,37 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
   @Input() content: string = '';
   @Input() editable: boolean = true;
   @Input() showSidebar: boolean = true;
+  @Input() projectId: string = '';
+  @Input() documentTitle: string = 'Untitled Document';
   @ViewChild(RichTextEditorComponent) richTextEditor!: RichTextEditorComponent;
+  @ViewChild(InlineEditComponent) inlineEdit!: InlineEditComponent;
   
   @Output() contentChange = new EventEmitter<string>();
   @Output() sectionSelected = new EventEmitter<SectionInfo>();
   @Output() editProposed = new EventEmitter<EditProposal>();
+  @Output() titleChange = new EventEmitter<string>();
   
   sections: SectionInfo[] = [];
   selectedSection: SectionInfo | null = null;
   proposedEdit: EditProposal | null = null;
-  showApprovalDialog: boolean = false;
+  
+  // Document properties
+  isEditingTitle: boolean = false;
+  
+  // Selection properties
+  selectedText: string = '';
+  selectionStart: number = 0;
+  selectionEnd: number = 0;
+  showInlineEditControls: boolean = false;
+  
+  // Inline edit properties
+  inlineEditActive: boolean = false;
+  inlineEditLoading: boolean = false;
+  
+  // Inline edit UI positions
+  inlineEditTop: number = 0;
+  inlineEditLeft: number = 0;
+  defaultPrompt: string = 'Improve this text to make it more clear, concise, and professional.';
   
   private subscriptions: Subscription = new Subscription();
   
@@ -230,6 +258,24 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     editor.on('selectionUpdate', ({ editor }) => {
       const { from, to } = editor.state.selection;
       
+      // Store the selected text and position for inline editing
+      if (from !== to) {
+        this.selectedText = editor.state.doc.textBetween(from, to);
+        this.selectionStart = from;
+        this.selectionEnd = to;
+        
+        // Calculate position for inline edit controls
+        this.calculateInlineEditPosition();
+        
+        // Show inline edit controls
+        this.showInlineEditControls = true;
+      } else {
+        this.selectedText = '';
+        this.selectionStart = 0;
+        this.selectionEnd = 0;
+        this.showInlineEditControls = false;
+      }
+      
       // Find which section contains this selection
       const section = this.sections.find(
         s => from >= s.startPos && from <= s.endPos
@@ -240,6 +286,32 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
         this.sectionSelected.emit(section);
       }
     });
+  }
+  
+  /**
+   * Calculate the position for the inline edit controls
+   */
+  calculateInlineEditPosition(): void {
+    if (!this.richTextEditor?.editorElement) return;
+    
+    try {
+      const editorElement = this.richTextEditor.editorElement.nativeElement;
+      const selection = window.getSelection();
+      
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        // Get editor position
+        const editorRect = editorElement.getBoundingClientRect();
+        
+        // Calculate position relative to the editor
+        this.inlineEditTop = rect.bottom - editorRect.top;
+        this.inlineEditLeft = rect.left - editorRect.left + (rect.width / 2);
+      }
+    } catch (error) {
+      this.logger.error('Error calculating inline edit position:', error);
+    }
   }
   
   /**
@@ -261,122 +333,6 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     this.parseContentSections();
   }
   
-  /**
-   * Show the edit dialog with a form to propose changes
-   */
-  showEditDialog(): void {
-    // Create a default edit proposal for the selected section or full document
-    let editContent = '';
-    let editType: 'append' | 'section' | 'full' = 'append';
-    
-    if (this.selectedSection) {
-      editContent = this.selectedSection.content;
-      editType = 'section';
-    } else {
-      editContent = this.content;
-      editType = 'full';
-    }
-    
-    // Create the edit proposal
-    const edit: EditProposal = {
-      type: editType,
-      content: editContent
-    };
-    
-    // Show the approval dialog
-    this.proposeEdit(edit);
-  }
-  
-  /**
-   * Propose an edit to the content
-   */
-  proposeEdit(edit: EditProposal): void {
-    this.proposedEdit = edit;
-    this.showApprovalDialog = true;
-  }
-  
-  /**
-   * Apply a proposed edit after user approval
-   * This method applies the edit to the document based on its type
-   */
-  applyProposedEdit(): void {
-    if (!this.proposedEdit || !this.richTextEditor?.editor) return;
-    
-    try {
-      const editor = this.richTextEditor.editor;
-      
-      switch (this.proposedEdit.type) {
-        case 'append':
-          // Append to the end of the document
-          editor.commands.setTextSelection(editor.state.doc.content.size);
-          editor.commands.insertContent(this.proposedEdit.content);
-          break;
-          
-        case 'section':
-          // Replace a specific section if one is selected
-          if (this.selectedSection) {
-            // Use the document update service to replace the section
-            const startPos = this.selectedSection ? this.selectedSection.startPos : 0;
-            const endPos = this.selectedSection ? this.selectedSection.endPos : 0;
-            
-            // Get the content to replace
-            const searchBlock = editor.state.doc.textBetween(startPos, endPos);
-            const replaceBlock = this.proposedEdit.content;
-            
-            // Use the document update service to replace the text block
-            this.documentUpdateService.applyUpdate({
-              requestId: `section-edit-${Date.now()}`,
-              documentId: 'current-document', // Use a generic document ID
-              updateType: 'text_block_replace',
-              searchBlock,
-              replaceBlock
-            }).then((response: DocumentUpdateResponse) => {
-              if (response.success) {
-                // Update the editor content
-                if (this.selectedSection) {
-                  editor.commands.setTextSelection({
-                    from: this.selectedSection.startPos,
-                    to: this.selectedSection.endPos
-                  });
-                }
-                editor.commands.insertContent(this.proposedEdit?.content || '');
-                
-                // Emit the content change event
-                this.contentChange.emit(editor.getHTML());
-              }
-            });
-          } else {
-            // Fallback to append if no section is selected
-            editor.commands.setTextSelection(editor.state.doc.content.size);
-            editor.commands.insertContent(this.proposedEdit.content);
-            this.logger.warn('No section selected for section edit, appending instead');
-          }
-          break;
-          
-        case 'full':
-          // Replace the entire document content
-          editor.commands.setContent(this.proposedEdit.content);
-          break;
-          
-        default:
-          this.logger.error('Unknown edit type:', this.proposedEdit.type);
-          return;
-      }
-      
-      // Update the document after applying the edit
-      this.parseContentSections();
-      this.contentChange.emit(editor.getHTML());
-      
-      // Reset the edit state
-      this.showApprovalDialog = false;
-      this.proposedEdit = null;
-    } catch (error) {
-      this.logger.error('Error applying edit:', error);
-      this.showApprovalDialog = false;
-      this.proposedEdit = null;
-    }
-  }
-
   /**
    * Search for text in the document and replace it with new text
    * @param searchText The text to search for
@@ -413,11 +369,40 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
   
   /**
-   * Cancel a proposed edit
+   * Request an inline edit for the selected text
    */
-  cancelProposedEdit(): void {
-    this.showApprovalDialog = false;
-    this.proposedEdit = null;
+  requestInlineEdit(): void {
+    if (!this.selectedText || !this.richTextEditor?.editor) {
+      this.logger.warn('No text selected for inline edit');
+      return;
+    }
+    
+    // Get the current content for context
+    const currentContent = this.richTextEditor.editor.getHTML();
+    
+    // Store the current selection
+    const selection = window.getSelection();
+    const range = selection?.getRangeAt(0);
+    
+    // Show the inline edit component
+    this.inlineEdit.selectedText = this.selectedText;
+    this.inlineEdit.editorInstance = this.richTextEditor.editor;
+    this.inlineEdit.selectionStart = this.selectionStart;
+    this.inlineEdit.selectionEnd = this.selectionEnd;
+    this.inlineEdit.context = currentContent;
+    this.inlineEdit.positionTop = this.inlineEditTop;
+    this.inlineEdit.positionLeft = this.inlineEditLeft;
+    this.inlineEdit.defaultPrompt = this.defaultPrompt;
+    this.inlineEdit.show();
+    
+    // Restore the selection to keep the highlight visible
+    if (range && selection) {
+      // Use setTimeout to ensure this happens after the click event is fully processed
+      setTimeout(() => {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }, 0);
+    }
   }
   
   /**

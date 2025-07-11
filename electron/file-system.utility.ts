@@ -263,7 +263,7 @@ function readFileChunk(
   param: FileChunkParams
 ): Promise<FileChunk> {
   const { path, filterString } = param;
-  const CHUNK_SIZE = 400;
+  const CHUNK_SIZE = 600;
   const buffer = Buffer.alloc(CHUNK_SIZE);
   let accumulatedData = "";
   let dataExtracted: FileChunk = { requirement: null, title: null, epicTicketId: null };

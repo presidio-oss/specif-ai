@@ -509,6 +509,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   selectFolder(folder: any): void {
+    console.log("Krithika called selectFolder with folder:", folder);
     this.selectedFolder = {
       title: folder.name,
       id: this.projectId as string,

@@ -14,22 +14,25 @@
   
   <!-- Canvas Layout -->
   <div class="canvas-container h-[calc(100vh-80px)]">
-    <!-- Header -->
+    <!-- Header - Redesigned to match the screenshot -->
     <header class="flex justify-between items-center p-4 border-b border-secondary-200 bg-white">
       <div class="flex items-center">
-        <h1 class="text-lg font-semibold">
-          {{ mode === 'add' ? (folderName | expandDescription) : ucRequirementId }}
-        </h1>
-        <span 
-          *ngIf="mode === 'edit'"
-          class="ml-2 px-2 py-1 text-xs font-medium rounded-full"
-          [ngClass]="{
-            'bg-yellow-100 text-yellow-800': useCaseForm.get('status')?.value === 'DRAFT',
-            'bg-green-100 text-green-800': useCaseForm.get('status')?.value === 'COMPLETE'
-          }"
-        >
-          {{ useCaseForm.get('status')?.value }}
-        </span>
+        <!-- ID and status in a cleaner format -->
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold">
+            {{ mode === 'add' ? (folderName | expandDescription) : ucRequirementId }}
+          </h1>
+          <span 
+            *ngIf="mode === 'edit'"
+            class="ml-3 px-3 py-1 text-xs font-medium uppercase tracking-wider"
+            [ngClass]="{
+              'bg-yellow-100 text-yellow-800': useCaseForm.get('status')?.value === 'DRAFT',
+              'bg-green-100 text-green-800': useCaseForm.get('status')?.value === 'COMPLETE'
+            }"
+          >
+            {{ useCaseForm.get('status')?.value }}
+          </span>
+        </div>
       </div>
       <div class="flex items-center gap-2">
         <app-button
@@ -61,24 +64,62 @@
 
     <!-- Main Content Area with 3-column layout in edit mode, single column in add mode -->
     <form [formGroup]="useCaseForm" class="flex flex-col h-[calc(100vh-132px)] overflow-hidden">
-      <!-- Title input is always at the top -->
-      <div class="p-4 bg-white border-b border-secondary-200">
-        <div class="flex flex-col">
-          <app-input-field
-            elementPlaceHolder="Title"
-            elementId="title"
-            elementName="Title"
-            formControlName="title"
-            [required]="true"
-          />
-          <div
-            *ngIf="
-              useCaseForm.get('title')?.errors?.['required'] &&
-              useCaseForm.get('title')?.touched
-            "
-            class="text-danger-500 text-sm"
-          >
-            Title is required
+      <!-- Title input and research URLs in add mode -->
+      <div *ngIf="mode === 'add'" class="p-4 bg-white border-b border-secondary-200">
+        <div class="flex flex-col gap-4">
+          <div>
+            <app-input-field
+              elementPlaceHolder="Title"
+              elementId="title"
+              elementName="Title"
+              formControlName="title"
+              [required]="true"
+            />
+            <div
+              *ngIf="
+                useCaseForm.get('title')?.errors?.['required'] &&
+                useCaseForm.get('title')?.touched
+              "
+              class="text-danger-500 text-sm"
+            >
+              Title is required
+            </div>
+          </div>
+          
+          <!-- Research URLs input -->
+          <div>
+            <label class="block text-sm font-medium text-secondary-500 mb-1">
+              Research URLs <span class="text-xs text-secondary-400">(Optional - Add URLs for research context)</span>
+            </label>
+            <div formArrayName="researchUrls" class="flex flex-col gap-2">
+              <div *ngFor="let urlControl of researchUrlsFormArray.controls; let i = index" class="flex items-center gap-2">
+                <app-input-field
+                  [formControlName]="i"
+                  elementPlaceHolder="https://example.com"
+                  [elementId]="'url-' + i"
+                  [customClass]="'flex-1'"
+                />
+                <button 
+                  type="button" 
+                  class="text-danger-500 hover:text-danger-700"
+                  (click)="removeResearchUrl(i)"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+              <button 
+                type="button" 
+                class="text-primary-600 hover:text-primary-800 text-sm flex items-center gap-1 mt-1"
+                (click)="addResearchUrl()"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Add URL
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -116,18 +157,17 @@
             <!-- Canvas Editor Panel -->
             <div class="flex-1 overflow-hidden">
               <div class="h-full flex flex-col">
-                <label class="block text-sm font-medium text-secondary-500 p-3 border-b border-secondary-200">
-                  Requirement
-                  <span class="text-red-500 text-xs">*</span>
-                </label>
+                <!-- Removed Requirement label in edit mode -->
                 <div class="flex-1 overflow-y-auto">
                   <app-canvas-editor
                     [content]="useCaseForm.get('requirement')?.value"
+                    [documentTitle]="useCaseForm.get('title')?.value"
                     [editable]="true"
                     [showSidebar]="true"
                     (contentChange)="onCanvasContentChange($event)"
                     (sectionSelected)="onSectionSelected($event)"
                     (editProposed)="onEditProposed($event)"
+                    (titleChange)="onTitleChange($event)"
                   ></app-canvas-editor>
                 </div>
               </div>

@@ -14,6 +14,7 @@ export const UseCaseWorkflowStateAnnotation = Annotation.Root({
   requirement: Annotation<{
     title?: string;
     description?: string;
+    researchUrls?: string[];
   }>(),
   
   // Workflow state

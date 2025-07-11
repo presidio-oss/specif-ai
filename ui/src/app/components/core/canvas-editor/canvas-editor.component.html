@@ -1,6 +1,30 @@
-<div class="canvas-editor-container flex flex-row w-full h-full">
-  <!-- Section outline sidebar (now on the left) -->
-  <div class="canvas-editor-sidebar w-1/4 border-r border-gray-200" *ngIf="showSidebar && sections.length > 0">
+<div class="canvas-editor-container flex flex-col w-full h-full">
+  <!-- Document title section -->
+  <div class="document-title-container px-4 py-3 border-b border-gray-200 bg-gray-50">
+    <div class="flex items-center justify-between">
+      <div class="flex-1" *ngIf="!isEditingTitle">
+        <h1 class="text-xl font-medium text-gray-800 cursor-pointer hover:text-primary-600" (click)="isEditingTitle = true">
+          {{ documentTitle }}
+          <ng-icon name="heroPencil" class="ml-2 text-gray-400 hover:text-primary-500" size="16"></ng-icon>
+        </h1>
+      </div>
+      <div class="flex-1" *ngIf="isEditingTitle">
+        <input 
+          type="text" 
+          [(ngModel)]="documentTitle" 
+          class="w-full px-2 py-1 text-xl font-medium border border-primary-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
+          (blur)="isEditingTitle = false; titleChange.emit(documentTitle)"
+          (keyup.enter)="isEditingTitle = false; titleChange.emit(documentTitle)"
+          autofocus
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="flex flex-row flex-1 overflow-hidden">
+    <!-- Section outline sidebar (now on the left) -->
+    <div class="canvas-editor-sidebar w-1/4 border-r border-gray-200" *ngIf="showSidebar && sections.length > 0">
     <div class="sidebar-header p-4 border-b">
       <h3 class="text-sm font-medium text-secondary-700">Document Sections</h3>
     </div>
@@ -18,64 +42,37 @@
     </div>
   </div>
 
-  <!-- Main editor area -->
-  <div class="canvas-editor-content flex-1 p-4 overflow-y-auto">
-    <!-- Editor controls -->
-    <div class="editor-controls mb-4 flex justify-end">
-      <button 
-        class="edit-button bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-md flex items-center"
-        (click)="showEditDialog()"
-      >
-        <ng-icon name="heroDocumentPlus" class="mr-1"></ng-icon>
-        Propose Edit
-      </button>
-    </div>
+    <!-- Main editor area -->
+    <div class="canvas-editor-content flex-1 p-4 overflow-y-auto relative">
     
     <app-rich-text-editor
       [content]="content"
-      [editable]="editable"
+      [editable]="editable && !inlineEditActive"
       [editorClass]="'canvas-editor-area'"
       (change)="onContentChange($event)"
     ></app-rich-text-editor>
-  </div>
-
-  <!-- Edit approval dialog -->
-  <div *ngIf="showApprovalDialog && proposedEdit" class="edit-approval-dialog">
-    <div class="dialog-content">
-      <div class="dialog-header">
-        <h3 class="text-lg font-medium text-secondary-800">
-          {{ proposedEdit.type === 'append' ? 'Add Content' : 
-             proposedEdit.type === 'section' ? 'Update Section' : 'Replace Content' }}
-        </h3>
-        <button class="close-button" (click)="cancelProposedEdit()">
-          <ng-icon name="heroXMark"></ng-icon>
-        </button>
-      </div>
-
-      <div class="dialog-body">
-        <p class="text-sm text-secondary-600 mb-2">
-          {{ proposedEdit.type === 'append' ? 'The following content will be added to the end of your document:' : 
-             proposedEdit.type === 'section' ? 'The following content will replace the selected section:' : 
-             'The following content will replace your entire document:' }}
-        </p>
-
-        <div class="preview-content">
-          <app-rich-text-editor
-            [content]="proposedEdit.content"
-            [editable]="false"
-            [editorClass]="'preview-editor'"
-            mode="view"
-          ></app-rich-text-editor>
-        </div>
-      </div>
-
-      <div class="dialog-footer">
-        <button class="cancel-button" (click)="cancelProposedEdit()">Cancel</button>
-        <button class="apply-button" (click)="applyProposedEdit()">
-          <ng-icon name="heroCheck" class="mr-1"></ng-icon>
-          Apply Changes
-        </button>
-      </div>
+    
+    <!-- Inline edit floating controls -->
+    <div 
+      *ngIf="showInlineEditControls" 
+      class="inline-edit-controls absolute z-10 bg-white shadow-lg rounded-md border border-gray-200 transform -translate-x-1/2"
+      [style.top.px]="inlineEditTop + 10"
+      [style.left.px]="inlineEditLeft"
+    >
+      <button 
+        class="p-2 hover:bg-gray-100 rounded-l-md border-r border-gray-200 flex items-center"
+        (click)="requestInlineEdit()"
+        matTooltip="Edit with AI"
+      >
+        <ng-icon name="heroSparklesSolid" class="text-primary-500"></ng-icon>
+      </button>
+    </div>
+    
+    <!-- Inline edit component -->
+    <app-inline-edit
+      (editApplied)="onContentChange($event)"
+      (editCancelled)="showInlineEditControls = true"
+    ></app-inline-edit>
     </div>
   </div>
 </div>

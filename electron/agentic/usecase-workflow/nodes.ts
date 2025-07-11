@@ -77,10 +77,12 @@ export const buildResearchNode = ({
 
     const recursionLimit = Math.min(Math.max(64, tools.length * 2 * 3 + 1), 128);
 
-    const response = await agent.invoke(
-      {
-        messages: [
-          new HumanMessage(`You are researching information for a business proposal.
+    // Check if research URLs are provided
+    const researchUrls = state.requirement?.researchUrls || [];
+    const hasResearchUrls = Array.isArray(researchUrls) && researchUrls.length > 0;
+    
+    // Build the research prompt
+    let researchPrompt = `You are researching information for a business proposal.
           
 Project: ${state.project.name}
 Description: ${state.project.description}
@@ -90,10 +92,43 @@ Solution Information:
 - Description: ${state.project.solution.description}
 - Technical Details: ${state.project.solution.techDetails}
 
-${state.requirement?.description ? `Initial description: ${state.requirement.description}` : "No detailed description provided yet."}
+${state.requirement?.description ? `Initial description: ${state.requirement.description}` : "No detailed description provided yet."}`;
 
-Use the available tools to research relevant information that would help create a comprehensive business proposal. 
-Focus on industry trends, competitor strategies, and market opportunities.`),
+    // Add research URLs if available
+    if (hasResearchUrls) {
+      researchPrompt += `\n\nThe user has provided the following URLs for research context. Use the web_search tool to explore these topics and URLs further:\n`;
+      researchUrls.forEach((url: string, index: number) => {
+        researchPrompt += `${index + 1}. ${url}\n`;
+        // Extract keywords from URL for search
+        try {
+          const urlObj = new URL(url);
+          const path = urlObj.pathname.replace(/[\/\-_]/g, ' ').trim();
+          const domain = urlObj.hostname.replace(/^www\./, '').replace(/\.(com|org|net|io|ai)$/, '');
+          researchPrompt += `   - Consider searching for terms related to: ${domain} ${path}\n`;
+        } catch (e) {
+          // If URL parsing fails, just continue
+        }
+      });
+    }
+
+    researchPrompt += `\nUse the web_search tool to research relevant information that would help create a comprehensive business proposal. 
+Focus on industry trends, competitor strategies, and market opportunities.
+
+When using the web_search tool:
+1. Formulate specific search queries based on the project and URLs provided
+2. Extract key insights from search results
+3. Use these insights to inform your business proposal
+
+Example search queries:
+- "${state.project.name} industry trends"
+- "${state.project.name} market analysis"
+- "${state.project.name} competitor strategies"
+- "${state.project.solution.name} implementation case studies"`;
+
+    const response = await agent.invoke(
+      {
+        messages: [
+          new HumanMessage(researchPrompt),
         ],
       },
       {
