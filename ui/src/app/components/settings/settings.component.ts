@@ -514,7 +514,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   private checkForChanges() {
     const formValue = this.configForm.value;
-    const currentConfig = this.currentLLMConfig?.providerConfigs[this.currentLLMConfig.activeProvider]?.config;
+
+    // Add null checks for currentLLMConfig
+    const activeProvider = this.currentLLMConfig?.activeProvider;
+    const currentConfig = activeProvider && this.currentLLMConfig?.providerConfigs?.[activeProvider]?.config;
 
     // Compare provider
     const hasProviderChanged = formValue.provider !== this.initialProvider;
