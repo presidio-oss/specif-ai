@@ -32,7 +32,7 @@ import {
   TOASTER_MESSAGES,
 } from '../../../constants/app.constants';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
-import { BehaviorSubject, combineLatest, firstValueFrom, map, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, firstValueFrom, map, Subject, take, takeUntil } from 'rxjs';
 import { AppSelectComponent, SelectOption } from '../../../components/core/app-select/app-select.component';
 import { TestCaseContextModalComponent } from 'src/app/components/test-case-context-modal/test-case-context-modal.component';
 import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
@@ -106,6 +106,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
   searchService = inject(SearchService);
   requirementFile: any = [];
   testCases: ITestCase[] = [];
+  private destroy$ = new Subject<void>();
 
   testCaseUserStoryMap: Map<string, string> = new Map();
 
@@ -205,7 +206,9 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
     subtitle: `Sit back & let the Specifai do its job...`,
   };
   zone = inject(NgZone);
-  
+  projectMetadata$ = this.store.select(ProjectsState.getMetadata);
+  breadcrumbMetadata = {};
+
   get userStoryId(): string {
     return this.route.snapshot.paramMap.get('userStoryId') || 
            this.navigation.userStoryInfo?.id;
@@ -291,22 +294,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
     } else {
       this.currentLabel = 'Test Cases';
     }
-
-    this.store.dispatch(
-      new AddBreadcrumb({
-        label: 'Test Cases',
-        tooltipLabel: 'Test Cases Home',
-        url: '/test-cases-home'
-      })
-    );
     
-    this.store.dispatch(
-      new AddBreadcrumb({
-        label: this.currentLabel,
-        tooltipLabel: `Test Cases for ${userStoryId}`,
-      })
-    );
-
     this.store.select(ProjectsState.getMetadata).subscribe((res) => {
       this.metadata = res;
     });
@@ -314,7 +302,15 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const userStoryId = this.route.snapshot.paramMap.get('userStoryId');
-    
+    this.projectMetadata$.pipe(takeUntil(this.destroy$)).subscribe(projectMetadata => {
+      this.breadcrumbMetadata = {
+        id: this.currentProject,
+        name: projectMetadata.name || this.currentProject,
+        description: projectMetadata.description || '',
+        technicalDetails: projectMetadata.technicalDetails || '',
+      };
+    });
+        
     this.route.queryParams.subscribe((params: { [key: string]: string }) => {
       if (params['projectName']) {
         this.navigation.projectId = params['projectName'];
@@ -399,14 +395,29 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
         
         this.navigation.selectedRequirement = userStory;
         
-        if (this.currentLabel && userStory.id) {
-          this.store.dispatch(
+        const fromTestCaseHome = this.route.snapshot.queryParamMap.get('fromTestCaseHome') === 'true';
+        if (fromTestCaseHome) {
+          this.store.dispatch(new AddBreadcrumb({
+            label: "Test Cases",
+            tooltipLabel: `Test Cases`,
+            url: `/apps/${this.currentProject}`,
+            state: {
+              data: this.breadcrumbMetadata,
+              selectedFolder: {
+                title: 'TC',
+                id: this.currentProject,
+                metadata: this.breadcrumbMetadata,
+              },
+            }
+          }));
+        }
+
+        this.store.dispatch(
             new AddBreadcrumb({
               label: this.currentLabel,
               tooltipLabel: `Test Cases for ${userStory.id}: ${userStory.name}`,
             })
           );
-        }
       }
     });
   }

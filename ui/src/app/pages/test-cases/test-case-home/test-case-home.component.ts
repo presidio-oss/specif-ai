@@ -122,7 +122,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
   originalDocumentList$ = this.store.select(ProjectsState.getSelectedFileContents);
-  projectMetadata$ = this.store.select(ProjectsState.getMetadata);
   
   constructor(
     private clipboardService: ClipboardService,
@@ -134,14 +133,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   
   ngOnInit() {
     this.clearAllData();
-    
-    this.store.dispatch(
-      new AddBreadcrumb({
-        label: 'Test Cases',
-        tooltipLabel: 'Test Cases Home',
-      }),
-    );
-    
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params: { [key: string]: string }) => {
       if (params['projectName']) {
         this.currentProject = params['projectName'];
@@ -186,7 +177,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     this.searchTerm$.next(term);
   }
   
-  navigateToTestCases(userStory: IUserStory) {
+  navigateToTestCases(userStory: IUserStory, fromTestCaseHome: boolean = true) {
     this.logger.debug('Navigating to test cases for user story:', userStory);
     
     this.store.dispatch(new SetSelectedUserStory(userStory.id));
@@ -208,7 +199,8 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
         projectName: this.currentProject,
         prdId: prdId,
         prdTitle: prdTitle ? encodeURIComponent(prdTitle) : '',
-        prdDescription: prdDescription ? encodeURIComponent(prdDescription) : ''
+        prdDescription: prdDescription ? encodeURIComponent(prdDescription) : '',
+        fromTestCaseHome: fromTestCaseHome.toString()
       }
     });
   }
@@ -429,31 +421,4 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
-
- navigateToAppInfo() {
-  // Get the full project metadata from the store
-  this.projectMetadata$.pipe(takeUntil(this.destroy$)).subscribe(projectMetadata => {
-      // Create metadata object with project details including description
-      const metadata = {
-        id: this.currentProject,
-        name: projectMetadata.name || this.currentProject,
-        description: projectMetadata.description || '',
-        technicalDetails: projectMetadata.technicalDetails || '',
-      };
-      
-      this.router.navigate([`/apps/${this.currentProject}`], {
-        state: {
-          data: metadata,
-          breadcrumb: {
-            name: metadata.name,
-            link: '/',
-            icon: '',
-          },
-        },
-      }).then(async () => {
-        // Call setMCPProjectId with the project ID
-        await this.electronService.setMCPProjectId(this.currentProject);
-      });
-  });
-}
 }
