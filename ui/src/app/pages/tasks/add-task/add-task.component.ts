@@ -107,12 +107,12 @@ export class AddTaskComponent implements OnDestroy {
     id: string;
     acceptance: string;
     task: string;
-    subTaskTicketId: string;
+    pmoId: string;
   } = {
     id: '',
     acceptance: '',
     task: '',
-    subTaskTicketId: '',
+    pmoId: '',
   };
 
   constructor(
@@ -197,7 +197,7 @@ export class AddTaskComponent implements OnDestroy {
       id: new FormControl(taskId),
       useGenAI: new FormControl(false),
       fileContent: new FormControl(''),
-      subTaskTicketId: new FormControl(''),
+      pmoId: new FormControl(''),
     });
     if (taskId) {
       this.store.dispatch(new SetCurrentTaskId(taskId));
@@ -206,12 +206,12 @@ export class AddTaskComponent implements OnDestroy {
         this.existingTask.id = <string>task?.id;
         this.existingTask.acceptance = <string>task?.acceptance;
         this.existingTask.task = <string>task?.list;
-        this.existingTask.subTaskTicketId = <string>task?.subTaskTicketId;
+        this.existingTask.pmoId = <string>task?.pmoId;
         this.taskForm.patchValue({
           id: task?.id,
           acceptance: task?.acceptance,
           list: task?.list,
-          subTaskTicketId: task?.subTaskTicketId,
+          pmoId: task?.pmoId,
         });
       });
     } else {
@@ -267,7 +267,7 @@ export class AddTaskComponent implements OnDestroy {
             {
               ...this.taskForm.getRawValue(),
               chatHistory: this.chatHistory,
-              subTaskTicketId: this.existingTask.subTaskTicketId,
+              pmoId: this.existingTask.pmoId,
             },
             `${this.selectedProject}/${this.config.folderName}/${newFileName}`,
           ),
@@ -292,7 +292,7 @@ export class AddTaskComponent implements OnDestroy {
       this.taskForm.patchValue({
         acceptance: `${this.taskForm.getRawValue().acceptance}
 ${chat.contentToAdd}`,
-        subTaskTicketId: this.existingTask.subTaskTicketId,
+        pmoId: this.existingTask.pmoId,
       });
       let newArray = chatHistory.map((item: any) => {
         if (item.name == chat.tool_name && item.tool_call_id == chat.tool_call_id) return { ...item, isAdded: true };
@@ -418,7 +418,7 @@ ${chat.contentToAdd}`,
             list: taskKey,
             acceptance: this.responseFormatter(taskEntry[taskKey]),
             chatHistory: this.chatHistory,
-            subTaskTicketId: this.existingTask.subTaskTicketId,
+            pmoId: this.existingTask.pmoId,
           };
           this.store.dispatch(
             new UpdateTask(

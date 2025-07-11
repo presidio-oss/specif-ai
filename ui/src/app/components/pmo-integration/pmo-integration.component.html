@@ -6,8 +6,47 @@
     dynamicClass="text-sm font-medium text-secondary-950 ml-3"
     [iconImage]="accordionIcon()"
     [isOpen]="isAccordionOpen"
+    [showBetaTag]="connectedPmoTool() === 'ado'"
     (toggleAccordion)="toggleAccordion.emit()"
   >
+    <!-- Warning Note -->
+    <div
+      class="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-lg shadow-sm"
+      *ngIf="!hasPmoToolSelected()"
+    >
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <div
+            class="flex items-center justify-center w-8 h-8 bg-amber-100 rounded-full"
+          >
+            <svg
+              class="w-5 h-5 text-amber-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4 flex-1">
+          <div class="flex items-center mb-1">
+            <h4 class="text-sm font-semibold text-amber-800">
+              Important Notice
+            </h4>
+          </div>
+          <p class="text-sm text-amber-700 leading-relaxed">
+            Once you complete the integration setup, you cannot change back to a
+            different PMO tool (JIRA or ADO). Please ensure you select the
+            correct integration before proceeding with the configuration.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <div
       class="mb-6"
       *ngIf="!hasPmoToolSelected() && availableIntegrations().length > 0"
@@ -30,6 +69,12 @@
           />
           <span class="ml-2 text-sm font-medium text-secondary-700">
             {{ integration.displayName }}
+          </span>
+          <span
+            *ngIf="integration.id === 'ado'"
+            class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200 leading-none"
+          >
+            Beta
           </span>
         </label>
       </div>

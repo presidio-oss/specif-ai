@@ -1,8 +1,27 @@
-import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  HostListener,
+} from '@angular/core';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
-import { BehaviorSubject, combineLatest, Observable, Subscription, first } from 'rxjs';
-import { BulkReadFiles, ExportRequirementData } from '../../store/projects/projects.actions';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  Subscription,
+  first,
+} from 'rxjs';
+import {
+  BulkReadFiles,
+  ExportRequirementData,
+} from '../../store/projects/projects.actions';
+import { Ticket } from '../../services/pmo-integration/pmo-integration.service';
 import { getDescriptionFromInput } from '../../utils/common.utils';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
@@ -17,12 +36,21 @@ import { SearchService } from '../../services/search/search.service';
 import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDialog } from '@angular/material/dialog';
 import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
-import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
+import {
+  EXPORT_FILE_FORMATS,
+  ExportFileFormat,
+} from 'src/app/constants/export.constants';
 import { RichTextEditorComponent } from '../core/rich-text-editor/rich-text-editor.component';
 import { processPRDContentForView } from '../../utils/prd.utils';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
-import { DropdownOptionGroup, ExportDropdownComponent } from "../../export-dropdown/export-dropdown.component";
+import {
+  DropdownOptionGroup,
+  ExportDropdownComponent,
+} from '../../export-dropdown/export-dropdown.component';
+import { PmoIntegrationModalComponent } from '../pmo-integration-modal/pmo-integration-modal.component';
+import { AdoService } from '../../integrations/ado/ado.service';
 
 @Component({
   selector: 'app-document-listing',
@@ -40,10 +68,12 @@ import { DropdownOptionGroup, ExportDropdownComponent } from "../../export-dropd
     MatMenuModule,
     RichTextEditorComponent,
     NgClass,
-    ExportDropdownComponent
-],
+    ExportDropdownComponent,
+  ],
 })
-export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DocumentListingComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   @ViewChild(SearchInputComponent) searchInput!: SearchInputComponent;
 
   loadingProjectFiles$ = this.store.select(ProjectsState.loadingProjectFiles);
@@ -51,11 +81,20 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   private searchTerm$ = new BehaviorSubject<string>('');
 
   appInfo: any = {};
-  originalDocumentList$: Observable<IList[]> = this.store.select(ProjectsState.getSelectedFileContents);
-  documentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
-  filteredDocumentList$!: Observable<(IList & { id: string; formattedRequirement: string | null })[]>;
+  originalDocumentList$: Observable<IList[]> = this.store.select(
+    ProjectsState.getSelectedFileContents,
+  );
+  documentList$!: Observable<
+    (IList & { id: string; formattedRequirement: string | null })[]
+  >;
+  filteredDocumentList$!: Observable<
+    (IList & { id: string; formattedRequirement: string | null })[]
+  >;
   selectedFolder: any = {};
-  private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({ title: '', id: '' });
+  private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({
+    title: '',
+    id: '',
+  });
   private subscription: Subscription = new Subscription();
   private scrollContainer: HTMLElement | null = null;
   @Input() set folder(value: { title: string; id: string; metadata: any }) {
@@ -80,10 +119,13 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
 
   currentRoute: string;
   constructor(
-    private store: Store, 
-    private router: Router, 
-    private searchService: SearchService, 
-    private toast: ToasterService) {
+    private store: Store,
+    private router: Router,
+    private searchService: SearchService,
+    private toast: ToasterService,
+    private dialog: MatDialog,
+    private adoService: AdoService,
+  ) {
     this.currentRoute = this.router.url;
     this.documentList$ = combineLatest([
       this.originalDocumentList$,
@@ -93,7 +135,10 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
         documents.map((doc) => ({
           ...doc,
           id: folder.id,
-          formattedRequirement: this.formatRequirementForView(doc.content?.requirement, doc.folderName)
+          formattedRequirement: this.formatRequirementForView(
+            doc.content?.requirement,
+            doc.folderName,
+          ),
         })),
       ),
     );
@@ -101,7 +146,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     this.filteredDocumentList$ = this.searchService.filterItems(
       this.documentList$,
       this.searchTerm$,
-      (doc) => [doc.fileName, doc.content?.title, doc.content?.epicTicketId],
+      (doc) => [doc.fileName, doc.content?.title, doc.content?.pmoId],
     );
   }
 
@@ -144,7 +189,10 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
 
     this.saveScrollPosition();
     if (this.scrollContainer) {
-      this.scrollContainer.removeEventListener('scroll', this.saveScrollPosition.bind(this)); // Clean up event listener
+      this.scrollContainer.removeEventListener(
+        'scroll',
+        this.saveScrollPosition.bind(this),
+      ); // Clean up event listener
     }
   }
 
@@ -184,38 +232,47 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
   navigateToAdd(id: any, folderName: any) {
     if (folderName === this.requirementTypes.BP) {
       // Check if any non-archived PRD or BRD exists
-      this.store.select(ProjectsState.getProjectsFolders).pipe(first()).subscribe(directories => {
-        const prdDir = directories.find(dir => dir.name === 'PRD');
-        const brdDir = directories.find(dir => dir.name === 'BRD');
+      this.store
+        .select(ProjectsState.getProjectsFolders)
+        .pipe(first())
+        .subscribe((directories) => {
+          const prdDir = directories.find((dir) => dir.name === 'PRD');
+          const brdDir = directories.find((dir) => dir.name === 'BRD');
 
-        // For PRD, only check base files that aren't archived
-        const hasPRD = prdDir && prdDir.children
-          .filter(child => child.includes('-base.json'))
-          .some(child => !child.includes('-archived'));
+          // For PRD, only check base files that aren't archived
+          const hasPRD =
+            prdDir &&
+            prdDir.children
+              .filter((child) => child.includes('-base.json'))
+              .some((child) => !child.includes('-archived'));
 
-        // For BRD, only check base files that aren't archived
-        const hasBRD = brdDir && brdDir.children
-          .filter(child => child.includes('-base.json'))
-          .some(child => !child.includes('-archived'));
+          // For BRD, only check base files that aren't archived
+          const hasBRD =
+            brdDir &&
+            brdDir.children
+              .filter((child) => child.includes('-base.json'))
+              .some((child) => !child.includes('-archived'));
 
-        if (!hasPRD && !hasBRD) {
-          this.toast.showWarning(APP_INFO_COMPONENT_ERROR_MESSAGES.REQUIRES_PRD_OR_BRD);
-          return;
-        }
+          if (!hasPRD && !hasBRD) {
+            this.toast.showWarning(
+              APP_INFO_COMPONENT_ERROR_MESSAGES.REQUIRES_PRD_OR_BRD,
+            );
+            return;
+          }
 
-        this.router.navigate(['/bp-add'], {
-          state: {
-            data: this.appInfo,
-            id,
-            folderName,
-            breadcrumb: {
-              name: 'Add Document',
-              link: this.currentRoute,
-              icon: 'add',
+          this.router.navigate(['/bp-add'], {
+            state: {
+              data: this.appInfo,
+              id,
+              folderName,
+              breadcrumb: {
+                name: 'Add Document',
+                link: this.currentRoute,
+                icon: 'add',
+              },
             },
-          },
+          });
         });
-      });
     } else {
       this.router.navigate(['/add'], {
         state: {
@@ -241,14 +298,12 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
         fileName: item.fileName,
         req: {
           ...item.content,
-          selectedBRDs:
-            (item.content?.selectedBRDs ?? []).map(
-              ({ requirement }: SelectedDocument) => requirement,
-            ),
-          selectedPRDs:
-            (item.content?.selectedPRDs ?? []).map(
-              ({ requirement }: SelectedDocument) => requirement,
-            ),
+          selectedBRDs: (item.content?.selectedBRDs ?? []).map(
+            ({ requirement }: SelectedDocument) => requirement,
+          ),
+          selectedPRDs: (item.content?.selectedPRDs ?? []).map(
+            ({ requirement }: SelectedDocument) => requirement,
+          ),
         },
         selectedFolder: {
           title: item.folderName,
@@ -269,13 +324,73 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     );
   }
 
+  /**
+   * Handle Pull from ADO action with integration status check
+   */
+  pullFromAdo(folderName: string) {
+    this.openPmoIntegrationModal(folderName, 'pull', 'ado');
+  }
+
+  /**
+   * Handle Push to ADO action with integration status check
+   */
+  pushToAdo(folderName: string) {
+    this.openPmoIntegrationModal(folderName, 'push', 'ado');
+  }
+
+  /**
+   * Opens the PMO integration status modal and handles the result
+   */
+  private openPmoIntegrationModal(
+    folderName: string,
+    action: 'pull' | 'push',
+    pmoType: 'ado' | 'jira',
+  ) {
+    // Use the project ID from appInfo which is set from the folder metadata
+    const projectId = this.appInfo?.id;
+
+    if (!projectId) {
+      this.toast.showError('No project selected');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(PmoIntegrationModalComponent, {
+      width: '75%',
+      maxHeight: '90vh',
+      data: {
+        projectId,
+        folderName,
+        pmoType,
+        action, // Pass the action to the modal
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.proceed) {
+        if (result?.selectedItems) {
+          this.adoService.processAdoSelectedItems(
+            folderName,
+            action,
+            result.selectedItems,
+            this.appInfo,
+          );
+        }
+      } else if (result?.configure) {
+        this.adoService.navigateToAdoConfiguration(this.appInfo);
+      }
+    });
+  }
+
   getDescription(input: string | undefined): string | null {
     return getDescriptionFromInput(input);
   }
 
-  private formatRequirementForView(requirement: string | undefined, folderName: string): string | null {
+  private formatRequirementForView(
+    requirement: string | undefined,
+    folderName: string,
+  ): string | null {
     if (!requirement) return null;
-    
+
     const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folderName];
 
     if (requirementType === this.requirementTypes.PRD) {
@@ -288,6 +403,18 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     });
   }
 
+  getPmoLogo(): string | null {
+    const selectedPmoTool = this.appInfo?.integration?.selectedPmoTool;
+
+    if (selectedPmoTool === 'ado') {
+      return 'assets/img/logo/azure_devops_logo.svg';
+    } else if (selectedPmoTool === 'jira') {
+      return 'assets/img/logo/mark_gradient_blue_jira.svg';
+    }
+
+    return null;
+  }
+
   getExportOptions(folderName: string) {
     if (!folderName) {
       console.warn('Folder name is undefined');
@@ -297,13 +424,21 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     if (this.exportedFolderName === folderName) {
       return this.exportOptions;
     }
-        
+
     const exportJson = () => {
       this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.JSON);
     };
 
     const exportExcel = () => {
       this.exportDocumentList(folderName, EXPORT_FILE_FORMATS.EXCEL);
+    };
+
+    const pullFromAdo = () => {
+      this.pullFromAdo(folderName);
+    };
+
+    const pushToAdo = () => {
+      this.pushToAdo(folderName);
     };
 
     this.exportedFolderName = folderName;
@@ -315,19 +450,40 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
             label: 'Copy to Clipboard',
             callback: exportJson.bind(this),
             icon: 'heroPaperClip',
-            additionalInfo: "JSON Format",
+            additionalInfo: 'JSON Format',
             isTimestamp: false,
           },
           {
             label: 'Download',
             callback: exportExcel.bind(this),
             icon: 'heroDocumentText',
-            additionalInfo: "Excel (.xlsx)",
+            additionalInfo: 'Excel (.xlsx)',
             isTimestamp: false,
-          }
-        ]
-      }
+          },
+        ],
+      },
     ];
+    if (this.appInfo?.integration?.selectedPmoTool === 'ado') {
+      this.exportOptions.push({
+        groupName: 'ADO',
+        options: [
+          {
+            label: 'Pull from ADO',
+            callback: pullFromAdo.bind(this),
+            icon: 'heroArrowDownTray',
+            // additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
+            isTimestamp: true,
+          },
+          {
+            label: 'Push to ADO',
+            callback: pushToAdo.bind(this),
+            icon: 'heroArrowUpTray',
+            // additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
+            isTimestamp: true,
+          },
+        ],
+      });
+    }
     return this.exportOptions;
   }
 }
