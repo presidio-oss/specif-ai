@@ -16,6 +16,7 @@ export class AccordionComponent {
   @Input() dynamicClass: string = '';
   @Input() isConnected: boolean = false;
   @Input() withConnectionStatus: boolean = false;
+  @Input() showBetaTag: boolean = false;
 
   @Output() toggleAccordion = new EventEmitter<void>();
 

@@ -228,6 +228,16 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (testCase) => {
             this.testCase = testCase;
+            
+            const userStoryLabel = `${this.userStoryId} - Test Cases`;
+            this.store.dispatch(
+              new AddBreadcrumb({
+                label: userStoryLabel,
+                tooltipLabel: `Test Cases for ${this.userStoryId}`,
+                url: `/test-cases/${this.userStoryId}`
+              })
+            );
+            
             this.breadcrumbLabel = `${testCase.id}: ${testCase.title}`;
             this.store.dispatch(
               new AddBreadcrumb({ label: this.breadcrumbLabel, tooltipLabel: testCase.description })
@@ -298,10 +308,20 @@ export class TestCaseDetailPageComponent implements OnInit, OnDestroy {
   saveTestCase() {
     if (this.testCaseForm.invalid) {
       this.markFormGroupTouched(this.testCaseForm);
+      this.toast.showWarning('Please fill in all required fields before saving');
       return;
     }
 
     const raw = this.testCaseForm.getRawValue();
+    
+    if (raw.preConditions) {
+      raw.preConditions = raw.preConditions.filter((item: string) => item && item.trim() !== '');
+    }
+    
+    if (raw.postConditions) {
+      raw.postConditions = raw.postConditions.filter((item: string) => item && item.trim() !== '');
+    }
+    
     const isNew = this.mode === TestCaseMode.ADD;
     
     this.subscriptions.push(

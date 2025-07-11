@@ -283,7 +283,7 @@ export class EditSolutionComponent {
             requirement: data.updated.requirement,
             title: data.updated.title,
             chatHistory: this.chatHistory,
-            epicTicketId: this.initialData.epicTicketId,
+            pmoId: this.initialData.pmoId,
           };
 
       if (this.isPRD()) {
@@ -305,7 +305,7 @@ export class EditSolutionComponent {
         this.requirementForm.patchValue({
           title: res.title,
           content: res.requirement,
-          epicticketid: res.epicTicketId,
+          pmoId: res.pmoId,
         });
         this.chatHistory = res.chatHistory || [];
       });
@@ -333,7 +333,7 @@ export class EditSolutionComponent {
       requirement: formValue.content,
       title: formValue.title,
       chatHistory: this.chatHistory,
-      epicTicketId: this.initialData.epicTicketId,
+      pmoId: this.initialData.pmoId,
     };
 
     if (this.isPRD()) {
@@ -351,7 +351,7 @@ export class EditSolutionComponent {
       this.oldContent = res.requirement;
       this.requirementForm.patchValue({
         title: res.title,
-        epicticketid: res.epicTicketId,
+        pmoId: res.pmoId,
       });
       this.chatHistory = res.chatHistory || [];
     });
@@ -596,7 +596,7 @@ ${chat.contentToAdd}`,
         this.requirementForm.patchValue({
           title: res.title,
           content: res.requirement,
-          epicticketid: res.epicTicketId,
+          pmoId: res.pmoId,
         });
 
         // For PRDs pre populate the linked brd ids
