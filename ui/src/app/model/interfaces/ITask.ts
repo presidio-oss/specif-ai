@@ -1,5 +1,5 @@
 export interface ITask {
-    subTaskTicketId?: string;
+    pmoId?: string;
     id: string;
     list: string;
     acceptance: string;

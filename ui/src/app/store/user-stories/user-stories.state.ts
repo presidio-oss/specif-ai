@@ -131,7 +131,7 @@ export class UserStoriesState {
           tasks: story.tasks,
           archivedTasks: story.archivedTasks,
           chatHistory: story.chatHistory,
-          storyTicketId: story.storyTicketId,
+          pmoId: story.pmoId,
         });
         this.logger.debug('story ==>', story);
         taskMap[story.id] = story.tasks as ITask[];

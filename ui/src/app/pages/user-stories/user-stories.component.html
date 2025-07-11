@@ -68,7 +68,8 @@
         description: userStory.formattedDescription ?? '',
         name: userStory.name,
         id: userStory.id,
-        jiraTicketId: userStory.storyTicketId,
+        pmoId: userStory.pmoId,
+        metadata: metadata,
       }"
       *ngFor="let userStory of filteredUserStories$ | async; let i = index"
       [tag]="userStory.id"
