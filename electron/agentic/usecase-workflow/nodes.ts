@@ -53,7 +53,6 @@ export const buildResearchNode = ({
 
     const researchCorrelationId = uuid();
 
-    // Dispatch initial thinking event
     await workflowEvents.dispatchThinking(
       "research",
       {
@@ -82,48 +81,26 @@ export const buildResearchNode = ({
     const hasResearchUrls = Array.isArray(researchUrls) && researchUrls.length > 0;
     
     // Build the research prompt
-    let researchPrompt = `You are researching information for a business proposal.
-          
+    let researchPrompt = `You are a research assistant. Your task is to extract and summarize information from URLs.
+
 Project: ${state.project.name}
 Description: ${state.project.description}
 
-Solution Information:
-- Name: ${state.project.solution.name}
-- Description: ${state.project.solution.description}
-- Technical Details: ${state.project.solution.techDetails}
-
-${state.requirement?.description ? `Initial description: ${state.requirement.description}` : "No detailed description provided yet."}`;
+${state.requirement?.description ? `Requirement: ${state.requirement.description}` : ""}`;
 
     // Add research URLs if available
     if (hasResearchUrls) {
-      researchPrompt += `\n\nThe user has provided the following URLs for research context. Use the web_search tool to explore these topics and URLs further:\n`;
+      researchPrompt += `\n\nHere are the URLs to scrape content from:\n`;
       researchUrls.forEach((url: string, index: number) => {
         researchPrompt += `${index + 1}. ${url}\n`;
-        // Extract keywords from URL for search
-        try {
-          const urlObj = new URL(url);
-          const path = urlObj.pathname.replace(/[\/\-_]/g, ' ').trim();
-          const domain = urlObj.hostname.replace(/^www\./, '').replace(/\.(com|org|net|io|ai)$/, '');
-          researchPrompt += `   - Consider searching for terms related to: ${domain} ${path}\n`;
-        } catch (e) {
-          // If URL parsing fails, just continue
-        }
       });
+      
+      researchPrompt += `\nUse the fetch_url_content tool to extract content from each URL. Then summarize the key information from these sources.`;
+    } else {
+      researchPrompt += `\n\nNo URLs were provided. Please provide a brief summary of the project based on the information above.`;
     }
 
-    researchPrompt += `\nUse the web_search tool to research relevant information that would help create a comprehensive business proposal. 
-Focus on industry trends, competitor strategies, and market opportunities.
-
-When using the web_search tool:
-1. Formulate specific search queries based on the project and URLs provided
-2. Extract key insights from search results
-3. Use these insights to inform your business proposal
-
-Example search queries:
-- "${state.project.name} industry trends"
-- "${state.project.name} market analysis"
-- "${state.project.name} competitor strategies"
-- "${state.project.solution.name} implementation case studies"`;
+    researchPrompt += `\n\nDO NOT ask for more information or URLs. Simply use the fetch_url_content tool on each URL provided and summarize what you find.`;
 
     const response = await agent.invoke(
       {
@@ -142,11 +119,45 @@ Example search queries:
       }
     );
 
+    let referenceInformation = response.structuredResponse.referenceInformation;
+    
+    // Check if the reference information is asking for more URLs or information
+    if (referenceInformation.includes('Could you please provide') || 
+        referenceInformation.includes('please provide') ||
+        referenceInformation.includes('need more information') ||
+        referenceInformation.includes('need additional information')) {
+      
+      console.log(`[research] Warning: Model is asking for more information instead of providing research: "${referenceInformation}"`);
+      
+      // Extract any useful information that might be in the response
+      const usefulParts = referenceInformation
+        .replace(/Could you please provide.*$/gm, '')
+        .replace(/Please provide.*$/gm, '')
+        .replace(/I need more information.*$/gm, '')
+        .replace(/I need additional information.*$/gm, '')
+        .trim();
+      
+      if (usefulParts.length > 100) {
+        // If there's still some useful content, use it
+        referenceInformation = usefulParts;
+        console.log(`[research] Extracted useful parts from the response: ${usefulParts.substring(0, 100)}...`);
+      } else {
+        // If no useful content, provide a minimal prompt to continue
+        referenceInformation = `Based on the available information about ${state.requirement?.title || state.project.description}, please proceed with generating a comprehensive business proposal.`;
+        console.log(`[research] Using minimal reference information`);
+      }
+    }
+    
+    // Log the reference information that will be used in the use case generation
+    console.log(`[research] Research completed successfully!`);
+    console.log(`[research] Reference information length: ${referenceInformation.length} characters`);
+    console.log(`[research] Reference information preview (first 200 chars): ${referenceInformation.substring(0, 200)}...`);
+    
     await workflowEvents.dispatchAction(
       "research",
       {
         title: "Research completed and prepared summary for use case generation",
-        output: response.structuredResponse.referenceInformation,
+        output: referenceInformation,
       },
       runnableConfig,
       researchCorrelationId
@@ -157,7 +168,7 @@ Example search queries:
     });
 
     return {
-      referenceInformation: response.structuredResponse.referenceInformation,
+      referenceInformation: referenceInformation,
     };
   };
 };
@@ -183,7 +194,6 @@ export const buildUseCaseGenerationNode = ({
     try {
       const useCaseGenerationCorrelationId = uuid();
 
-      // Dispatch initial events
       await workflowEvents.dispatchThinking(
         "usecase-generation",
         {
@@ -248,6 +258,10 @@ export const buildUseCaseGenerationNode = ({
       };
 
       const prompt = getUCPrompt(ucParams);
+      
+      // Log that we're using the reference information in the generation
+      console.log(`[generate-usecase] Starting use case generation with research information`);
+      console.log(`[generate-usecase] Using reference information of length: ${state.referenceInformation.length} characters`);
       
       const response = await agent.invoke(
         {

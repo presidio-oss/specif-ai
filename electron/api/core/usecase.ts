@@ -8,16 +8,15 @@ import { LLMConfigModel } from "../../services/llm/llm-types";
 import { ObservabilityManager } from "../../services/observability/observability.manager";
 import { store } from "../../services/store";
 import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
-import { WorkflowEventsService } from "../../services/events/workflow-events.service";
+import { WorkflowEventsService, WorkflowEventType } from "../../services/events/workflow-events.service";
 import { MemorySaver } from "@langchain/langgraph";
-
-const workflowEvents = new WorkflowEventsService("usecase");
 
 interface UseCaseGenerationRequest {
   project?: {
     name?: string;
     description?: string;
     solution?: {
+      solutionId?: string;
       name?: string;
       description?: string;
       techDetails?: string;
@@ -26,6 +25,7 @@ interface UseCaseGenerationRequest {
   requirement?: {
     title?: string;
     description?: string;
+    researchUrls?: string[];
   };
 }
 
@@ -35,6 +35,7 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
   try {
     console.log('[generate-usecase] Received request:', request);
     
+    const workflowEvents = new WorkflowEventsService("usecase");
     const o11y = ObservabilityManager.getInstance();
     const trace = o11y.createTrace('generate-usecase');
 
@@ -54,6 +55,8 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
     const customTools = createUseCaseWorkflowTools();
     const allTools = [...mcpTools, ...customTools];
     console.log('[generate-usecase] Got tools:', allTools.length);
+    console.log('[generate-usecase] Custom tools:', customTools.map(tool => tool.name));
+    console.log('[generate-usecase] MCP tools:', mcpTools.length);
     
     // Create a memory checkpointer for the workflow
     const memoryCheckpointer = new MemorySaver();
@@ -64,14 +67,15 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
       checkpointer: memoryCheckpointer,
     });
 
-    const requestId = uuid();
-    const generateCorrelationId = uuid();
+    const requestId = request.project?.solution?.solutionId;
+    // const generateCorrelationId = uuid();
     
     const initialState = {
       project: {
         name: request.project?.name || "",
         description: request.project?.description || "",
         solution: {
+          id: request.project?.solution?.solutionId,
           name: request.project?.solution?.name || "",
           description: request.project?.solution?.description || "",
           techDetails: request.project?.solution?.techDetails || "",
@@ -80,6 +84,7 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
       requirement: {
         title: request.requirement?.title || "",
         description: request.requirement?.description || "",
+        researchUrls: request.requirement?.researchUrls || [],
       },
     };
 
@@ -92,73 +97,48 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
         sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
       },
     };
-
-    // Dispatch initial thinking event
-    await workflowEvents.dispatchThinking(
-      "generate-usecase",
-      {
-        title: "Starting business proposal generation",
-      },
-      config,
-      generateCorrelationId
-    );
-
+    
     // Stream the workflow events
     const stream = workflow.streamEvents(initialState, {
       version: "v2",
       streamMode: "messages",
       ...config,
     });
-
-    // Set up a channel for the UI to listen to these events
-    const channel = `usecase:${requestId}-workflow-progress`;
     
-    // Process the stream events
-    for await (const { event: evt, name, data } of stream) {
-      const timestamp = Date.now();
-
-      switch (evt) {
+    console.log('[generate-usecase] Processing workflow events...');
+    
+    // Process all stream events before getting the final state
+    for await (const streamEvent of stream) {
+      const channel = `usecase:${requestId}-workflow-progress`;
+      
+      switch (streamEvent.event) {
         case "on_tool_end":
-          _event.sender.send(channel, {
-            node: "tools_end",
-            type: "mcp",
-            message: {
-              title: `Completed tool execution: ${name}`,
-              input: data?.input,
-              output: data?.output?.content,
-            },
-            timestamp,
-          });
+          const toolEndEvent = workflowEvents.createEvent(
+            "tools_end",
+            WorkflowEventType.Mcp,
+            {
+              title: `Executed Tool: ${streamEvent.name}`,
+              input: streamEvent.data?.input,
+              output: streamEvent.data?.output?.content,
+            }
+          );
+          _event.sender.send(channel, toolEndEvent);
           break;
-
+          
         case "on_custom_event":
-          _event.sender.send(channel, data);
+          _event.sender.send(channel, streamEvent.data);
           break;
       }
     }
-
-    console.log('[generate-usecase] Getting workflow state...');
+    
+    console.log('[generate-usecase] All workflow events processed, getting final state...');
     const result = await workflow.getState(config);
     console.log('[generate-usecase] Workflow result:', result);
 
     if (!result.values.useCaseDraft || !result.values.useCaseDraft.requirement) {
       throw new Error('Workflow did not return a valid use case draft');
     }
-
-    // Dispatch completion event
-    await workflowEvents.dispatchAction(
-      "generate-usecase",
-      {
-        title: "Business proposal generated successfully",
-        output: {
-          title: result.values.useCaseDraft.title,
-        }
-      },
-      config,
-      generateCorrelationId
-    );
-
-    // Validate that the requirement is properly formatted
+    
     try {
       // Check if the content is valid by attempting to parse it as JSON
       // This is just a validation step, not actually using the parsed result

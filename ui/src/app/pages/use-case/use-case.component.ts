@@ -1,4 +1,7 @@
-import { exportMarkdownToDocx, WordFileExtension } from '../../utils/markdown.utils';
+import {
+  exportMarkdownToDocx,
+  WordFileExtension,
+} from '../../utils/markdown.utils';
 import {
   SectionInfo,
   parseMarkdownSections,
@@ -155,7 +158,7 @@ export class UseCaseComponent implements OnInit {
   selectedSection: SectionInfo | null = null;
   documentSections: SectionInfo[] = [];
   isChatExpanded: boolean = true;
-  
+
   // Document update handler
   private documentUpdateHandler: DocumentUpdateHandlerService;
 
@@ -166,11 +169,14 @@ export class UseCaseComponent implements OnInit {
     private loggerService: NGXLogger,
     private electronService: ElectronService,
     private workflowProgressService: WorkflowProgressService,
-    private documentUpdateService: DocumentUpdateService
+    private documentUpdateService: DocumentUpdateService,
   ) {
     // Initialize document update handler
-    this.documentUpdateHandler = new DocumentUpdateHandlerService(documentUpdateService, this.toastService);
-    
+    this.documentUpdateHandler = new DocumentUpdateHandlerService(
+      documentUpdateService,
+      this.toastService,
+    );
+
     // Get mode from route parameters
     this.route.params.subscribe((params) => {
       this.mode = params['mode'] === 'add' ? 'add' : 'edit';
@@ -207,13 +213,13 @@ export class UseCaseComponent implements OnInit {
       this.name = this.data?.name;
       this.requirement = this.data?.description; // Access description from data but store in requirement
       this.ucRequirementId = this.fileName.split('-')[0];
-      
+
       // Set edit label with ID after ID is initialized
       this.editLabel = `Edit ${this.ucRequirementId}`;
     } else {
       this.editLabel = 'Add';
     }
-    
+
     // Set up second breadcrumb after ID is initialized
     this.store.dispatch(
       new AddBreadcrumb({
@@ -233,14 +239,6 @@ export class UseCaseComponent implements OnInit {
 
     // Clear any existing workflow status
     if (this.projectId) {
-      this.workflowProgressService.clearCreationStatus(
-        this.projectId,
-        WorkflowType.UseCase,
-      );
-      this.workflowProgressService.clearProgressEvents(
-        this.projectId,
-        WorkflowType.UseCase,
-      );
       this.showProgressDialog = false;
       this.isGeneratingUseCase = false;
       this.useCaseGenerationComplete = false;
@@ -281,14 +279,6 @@ export class UseCaseComponent implements OnInit {
 
     // Clear workflow status before navigating away
     if (this.projectId) {
-      this.workflowProgressService.clearCreationStatus(
-        this.projectId,
-        WorkflowType.UseCase,
-      );
-      this.workflowProgressService.clearProgressEvents(
-        this.projectId,
-        WorkflowType.UseCase,
-      );
       this.showProgressDialog = false;
       this.isGeneratingUseCase = false;
       this.useCaseGenerationComplete = false;
@@ -338,7 +328,7 @@ export class UseCaseComponent implements OnInit {
       ),
       status: new FormControl('DRAFT'),
       researchUrls: new FormArray([
-        new FormControl('', Validators.pattern('https?://.+'))
+        new FormControl('', Validators.pattern('https?://.+')),
       ]),
     });
 
@@ -389,11 +379,43 @@ export class UseCaseComponent implements OnInit {
     if (this.mode === 'edit') {
       this.updateDocumentSections();
     }
+    
+    this.clearStaleData();
+  }
+  
+  private clearStaleData(): void {
+    if (this.mode === 'add') {
+      this.chatHistory = [];
+    }
+    
+    this.documentSections = [];
+    this.selectedSection = null;
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+
+    if (this.projectId) {
+      this.workflowProgressService.clearCreationStatus(
+        this.projectId,
+        WorkflowType.UseCase,
+      );
+      this.workflowProgressService.clearProgressEvents(
+        this.projectId,
+        WorkflowType.UseCase,
+      );
+    }
+    
+    if (this.electronService.electronAPI) {
+      try {
+        this.workflowProgressService.removeGlobalListener(
+          this.projectId,
+          WorkflowType.UseCase
+        );
+      } catch (error) {
+      }
+    }
   }
 
   closeProgressDialog(): void {
@@ -421,38 +443,9 @@ export class UseCaseComponent implements OnInit {
     );
   }
 
-  private setupUseCaseProgressListener(): void {
-    if (!this.projectId) return;
-
-    if (
-      !this.workflowProgressService.hasGlobalListener(
-        this.projectId,
-        WorkflowType.UseCase,
-      )
-    ) {
-      this.workflowProgressService.registerGlobalListener(
-        this.projectId,
-        WorkflowType.UseCase,
-      );
-    }
-
-    this.workflowProgressService.clearProgressEvents(
-      this.projectId,
-      WorkflowType.UseCase,
-    );
-  }
-
   navigateBackToDocumentList(data: any) {
     // Clear workflow status before navigating away
     if (this.projectId) {
-      this.workflowProgressService.clearCreationStatus(
-        this.projectId,
-        WorkflowType.UseCase,
-      );
-      this.workflowProgressService.clearProgressEvents(
-        this.projectId,
-        WorkflowType.UseCase,
-      );
       this.showProgressDialog = false;
       this.isGeneratingUseCase = false;
       this.useCaseGenerationComplete = false;
@@ -474,10 +467,10 @@ export class UseCaseComponent implements OnInit {
 
   updateChatHistory(chatHistory: any) {
     this.chatHistory = chatHistory;
-    
+
     // Process the chat history for document updates
     this.processDocumentUpdates();
-    
+
     if (this.mode === 'edit') {
       this.store.dispatch(
         new UpdateFile(this.absoluteFilePath, {
@@ -490,47 +483,49 @@ export class UseCaseComponent implements OnInit {
       );
     }
   }
-  
+
   /**
    * Process the chat history for document updates
    * This method checks for tool responses in the chat history and applies document updates
    */
   private processDocumentUpdates(): void {
     // Check if there are any tool messages in the chat history
-    const toolMessages = this.chatHistory.filter((message: any) => message.tool);
-    
+    const toolMessages = this.chatHistory.filter(
+      (message: any) => message.tool,
+    );
+
     if (toolMessages.length > 0) {
       // Process each tool message
       for (const message of toolMessages) {
         // Check if the message has already been processed
         if (message.processed) continue;
-        
+
         // Try to handle the tool response
         const handled = this.documentUpdateHandler.handleToolResponse(
           message.tool,
           (updatedContent: string, replacementInfo?: any) => {
             // Update the form with the updated content
             this.useCaseForm.patchValue({
-              requirement: updatedContent
+              requirement: updatedContent,
             });
-            
+
             // Update the document sections
             this.updateDocumentSections();
-            
+
             // If in edit mode, update the use case
             if (this.mode === 'edit') {
               this.updateUseCase();
             }
-            
+
             // Handle visual highlighting if replacement info is provided
             if (replacementInfo) {
               this.highlightReplacement(replacementInfo);
             }
           },
           // Function to get the current content
-          () => this.useCaseForm.get('requirement')?.value || ''
+          () => this.useCaseForm.get('requirement')?.value || '',
         );
-        
+
         // Mark the message as processed
         if (handled) {
           message.processed = true;
@@ -591,7 +586,9 @@ export class UseCaseComponent implements OnInit {
     const title = this.useCaseForm.get('title')?.value || 'Business Proposal';
     const markdownContent = this.useCaseForm.get('requirement')?.value || '';
 
-    exportMarkdownToDocx(markdownContent, title, { fileExtension: WordFileExtension.DOCX })
+    exportMarkdownToDocx(markdownContent, title, {
+      fileExtension: WordFileExtension.DOCX,
+    })
       .then(() => {
         this.toastService.showSuccess(
           'Business proposal exported successfully as Word document',
@@ -599,7 +596,9 @@ export class UseCaseComponent implements OnInit {
       })
       .catch((error) => {
         console.error('Error exporting document:', error);
-        this.toastService.showError(`Failed to export document: ${error.message}`);
+        this.toastService.showError(
+          `Failed to export document: ${error.message}`,
+        );
       });
   }
 
@@ -619,7 +618,7 @@ export class UseCaseComponent implements OnInit {
   // Add a new research URL field
   addResearchUrl() {
     this.researchUrlsFormArray.push(
-      new FormControl('', Validators.pattern('https?://.+'))
+      new FormControl('', Validators.pattern('https?://.+')),
     );
   }
 
@@ -647,7 +646,9 @@ export class UseCaseComponent implements OnInit {
       const formValue = this.useCaseForm.getRawValue();
 
       // Filter out empty research URLs
-      const researchUrls = formValue.researchUrls.filter((url: string) => url.trim() !== '');
+      const researchUrls = formValue.researchUrls.filter(
+        (url: string) => url.trim() !== '',
+      );
 
       // Prepare the request data
       const requestData = {
@@ -656,6 +657,7 @@ export class UseCaseComponent implements OnInit {
           description: this.data?.description || '',
           // Include solution metadata
           solution: {
+            solutionId: this.projectId,
             name: this.data?.name || '',
             description: this.data?.description || '',
             techDetails: this.data?.technicalDetails || '',
@@ -673,22 +675,6 @@ export class UseCaseComponent implements OnInit {
         requestData,
       );
 
-      // Add an initial thinking event to ensure the progress dialog shows something
-      this.workflowProgressService.addProgressEvent(
-        this.projectId,
-        WorkflowType.UseCase,
-        {
-          node: 'generate-usecase',
-          type: WorkflowProgressEventType.Thinking,
-          message: {
-            title: 'Starting business proposal generation...',
-            input: undefined,
-            output: undefined,
-          },
-          timestamp: Date.now(),
-        },
-      );
-
       // Call the backend API to generate the use case draft
       const result = await this.electronService.generateUseCase(requestData);
 
@@ -696,11 +682,6 @@ export class UseCaseComponent implements OnInit {
         'Received response from business proposal generation:',
         result,
       );
-
-      // Set up listener for workflow progress events with the actual requestId
-      if (result && (result as any).requestId) {
-        this.setupWorkflowProgressListener((result as any).requestId);
-      }
 
       if (result && result.status === 'success') {
         // Add a completion event
@@ -732,18 +713,6 @@ export class UseCaseComponent implements OnInit {
         // Close the progress dialog immediately after successful generation
         this.showProgressDialog = false;
 
-        // Clear workflow status
-        if (this.projectId) {
-          this.workflowProgressService.clearCreationStatus(
-            this.projectId,
-            WorkflowType.UseCase,
-          );
-          this.workflowProgressService.clearProgressEvents(
-            this.projectId,
-            WorkflowType.UseCase,
-          );
-        }
-
         // If in add mode, create the use case
         this.mode === 'add' && this.addUseCase();
       } else {
@@ -758,22 +727,6 @@ export class UseCaseComponent implements OnInit {
         'An error occurred while generating the business proposal',
       );
 
-      // Add an error event
-      this.workflowProgressService.addProgressEvent(
-        this.projectId,
-        WorkflowType.UseCase,
-        {
-          node: 'generate-usecase',
-          type: WorkflowProgressEventType.Error,
-          message: {
-            title: 'Error generating business proposal',
-            input: undefined,
-            output: { error: String(error) },
-          },
-          timestamp: Date.now(),
-        },
-      );
-
       await this.workflowProgressService.setFailed(
         this.projectId,
         WorkflowType.UseCase,
@@ -785,113 +738,7 @@ export class UseCaseComponent implements OnInit {
     }
   }
 
-  /**
-   * Sets up a listener for workflow progress events
-   * @param requestId The ID of the request to listen for
-   */
-  private setupWorkflowProgressListener(requestId: string) {
-    if (!this.projectId || !requestId) return;
-
-    // Set up direct listener for the specific channel used in the API
-    const channelName = `usecase:${requestId}-workflow-progress`;
-
-    // Register global listener if not already registered
-    if (
-      !this.workflowProgressService.hasGlobalListener(
-        this.projectId,
-        WorkflowType.UseCase,
-      )
-    ) {
-      this.workflowProgressService.registerGlobalListener(
-        this.projectId,
-        WorkflowType.UseCase,
-      );
-    }
-
-    // Set up listener for workflow progress events
-    const workflowProgressCallback = (_: any, event: any) => {
-      if (!event?.message?.title) return;
-
-      // Update the current workflow step
-      this.currentWorkflowStep = event.message.title;
-
-      // Add the event to the workflow progress
-      this.workflowProgress.push({
-        title: event.message.title,
-        timestamp: event.timestamp || Date.now(),
-      });
-
-      // Update the toast message with the current step
-      this.toastService.showInfo(`Generating proposal: ${event.message.title}`);
-
-      // Create a standardized progress event
-      const progressEvent = {
-        node: event.node || 'generate-usecase',
-        type: event.type || WorkflowProgressEventType.Thinking,
-        message: {
-          title: event.message.title,
-          input: event.message.input,
-          output: event.message.output,
-        },
-        timestamp: event.timestamp || Date.now(),
-        correlationId: event.correlationId,
-      };
-
-      // Update the workflow progress dialog
-      this.workflowProgressService.addProgressEvent(
-        this.projectId,
-        WorkflowType.UseCase,
-        progressEvent,
-      );
-    };
-
-    // Set up listeners if the electron API is available
-    if (this.electronService.electronAPI) {
-      // Clean up any existing listeners to avoid duplicates
-      this.cleanupWorkflowListeners(channelName, workflowProgressCallback);
-
-      // Add the direct channel listener
-      this.electronService.electronAPI.on(
-        channelName,
-        workflowProgressCallback,
-      );
-
-      // Also listen on the standard workflow progress channel
-      this.electronService.listenWorkflowProgress(
-        WorkflowType.UseCase,
-        this.projectId,
-        workflowProgressCallback,
-      );
-
-      // Set up automatic cleanup after 5 minutes to prevent memory leaks
-      setTimeout(
-        () =>
-          this.cleanupWorkflowListeners(channelName, workflowProgressCallback),
-        5 * 60 * 1000,
-      );
-    }
-  }
-
-  /**
-   * Clean up workflow progress listeners to prevent memory leaks
-   */
-  private cleanupWorkflowListeners(channelName: string, callback: any): void {
-    if (!this.electronService.electronAPI) return;
-
-    try {
-      // Remove the direct channel listener
-      this.electronService.electronAPI.removeListener(channelName, callback);
-
-      // Remove the standard workflow progress listener
-      this.electronService.removeWorkflowProgressListener(
-        WorkflowType.UseCase,
-        this.projectId,
-        callback,
-      );
-    } catch (error) {
-      // Ignore errors if listeners don't exist
-    }
-  }
+  // setupWorkflowProgressListener method removed - using setupUseCaseProgressListener instead
 
   /**
    * Handle content changes from the canvas editor
@@ -1005,7 +852,7 @@ export class UseCaseComponent implements OnInit {
 
     this.loggerService.debug('Selected document section:', section);
   }
-  
+
   /**
    * Toggle the expanded state of the chat panel
    */
@@ -1039,7 +886,7 @@ export class UseCaseComponent implements OnInit {
       }
     }
   }
-  
+
   /**
    * Highlight the replaced text in the document
    * This is a simplified version that just shows a toast notification
@@ -1049,19 +896,50 @@ export class UseCaseComponent implements OnInit {
     // Show a toast notification with the replacement details
     if (replacementInfo.searchText && replacementInfo.replaceText) {
       this.toastService.showSuccess(
-        `Replaced "${replacementInfo.searchText}" with "${replacementInfo.replaceText}"`
+        `Replaced "${replacementInfo.searchText}" with "${replacementInfo.replaceText}"`,
       );
-    } else if (replacementInfo.startPosition !== undefined && replacementInfo.endPosition !== undefined) {
+    } else if (
+      replacementInfo.startPosition !== undefined &&
+      replacementInfo.endPosition !== undefined
+    ) {
       this.toastService.showSuccess(
-        `Updated text at positions ${replacementInfo.startPosition}-${replacementInfo.endPosition}`
+        `Updated text at positions ${replacementInfo.startPosition}-${replacementInfo.endPosition}`,
       );
     }
-    
+
     // Find the canvas editor component and tell it to focus on the updated section
     const canvasEditor = document.querySelector('app-canvas-editor');
-    if (canvasEditor && typeof (canvasEditor as any).refreshContent === 'function') {
+    if (
+      canvasEditor &&
+      typeof (canvasEditor as any).refreshContent === 'function'
+    ) {
       // If the canvas editor has a refreshContent method, call it to refresh the editor
       (canvasEditor as any).refreshContent();
     }
+  }
+
+  private setupUseCaseProgressListener(): void {
+    console.log(
+      "Krithiak here's my setupTaskProgressListener method",
+      this.projectId,
+    );
+    if (!this.projectId) return;
+
+    if (
+      !this.workflowProgressService.hasGlobalListener(
+        this.projectId,
+        WorkflowType.UseCase,
+      )
+    ) {
+      this.workflowProgressService.registerGlobalListener(
+        this.projectId,
+        WorkflowType.UseCase,
+      );
+    }
+
+    this.workflowProgressService.clearProgressEvents(
+      this.projectId,
+      WorkflowType.UseCase,
+    );
   }
 }
