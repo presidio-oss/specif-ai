@@ -87,7 +87,7 @@ export async function inlineEditWithAI(
     });
     
     // Return the response
-    console.log("Inline edit response:", response);
+    console.log("Inline edit response:", response.values.editedText);
     return {
       requestId,
       editedText: response.values.editedText || "",

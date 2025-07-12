@@ -1,0 +1,50 @@
+:host {
+  display: block;
+}
+
+::ng-deep .inline-edit-dialog {
+  .mat-mdc-dialog-container {
+    border-radius: 12px !important;
+    overflow: hidden;
+  }
+  
+  .mdc-dialog__surface {
+    background-color: #1f2937 !important;
+    color: white;
+  }
+}
+
+.bg-gray-900 {
+  @apply bg-gray-900;
+}
+
+.rounded-xl {
+  @apply rounded-xl;
+}
+
+.shadow-lg {
+  @apply shadow-lg;
+}
+
+// Custom styles for textarea auto-resize
+textarea.resize-none {
+  overflow-y: hidden;
+  min-height: 28px;
+  transition: height 0.1s ease;
+}
+
+// Animation for the prompt dialog
+.prompt-enter {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

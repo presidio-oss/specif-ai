@@ -10,6 +10,7 @@ import {
   appendContent,
 } from '../../utils/section.utils';
 import { Component, OnInit, inject } from '@angular/core';
+import { InlineEditModule } from '../../directives/inline-edit/inline-edit.module';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
@@ -105,6 +106,7 @@ import { DocumentUpdateHandlerService } from 'src/app/services/document-update/d
     WorkflowProgressDialogComponent,
     CanvasEditorComponent,
     FloatingChatComponent,
+    InlineEditModule,
   ],
   providers: [
     provideIcons({
@@ -941,5 +943,29 @@ export class UseCaseComponent implements OnInit {
       this.projectId,
       WorkflowType.UseCase,
     );
+  }
+  
+  /**
+   * Gets the document context for inline editing
+   * This provides the full document content for better AI context
+   */
+  getDocumentContext = (): string => {
+    return this.useCaseForm.get('requirement')?.value || '';
+  }
+  
+  /**
+   * Handles inline edit content updates
+   * @param newContent The new content from inline edit
+   */
+  handleInlineEdit = (newContent: string): void => {
+    this.onCanvasContentChange(newContent);
+    
+    // If in edit mode, update the use case
+    if (this.mode === 'edit') {
+      this.updateUseCase();
+    }
+    
+    // Update document sections
+    this.updateDocumentSections();
   }
 }

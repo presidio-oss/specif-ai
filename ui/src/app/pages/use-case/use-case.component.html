@@ -164,6 +164,9 @@
                     [documentTitle]="useCaseForm.get('title')?.value"
                     [editable]="true"
                     [showSidebar]="true"
+                    appInlineEdit
+                    [contextProvider]="getDocumentContext"
+                    [onContentUpdated]="handleInlineEdit"
                     (contentChange)="onCanvasContentChange($event)"
                     (sectionSelected)="onSectionSelected($event)"
                     (editProposed)="onEditProposed($event)"
