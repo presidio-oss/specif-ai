@@ -576,7 +576,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   resetApp() {
     this.dialogService
       .confirm({
-        title: 'Reset Application',
+        title: 'Reset Settings',
         description: 'Are you sure you want to reset the Settings? This will clear all settings and configurations.',
         cancelButtonText: 'Cancel',
         confirmButtonText: 'Reset Settings',
