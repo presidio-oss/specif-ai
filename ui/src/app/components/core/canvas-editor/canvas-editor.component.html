@@ -1,4 +1,4 @@
-<div class="canvas-editor-container flex flex-col w-full h-full">
+<div class="flex flex-col w-full h-full relative">
   <!-- Document title section -->
   <div class="document-title-container px-4 py-3 border-b border-gray-200 bg-gray-50">
     <div class="flex items-center justify-between">
@@ -24,15 +24,15 @@
   <!-- Main content area -->
   <div class="flex flex-row flex-1 overflow-hidden">
     <!-- Section outline sidebar (now on the left) -->
-    <div class="canvas-editor-sidebar w-1/4 border-r border-gray-200" *ngIf="showSidebar && sections.length > 0">
-    <div class="sidebar-header p-4 border-b">
+    <div class="w-1/4 border-r border-gray-200 bg-gray-50 flex flex-col h-full" *ngIf="showSidebar && sections.length > 0">
+    <div class="sidebar-header p-4 border-b flex-shrink-0">
       <h3 class="text-sm font-medium text-secondary-700">Document Sections</h3>
     </div>
-    <div class="sidebar-content p-4 overflow-y-auto">
+    <div class="sidebar-content p-4 overflow-y-auto flex-grow">
       <ul class="section-list space-y-2">
         <li 
           *ngFor="let section of sections" 
-          class="section-item cursor-pointer"
+          class="section-item cursor-pointer text-sm p-1"
           [class.active]="selectedSection?.id === section.id"
           (click)="selectSection(section.id)"
         >
@@ -43,19 +43,19 @@
   </div>
 
     <!-- Main editor area -->
-    <div class="canvas-editor-content flex-1 p-4 overflow-y-auto relative">
+    <div class="flex-1 p-4 overflow-y-auto relative">
     
     <app-rich-text-editor
       [content]="content"
       [editable]="editable && !inlineEditActive"
-      [editorClass]="'canvas-editor-area'"
+      [editorClass]="'min-h-[300px] rounded-md'"
       (change)="onContentChange($event)"
     ></app-rich-text-editor>
     
     <!-- Inline edit floating controls -->
     <div 
       *ngIf="showInlineEditControls" 
-      class="inline-edit-controls absolute z-10 bg-white shadow-lg rounded-md border border-gray-200 transform -translate-x-1/2"
+      class="animate-fade-in absolute z-10 bg-white shadow-lg rounded-md border border-gray-200 transform -translate-x-1/2"
       [style.top.px]="inlineEditTop + 10"
       [style.left.px]="inlineEditLeft"
     >

@@ -1,185 +1,44 @@
-.canvas-editor-container {
-  height: 100%;
-  position: relative;
+// Animations (keep these in SCSS for reuse)
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { 
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-.canvas-editor-sidebar {
-  background-color: #f9fafb;
-  
-  .sidebar-header h3 {
-    font-size: 0.875rem; // Smaller font size for "Document Sections" heading
-  }
-  
-  .section-item {
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    transition: background-color 0.2s;
-    font-size: 0.875rem; // Smaller font size for section titles
-    
-    &:hover {
-      background-color: #f3f4f6;
-    }
-    
-    &.active {
-      background-color: #e5e7eb;
-      font-weight: 500;
-    }
-  }
-}
+// Animation classes (these apply the animations)
+.animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
+.animate-slide-up { animation: slideUp 0.3s ease-out; }
 
-.canvas-editor-content {
-  position: relative;
-}
-
-.canvas-editor-area {
-  min-height: 300px;
-  border-radius: 0.375rem;
-}
-
-// Inline edit styles
-.inline-edit-controls {
-  animation: fadeIn 0.2s ease-in-out;
-  
-  button {
-    transition: background-color 0.2s;
-  }
-}
-
-// Explicit selection highlight
+// Selection styling
 .explicit-selection {
-  background-color: rgba(59, 130, 246, 0.2); /* Light blue background */
+  background-color: rgba(59, 130, 246, 0.2);
   border-radius: 2px;
   padding: 1px 0;
   position: relative;
   z-index: 1;
 }
 
-.inline-edit-overlay {
-  animation: fadeIn 0.2s ease-in-out;
+// Section item styling - keep this for hover/active states
+.section-item {
+  &:hover { background-color: #f3f4f6; }
+  &.active { background-color: #e5e7eb; font-weight: 500; }
 }
 
-.inline-edit-suggestion-container {
+// Dialog content (only keeping parts that are hard to do with Tailwind)
+.dialog-content {
   animation: slideUp 0.3s ease-out;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.improved-text {
-  overflow-y: auto;
-  max-height: 300px;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-// Dialog styles
-.edit-approval-dialog,
-.prompt-dialog,
-.inline-edit-dialog {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-in-out;
   
-  .dialog-content {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    animation: slideUp 0.3s ease-out;
-    
-    .dialog-header {
-      padding: 1rem;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      
-      .close-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #6b7280;
-        
-        &:hover {
-          color: #374151;
-        }
-      }
-    }
-    
-    .dialog-body {
-      padding: 1rem;
-      
-      .preview-content {
-        border: 1px solid #e5e7eb;
-        border-radius: 0.375rem;
-        padding: 0.5rem;
-        max-height: 400px;
-        overflow-y: auto;
-      }
-    }
-    
-    .dialog-footer {
-      padding: 1rem;
-      border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
-      
-      .cancel-button {
-        background-color: white;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #374151;
-        cursor: pointer;
-        
-        &:hover {
-          background-color: #f9fafb;
-        }
-      }
-      
-      .apply-button {
-        background-color: #3b82f6;
-        border: none;
-        border-radius: 0.375rem;
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        
-        &:hover {
-          background-color: #2563eb;
-        }
-        
-        &:disabled {
-          background-color: #93c5fd;
-          cursor: not-allowed;
-        }
-      }
-    }
+  .close-button {
+    &:hover { color: #374151; }
   }
+}
+
+// Button hover states (keeping these as they're transitions)
+.cancel-button {
+  &:hover { background-color: #f9fafb; }
+}
+
+.apply-button {
+  &:hover { background-color: #2563eb; }
+  &:disabled { background-color: #93c5fd; cursor: not-allowed; }
 }

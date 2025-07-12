@@ -28,36 +28,22 @@ export const buildResearchNode = ({
     runnableConfig: UseCaseWorkflowRunnableConfig
   ) => {
     const { trace, sendMessagesInTelemetry = false } = runnableConfig.configurable ?? {};
-    const span = trace?.span({
-      name: "research",
-    });
+    const span = trace?.span({ name: "research" });
 
     if (tools.length === 0) {
-      const message = "No tools are passed so skipping research phase";
-      span?.end({
-        statusMessage: message,
-      });
-
+      span?.end({ statusMessage: "No tools are passed so skipping research phase" });
       await workflowEvents.dispatchAction(
         "research",
-        {
-          title: "Skipped research phase - no tools were available",
-        },
+        { title: "Skipped research phase - no tools were available" },
         runnableConfig
       );
-
-      return {
-        referenceInformation: "",
-      };
+      return { referenceInformation: "" };
     }
 
     const researchCorrelationId = uuid();
-
     await workflowEvents.dispatchThinking(
       "research",
-      {
-        title: "Researching based on business proposal context",
-      },
+      { title: "Researching based on business proposal context" },
       runnableConfig,
       researchCorrelationId
     );
@@ -76,11 +62,9 @@ export const buildResearchNode = ({
 
     const recursionLimit = Math.min(Math.max(64, tools.length * 2 * 3 + 1), 128);
 
-    // Check if research URLs are provided
     const researchUrls = state.requirement?.researchUrls || [];
     const hasResearchUrls = Array.isArray(researchUrls) && researchUrls.length > 0;
     
-    // Build the research prompt
     let researchPrompt = `You are a research assistant. Your task is to extract and summarize information from URLs.
 
 Project: ${state.project.name}
@@ -88,7 +72,6 @@ Description: ${state.project.description}
 
 ${state.requirement?.description ? `Requirement: ${state.requirement.description}` : ""}`;
 
-    // Add research URLs if available
     if (hasResearchUrls) {
       researchPrompt += `\n\nHere are the URLs to scrape content from:\n`;
       researchUrls.forEach((url: string, index: number) => {
@@ -103,11 +86,7 @@ ${state.requirement?.description ? `Requirement: ${state.requirement.description
     researchPrompt += `\n\nDO NOT ask for more information or URLs. Simply use the fetch_url_content tool on each URL provided and summarize what you find.`;
 
     const response = await agent.invoke(
-      {
-        messages: [
-          new HumanMessage(researchPrompt),
-        ],
-      },
+      { messages: [new HumanMessage(researchPrompt)] },
       {
         recursionLimit: recursionLimit,
         configurable: {
@@ -121,15 +100,11 @@ ${state.requirement?.description ? `Requirement: ${state.requirement.description
 
     let referenceInformation = response.structuredResponse.referenceInformation;
     
-    // Check if the reference information is asking for more URLs or information
     if (referenceInformation.includes('Could you please provide') || 
         referenceInformation.includes('please provide') ||
         referenceInformation.includes('need more information') ||
         referenceInformation.includes('need additional information')) {
       
-      console.log(`[research] Warning: Model is asking for more information instead of providing research: "${referenceInformation}"`);
-      
-      // Extract any useful information that might be in the response
       const usefulParts = referenceInformation
         .replace(/Could you please provide.*$/gm, '')
         .replace(/Please provide.*$/gm, '')
@@ -138,20 +113,11 @@ ${state.requirement?.description ? `Requirement: ${state.requirement.description
         .trim();
       
       if (usefulParts.length > 100) {
-        // If there's still some useful content, use it
         referenceInformation = usefulParts;
-        console.log(`[research] Extracted useful parts from the response: ${usefulParts.substring(0, 100)}...`);
       } else {
-        // If no useful content, provide a minimal prompt to continue
         referenceInformation = `Based on the available information about ${state.requirement?.title || state.project.description}, please proceed with generating a comprehensive business proposal.`;
-        console.log(`[research] Using minimal reference information`);
       }
     }
-    
-    // Log the reference information that will be used in the use case generation
-    console.log(`[research] Research completed successfully!`);
-    console.log(`[research] Reference information length: ${referenceInformation.length} characters`);
-    console.log(`[research] Reference information preview (first 200 chars): ${referenceInformation.substring(0, 200)}...`);
     
     await workflowEvents.dispatchAction(
       "research",
@@ -163,13 +129,8 @@ ${state.requirement?.description ? `Requirement: ${state.requirement.description
       researchCorrelationId
     );
 
-    span?.end({
-      statusMessage: "Research completed successfully!",
-    });
-
-    return {
-      referenceInformation: referenceInformation,
-    };
+    span?.end({ statusMessage: "Research completed successfully!" });
+    return { referenceInformation };
   };
 };
 
@@ -187,18 +148,13 @@ export const buildUseCaseGenerationNode = ({
     runnableConfig: UseCaseWorkflowRunnableConfig
   ) => {
     const { trace, sendMessagesInTelemetry = false } = runnableConfig.configurable ?? {};
-    const span = trace?.span({
-      name: "generate-usecase",
-    });
+    const span = trace?.span({ name: "generate-usecase" });
 
     try {
       const useCaseGenerationCorrelationId = uuid();
-
       await workflowEvents.dispatchThinking(
         "usecase-generation",
-        {
-          title: "Generating Business Use Case Proposal",
-        },
+        { title: "Generating Business Use Case Proposal" },
         runnableConfig,
         useCaseGenerationCorrelationId
       );
@@ -253,15 +209,11 @@ export const buildUseCaseGenerationNode = ({
       const ucParams = {
         project: state.project,
         requirement: state.requirement,
-        requestId: uuid(), // Generate a unique request ID
+        requestId: uuid(),
         requirementAbbr: "UC" as const
       };
 
       const prompt = getUCPrompt(ucParams);
-      
-      // Log that we're using the reference information in the generation
-      console.log(`[generate-usecase] Starting use case generation with research information`);
-      console.log(`[generate-usecase] Using reference information of length: ${state.referenceInformation.length} characters`);
       
       const response = await agent.invoke(
         {
@@ -326,10 +278,7 @@ CRITICAL JSON FORMATTING INSTRUCTIONS:
         useCaseGenerationCorrelationId
       );
 
-      span?.end({
-        statusMessage: "Successfully generated use case proposal",
-      });
-
+      span?.end({ statusMessage: "Successfully generated use case proposal" });
       return {
         useCaseDraft: {
           title: response.structuredResponse.title,
@@ -337,12 +286,7 @@ CRITICAL JSON FORMATTING INSTRUCTIONS:
         },
       };
     } catch (error) {
-      const message = `[usecase-workflow] Error in generate-usecase node: ${error}`;
-      console.error(message, error);
-      span?.end({
-        level: "ERROR",
-      });
-      // handle gracefully for now
+      span?.end({ level: "ERROR" });
       return {
         useCaseDraft: {
           title: state.requirement?.title || "Error generating use case",

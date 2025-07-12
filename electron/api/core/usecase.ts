@@ -1,5 +1,4 @@
 import { IpcMainInvokeEvent } from "electron/main";
-import { v4 as uuid } from "uuid";
 import { createUseCaseWorkflow } from "../../agentic/usecase-workflow";
 import { createUseCaseWorkflowTools } from "../../agentic/usecase-workflow/tools";
 import { getMcpToolsForActiveProvider } from "../../mcp";
@@ -30,11 +29,8 @@ interface UseCaseGenerationRequest {
 }
 
 export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown) => {
-  // Type assertion with safety checks
   const request = data as Partial<UseCaseGenerationRequest>;
   try {
-    console.log('[generate-usecase] Received request:', request);
-    
     const workflowEvents = new WorkflowEventsService("usecase");
     const o11y = ObservabilityManager.getInstance();
     const trace = o11y.createTrace('generate-usecase');
@@ -50,15 +46,10 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    // Get MCP tools and add our custom tools
     const mcpTools = await getMcpToolsForActiveProvider();
     const customTools = createUseCaseWorkflowTools();
     const allTools = [...mcpTools, ...customTools];
-    console.log('[generate-usecase] Got tools:', allTools.length);
-    console.log('[generate-usecase] Custom tools:', customTools.map(tool => tool.name));
-    console.log('[generate-usecase] MCP tools:', mcpTools.length);
     
-    // Create a memory checkpointer for the workflow
     const memoryCheckpointer = new MemorySaver();
     
     const workflow = createUseCaseWorkflow({
@@ -68,7 +59,6 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
     });
 
     const requestId = request.project?.solution?.solutionId;
-    // const generateCorrelationId = uuid();
     
     const initialState = {
       project: {
@@ -88,8 +78,6 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
       },
     };
 
-    console.log('[generate-usecase] Initial state:', initialState);
-
     const config = {
       configurable: {
         thread_id: `${requestId}_generate_usecase`,
@@ -98,16 +86,12 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
       },
     };
     
-    // Stream the workflow events
     const stream = workflow.streamEvents(initialState, {
       version: "v2",
       streamMode: "messages",
       ...config,
     });
     
-    console.log('[generate-usecase] Processing workflow events...');
-    
-    // Process all stream events before getting the final state
     for await (const streamEvent of stream) {
       const channel = `usecase:${requestId}-workflow-progress`;
       
@@ -131,26 +115,18 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
       }
     }
     
-    console.log('[generate-usecase] All workflow events processed, getting final state...');
     const result = await workflow.getState(config);
-    console.log('[generate-usecase] Workflow result:', result);
 
     if (!result.values.useCaseDraft || !result.values.useCaseDraft.requirement) {
       throw new Error('Workflow did not return a valid use case draft');
     }
     
     try {
-      // Check if the content is valid by attempting to parse it as JSON
-      // This is just a validation step, not actually using the parsed result
       JSON.parse(`{"test": ${JSON.stringify(result.values.useCaseDraft.requirement)}}`);
       
-      // Process the requirement to ensure proper line breaks
       const processedRequirement = result.values.useCaseDraft.requirement
-        // Replace escaped newlines with actual newlines
         .replace(/\\n/g, '\n')
-        // Ensure proper spacing between sections
         .replace(/\n{3,}/g, '\n\n')
-        // Remove code block markers if they exist
         .replace(/```(markdown|json)?/g, '')
         .trim();
       
@@ -158,27 +134,23 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
         title: result.values.useCaseDraft.title,
         requirement: processedRequirement,
         status: "success",
-        requestId: requestId, // Return the requestId so the UI can listen for events
+        requestId: requestId,
       };
     } catch (jsonError) {
-      console.error('[generate-usecase] JSON validation error:', jsonError);
-      
-      // If there's a JSON error, try to clean up the content
       const cleanedRequirement = result.values.useCaseDraft.requirement
-        .replace(/```(markdown|json)?/g, '') // Remove code block markers
-        .replace(/\\n/g, '\n') // Replace escaped newlines with actual newlines
-        .replace(/\n{3,}/g, '\n\n') // Ensure proper spacing between sections
+        .replace(/```(markdown|json)?/g, '')
+        .replace(/\\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
       
       return {
         title: result.values.useCaseDraft.title,
         requirement: cleanedRequirement,
         status: "success",
-        requestId: requestId, // Return the requestId so the UI can listen for events
+        requestId: requestId,
       };
     }
   } catch (error) {
-    console.error('[generate-usecase] error', error);
     return {
       title: "Error generating use case",
       requirement: `An error occurred while generating the use case: ${error}`,

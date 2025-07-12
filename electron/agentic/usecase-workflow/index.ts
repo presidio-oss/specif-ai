@@ -1,9 +1,4 @@
-import {
-  BaseCheckpointSaver,
-  END,
-  START,
-  StateGraph,
-} from "@langchain/langgraph";
+import { BaseCheckpointSaver, END, START, StateGraph } from "@langchain/langgraph";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { ITool } from "../common/types";
 import { buildResearchNode, buildUseCaseGenerationNode } from "./nodes";
@@ -15,22 +10,13 @@ type UseCaseWorkflowParams = {
   checkpointer?: BaseCheckpointSaver | false | undefined;
 };
 
-export const createUseCaseWorkflow = ({
-  tools,
-  model,
-  checkpointer,
-}: UseCaseWorkflowParams) => {
+export const createUseCaseWorkflow = ({ tools, model, checkpointer }: UseCaseWorkflowParams) => {
   const builder = new StateGraph(UseCaseWorkflowStateAnnotation)
     .addNode("research", buildResearchNode({ model, tools, checkpointer }))
     .addNode("generate_usecase", buildUseCaseGenerationNode({ model, checkpointer }))
-    // do research and then generate use case with the findings
     .addEdge(START, "research")
     .addEdge("research", "generate_usecase")
     .addEdge("generate_usecase", END);
 
-  const workflow = builder.compile({
-    checkpointer: checkpointer,
-  });
-
-  return workflow;
+  return builder.compile({ checkpointer });
 };
