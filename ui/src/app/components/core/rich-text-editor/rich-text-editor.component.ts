@@ -46,7 +46,7 @@ import {
   heroFunnel
   
 } from '@ng-icons/heroicons/outline';
-import { Editor } from '@tiptap/core';
+import { Editor, Mark } from '@tiptap/core';
 import type { Level as HeadingLevel } from '@tiptap/extension-heading';
 import { NGXLogger } from 'ngx-logger';
 import { debounce, Subject, Subscription, timer } from 'rxjs';

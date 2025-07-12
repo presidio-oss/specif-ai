@@ -17,8 +17,39 @@ import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import Gapcursor from '@tiptap/extension-gapcursor'
+import { Mark, Extension } from '@tiptap/core'
 
-
+// Custom highlight mark extension
+const HighlightMark = Mark.create({
+  name: 'highlight',
+  
+  addOptions() {
+    return {
+      HTMLAttributes: {
+        class: 'inline-edit-selection',
+      },
+    }
+  },
+  
+  parseHTML() {
+    return [
+      {
+        tag: 'mark',
+      },
+      {
+        tag: 'span',
+        getAttrs: (node) => {
+          const classes = (node as HTMLElement).getAttribute('class');
+          return classes?.includes('inline-edit-selection') ? {} : false;
+        },
+      },
+    ]
+  },
+  
+  renderHTML({ HTMLAttributes }) {
+    return ['span', { ...HTMLAttributes, class: this.options.HTMLAttributes.class }, 0]
+  }
+});
 
 const TiptapExtensions = [
   Document,
@@ -53,7 +84,8 @@ const TiptapExtensions = [
   TableRow,
   TableHeader,
   TableCell,
-  Gapcursor
+  Gapcursor,
+  HighlightMark
 ];
 
 export { TiptapExtensions };

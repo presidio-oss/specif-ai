@@ -121,6 +121,12 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
   inlineEditLeft: number = 0;
   defaultPrompt: string = 'Improve this text to make it more clear, concise, and professional.';
   
+  // Selection state for persisting between operations
+  private selectionHighlighted: boolean = false;
+  private selectionMarker: any = null;
+  private activeSelection: {text: string, start: number, end: number} | null = null;
+  private decorationSet: any = null;
+  
   private subscriptions: Subscription = new Subscription();
   
   constructor(
@@ -254,36 +260,39 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     
     const editor = this.richTextEditor.editor;
     
-    // Listen for selection changes
+    // Listen for selection changes but don't interfere with normal text operations
     editor.on('selectionUpdate', ({ editor }) => {
-      const { from, to } = editor.state.selection;
-      
-      // Store the selected text and position for inline editing
-      if (from !== to) {
-        this.selectedText = editor.state.doc.textBetween(from, to);
-        this.selectionStart = from;
-        this.selectionEnd = to;
+      // Only track selections if not in inline edit mode
+      if (!this.inlineEditActive) {
+        const { from, to } = editor.state.selection;
         
-        // Calculate position for inline edit controls
-        this.calculateInlineEditPosition();
+        // Store the selected text and position for inline editing
+        if (from !== to) {
+          this.selectedText = editor.state.doc.textBetween(from, to);
+          this.selectionStart = from;
+          this.selectionEnd = to;
+          
+          // Calculate position for inline edit controls
+          this.calculateInlineEditPosition();
+          
+          // Show inline edit controls
+          this.showInlineEditControls = true;
+        } else {
+          this.selectedText = '';
+          this.selectionStart = 0;
+          this.selectionEnd = 0;
+          this.showInlineEditControls = false;
+        }
         
-        // Show inline edit controls
-        this.showInlineEditControls = true;
-      } else {
-        this.selectedText = '';
-        this.selectionStart = 0;
-        this.selectionEnd = 0;
-        this.showInlineEditControls = false;
-      }
-      
-      // Find which section contains this selection
-      const section = this.sections.find(
-        s => from >= s.startPos && from <= s.endPos
-      );
-      
-      if (section && (!this.selectedSection || this.selectedSection.id !== section.id)) {
-        this.selectedSection = section;
-        this.sectionSelected.emit(section);
+        // Find which section contains this selection
+        const section = this.sections.find(
+          s => from >= s.startPos && from <= s.endPos
+        );
+        
+        if (section && (!this.selectedSection || this.selectedSection.id !== section.id)) {
+          this.selectedSection = section;
+          this.sectionSelected.emit(section);
+        }
       }
     });
   }
@@ -380,9 +389,19 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     // Get the current content for context
     const currentContent = this.richTextEditor.editor.getHTML();
     
-    // Store the current selection
-    const selection = window.getSelection();
-    const range = selection?.getRangeAt(0);
+    // First set inline edit as active - this is important so that the highlighting knows to persist
+    this.inlineEditActive = true;
+    
+    // Store the active selection for persistence
+    this.activeSelection = {
+      text: this.selectedText,
+      start: this.selectionStart,
+      end: this.selectionEnd
+    };
+    
+    // Apply highlighting to the selected text that persists when focus is lost
+    // Only do this now that we're in inline edit mode
+    this.highlightSelectedText();
     
     // Show the inline edit component
     this.inlineEdit.selectedText = this.selectedText;
@@ -395,13 +414,311 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     this.inlineEdit.defaultPrompt = this.defaultPrompt;
     this.inlineEdit.show();
     
-    // Restore the selection to keep the highlight visible
-    if (range && selection) {
-      // Use setTimeout to ensure this happens after the click event is fully processed
+    // Only add the event listener when we're actually in inline edit mode
+    document.addEventListener('selectionchange', this.preventSelectionClear, { once: false });
+    
+    // Hide the controls since we're now in edit mode
+    this.showInlineEditControls = false;
+  }
+  
+  /**
+   * Prevent the selection from being cleared when focus changes, but only during inline edit
+   */
+  private preventSelectionClear = (e: Event): void => {
+    // Only preserve selection when inline edit is active
+    if (this.inlineEditActive && this.activeSelection) {
+      // Re-apply the highlight if it gets removed
+      if (!this.selectionHighlighted) {
+        this.highlightSelectedText();
+      }
+    }
+  }
+  
+  /**
+   * Check if we're in editing mode that should block normal operations
+   * This is only true after the sparkle button has been clicked
+   */
+  private isInRestrictedEditMode(): boolean {
+    // Only restrict operations when inline edit is active AND the inline edit component is showing
+    return this.inlineEditActive && this.inlineEdit?.isActive;
+  }
+  
+  /**
+   * Highlight the selected text to keep it visible during inline editing
+   * Uses a more reliable approach with element overlays
+   */
+  private highlightSelectedText(): void {
+    if (!this.richTextEditor?.editor || this.selectionStart === this.selectionEnd) {
+      return;
+    }
+    
+    const editor = this.richTextEditor.editor;
+    
+    try {
+      // Remove any existing highlight first
+      this.removeHighlight();
+      
+      // First apply a class to the whole editor to indicate inline edit mode
+      if (this.richTextEditor.editorElement) {
+        this.richTextEditor.editorElement.nativeElement.classList.add('inline-edit-active');
+      }
+      
+      // Create a more reliable highlight using multiple techniques
+      
+      // 1. Use TipTap's native approach for marking text (works for simple selections)
+      editor.commands.setTextSelection({
+        from: this.selectionStart,
+        to: this.selectionEnd
+      });
+      
+      // Apply the highlight mark with our custom class
+      editor.commands.setMark('highlight', { class: 'inline-edit-selection' });
+      
+      // 2. Create an overlay div that exactly covers the selection (works for complex selections)
+      this.createOverlayHighlight();
+      
+      // 3. Store selection data for later restoration
+      if (editor.storage) {
+        editor.storage['inlineEditSelection'] = {
+          from: this.selectionStart,
+          to: this.selectionEnd,
+          text: this.selectedText
+        };
+      }
+      
+      // 4. For complex selections (spanning multiple nodes), we'll add background styling
+      // to each text node within the selection
       setTimeout(() => {
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }, 0);
+        try {
+          this.highlightTextNodesInRange();
+        } catch (e) {
+          this.logger.warn('Error highlighting text nodes:', e);
+        }
+      }, 10);
+      
+      // Set the flag to indicate highlight is active
+      this.selectionHighlighted = true;
+    } catch (error) {
+      this.logger.error('Error highlighting selected text:', error);
+    }
+  }
+  
+  /**
+   * Highlight individual text nodes in the selection range
+   * This handles complex selections spanning multiple DOM nodes
+   */
+  private highlightTextNodesInRange(): void {
+    if (!this.richTextEditor?.editorElement) return;
+    
+    try {
+      const editorElement = this.richTextEditor.editorElement.nativeElement;
+      const editor = this.richTextEditor.editor;
+      
+      // Get all text nodes within the editor
+      const walker = document.createTreeWalker(
+        editorElement, 
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+      
+      const textNodes: Text[] = [];
+      let currentNode = walker.nextNode();
+      
+      // Collect all text nodes
+      while (currentNode) {
+        textNodes.push(currentNode as Text);
+        currentNode = walker.nextNode();
+      }
+      
+      // Highlight nodes that are within our selection range
+      let nodePosition = 0;
+      const highlightedElements: HTMLElement[] = [];
+      
+      textNodes.forEach(textNode => {
+        // Check if this node's text is part of the selection
+        if (textNode.textContent) {
+          const nodeLength = textNode.textContent.length;
+          const nodeStart = nodePosition;
+          const nodeEnd = nodePosition + nodeLength;
+          
+          // If this node overlaps with our selection
+          if (!(nodeEnd <= this.selectionStart || nodeStart >= this.selectionEnd)) {
+            // Create a span wrapper
+            const wrapper = document.createElement('span');
+            wrapper.className = 'inline-edit-selection-node';
+            wrapper.style.backgroundColor = 'rgba(59, 130, 246, 0.35)';
+            wrapper.style.borderBottom = '1px dotted rgba(59, 130, 246, 0.8)';
+            
+            // Replace the text node with our wrapped version
+            const parent = textNode.parentNode;
+            if (parent) {
+              parent.insertBefore(wrapper, textNode);
+              wrapper.appendChild(textNode);
+              highlightedElements.push(wrapper);
+            }
+          }
+          
+          nodePosition += nodeLength;
+        }
+      });
+      
+      // Store references for cleanup
+      if (this.selectionMarker) {
+        if (Array.isArray(this.selectionMarker)) {
+          this.selectionMarker.push(...highlightedElements);
+        } else {
+          this.selectionMarker = [...highlightedElements];
+        }
+      } else {
+        this.selectionMarker = highlightedElements;
+      }
+    } catch (e) {
+      this.logger.warn('Error highlighting text nodes in range:', e);
+    }
+  }
+  
+  /**
+   * Create an overlay element to highlight the selected text
+   * This is a reliable approach that works in all browsers
+   */
+  private createOverlayHighlight(): void {
+    try {
+      if (!this.richTextEditor?.editorElement) return;
+      
+      const editorElement = this.richTextEditor.editorElement.nativeElement;
+      
+      // Create or find our overlay container
+      let overlayContainer = editorElement.querySelector('.selection-overlay-container');
+      if (!overlayContainer) {
+        overlayContainer = document.createElement('div');
+        overlayContainer.className = 'selection-overlay-container';
+        overlayContainer.style.position = 'relative';
+        overlayContainer.style.pointerEvents = 'none';
+        overlayContainer.style.zIndex = '1000';
+        editorElement.appendChild(overlayContainer);
+      }
+      
+      // Remove any existing overlays
+      while (overlayContainer.firstChild) {
+        overlayContainer.removeChild(overlayContainer.firstChild);
+      }
+      
+      // Create selection element
+      const selectionEl = document.createElement('div');
+      selectionEl.className = 'inline-edit-selection-overlay';
+      selectionEl.style.position = 'absolute';
+      selectionEl.style.backgroundColor = 'rgba(59, 130, 246, 0.3)';
+      selectionEl.style.borderBottom = '1px dotted rgba(59, 130, 246, 0.7)';
+      selectionEl.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)';
+      selectionEl.style.pointerEvents = 'none';
+      selectionEl.style.zIndex = '50';
+      
+      // Calculate position based on editor coordinates and the selection rectangle
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        const editorRect = editorElement.getBoundingClientRect();
+        
+        // Position the element directly over the selected text
+        selectionEl.style.top = `${rect.top - editorRect.top}px`;
+        selectionEl.style.left = `${rect.left - editorRect.left}px`;
+        selectionEl.style.width = `${rect.width}px`;
+        selectionEl.style.height = `${rect.height}px`;
+      } else {
+        // Fallback if selection is not available
+        selectionEl.style.top = `${this.inlineEditTop - 16}px`;
+        selectionEl.style.left = `${this.inlineEditLeft - 50}px`;
+        selectionEl.style.width = '100px';
+        selectionEl.style.height = '16px';
+      }
+      
+      // Add to container
+      overlayContainer.appendChild(selectionEl);
+      
+      // Store reference for cleanup
+      this.selectionMarker = selectionEl;
+    } catch (error) {
+      this.logger.warn('Error creating overlay highlight:', error);
+    }
+  }
+  
+  /**
+   * Remove the highlight from the previously selected text
+   */
+  removeHighlight(): void {
+    if (!this.richTextEditor?.editor) {
+      return;
+    }
+    
+    try {
+      const editor = this.richTextEditor.editor;
+      
+      // 1. Remove any highlight marks from the editor content
+      editor.commands.unsetMark('highlight');
+      
+      // 2. Remove the overlay elements if they exist
+      if (this.selectionMarker) {
+        // Handle both single element and array of elements
+        if (Array.isArray(this.selectionMarker)) {
+          // Handle array of elements
+          this.selectionMarker.forEach(marker => {
+            if (marker && marker.parentNode) {
+              marker.parentNode.removeChild(marker);
+            }
+          });
+        } else if (this.selectionMarker.parentNode) {
+          // Handle single element
+          this.selectionMarker.parentNode.removeChild(this.selectionMarker);
+        }
+        this.selectionMarker = null;
+      }
+      
+      // 3. Remove any overlay container we might have created
+      if (this.richTextEditor.editorElement) {
+        const editorElement = this.richTextEditor.editorElement.nativeElement;
+        const overlayContainer = editorElement.querySelector('.selection-overlay-container');
+        if (overlayContainer && overlayContainer.parentNode) {
+          overlayContainer.parentNode.removeChild(overlayContainer);
+        }
+      }
+      
+      // 4. Remove any spans with our special classes that were added directly to the content
+      if (this.richTextEditor.editorElement) {
+        const editorElement = this.richTextEditor.editorElement.nativeElement;
+        
+        // Remove the editor-wide class
+        editorElement.classList.remove('inline-edit-active');
+        
+        // Clean up persistent highlight spans
+        const persistentHighlights = editorElement.querySelectorAll('.inline-edit-selection-persistent');
+        persistentHighlights.forEach((el: Element) => {
+          // Replace the highlight span with its contents to preserve the text
+          if (el.parentNode) {
+            while (el.firstChild) {
+              el.parentNode.insertBefore(el.firstChild, el);
+            }
+            el.parentNode.removeChild(el);
+          }
+        });
+        
+        // Clean up node-level highlight spans
+        const nodeHighlights = editorElement.querySelectorAll('.inline-edit-selection-node');
+        nodeHighlights.forEach((el: Element) => {
+          // Replace the highlight span with its contents to preserve the text
+          if (el.parentNode) {
+            while (el.firstChild) {
+              el.parentNode.insertBefore(el.firstChild, el);
+            }
+            el.parentNode.removeChild(el);
+          }
+        });
+      }
+      
+      // Reset the highlight flag
+      this.selectionHighlighted = false;
+    } catch (error) {
+      this.logger.error('Error removing text highlight:', error);
     }
   }
   
@@ -502,7 +819,43 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     }
   }
   
+  /**
+   * Reset the inline edit state when an edit is cancelled
+   * This ensures the component is ready for a new edit operation
+   */
+  resetInlineEditState(): void {
+    // Remove event listeners
+    document.removeEventListener('selectionchange', this.preventSelectionClear);
+    
+    // Reset active selection
+    this.activeSelection = null;
+    
+    // Reset selection highlight flags
+    this.selectionHighlighted = false;
+    
+    // Set inline edit inactive
+    this.inlineEditActive = false;
+    
+    // Show the controls for new selections
+    this.showInlineEditControls = true;
+    
+    // Allow the editor to regain focus
+    setTimeout(() => {
+      if (this.richTextEditor?.editor) {
+        this.richTextEditor.editor.commands.focus();
+      }
+    }, 50);
+  }
+  
   ngOnDestroy(): void {
+    // Clean up event listeners
+    document.removeEventListener('selectionchange', this.preventSelectionClear);
+    
+    // Remove any lingering highlights
+    if (this.selectionHighlighted && this.richTextEditor?.editor) {
+      this.removeHighlight();
+    }
+    
     this.subscriptions.unsubscribe();
   }
 }

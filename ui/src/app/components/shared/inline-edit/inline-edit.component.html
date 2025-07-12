@@ -1,5 +1,5 @@
 <!-- Inline edit overlay -->
-<div *ngIf="isActive" class="inline-edit-overlay">
+<div *ngIf="isActive" class="inline-edit-overlay" (keydown.escape)="cancelEdit()">
   <!-- Prompt input UI - Copilot style -->
   <div
     *ngIf="showPromptInput"
@@ -36,6 +36,7 @@
         class="w-full p-2 border border-gray-200 rounded text-xs min-h-[60px] mb-2"
         placeholder="Enter instructions for AI (e.g., 'Make this more concise', 'Fix grammar', 'Use professional tone')"
         autofocus
+        (keydown.escape)="cancelEdit()"
       ></textarea>
 
       <div class="flex justify-end">

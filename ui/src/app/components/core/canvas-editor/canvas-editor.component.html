@@ -47,7 +47,7 @@
     
     <app-rich-text-editor
       [content]="content"
-      [editable]="editable && !inlineEditActive"
+      [editable]="editable && (!inlineEditActive || !inlineEdit?.isActive)"
       [editorClass]="'min-h-[300px] rounded-md'"
       (change)="onContentChange($event)"
     ></app-rich-text-editor>
@@ -71,7 +71,8 @@
     <!-- Inline edit component -->
     <app-inline-edit
       (editApplied)="onContentChange($event)"
-      (editCancelled)="showInlineEditControls = true"
+      (editCancelled)="resetInlineEditState()"
+      (controlsHide)="showInlineEditControls = false"
     ></app-inline-edit>
     </div>
   </div>

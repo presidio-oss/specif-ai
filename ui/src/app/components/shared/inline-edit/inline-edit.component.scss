@@ -1,19 +1,95 @@
 .inline-edit-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
   pointer-events: none;
 }
 
 .inline-edit-container {
   background-color: white;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-radius: 0.375rem;
-  width: 320px;
-  overflow: hidden;
-  transform: translateX(-50%);
-  animation: slideUp 0.2s ease-out;
+  border-radius: 6px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+  width: 360px;
   pointer-events: auto;
+}
+
+/* 
+  Global style for the highlight - this will be applied to the parent document
+  The :global pseudo-selector allows the style to be applied outside the component
+*/
+/* Standard inline selection */
+:global(.inline-edit-selection) {
+  background-color: rgba(59, 130, 246, 0.3) !important; /* Light blue highlight - slightly more visible */
+  border-radius: 2px !important;
+  padding: 1px 0 !important;
+  border-bottom: 1px dotted rgba(59, 130, 246, 0.7) !important; /* Add a subtle dotted underline for better visibility */
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1) !important; /* Add a very subtle glow */
+  position: relative !important;
+  z-index: 10 !important; /* Ensure the highlight appears below the inline edit UI but above other content */
+  pointer-events: none !important; /* Allow clicking through the highlight */
+}
+
+/* Node level highlighting for complex selections */
+:global(.inline-edit-selection-node) {
+  background-color: rgba(59, 130, 246, 0.35) !important;
+  border-radius: 1px !important;
+  border-bottom: 1px dotted rgba(59, 130, 246, 0.8) !important;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15) !important;
+  display: inline !important;
+  white-space: pre-wrap !important; /* Preserve whitespace */
+}
+
+/* Persistent highlighting that remains during editing */
+:global(.inline-edit-selection-persistent) {
+  background-color: rgba(59, 130, 246, 0.35) !important;
+  border-radius: 3px !important;
+  padding: 2px !important;
+  border-bottom: 2px dotted rgba(59, 130, 246, 0.8) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+  position: relative !important;
+  z-index: 20 !important;
+  display: inline-block !important;
+}
+
+/* Style for the editor when inline editing is active */
+:global(.inline-edit-active) {
+  position: relative !important;
+}
+
+:global(.inline-edit-active::after) {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  border: 2px solid rgba(59, 130, 246, 0.3) !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+}
+
+/* Overlay container and elements */
+:global(.selection-overlay-container) {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  pointer-events: none !important;
+  z-index: 1000 !important;
+}
+
+:global(.inline-edit-selection-overlay) {
+  background-color: rgba(59, 130, 246, 0.3) !important;
+  border-radius: 2px !important;
+  border-bottom: 1px dotted rgba(59, 130, 246, 0.7) !important;
+  position: absolute !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+  pointer-events: none !important;
+  z-index: 50 !important;
 }
 
 @keyframes slideUp {
