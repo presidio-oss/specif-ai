@@ -404,22 +404,30 @@
         </form>
 
         <!-- Action Buttons -->
-        <div class="mt-8 flex items-center justify-end gap-x-2">
+        <div class="mt-8 flex items-center justify-between">
           <app-button
-            *ngIf="hasChanges"
-            buttonContent="Discard"
-            theme="secondary_outline"
+            buttonContent="Reset Settings"
+            theme="danger_outline"
             size="sm"
-            (click)="navigateToHome()"
+            (click)="resetApp()"
           />
-          <app-button
-            *ngIf="hasChanges"
-            buttonContent="Save"
-            theme="primary"
-            size="sm"
-            (click)="onSave()"
-            [disabled]="!isFormValid()"
-          />
+          <div class="flex items-center gap-x-2">
+            <app-button
+              *ngIf="hasChanges"
+              buttonContent="Discard"
+              theme="secondary_outline"
+              size="sm"
+              (click)="navigateToHome()"
+            />
+            <app-button
+              *ngIf="hasChanges"
+              buttonContent="Save"
+              theme="primary"
+              size="sm"
+              (click)="onSave()"
+              [disabled]="!isFormValid()"
+            />
+          </div>
         </div>
       </div>
 
