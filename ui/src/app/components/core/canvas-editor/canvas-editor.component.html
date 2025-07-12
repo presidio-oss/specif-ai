@@ -24,56 +24,23 @@
   <!-- Main content area -->
   <div class="flex flex-row flex-1 overflow-hidden">
     <!-- Section outline sidebar (now on the left) -->
-    <div class="w-1/4 border-r border-gray-200 bg-gray-50 flex flex-col h-full" *ngIf="showSidebar && sections.length > 0">
-    <div class="sidebar-header p-4 border-b flex-shrink-0">
-      <h3 class="text-sm font-medium text-secondary-700">Document Sections</h3>
+    <div class="w-1/4 border-r border-gray-200 bg-gray-50 h-full" *ngIf="showSidebar && sections.length > 0">
+      <app-document-sections 
+        [sections]="sections" 
+        [selectedSection]="selectedSection" 
+        (sectionSelected)="selectSection($event)"
+      ></app-document-sections>
     </div>
-    <div class="sidebar-content p-4 overflow-y-auto flex-grow">
-      <ul class="section-list space-y-2">
-        <li 
-          *ngFor="let section of sections" 
-          class="section-item cursor-pointer text-sm p-1"
-          [class.active]="selectedSection?.id === section.id"
-          (click)="selectSection(section.id)"
-        >
-          <span class="section-title">{{ section.title }}</span>
-        </li>
-      </ul>
-    </div>
-  </div>
 
     <!-- Main editor area -->
     <div class="flex-1 p-4 overflow-y-auto relative">
     
     <app-rich-text-editor
       [content]="content"
-      [editable]="editable && (!inlineEditActive || !inlineEdit?.isActive)"
+      [editable]="editable"
       [editorClass]="'min-h-[300px] rounded-md'"
       (change)="onContentChange($event)"
     ></app-rich-text-editor>
-    
-    <!-- Inline edit floating controls -->
-    <div 
-      *ngIf="showInlineEditControls" 
-      class="animate-fade-in absolute z-10 bg-white shadow-lg rounded-md border border-gray-200 transform -translate-x-1/2"
-      [style.top.px]="inlineEditTop + 10"
-      [style.left.px]="inlineEditLeft"
-    >
-      <button 
-        class="p-2 hover:bg-gray-100 rounded-l-md border-r border-gray-200 flex items-center"
-        (click)="requestInlineEdit()"
-        matTooltip="Edit with AI"
-      >
-        <ng-icon name="heroSparklesSolid" class="text-primary-500"></ng-icon>
-      </button>
-    </div>
-    
-    <!-- Inline edit component -->
-    <app-inline-edit
-      (editApplied)="onContentChange($event)"
-      (editCancelled)="resetInlineEditState()"
-      (controlsHide)="showInlineEditControls = false"
-    ></app-inline-edit>
     </div>
   </div>
 </div>

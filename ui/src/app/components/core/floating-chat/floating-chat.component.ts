@@ -21,7 +21,8 @@ import {
 } from '@ng-icons/heroicons/outline';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { AiChatComponent } from '../../ai-chat/ai-chat.component';
-import { SectionInfo, EditProposal } from '../canvas-editor/canvas-editor.component';
+import { EditProposal } from '../canvas-editor/canvas-editor.component';
+import { SectionInfo } from 'src/app/utils/section.utils';
 
 @Component({
   selector: 'app-floating-chat',
