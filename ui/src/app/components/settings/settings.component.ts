@@ -573,6 +573,54 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  resetApp() {
+    this.dialogService
+      .confirm({
+        title: 'Reset Application',
+        description: 'Are you sure you want to reset the Settings? This will clear all settings and configurations.',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Reset Settings',
+      })
+      .subscribe((confirmed: boolean) => {
+        if (confirmed) {
+          this.performAppReset();
+        }
+      });
+  }
+
+  private async performAppReset() {
+    try {
+      // Clear localStorage
+      localStorage.removeItem(APP_CONSTANTS.USER_NAME);
+      localStorage.removeItem(APP_CONSTANTS.WORKING_DIR);
+      localStorage.removeItem(APP_CONSTANTS.USER_ID);
+
+      // Clear electron store values
+      await this.electronService.setStoreValue('llmConfig', null);
+      await this.electronService.setStoreValue('APP_CONFIG', null);
+      await this.electronService.setStoreValue('analyticsEnabled', false);
+      await this.electronService.setStoreValue(LANGFUSE_CONFIG_STORE_KEY, null);
+
+      // Reset analytics state
+      setAnalyticsToggleState(false);
+
+      // Clear form data
+      this.configForm.reset();
+      this.langfuseForm.reset();
+      this.analyticsEnabled.setValue(false);
+      this.autoUpdateEnabled.setValue(true);
+      this.useLangfuseCustomConfig.setValue(false);
+
+      this.toasterService.showSuccess('Settings reset successfully. Redirecting to login...');
+      
+      this.startupService.logout()
+      
+    } catch (error) {
+      this.logger.error('Error during app reset:', error);
+      this.toasterService.showError('Failed to reset application. Please try again.');
+    }
+  }
+
   logout() {
     // Close the settings modal and open the logout confirmation dialog
     this.dialogService
