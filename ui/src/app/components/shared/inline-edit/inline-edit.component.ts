@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { InlineEditService, InlineEditStreamEvent } from 'src/app/services/inline-edit/inline-edit.service';
 import { NGXLogger } from 'ngx-logger';
 import { markdownToHtml } from 'src/app/utils/markdown.utils';
+import { EditorManager } from 'src/app/interfaces/editor-adapter.interface';
 
 @Component({
   selector: 'app-inline-edit',
@@ -25,15 +26,30 @@ import { markdownToHtml } from 'src/app/utils/markdown.utils';
   styleUrls: ['./inline-edit.component.scss']
 })
 export class InlineEditComponent implements OnInit, OnDestroy {
-  @Input() selectedText: string = '';
-  @Input() editorInstance: any;
-  @Input() selectionStart: number = 0;
-  @Input() selectionEnd: number = 0;
-  @Input() context: string = '';
-  @Input() positionTop: number = 0;
-  @Input() positionLeft: number = 0;
+  /**
+   * Editor manager instance - provides abstraction for different editor types
+   */
+  @Input() editorManager!: EditorManager;
+  
+  /**
+   * Default prompt to use for inline editing
+   */
   @Input() defaultPrompt: string = 'Improve this text to make it more clear, concise, and professional.';
   
+  /**
+   * Optional override position for the popup
+   * If not provided, position will be calculated automatically
+   */
+  @Input() positionTop: number | null = null;
+  @Input() positionLeft: number | null = null;
+  
+  // Text selection properties, automatically populated from editorManager if not provided
+  @Input() selectedText: string = '';
+  @Input() context: string = '';
+  @Input() selectionStart: number = 0;
+  @Input() selectionEnd: number = 0;
+  
+  // Events
   @Output() editApplied = new EventEmitter<string>();
   @Output() editCancelled = new EventEmitter<void>();
   @Output() controlsHide = new EventEmitter<void>();
@@ -80,6 +96,21 @@ export class InlineEditComponent implements OnInit, OnDestroy {
   show(): void {
     this.isActive = true;
     this.showPromptInput = true;
+    
+    // If editor manager is provided but no position, calculate the position
+    if (this.editorManager && this.positionTop === null && this.positionLeft === null) {
+      const position = this.editorManager.calculatePopupPosition();
+      this.positionTop = position.top;
+      this.positionLeft = position.left;
+    }
+    
+    // If text properties aren't provided, get them from the editor manager
+    if (!this.selectedText && this.editorManager) {
+      this.selectedText = this.editorManager.getSelectedText();
+      this.selectionStart = this.editorManager.getSelectionStart();
+      this.selectionEnd = this.editorManager.getSelectionEnd();
+      this.context = this.editorManager.getContext();
+    }
   }
   
   /**
@@ -163,19 +194,17 @@ export class InlineEditComponent implements OnInit, OnDestroy {
    * Apply the edited text
    */
   applyEdit(): void {
-    if (!this.editedText || !this.editorInstance) {
+    if (!this.editedText || !this.editorManager) {
       this.hide();
       this.editCancelled.emit();
       return;
     }
     
-    // Apply the edit
-    const updatedContent = this.inlineEditService.applyInlineEdit(
-      this.editorInstance,
-      this.editedText,
-      this.selectionStart,
-      this.selectionEnd
-    );
+    // Apply the edit using the editor manager
+    this.editorManager.replaceSelection(this.editedText);
+    
+    // Get the updated content
+    const updatedContent = this.editorManager.getContext();
     
     // Emit the updated content
     if (updatedContent) {
@@ -185,7 +214,7 @@ export class InlineEditComponent implements OnInit, OnDestroy {
     // Hide the UI
     this.hide();
     
-    // Remove any highlights and clean up event listeners
+    // Remove any highlights and unlock selection
     this.cleanupHighlights();
     
     // Signal the parent to hide the sparkle button controls
@@ -198,137 +227,44 @@ export class InlineEditComponent implements OnInit, OnDestroy {
   cancelEdit(): void {
     this.hide();
     
-    // Remove any highlights and clean up event listeners
+    // Use the editor manager to safely restore selection
+    if (this.editorManager) {
+      // Safe way to restore selection without modifying content
+      this.editorManager.setSelection(this.selectionStart, this.selectionEnd);
+      
+      // Let the editor manager handle focus after a short delay
+      setTimeout(() => {
+        this.editorManager?.focus();
+      }, 10);
+    }
+    
+    // Clean up any lingering highlights
     this.cleanupHighlights();
     
-    // Emit the cancel event last (after cleanup)
+    // Notify parent component that edit was cancelled
     this.editCancelled.emit();
   }
   
   /**
-   * Clean up any highlights that may remain in the editor
-   * This ensures that no highlight styling remains after the edit is complete
+   * Clean up highlights and unlock selection
    */
   private cleanupHighlights(): void {
-    if (!this.editorInstance) return;
+    if (!this.editorManager) return;
     
     try {
-      // Remove all highlighting from the document
-      this.cleanupAllHighlightElements();
+      // Remove highlight styling
+      this.editorManager.removeHighlight();
       
-      // Remove the selection change event listener
-      document.removeEventListener('selectionchange', this.getParentEventHandler());
-      
-      // Re-focus the editor after a short delay
-      setTimeout(() => {
-        if (this.editorInstance) {
-          this.editorInstance.commands.focus();
-        }
-      }, 150);
+      // Unlock the selection to allow new selections
+      this.editorManager.unlockSelection();
     } catch (error) {
       this.logger.error('Error cleaning up highlights:', error);
     }
   }
-
-  /**
-   * Perform thorough cleanup of all highlight elements
-   * This method ensures no highlight styling remains in the document
-   */
-  private cleanupAllHighlightElements(): void {
-    if (!this.editorInstance) return;
-    
-    try {
-      // 1. Use TipTap's API to remove highlights
-      this.editorInstance.commands.unsetMark('highlight');
-      
-      // Get the parent canvas editor component if possible
-      const canvasEditorInstance = this.getParentCanvasEditor();
-      if (canvasEditorInstance && typeof canvasEditorInstance.removeHighlight === 'function') {
-        // 2. Use the canvas editor's removeHighlight method for thorough cleanup
-        canvasEditorInstance.removeHighlight();
-      } else {
-        // 3. Fallback: manual DOM cleanup if we can't find the parent
-        this.manualDOMCleanup();
-      }
-      
-      // 4. Force selection reset by clearing any active selection
-      const selection = window.getSelection();
-      if (selection) {
-        selection.removeAllRanges();
-      }
-      
-    } catch (error) {
-      this.logger.error('Error cleaning up highlight elements:', error);
-    }
-  }
   
   /**
-   * Manual cleanup of DOM elements when parent component methods aren't available
+   * Component cleanup
    */
-  private manualDOMCleanup(): void {
-    try {
-      // Get the editor DOM element
-      const editorDOM = this.editorInstance?.view?.dom;
-      if (!editorDOM) return;
-      
-      // Remove editor-wide class
-      editorDOM.classList.remove('inline-edit-active');
-      
-      // Cleanup all highlight classes
-      const highlightClasses = [
-        '.inline-edit-selection',
-        '.inline-edit-selection-persistent',
-        '.inline-edit-selection-node',
-        '.inline-edit-selection-overlay'
-      ];
-      
-      highlightClasses.forEach(className => {
-        const elements = editorDOM.querySelectorAll(className);
-        elements.forEach((el: Element) => {
-          if (el.parentNode) {
-            // Unwrap the element (preserve its contents)
-            while (el.firstChild) {
-              el.parentNode.insertBefore(el.firstChild, el);
-            }
-            el.parentNode.removeChild(el);
-          }
-        });
-      });
-      
-      // Remove any overlay containers
-      const overlayContainer = editorDOM.querySelector('.selection-overlay-container');
-      if (overlayContainer && overlayContainer.parentNode) {
-        overlayContainer.parentNode.removeChild(overlayContainer);
-      }
-      
-    } catch (error) {
-      this.logger.error('Error in manual DOM cleanup:', error);
-    }
-  }
-  
-  /**
-   * Get the parent component's event handler for selectionchange events
-   * This is necessary to properly remove the event listener
-   */
-  private getParentEventHandler(): EventListener {
-    const canvasEditor = (this.editorInstance as any)?.view?.dom?.closest('app-canvas-editor');
-    return canvasEditor?.__ngContext__?.instance?.preventSelectionClear || (() => {});
-  }
-  
-  /**
-   * Get the parent canvas editor component instance
-   * This is used to access the removeHighlight method for thorough cleanup
-   */
-  private getParentCanvasEditor(): any {
-    try {
-      const canvasEditor = (this.editorInstance as any)?.view?.dom?.closest('app-canvas-editor');
-      return canvasEditor?.__ngContext__?.instance;
-    } catch (error) {
-      this.logger.warn('Error getting parent canvas editor component:', error);
-      return null;
-    }
-  }
-  
   ngOnDestroy(): void {
     // Remove keyboard event listener to prevent memory leaks
     document.removeEventListener('keydown', this.handleKeyDown);

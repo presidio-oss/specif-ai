@@ -459,14 +459,41 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     // Only do this now that we're in inline edit mode
     this.highlightSelectedText();
     
-    // Show the inline edit component
-    this.inlineEdit.selectedText = this.selectedText;
-    this.inlineEdit.editorInstance = this.richTextEditor.editor;
-    this.inlineEdit.selectionStart = this.selectionStart;
-    this.inlineEdit.selectionEnd = this.selectionEnd;
-    this.inlineEdit.context = currentContent;
-    this.inlineEdit.positionTop = this.inlineEditTop;
-    this.inlineEdit.positionLeft = this.inlineEditLeft;
+    // Create a temporary TipTap editor adapter for this instance
+    // In a full refactor, this would be created once and stored as a class property
+    const editorManager = {
+      getSelectedText: () => this.selectedText,
+      getSelectionStart: () => this.selectionStart,
+      getSelectionEnd: () => this.selectionEnd,
+      getContext: () => currentContent,
+      setSelection: (start: number, end: number) => {
+        if (this.richTextEditor?.editor) {
+          this.richTextEditor.editor.commands.setTextSelection({ from: start, to: end });
+        }
+      },
+      replaceSelection: (content: string) => {
+        if (this.richTextEditor?.editor) {
+          this.richTextEditor.editor.commands.deleteSelection();
+          this.richTextEditor.editor.commands.insertContent(content);
+        }
+      },
+      highlightSelection: () => this.highlightSelectedText(),
+      removeHighlight: () => this.removeHighlight(),
+      focus: () => {
+        if (this.richTextEditor?.editor) {
+          this.richTextEditor.editor.commands.focus();
+        }
+      },
+      getEditorElement: () => this.richTextEditor.editorElement.nativeElement,
+      calculatePopupPosition: () => ({ top: this.inlineEditTop, left: this.inlineEditLeft }),
+      lockSelection: () => { /* Lock happens automatically in our existing code */ },
+      unlockSelection: () => { this.inlineEditActive = false; this.activeSelection = null; },
+      isSelectionLocked: () => this.inlineEditActive,
+      getEditorInstance: () => this.richTextEditor.editor
+    };
+    
+    // Show the inline edit component with the adapter
+    this.inlineEdit.editorManager = editorManager;
     this.inlineEdit.defaultPrompt = this.defaultPrompt;
     this.inlineEdit.show();
     
@@ -903,61 +930,104 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     }, 50);
   }
   
-  // Store references to the event handlers we add
-  private mousedownHandler: ((event: MouseEvent) => void) | null = null;
-  private keydownHandler: ((event: KeyboardEvent) => void) | null = null;
+  /**
+   * Utility class and handlers for managing selection prevention
+   * This would be better moved to a separate service in the future refactor
+   */
+  // @TODO: Refactor to a separate service for better decoupling
+  private selectionPreventionHandlers = {
+    // List of keys that could change selection
+    selectionKeys: [
+      'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 
+      'Home', 'End', 'PageUp', 'PageDown'
+    ],
+    
+    // Handler references for proper cleanup
+    mousedownHandler: null as ((event: MouseEvent) => void) | null,
+    keydownHandler: null as ((event: KeyboardEvent) => void) | null,
+    
+    // Method to check if an element is within the inline edit component
+    isInsideInlineEdit: (target: HTMLElement): boolean => {
+      return target.closest('app-inline-edit') !== null;
+    },
+    
+    // Initialize handlers and attach them to the editor
+    initialize: (
+      editor: any, 
+      isEditActive: () => boolean,
+      preventCallback: () => void
+    ): void => {
+      if (!editor?.view?.dom) return;
+      
+      const editorDom = editor.view.dom;
+      
+      // Create and store the mousedown handler
+      this.selectionPreventionHandlers.mousedownHandler = (event: MouseEvent) => {
+        if (isEditActive()) {
+          const target = event.target as HTMLElement;
+          
+          // Don't prevent clicks on the inline edit controls
+          if (!this.selectionPreventionHandlers.isInsideInlineEdit(target)) {
+            event.preventDefault();
+            event.stopPropagation();
+            preventCallback();
+          }
+        }
+      };
+      
+      // Create and store the keydown handler
+      this.selectionPreventionHandlers.keydownHandler = (event: KeyboardEvent) => {
+        if (isEditActive()) {
+          const target = event.target as HTMLElement;
+          
+          // Allow keys in the inline edit component
+          if (!this.selectionPreventionHandlers.isInsideInlineEdit(target) && 
+              (event.shiftKey || this.selectionPreventionHandlers.selectionKeys.includes(event.key))) {
+            event.preventDefault();
+            event.stopPropagation();
+            preventCallback();
+          }
+        }
+      };
+      
+      // Add the event listeners
+      editorDom.addEventListener('mousedown', this.selectionPreventionHandlers.mousedownHandler);
+      editorDom.addEventListener('keydown', this.selectionPreventionHandlers.keydownHandler);
+    },
+    
+    // Clean up the handlers
+    cleanup: (editor: any): void => {
+      if (!editor?.view?.dom) return;
+      const editorDom = editor.view.dom;
+      
+      if (this.selectionPreventionHandlers.mousedownHandler) {
+        editorDom.removeEventListener('mousedown', this.selectionPreventionHandlers.mousedownHandler);
+        this.selectionPreventionHandlers.mousedownHandler = null;
+      }
+      
+      if (this.selectionPreventionHandlers.keydownHandler) {
+        editorDom.removeEventListener('keydown', this.selectionPreventionHandlers.keydownHandler);
+        this.selectionPreventionHandlers.keydownHandler = null;
+      }
+    }
+  };
   
-  // Set up the event handlers with stored references for cleanup
+  /**
+   * Set up event listeners to prevent selection changes during inline edit
+   * This method is a bridge to the selectionPreventionHandlers which will be 
+   * extracted to a separate service in future refactoring
+   */
   private setupEditorEventListeners(): void {
     if (!this.richTextEditor?.editor) return;
     
-    const editorDom = this.richTextEditor.editor.view.dom;
-    
-    // Create and store the mousedown handler
-    this.mousedownHandler = (event: MouseEvent) => {
-      if (this.inlineEditActive && this.inlineEdit?.isActive) {
-        // Don't prevent clicks on the inline edit controls themselves
-        const target = event.target as HTMLElement;
-        const clickedOnInlineEdit = target.closest('app-inline-edit') !== null;
-        
-        if (!clickedOnInlineEdit) {
-          // Prevent the default behavior which would start a new selection
-          event.preventDefault();
-          event.stopPropagation();
-          
-          // Keep the current selection
-          this.preventNewSelections();
-        }
-      }
-    };
-    
-    // Create and store the keydown handler
-    this.keydownHandler = (event: KeyboardEvent) => {
-      if (this.inlineEditActive && this.inlineEdit?.isActive) {
-        // Allow keys in the inline edit component
-        const target = event.target as HTMLElement;
-        const keyInInlineEdit = target.closest('app-inline-edit') !== null;
-        
-        // List of keys that could change selection like arrow keys with shift, etc.
-        const selectionKeys = [
-          'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 
-          'Home', 'End', 'PageUp', 'PageDown'
-        ];
-        
-        if (!keyInInlineEdit && (event.shiftKey || selectionKeys.includes(event.key))) {
-          // Prevent keyboard-based selection changes
-          event.preventDefault();
-          event.stopPropagation();
-          
-          // Keep the current selection
-          this.preventNewSelections();
-        }
-      }
-    };
-    
-    // Add the event listeners
-    editorDom.addEventListener('mousedown', this.mousedownHandler);
-    editorDom.addEventListener('keydown', this.keydownHandler);
+    // Initialize the selection prevention handlers
+    this.selectionPreventionHandlers.initialize(
+      this.richTextEditor.editor,
+      // Check if inline edit is active
+      () => this.inlineEditActive && this.inlineEdit?.isActive,
+      // Callback to prevent new selections
+      () => this.preventNewSelections()
+    );
   }
   
   ngAfterViewInit(): void {
@@ -973,17 +1043,9 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     // Clean up event listeners
     document.removeEventListener('selectionchange', this.preventSelectionClear);
     
-    // Clean up mouse and keyboard event listeners using stored references
+    // Clean up selection prevention handlers
     if (this.richTextEditor?.editor) {
-      const editorDom = this.richTextEditor.editor.view.dom;
-      
-      if (this.mousedownHandler) {
-        editorDom.removeEventListener('mousedown', this.mousedownHandler);
-      }
-      
-      if (this.keydownHandler) {
-        editorDom.removeEventListener('keydown', this.keydownHandler);
-      }
+      this.selectionPreventionHandlers.cleanup(this.richTextEditor.editor);
     }
     
     // Remove any lingering highlights
