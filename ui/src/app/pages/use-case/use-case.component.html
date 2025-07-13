@@ -160,11 +160,13 @@
                 <!-- Removed Requirement label in edit mode -->
                 <div class="flex-1 overflow-y-auto">
                   <app-canvas-editor
+                    #canvasEditor
                     [content]="useCaseForm.get('requirement')?.value"
                     [documentTitle]="useCaseForm.get('title')?.value"
                     [editable]="true"
                     [showSidebar]="true"
                     appInlineEdit
+                    [editorInstance]="canvasEditor.getEditor()"
                     [contextProvider]="getDocumentContext"
                     [onContentUpdated]="handleInlineEdit"
                     (contentChange)="onCanvasContentChange($event)"

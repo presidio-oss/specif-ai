@@ -81,6 +81,11 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
   @Input() documentTitle: string = 'Untitled Document';
   @ViewChild(RichTextEditorComponent) richTextEditor!: RichTextEditorComponent;
   
+  // Public method to get editor safely
+  public getEditor(): any {
+    return this.richTextEditor?.editor || null;
+  }
+  
   @Output() contentChange = new EventEmitter<string>();
   @Output() sectionSelected = new EventEmitter<SectionInfo>();
   @Output() editProposed = new EventEmitter<EditProposal>();

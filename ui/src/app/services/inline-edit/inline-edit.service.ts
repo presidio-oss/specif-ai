@@ -127,11 +127,12 @@ export class InlineEditService {
       // Check if the edited text contains HTML tags
       const containsHtml = /<[a-z][\s\S]*>/i.test(editedText);
       
-      // Replace the selection with the edited text
-      editor.commands.deleteSelection();
+      // First delete the current selection
+      editor.chain().focus().deleteSelection().run();
       
+      // Then insert the new content at the current position
       if (containsHtml) {
-        // If it contains HTML, use insertContent with parseOptions to parse HTML
+        // If it contains HTML, use insertContent to parse HTML
         editor.commands.insertContent(editedText, {
           parseOptions: {
             preserveWhitespace: 'full'
@@ -150,7 +151,7 @@ export class InlineEditService {
         } catch (e) {
           // Fallback to inserting as plain text
           console.warn('Failed to parse as HTML, inserting as plain text', e);
-          editor.commands.insertContent(editedText);
+          editor.commands.insertText(editedText);
         }
       }
       

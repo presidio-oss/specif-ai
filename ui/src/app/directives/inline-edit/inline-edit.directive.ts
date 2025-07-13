@@ -6,9 +6,6 @@ import { Subject, fromEvent, takeUntil } from 'rxjs';
 import { InlineEditService } from '../../services/inline-edit/inline-edit.service';
 import { DOCUMENT } from '@angular/common';
 import { InlineEditResponse } from '../../model/interfaces/chat.interface';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
-import { createComponent, ApplicationRef, ComponentRef, Injector } from '@angular/core';
 import { markdownToHtml } from '../../utils/markdown.utils';
 
 /**
@@ -17,18 +14,15 @@ import { markdownToHtml } from '../../utils/markdown.utils';
  */
 @Directive({
   selector: '[appInlineEdit]',
-  standalone: true,
-  providers: [
-    provideIcons({ heroSparklesSolid })
-  ]
+  standalone: true
 })
 export class InlineEditDirective implements OnInit, OnDestroy {
   @Input() contextProvider?: () => string;
   @Input() onContentUpdated?: (newContent: string) => void;
   @Input() editable = true;
+  @Input() editorInstance?: any; // Input for the editor instance
   
   private sparkleIcon: HTMLElement | null = null;
-  private iconComponentRef: ComponentRef<NgIconComponent> | null = null;
   private selection: Selection | null = null;
   private selectedText: string = '';
   private selectionRange: Range | null = null;
@@ -41,9 +35,7 @@ export class InlineEditDirective implements OnInit, OnDestroy {
     private electronService: ElectronService,
     private toasterService: ToasterService,
     private inlineEditService: InlineEditService,
-    @Inject(DOCUMENT) private document: Document,
-    private injector: Injector,
-    private appRef: ApplicationRef
+    @Inject(DOCUMENT) private document: Document
   ) {}
   
   ngOnInit(): void {
@@ -149,6 +141,7 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       this.hideSparkleIcon();
     }
     
+    // Create a simple div for the sparkle icon
     this.sparkleIcon = this.renderer.createElement('div');
     this.renderer.addClass(this.sparkleIcon, 'sparkle-icon');
     this.renderer.setStyle(this.sparkleIcon, 'position', 'fixed');
@@ -163,29 +156,14 @@ export class InlineEditDirective implements OnInit, OnDestroy {
     this.renderer.setStyle(this.sparkleIcon, 'align-items', 'center');
     this.renderer.setStyle(this.sparkleIcon, 'justify-content', 'center');
     this.renderer.setStyle(this.sparkleIcon, 'box-shadow', '0 2px 4px rgba(0,0,0,0.1)');
+    this.renderer.setStyle(this.sparkleIcon, 'font-size', '16px');
     
     // Calculate position (offset from selection)
     this.renderer.setStyle(this.sparkleIcon, 'left', `${this.lastSelectionPosition.x + 10}px`);
     this.renderer.setStyle(this.sparkleIcon, 'top', `${this.lastSelectionPosition.y - 30}px`);
     
-    // Create NgIconComponent and attach it
-    const iconElement = this.renderer.createElement('div');
-    this.renderer.appendChild(this.sparkleIcon, iconElement);
-    
-    // Use NgIcon component
-    this.iconComponentRef = createComponent(NgIconComponent, {
-      environmentInjector: this.appRef.injector,
-      elementInjector: this.injector,
-      hostElement: iconElement
-    });
-    
-    // Set icon properties
-    this.iconComponentRef.instance.name = 'heroSparklesSolid';
-    this.iconComponentRef.instance.size = '16';
-    this.renderer.setStyle(iconElement, 'color', '#3b82f6');
-    
-    // Attach to the DOM
-    this.iconComponentRef.changeDetectorRef.detectChanges();
+    // Use a sparkle emoji as the icon
+    this.renderer.setProperty(this.sparkleIcon, 'innerHTML', '✨');
     
     // Add click event to the sparkle icon
     if (this.sparkleIcon) {
@@ -197,14 +175,17 @@ export class InlineEditDirective implements OnInit, OnDestroy {
     // Add tooltip attribute
     if (this.sparkleIcon) {
       this.renderer.setAttribute(this.sparkleIcon, 'title', 'Edit with AI');
-      
-      // Add to body
+    }
+    
+    // Add to body
+    if (this.sparkleIcon) {
       this.renderer.appendChild(this.document.body, this.sparkleIcon);
       
       // Add animation
       this.renderer.setStyle(this.sparkleIcon, 'transform', 'scale(0)');
       this.renderer.setStyle(this.sparkleIcon, 'transition', 'transform 0.2s ease-out');
     }
+    
     setTimeout(() => {
       if (this.sparkleIcon) {
         this.renderer.setStyle(this.sparkleIcon, 'transform', 'scale(1)');
@@ -216,11 +197,6 @@ export class InlineEditDirective implements OnInit, OnDestroy {
    * Hide the sparkle icon
    */
   private hideSparkleIcon(): void {
-    if (this.iconComponentRef) {
-      this.iconComponentRef.destroy();
-      this.iconComponentRef = null;
-    }
-    
     if (this.sparkleIcon && this.sparkleIcon.parentNode) {
       this.sparkleIcon.parentNode.removeChild(this.sparkleIcon);
       this.sparkleIcon = null;
@@ -238,6 +214,9 @@ export class InlineEditDirective implements OnInit, OnDestroy {
         context = this.contextProvider();
       }
       
+      // Hide the sparkle icon when opening the dialog
+      this.hideSparkleIcon();
+      
       // Open the prompt dialog through the service
       this.inlineEditService.openPromptDialog(this.selectedText, context);
     }
@@ -252,32 +231,64 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       return;
     }
     
-    // Get the editor instance if available (for rich text editors)
-    const editor = this.el.nativeElement.editor;
-    
-    // If we have an editor with commands API, use direct editor commands
+    if (this.editorInstance) {
       try {
-        // Set the selection in the editor
-        editor.commands.setTextSelection({
-          from: this.selectionRange.startOffset,
-          to: this.selectionRange.endOffset
-        });
+        // Find the actual start and end positions within the editor's document model
+        // This is important because DOM Range offsets might not map directly to the editor's model
+        let startPos = 0;
+        let endPos = 0;
         
-        // Delete the selected content
-        editor.commands.deleteSelection();
-        
-        // Convert markdown to HTML before inserting
-        const html = markdownToHtml(editedText);
-        
-        // Insert the HTML content with proper formatting
-        editor.commands.insertContent(html, {
-          parseOptions: {
-            preserveWhitespace: 'full'
+        try {
+          const editorElement = this.editorInstance.view.dom;
+          const documentBody = editorElement.querySelector('.ProseMirror') || editorElement;
+          
+          // Create a Range that represents the editor's content
+          const editorRange = document.createRange();
+          editorRange.selectNodeContents(documentBody);
+          
+          // Calculate the offset relative to the editor content
+          if (this.selectionRange.commonAncestorContainer === documentBody ||
+              documentBody.contains(this.selectionRange.commonAncestorContainer)) {
+            // Use the TipTap selection state instead, which is more reliable
+            const selection = this.editorInstance.state.selection;
+            startPos = selection.from;
+            endPos = selection.to;
           }
-        });
+        } catch (e) {
+          console.error('Error calculating selection positions:', e);
+          // Fallback to the original offsets
+          startPos = this.selectionRange.startOffset;
+          endPos = this.selectionRange.endOffset;
+        }
+        
+        // Use the service to apply the edit if we have an editor instance
+        const result = this.inlineEditService.applyInlineEdit(
+          this.editorInstance,
+          editedText,
+          startPos,
+          endPos
+        );
+        
+        if (result && this.onContentUpdated) {
+          this.onContentUpdated(result);
+        }
       } catch (error) {
-        console.error('Error using editor commands:', error);
+        console.error('Error applying inline edit:', error);
+        this.toasterService.showError('Failed to apply edit');
       }
+    } else if (this.onContentUpdated) {
+      // If no editor instance but we have content updated callback,
+      // provide the edited text and let the parent handle it
+      try {
+        this.onContentUpdated(editedText);
+      } catch (error) {
+        console.error('Error in content updated callback:', error);
+        this.toasterService.showError('Failed to update content');
+      }
+    } else {
+      console.error('No editor instance or content updated callback available');
+      this.toasterService.showError('Could not apply edit');
+    }
     
     this.hideSparkleIcon();
     
