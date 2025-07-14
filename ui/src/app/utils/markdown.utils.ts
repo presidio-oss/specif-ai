@@ -128,7 +128,6 @@ const exportMarkdownToDocx = (
             <![endif]-->
           </head>
           <body>
-            <h1>${title}</h1>
             ${htmlBody}
           </body>
         </html>
