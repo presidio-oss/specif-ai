@@ -601,6 +601,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       await this.electronService.setStoreValue('analyticsEnabled', false);
       await this.electronService.setStoreValue(LANGFUSE_CONFIG_STORE_KEY, null);
 
+      // Clear in-memory store
+      await this.store.dispatch(new SetLLMConfig({
+        activeProvider: '',
+        providerConfigs: {},
+        isDefault: true
+      })).toPromise();
+
       // Reset analytics state
       setAnalyticsToggleState(false);
 
