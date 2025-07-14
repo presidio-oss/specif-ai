@@ -55,7 +55,6 @@ export class LLMConfigState {
   @Action(SyncLLMConfig)
   syncLLMConfig({ getState }: StateContext<LLMConfigModel>) {
     const state = getState();
-    localStorage.setItem('llmConfig', JSON.stringify(state));
     this.electronService.setStoreValue('llmConfig', state);
   }
 
