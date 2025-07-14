@@ -223,7 +223,7 @@
                   *ngIf="isChatExpanded"
                   class="text-sm font-medium text-secondary-700"
                 >
-                  AI Assistant
+                  <ng-icon name="heroSparklesSolid" class="text-primary-500"></ng-icon> Talk to HAI 
                 </h3>
                 <button
                   class="text-secondary-500 hover:text-secondary-700 ml-auto"
@@ -274,6 +274,7 @@
                   [baseContent]="useCaseForm.getRawValue().requirement"
                   (updateChatHistory)="updateChatHistory($event)"
                   [containerClass]="'border-none h-full overflow-hidden'"
+                  [hideHeader]="true"
                 />
               </div>
             </div>
