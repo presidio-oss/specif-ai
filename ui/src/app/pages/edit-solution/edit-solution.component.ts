@@ -90,6 +90,7 @@ export class EditSolutionComponent {
   description: string = '';
   content: string = '';
   title: string = '';
+  pmoId: string = '';
   uploadedFileContent = '';
   mode: 'edit' | 'add' = 'edit';
   message: string = '';
@@ -334,11 +335,14 @@ export class EditSolutionComponent {
       requirement: formValue.content,
       title: formValue.title,
       chatHistory: this.chatHistory,
-      pmoId: this.initialData.pmoId,
     };
 
     if (this.isPRD()) {
       fileData.linkedBRDIds = formValue.linkedBRDIds;
+    }
+
+    if(this.pmoId){
+      fileData.pmoId = this.pmoId;
     }
 
     this.store.dispatch(new UpdateFile(this.absoluteFilePath, fileData));
@@ -352,7 +356,7 @@ export class EditSolutionComponent {
       this.oldContent = res.requirement;
       this.requirementForm.patchValue({
         title: res.title,
-        pmoId: res.pmoId,
+        description: res.description
       });
       this.chatHistory = res.chatHistory || [];
     });
@@ -611,8 +615,11 @@ ${chat.contentToAdd}`,
         this.requirementForm.patchValue({
           title: res.title,
           content: res.requirement,
-          pmoId: res.pmoId,
         });
+
+        if (res?.pmoId) {
+          this.pmoId = res.pmoId;
+        }
 
         // For PRDs pre populate the linked brd ids
         if (this.isPRD()) {
