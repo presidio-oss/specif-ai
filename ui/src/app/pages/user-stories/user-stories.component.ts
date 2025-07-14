@@ -42,7 +42,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroArrowRight } from '@ng-icons/heroicons/outline';
+import { heroArrowRight, heroDocumentText } from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
@@ -92,6 +92,7 @@ import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils
   providers: [
     provideIcons({
       heroArrowRight,
+      heroDocumentText,
     }),
   ],
 })
@@ -290,6 +291,19 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         },
       })
       .then();
+  }
+
+  navigateBackToPRD() {
+    this.router.navigate(['/apps', this.navigation.projectId], {
+      state: {
+        data: this.navigation.data,
+        selectedFolder: {
+          title: this.navigation.folderName,
+          id: this.navigation.projectId,
+          metadata: this.navigation.data,
+        },
+      },
+    });
   }
 
   navigateToEditUserStory(selectedUserStory: IUserStory) {
