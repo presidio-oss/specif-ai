@@ -148,7 +148,7 @@ export class InlineEditDirective implements OnInit, OnDestroy {
     // Use Tailwind classes instead of inline styles
     if (this.sparkleIcon) {
       this.sparkleIcon.className = `
-        fixed z-50 w-6 h-6 bg-primary-100 text-primary-500
+        fixed z-[9999] w-6 h-6 bg-primary-100 text-primary-500
         rounded-full flex items-center justify-center shadow
         backdrop-blur-sm transition-500 scale-0 cursor-pointer
       `.trim();
