@@ -1,4 +1,4 @@
-<div class="w-full h-full px-0">
+<div class="w-full h-full flex flex-col px-0">
   <app-workflow-progress-dialog
     [isVisible]="showProgressDialog"
     [projectId]="projectId"
@@ -13,7 +13,7 @@
   />
 
   <!-- Canvas Layout -->
-  <div class="canvas-container h-[calc(100vh-80px)]">
+  <div class="canvas-container flex flex-col flex-grow">
     <!-- Header - Redesigned to match the screenshot -->
     <header
       class="flex justify-between items-center p-4 border-b border-secondary-200 bg-white"
@@ -77,7 +77,7 @@
     <!-- Main Content Area with 3-column layout in edit mode, single column in add mode -->
     <form
       [formGroup]="useCaseForm"
-      class="flex flex-col h-[calc(100vh-132px)] overflow-hidden"
+      class="flex flex-col flex-grow overflow-hidden"
     >
       <!-- Title input and research URLs in add mode -->
       <div
@@ -157,15 +157,15 @@
       </div>
 
       <!-- Content area with different layouts for add vs edit mode -->
-      <div class="flex-1 flex overflow-hidden">
+      <div class="flex-1 flex overflow-hidden bg-white">
         <!-- Add Mode: Simple single-column layout -->
-        <div *ngIf="mode === 'add'" class="flex-1 p-4 overflow-y-auto">
-          <div class="flex flex-col gap-1.5 h-full">
+        <div *ngIf="mode === 'add'" class="flex-1 p-4 overflow-y-auto bg-white">
+          <div class="flex flex-col gap-1.5">
             <label class="block text-sm font-medium text-secondary-500">
               Details
               <span class="text-red-500 text-xs">*</span>
             </label>
-            <div class="flex-1">
+            <div class="flex-1 min-h-[400px]">
               <app-rich-text-editor
                 formControlName="requirement"
                 [editorClass]="'h-full min-h-[400px] overflow-y-auto'"
@@ -185,12 +185,12 @@
         <!-- Edit Mode: Canvas editor and chat panel side by side -->
         <ng-container *ngIf="mode === 'edit'">
           <!-- Main content area with flexible layout -->
-          <div class="flex flex-1 overflow-hidden">
+          <div class="flex flex-1 overflow-hidden h-[calc(100vh-200px)]">
             <!-- Canvas Editor Panel -->
             <div class="flex-1 overflow-hidden">
               <div class="h-full flex flex-col">
                 <!-- Removed Requirement label in edit mode -->
-                <div class="flex-1 overflow-y-auto">
+                <div class="h-full overflow-y-auto">
                   <app-canvas-editor
                     #canvasEditor
                     [content]="useCaseForm.get('requirement')?.value"
@@ -261,10 +261,10 @@
               <!-- Chat Content (only visible when expanded) -->
               <div
                 *ngIf="isChatExpanded"
-                class="flex-1 overflow-hidden h-[calc(100%-48px)]"
+                class="flex flex-col h-[calc(100%-48px)] overflow-hidden"
               >
                 <app-chat
-                  class="h-full block"
+                  class="h-full flex-grow block"
                   chatType="requirement"
                   [name]="name"
                   [description]="requirement"
