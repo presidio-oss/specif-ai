@@ -9,6 +9,12 @@ import { buildReactAgent } from "../react-agent";
 import { IUseCaseWorkflowStateAnnotation } from "./state";
 import { UseCaseWorkflowRunnableConfig } from "./types";
 import { getUCPrompt } from "../../prompts/core/usecase";
+import { 
+  getResearchPrompt, 
+  getResearchSummaryPrompt,
+  getStrategicInitiativePrompt, 
+  getStrategicInitiativeResponseFormatPrompt 
+} from "../../prompts/core/strategic-initiative";
 
 const workflowEvents = new WorkflowEventsService("usecase");
 
@@ -52,7 +58,7 @@ export const buildResearchNode = ({
       model: model,
       tools: tools,
       responseFormat: {
-        prompt: `Summarize your research findings about the business proposal. Focus on industry trends, competitor strategies, and market opportunities that could inform the business proposal.`,
+        prompt: getResearchSummaryPrompt(),
         schema: z.object({
           referenceInformation: z.string(),
         }),
@@ -65,25 +71,7 @@ export const buildResearchNode = ({
     const researchUrls = state.requirement?.researchUrls || [];
     const hasResearchUrls = Array.isArray(researchUrls) && researchUrls.length > 0;
     
-    let researchPrompt = `You are a research assistant. Your task is to extract and summarize information from URLs.
-
-Project: ${state.project.name}
-Description: ${state.project.description}
-
-${state.requirement?.description ? `Requirement: ${state.requirement.description}` : ""}`;
-
-    if (hasResearchUrls) {
-      researchPrompt += `\n\nHere are the URLs to scrape content from:\n`;
-      researchUrls.forEach((url: string, index: number) => {
-        researchPrompt += `${index + 1}. ${url}\n`;
-      });
-      
-      researchPrompt += `\nUse the fetch_url_content tool to extract content from each URL. Then summarize the key information from these sources.`;
-    } else {
-      researchPrompt += `\n\nNo URLs were provided. Please provide a brief summary of the project based on the information above.`;
-    }
-
-    researchPrompt += `\n\nDO NOT ask for more information or URLs. Simply use the fetch_url_content tool on each URL provided and summarize what you find.`;
+    const researchPrompt = getResearchPrompt(state.project, state.requirement);
 
     const response = await agent.invoke(
       { messages: [new HumanMessage(researchPrompt)] },
@@ -163,41 +151,7 @@ export const buildUseCaseGenerationNode = ({
         model: model,
         tools: [],
         responseFormat: {
-          prompt: `You are a Business Development Consultant. Generate a comprehensive business proposal based on the project information and research findings.
-          
-          IMPORTANT: DO NOT ASK QUESTIONS. Instead, make reasonable assumptions based on the information provided and generate a complete draft.
-          
-          The proposal should be well-structured, professional, and ready for presentation to stakeholders.
-          
-          Include the following sections:
-          1. Title: A concise, descriptive title for the business proposal (DO NOT include terms like "SI", "Strategic Initiative", or any reference to this being a strategic initiative in the title)
-          2. Summary: A one-sentence summary of the business case
-          3. Goals and Business Outcomes: Tangible, measurable goals and clear business outcomes
-          4. Strategic Approaches: At least 3 approaches, each detailing HOW (implementation strategy), WHO (key stakeholders), WHEN (timeline), INVESTMENT (costs), and ratings for complexity and sustainability
-          5. Competitor Analysis: Supporting case studies of similar companies
-          6. Potential Challenges: Identification of gaps or risks
-          7. Innovation Opportunities: How this approach could position the organization as an innovation leader
-          
-          MARKDOWN FORMATTING INSTRUCTIONS:
-          - Use consistent heading levels: # for title, ## for main sections, ### for subsections
-          - DO NOT use # for the entire document content
-          - Use bullet points (- ) for lists
-          - Use bold (**text**) for emphasis on important points
-          - Use tables for comparing approaches or options
-          - Keep paragraphs concise (3-5 sentences)
-          - Use horizontal rules (---) sparingly to separate major sections
-          - Ensure proper spacing between sections (one blank line)
-          - Format is critical as this document may be exported to Word
-          
-          CRITICAL JSON FORMATTING INSTRUCTIONS:
-          - Your response MUST be valid JSON that can be parsed by JSON.parse()
-          - For the 'requirement' field, ensure all markdown content is properly escaped as a JSON string
-          - Do NOT include markdown code block markers like \`\`\`markdown or \`\`\` in your response
-          - Do NOT include any explanations outside the JSON structure
-          - Ensure all quotes within the content are properly escaped with backslashes
-          - The response should be ONLY the JSON object with 'title' and 'requirement' fields
-          
-          Make the content specific, actionable, and focused on business value.`,
+          prompt: getStrategicInitiativeResponseFormatPrompt(),
           schema: z.object({
             title: z.string().describe("A concise, descriptive title for the business proposal (without mentioning 'SI' or 'strategic initiative')"),
             requirement: z.string().describe("The complete business proposal content in properly escaped JSON string format"),
@@ -215,44 +169,21 @@ export const buildUseCaseGenerationNode = ({
 
       const prompt = getUCPrompt(ucParams);
       
+      const solutionInfo = {
+        name: state.project.solution.name,
+        description: state.project.solution.description,
+        techDetails: state.project.solution.techDetails
+      };
+      
+      const strategicInitiativePrompt = getStrategicInitiativePrompt(
+        state.referenceInformation, 
+        solutionInfo
+      );
+      
       const response = await agent.invoke(
         {
           messages: [
-            new HumanMessage(`${prompt}
-            
-Here is additional research information that may be helpful:
-${state.referenceInformation}
-
-Solution Information:
-- Name: ${state.project.solution.name}
-- Description: ${state.project.solution.description}
-- Technical Details: ${state.project.solution.techDetails}
-
-IMPORTANT: Generate a comprehensive business proposal. DO NOT ask questions or request additional information. Make reasonable assumptions based on the information provided and generate a complete draft that is ready for presentation to stakeholders.
-
-TITLE INSTRUCTIONS:
-- Create a concise, descriptive title for the business proposal
-- DO NOT include terms like "SI", "Strategic Initiative", or any reference to this being a strategic initiative in the title
-- The title should focus on the business value or solution being proposed
-
-MARKDOWN FORMATTING INSTRUCTIONS:
-- Use consistent heading levels: # for title, ## for main sections, ### for subsections
-- DO NOT use # for the entire document content
-- Use bullet points (- ) for lists
-- Use bold (**text**) for emphasis on important points
-- Use tables for comparing approaches or options
-- Keep paragraphs concise (3-5 sentences)
-- Use horizontal rules (---) sparingly to separate major sections
-- Ensure proper spacing between sections (one blank line)
-- Format is critical as this document may be exported to Word
-
-CRITICAL JSON FORMATTING INSTRUCTIONS:
-- Your response MUST be valid JSON that can be parsed by JSON.parse()
-- For the 'requirement' field, ensure all markdown content is properly escaped as a JSON string
-- Do NOT include markdown code block markers like \`\`\`markdown or \`\`\` in your response
-- Do NOT include any explanations outside the JSON structure
-- Ensure all quotes within the content are properly escaped with backslashes
-- The response should be ONLY the JSON object with 'title' and 'requirement' fields`),
+            new HumanMessage(`${prompt}\n\n${strategicInitiativePrompt}`),
           ],
         },
         {

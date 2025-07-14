@@ -1,7 +1,6 @@
 import { Annotation } from "@langchain/langgraph";
 
 export const UseCaseWorkflowStateAnnotation = Annotation.Root({
-  // Input data
   project: Annotation<{
     name: string;
     description: string;
@@ -17,10 +16,8 @@ export const UseCaseWorkflowStateAnnotation = Annotation.Root({
     researchUrls?: string[];
   }>(),
   
-  // Workflow state
   referenceInformation: Annotation<string>(),
   
-  // Output data
   useCaseDraft: Annotation<{
     title: string;
     requirement: string;

@@ -1,5 +1,6 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
+import { getInlineEditPrompt } from "../../prompts/core/inline-edit";
 import { IInlineEditWorkflowStateAnnotation } from "./state";
 
 type InlineEditWorkflowRunnableConfig = {
@@ -22,22 +23,7 @@ export const buildInlineEditNode = (modelProvider: LangChainModelProvider) => {
     });
 
     try {
-      // Create a simple prompt for the AI
-      const prompt = `
-        I have the following text that needs to be improved:
-        
-        "${state.selectedText}"
-        
-        Instructions: ${state.userPrompt}
-        
-        IMPORTANT FORMATTING INSTRUCTIONS:
-        - Return the improved text as properly formatted markdown
-        - You can use standard markdown formatting (bold, italic, lists, etc.)
-        - You can use headings if appropriate (prefer h3 or smaller - ### or more #s)
-        - Do NOT include any explanations about your edits
-        - Do NOT wrap the entire response in quotes or code blocks
-        - Just provide the improved text with proper markdown formatting
-      `;
+      const prompt = getInlineEditPrompt(state.selectedText, state.userPrompt);
 
       const generation = span?.generation({
         name: "llm",
@@ -46,7 +32,6 @@ export const buildInlineEditNode = (modelProvider: LangChainModelProvider) => {
         input: sendMessagesInTelemetry ? prompt : undefined,
       });
 
-      // LLM Call
       const model = modelProvider.getChatModel();
       const response = await model.invoke(prompt);
 
@@ -62,19 +47,12 @@ export const buildInlineEditNode = (modelProvider: LangChainModelProvider) => {
       const responseText =
         typeof response === "string" ? response : response.content.toString();
 
-      // Clean up the response text but preserve markdown formatting
       let cleanedText = responseText
-        .replace(/^["']|["']$/g, '') // Remove surrounding quotes
-        .replace(/^```.*\n|```$/gm, ''); // Remove markdown code blocks
+        .replace(/^["']|["']$/g, '')
+        .replace(/^```.*\n|```$/gm, '');
         
-      // Remove any HTML tags but preserve markdown formatting
       cleanedText = cleanedText
-        .replace(/<[^>]*>/g, ''); // Remove any HTML tags
-        
-      // Ensure headings are h3 or smaller (### or more)
-      cleanedText = cleanedText
-        .replace(/^#\s+/gm, '### ') // Convert h1 to h3
-        .replace(/^##\s+/gm, '### '); // Convert h2 to h3
+        .replace(/<[^>]*>/g, '');
 
       span?.end({
         statusMessage: "Successfully generated edited text",
@@ -93,10 +71,9 @@ export const buildInlineEditNode = (modelProvider: LangChainModelProvider) => {
         statusMessage: message,
       });
 
-      // Return current state to avoid breaking the workflow
       return {
         editedText: "",
-        isComplete: true, // Force completion on error
+        isComplete: true,
       };
     }
   };

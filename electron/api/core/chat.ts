@@ -116,11 +116,8 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
       ...messages,
     ];
 
-    // Convert messages to guardrail format and validate
-    // Get last user message for guardrails validation
     const lastUserMessage = messages[messages.length - 1];
     if (lastUserMessage) {
-      // Only validate the last message
       const lastMessageForGuardrails = convertToGuardrailMessage(lastUserMessage);
       await validateGuardrails([lastMessageForGuardrails]);
     }
@@ -190,10 +187,8 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
 };
 
 const buildToolsForRequirement = async (data: ChatWithAIParams) => {
-  // Cache for the current document content
   let latestContent = data.requirement.description;
 
-  // Tool to get the current requirement content
   const getCurrentRequirementContent = tool(
     () => {
       console.log("[getCurrentRequirementContent] Returning latest content");
@@ -205,13 +200,11 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     }
   );
   
-  // Define the text block replace tool schema
   const textBlockReplaceSchema = z.object({
     searchBlock: z.string().describe("The exact text block to search for in the document"),
     replaceBlock: z.string().describe("The text block to replace the search block with")
   });
 
-  // Tool for replacing a specific text block in the document
   const replaceTextBlock = tool(
     async (input: z.infer<typeof textBlockReplaceSchema>) => {
       const { searchBlock, replaceBlock } = input;
@@ -223,7 +216,6 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
         });
       }
 
-      // Update the cached content
       if (latestContent && latestContent.includes(searchBlock)) {
         latestContent = latestContent.replace(searchBlock, replaceBlock);
       } else {
@@ -236,7 +228,6 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       const requestId = uuidv4();
       const documentId = data.requirement.title || "current-document";
 
-      // Create the update request
       const updateRequest = {
         requestId,
         documentId,
@@ -245,7 +236,6 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
         replaceBlock
       };
 
-      // Return the update request details
       return JSON.stringify({
         success: true,
         message: `Text block replace request created. Replacing specific text block with new content.`,
@@ -271,10 +261,8 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     }
   );
 
-  // Only return the two essential tools as requested
   const tools = [getCurrentRequirementContent, replaceTextBlock];
 
-  // Add requirement-specific tools based on requirement type
   switch (data.requirementAbbr) {
     case "BP": {
       const getLinkedBRDs = tool(
