@@ -42,6 +42,7 @@ export const createFetchUrlTool = (): ITool => {
         }
         
         const content = docs[0].pageContent.trim().slice(0, 2000);
+        console.log("Content fetched from URL:", content);
         return content;
       } catch (error) {
         return `Error fetching content from URL: ${error instanceof Error ? error.message : String(error)}. Please try a different URL or check your internet connection.`;
