@@ -12,7 +12,7 @@ export interface ChatMessage {
   id?: string;
 }
 
-export interface UsecaseDraft {
+export interface StrategicInitiativeDraft {
   id: string;
   title: string;
   requirement: string;
@@ -22,7 +22,7 @@ export interface UsecaseDraft {
   status: "DRAFT" | "COMPLETE";
 }
 
-export const UsecaseDraftSchema = z.object({
+export const StrategicInitiativeDraftSchema = z.object({
   title: z.string(),
   requirement: z.string(),
   requirementAbbr: z.literal("SI"),

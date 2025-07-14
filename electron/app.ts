@@ -19,7 +19,7 @@ import { setupMcpHandlers } from "./handlers/mcp-handler";
 import { setupWorkflowHandlers } from "./handlers/workflow-handler";
 import { MCPHub } from "./mcp/mcp-hub";
 import { APP_MESSAGES } from "./constants/message.constants";
-import { setupSIHandlers } from "./handlers/usecase";
+import { setupSIHandlers } from "./handlers/strategic-initiative-handler";
 
 // ========================
 // CONFIGURATION

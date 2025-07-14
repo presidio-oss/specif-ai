@@ -2,7 +2,7 @@ import { app } from "electron";
 import fs, { appendFile } from "node:fs/promises";
 import path from "node:path";
 import { PATHS } from "../constants/app.constants";
-import { UsecaseDraft } from "../schema/core/usecase.schema";
+import { StrategicInitiativeDraft } from "../schema/core/strategic-initiative.schema";
 import * as mammoth from "mammoth";
 
 export const joinPaths = (...segments: string[]): string => {
@@ -55,16 +55,10 @@ const normalizePath = (p: string): string => {
 
 export const appendUsecaseRequirement = async (
   workingDir: string,
-  data: Omit<UsecaseDraft, "id">
-): Promise<Omit<UsecaseDraft, "id">> => {
+  data: Omit<StrategicInitiativeDraft, "id">
+): Promise<Omit<StrategicInitiativeDraft, "id">> => {
   const filePath = path.join(workingDir, "SI");
   console.log("Appending proposal requirement to:", filePath);
   await appendFile(filePath, JSON.stringify(data) + "\n");
   return { ...data };
-};
-
-export const extractTextFromDocx = async (filePath: string): Promise<string> => {
-  const buffer = await fs.readFile(filePath);
-  const result = await mammoth.extractRawText({ buffer });
-  return result.value.replace(/\s|/g, " ").trim().slice(0,4000);
 };

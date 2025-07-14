@@ -64,9 +64,7 @@ export enum WordFileExtension {
  * @returns A Promise that resolves when the export is complete
  */
 export interface ExportToDocxOptions {
-  /** CSS styles to apply to the document */
   styles?: string;
-  /** File extension (default: WordFileExtension.DOC) */
   fileExtension?: WordFileExtension;
 }
 
@@ -77,10 +75,8 @@ const exportMarkdownToDocx = (
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
-      // Convert markdown to HTML
       const htmlBody = mdit.render(markdownContent || '');
       
-      // Default styles for the document
       const defaultStyles = `
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { color: #2563eb; font-size: 24px; margin-top: 24px; margin-bottom: 16px; }
@@ -100,10 +96,8 @@ const exportMarkdownToDocx = (
         a { color: #2563eb; text-decoration: underline; }
       `;
       
-      // Combine user styles with default styles
       const styles = options.styles ? `${defaultStyles}\n${options.styles}` : defaultStyles;
       
-      // Create Word-compatible HTML with enhanced compatibility
       const wordHtml = `
         <html xmlns:o='urn:schemas-microsoft-com:office:office' 
               xmlns:w='urn:schemas-microsoft-com:office:word' 
@@ -133,7 +127,6 @@ const exportMarkdownToDocx = (
         </html>
       `;
       
-      // Use the original HTML approach with DOC format (works with MS Word)
       const mimeType = 'application/msword';
       const blob = new Blob([wordHtml], { type: mimeType });
       
@@ -141,11 +134,9 @@ const exportMarkdownToDocx = (
       link.href = URL.createObjectURL(blob);
       link.download = `${title.replace(/\s+/g, '_')}.doc`;
       
-      // Trigger the download
       document.body.appendChild(link);
       link.click();
       
-      // Clean up
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
       
