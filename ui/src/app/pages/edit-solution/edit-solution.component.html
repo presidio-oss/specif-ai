@@ -20,7 +20,17 @@
               : getDescription(folderName)
           }}
         </h1>
-        <div *ngIf="mode === 'edit'">
+        <div *ngIf="mode === 'edit'" class="flex gap-2">
+          <app-button
+            *ngIf="isPRD()"
+            buttonContent="User Stories"
+            icon="heroDocumentText"
+            theme="secondary_outline"
+            size="sm"
+            rounded="md"
+            (click)="navigateToUserStories()"
+            matTooltip="View User Stories"
+          ></app-button>
           <app-button
             [isIconButton]="true"
             icon="heroTrash"

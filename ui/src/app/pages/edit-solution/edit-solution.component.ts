@@ -24,7 +24,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
+import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { CommonModule, NgClass, NgFor, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -34,7 +34,6 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { MultiUploadComponent } from '../../components/multi-upload/multi-upload.component';
 import { provideIcons, NgIconComponent } from '@ng-icons/core';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import {
   CONFIRMATION_DIALOG,
   ERROR_MESSAGES,
@@ -45,9 +44,10 @@ import {
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
-import { catchError, switchMap, take, Observable, filter, first, map, lastValueFrom } from 'rxjs';
+import { catchError, switchMap, take, Observable, filter, map, lastValueFrom } from 'rxjs';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
+import { heroDocumentText } from '@ng-icons/heroicons/outline';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 import { CheckboxCardComponent } from 'src/app/components/checkbox-card/checkbox-card.component';
@@ -78,6 +78,7 @@ import { PillComponent } from "../../components/pill/pill.component";
   providers: [
     provideIcons({
       heroSparklesSolid,
+      heroDocumentText,
     }),
   ],
 })
@@ -416,6 +417,20 @@ export class EditSolutionComponent {
           id: this.projectId,
           metadata: data,
         },
+      },
+    });
+  }
+
+  navigateToUserStories() {
+    this.store.dispatch(new DeleteBreadcrumb('Edit'));
+    
+    this.router.navigate(['/user-stories', this.projectId], {
+      state: {
+        data: this.initialData,
+        id: this.projectId,
+        folderName: this.folderName,
+        fileName: this.fileName,
+        req: this.requirementForm.getRawValue(),
       },
     });
   }

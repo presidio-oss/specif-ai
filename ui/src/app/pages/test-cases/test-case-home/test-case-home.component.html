@@ -32,7 +32,7 @@
       <div class="flex gap-3 mt-4 mb-4 items-end">
         <div
           class="w-1/3 flex items-end"
-          *ngIf="(filteredUserStories$ | async)?.length"
+          *ngIf="(userStories$ | async)?.length"
         >
           <app-search-input
             class="w-full"
@@ -68,12 +68,6 @@
         <p class="text-secondary-500 text-sm">
           Please check if PRD documents exist for this project.
         </p>
-        <app-button
-          class="mt-4"
-          buttonContent="Go to Solution"
-          [size]="'sm'"
-          (click)="navigateToAppInfo()"
-        ></app-button>
       </div>
     </ng-template>
 
@@ -128,12 +122,6 @@
             <p class="text-secondary-500 text-sm">
               Try selecting a different PRD or create user stories for the PRD.
             </p>
-            <app-button
-              class="mt-4"
-              buttonContent="Go to Solution"
-              [size]="'sm'"
-              (click)="navigateToAppInfo()"
-            ></app-button>
           </div>
         </ng-template>
       </ng-container>
