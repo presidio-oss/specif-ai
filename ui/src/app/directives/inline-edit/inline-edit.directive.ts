@@ -51,18 +51,6 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.handleTextSelection());
     
-    // Listen for clicks outside to hide the sparkle icon
-    fromEvent(this.document, 'mousedown')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((event: Event) => {
-        if (
-          this.sparkleIcon && 
-          !this.sparkleIcon.contains(event.target as Node) &&
-          event.target !== this.sparkleIcon
-        ) {
-          this.hideSparkleIcon();
-        }
-      });
       
     // Listen for selection changes to hide icon when selection is cleared
     fromEvent(this.document, 'selectionchange')

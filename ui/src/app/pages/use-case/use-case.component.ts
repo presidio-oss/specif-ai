@@ -630,6 +630,7 @@ export class UseCaseComponent implements OnInit {
   }
 
   async generateUseCaseDraft() {
+
     // Setup workflow progress
     this.setupUseCaseProgressListener();
 
@@ -716,7 +717,7 @@ export class UseCaseComponent implements OnInit {
         this.showProgressDialog = false;
 
         // If in add mode, create the use case
-        this.mode === 'add' && this.addUseCase();
+        this.mode === 'add' ? this.addUseCase() : this.updateUseCase();
       } else {
         console.error('Failed to generate business proposal:', result);
         this.toastService.showError(

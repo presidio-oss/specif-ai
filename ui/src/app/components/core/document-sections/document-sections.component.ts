@@ -5,7 +5,6 @@ import { SectionInfo } from 'src/app/utils/section.utils';
 @Component({
   selector: 'app-document-sections',
   templateUrl: './document-sections.component.html',
-  styleUrls: ['./document-sections.component.scss'],
   standalone: true,
   imports: [
     NgClass,
