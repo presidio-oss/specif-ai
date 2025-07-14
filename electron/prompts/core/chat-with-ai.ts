@@ -58,7 +58,7 @@ const getPersona = (requirementType: keyof typeof REQUIREMENT_TYPE) => {
     case "US":
     case "TASK":
       return "Product Manager";
-    case "UC":
+    case "SI":
       return "Business Development Consultant";
     default:
       return "";
@@ -82,7 +82,7 @@ const getRequirementTypeContext = (params: ChatWithAIParams) => {
     case "US": {
       return USER_STORY_DEFINITION_CONTEXT;
     }
-    case "UC": {
+    case "SI": {
       return USE_CASE_DEFINITION_CONTEXT;
     }
     default: {

@@ -57,7 +57,7 @@ export const appendUsecaseRequirement = async (
   workingDir: string,
   data: Omit<UsecaseDraft, "id">
 ): Promise<Omit<UsecaseDraft, "id">> => {
-  const filePath = path.join(workingDir, "UC");
+  const filePath = path.join(workingDir, "SI");
   console.log("Appending proposal requirement to:", filePath);
   await appendFile(filePath, JSON.stringify(data) + "\n");
   return { ...data };

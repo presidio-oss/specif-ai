@@ -4,6 +4,6 @@ export enum RequirementTypeEnum {
     UIR = 'UIR',
     NFR = 'NFR',
     BP = 'BP',
-    UC = 'UC',
+    SI = 'SI',
     TC = 'TC',
 }

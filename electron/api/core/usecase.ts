@@ -118,7 +118,7 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
     const result = await workflow.getState(config);
 
     if (!result.values.useCaseDraft || !result.values.useCaseDraft.requirement) {
-      throw new Error('Workflow did not return a valid use case draft');
+      throw new Error('Workflow did not return a valid strategic initiative draft');
     }
     
     try {
@@ -152,8 +152,8 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
     }
   } catch (error) {
     return {
-      title: "Error generating use case",
-      requirement: `An error occurred while generating the use case: ${error}`,
+      title: "Error generating strategic initiative",
+      requirement: `An error occurred while generating the strategic initiative: ${error}`,
       status: "error",
     };
   }

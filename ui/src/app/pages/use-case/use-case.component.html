@@ -11,37 +11,56 @@
     [showCancelButton]="false"
     (closeDialog)="closeProgressDialog()"
   />
-  
+
   <!-- Canvas Layout -->
   <div class="canvas-container h-[calc(100vh-80px)]">
     <!-- Header - Redesigned to match the screenshot -->
-    <header class="flex justify-between items-center p-4 border-b border-secondary-200 bg-white">
+    <header
+      class="flex justify-between items-center p-4 border-b border-secondary-200 bg-white"
+    >
       <div class="flex items-center">
         <!-- ID and status in a cleaner format -->
         <div class="flex items-center">
           <h1 class="text-xl font-bold">
-            {{ mode === 'add' ? (folderName | expandDescription) : ucRequirementId }}
+            {{
+              mode === "add"
+                ? (folderName | expandDescription)
+                : ucRequirementId
+            }}
           </h1>
-          <span 
+          <span
             *ngIf="mode === 'edit'"
             class="ml-3 px-3 py-1 text-xs font-medium uppercase tracking-wider"
             [ngClass]="{
-              'bg-yellow-100 text-yellow-800': useCaseForm.get('status')?.value === 'DRAFT',
-              'bg-green-100 text-green-800': useCaseForm.get('status')?.value === 'COMPLETE'
+              'bg-yellow-100 text-yellow-800':
+                useCaseForm.get('status')?.value === 'DRAFT',
+              'bg-green-100 text-green-800':
+                useCaseForm.get('status')?.value === 'COMPLETE',
             }"
           >
-            {{ useCaseForm.get('status')?.value }}
+            {{ useCaseForm.get("status")?.value }}
           </span>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <app-button
-          *ngIf="mode === 'edit' && useCaseForm.get('status')?.value === 'DRAFT'"
+          *ngIf="
+            mode === 'edit' && useCaseForm.get('status')?.value === 'DRAFT'
+          "
           buttonContent="Finalize"
           theme="secondary"
           size="sm"
           rounded="md"
           (click)="finalizeUseCase()"
+        />
+
+        <app-button
+          *ngIf="mode === 'edit'"
+          buttonContent="Export as Word"
+          theme="secondary_outline"
+          size="sm"
+          rounded="md"
+          (click)="exportAsWord()"
         />
         <app-button
           *ngIf="mode === 'edit'"
@@ -52,20 +71,19 @@
           rounded="md"
           (click)="deleteUseCase()"
         ></app-button>
-        <app-button
-          buttonContent="Export as Word"
-          theme="secondary_outline"
-          size="sm"
-          rounded="md"
-          (click)="exportAsWord()"
-        />
       </div>
     </header>
 
     <!-- Main Content Area with 3-column layout in edit mode, single column in add mode -->
-    <form [formGroup]="useCaseForm" class="flex flex-col h-[calc(100vh-132px)] overflow-hidden">
+    <form
+      [formGroup]="useCaseForm"
+      class="flex flex-col h-[calc(100vh-132px)] overflow-hidden"
+    >
       <!-- Title input and research URLs in add mode -->
-      <div *ngIf="mode === 'add'" class="p-4 bg-white border-b border-secondary-200">
+      <div
+        *ngIf="mode === 'add'"
+        class="p-4 bg-white border-b border-secondary-200"
+      >
         <div class="flex flex-col gap-4">
           <div>
             <app-input-field
@@ -85,21 +103,45 @@
               Title is required
             </div>
           </div>
-          
+
           <!-- Research URLs input -->
           <div class="w-full">
-            <label class="block text-sm font-medium text-secondary-500 mb-1">
-              Research URLs <span class="text-xs text-secondary-400">(Optional - Add URLs for research context)</span>
-            </label>
-            <div formArrayName="researchUrls" class="flex flex-col gap-3 w-full">
-              <div *ngFor="let urlControl of researchUrlsFormArray.controls; let i = index" class="flex items-center gap-2 w-full">
-                <app-input-field
-                  [formControlName]="i"
-                  elementPlaceHolder="https://example.com"
-                  [elementId]="'url-' + i"
-                  elementName=""
-                  [customClass]="'flex-1 w-full'"
-                />
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-sm font-medium text-secondary-500">
+                Research URLs
+                <span class="text-xs text-secondary-400"
+                  >(Optional - Add URLs for research context)</span
+                >
+              </label>
+              <app-button
+                buttonContent="Add Research URL"
+                theme="secondary_outline"
+                size="sm"
+                rounded="md"
+                icon="heroPlus"
+                (click)="addResearchUrl()"
+              ></app-button>
+            </div>
+            <div
+              formArrayName="researchUrls"
+              class="flex flex-col gap-3 w-full"
+            >
+              <div
+                *ngFor="
+                  let urlControl of researchUrlsFormArray.controls;
+                  let i = index
+                "
+                class="flex items-center gap-2 w-full"
+              >
+                <div class="w-full">
+                  <app-input-field
+                    [formControlName]="i"
+                    elementPlaceHolder="https://example.com"
+                    [elementId]="'url-' + i"
+                    elementName=""
+                    [customClass]="'w-full'"
+                  />
+                </div>
                 <app-button
                   [isIconButton]="true"
                   icon="heroTrash"
@@ -109,15 +151,6 @@
                   (click)="removeResearchUrl(i)"
                 ></app-button>
               </div>
-              <app-button
-                buttonContent="Add Research URL"
-                theme="secondary_outline"
-                size="sm"
-                rounded="md"
-                icon="heroPlus"
-                (click)="addResearchUrl()"
-                class="mt-2"
-              ></app-button>
             </div>
           </div>
         </div>
@@ -178,28 +211,58 @@
             </div>
 
             <!-- Chat Panel (side panel that can be collapsed/expanded) -->
-            <div 
+            <div
               class="border-l border-secondary-200 bg-white transition-all duration-300 ease-in-out"
-              [ngClass]="{'w-96': isChatExpanded, 'w-10': !isChatExpanded}"
+              [ngClass]="{ 'w-96': isChatExpanded, 'w-10': !isChatExpanded }"
             >
               <!-- Collapse/Expand Button -->
-              <div class="p-3 border-b border-secondary-200 flex justify-between items-center">
-                <h3 *ngIf="isChatExpanded" class="text-sm font-medium text-secondary-700">AI Assistant</h3>
-                <button 
+              <div
+                class="p-3 border-b border-secondary-200 flex justify-between items-center"
+              >
+                <h3
+                  *ngIf="isChatExpanded"
+                  class="text-sm font-medium text-secondary-700"
+                >
+                  AI Assistant
+                </h3>
+                <button
                   class="text-secondary-500 hover:text-secondary-700 ml-auto"
                   (click)="toggleChatExpanded()"
                 >
-                  <svg *ngIf="isChatExpanded" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  <svg
+                    *ngIf="isChatExpanded"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    />
                   </svg>
-                  <svg *ngIf="!isChatExpanded" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  <svg
+                    *ngIf="!isChatExpanded"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clip-rule="evenodd"
+                    />
                   </svg>
                 </button>
               </div>
-              
+
               <!-- Chat Content (only visible when expanded) -->
-              <div *ngIf="isChatExpanded" class="flex-1 overflow-hidden h-[calc(100%-48px)]">
+              <div
+                *ngIf="isChatExpanded"
+                class="flex-1 overflow-hidden h-[calc(100%-48px)]"
+              >
                 <app-chat
                   class="h-full block"
                   chatType="requirement"
@@ -219,10 +282,14 @@
       </div>
 
       <!-- Footer with action buttons -->
-      <div class="flex justify-between gap-2 p-4 border-t border-secondary-200 bg-white">
+      <div
+        class="flex justify-between gap-2 p-4 border-t border-secondary-200 bg-white"
+      >
         <div>
           <app-button
-            [buttonContent]="mode === 'edit' ? 'Regenerate Draft' : 'Generate Draft'"
+            [buttonContent]="
+              mode === 'edit' ? 'Regenerate Draft' : 'Generate Draft'
+            "
             theme="secondary"
             size="sm"
             rounded="md"
@@ -259,7 +326,7 @@
         </div>
       </div>
     </form>
-    
+
     <!-- No floating chat button needed anymore since chat is integrated as a panel -->
   </div>
 </div>

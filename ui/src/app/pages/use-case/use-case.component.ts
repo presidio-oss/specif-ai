@@ -79,6 +79,7 @@ import {
 import { FloatingChatComponent } from '../../components/core/floating-chat/floating-chat.component';
 import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
 import { DocumentUpdateHandlerService } from 'src/app/services/document-update/document-update-handler.service';
+import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 
 @Component({
   selector: 'app-use-case',
@@ -257,7 +258,7 @@ export class UseCaseComponent implements OnInit {
       status: fileData.status,
     };
 
-    // Create the use case using the store action with properly formatted data
+    // Create the SI using the store action with properly formatted data
     this.store.dispatch(new CreateFile(`${this.folderName}`, formattedData));
 
     this.allowForceRedirect = true;
@@ -270,11 +271,11 @@ export class UseCaseComponent implements OnInit {
   addUseCase() {
     const formValue = this.useCaseForm.getRawValue();
 
-    // Create the use case data
+    // Create the SI data
     const useCaseData: IAddUseCaseRequest = {
       title: formValue.title,
       requirement: formValue.requirement,
-      requirementAbbr: 'UC',
+      requirementAbbr: RequirementTypeEnum.SI,
       chatHistory: this.chatHistory,
       status: 'DRAFT',
     };
@@ -296,7 +297,7 @@ export class UseCaseComponent implements OnInit {
       id: this.ucRequirementId,
       title: formValue.title,
       requirement: formValue.requirement,
-      requirementAbbr: 'UC',
+      requirementAbbr: 'SI',
       chatHistory: this.chatHistory,
       status: formValue.status,
     };
@@ -330,7 +331,9 @@ export class UseCaseComponent implements OnInit {
       ),
       status: new FormControl('DRAFT'),
       researchUrls: new FormArray([
-        new FormControl('', Validators.pattern('https?://.+')),
+        new FormControl('', [
+          Validators.pattern('^https?://[a-zA-Z0-9-_.]+\\.[a-zA-Z0-9-_.]+.*$')
+        ]),
       ]),
     });
 
@@ -479,7 +482,7 @@ export class UseCaseComponent implements OnInit {
           title: this.useCaseForm.get('title')?.value,
           requirement: this.useCaseForm.get('requirement')?.value,
           status: this.useCaseForm.get('status')?.value,
-          requirementAbbr: 'UC',
+          requirementAbbr: 'SI',
           chatHistory: chatHistory,
         }),
       );
@@ -514,7 +517,7 @@ export class UseCaseComponent implements OnInit {
             // Update the document sections
             this.updateDocumentSections();
 
-            // If in edit mode, update the use case
+            // If in edit mode, update the SI
             if (this.mode === 'edit') {
               this.updateUseCase();
             }
@@ -609,8 +612,8 @@ export class UseCaseComponent implements OnInit {
   }
 
   /**
-   * Generates a use case draft using the agentic flow
-   * This method calls the backend API to generate a use case draft based on the project and requirement information
+   * Generates a strategic initiative draft using the agentic flow
+   * This method calls the backend API to generate a strategic initiative draft based on the project and requirement information
    */
   // Getter for the research URLs form array
   get researchUrlsFormArray(): FormArray {
@@ -620,7 +623,9 @@ export class UseCaseComponent implements OnInit {
   // Add a new research URL field
   addResearchUrl() {
     this.researchUrlsFormArray.push(
-      new FormControl('', Validators.pattern('https?://.+')),
+      new FormControl('', [
+        Validators.pattern('^https?://[a-zA-Z0-9-_.]+\\.[a-zA-Z0-9-_.]+.*$')
+      ]),
     );
   }
 
@@ -678,7 +683,7 @@ export class UseCaseComponent implements OnInit {
         requestData,
       );
 
-      // Call the backend API to generate the use case draft
+      // Call the backend API to generate the strategic initiative draft
       const result = await this.electronService.generateUseCase(requestData);
 
       console.log(
@@ -716,7 +721,7 @@ export class UseCaseComponent implements OnInit {
         // Close the progress dialog immediately after successful generation
         this.showProgressDialog = false;
 
-        // If in add mode, create the use case
+        // If in add mode, create the strategic initiative
         this.mode === 'add' ? this.addUseCase() : this.updateUseCase();
       } else {
         console.error('Failed to generate business proposal:', result);
@@ -824,7 +829,7 @@ export class UseCaseComponent implements OnInit {
           return;
       }
 
-      // If in edit mode, update the use case
+      // If in edit mode, update the SI
       if (this.mode === 'edit') {
         this.updateUseCase();
       }
@@ -961,7 +966,7 @@ export class UseCaseComponent implements OnInit {
   handleInlineEdit = (newContent: string): void => {
     this.onCanvasContentChange(newContent);
     
-    // If in edit mode, update the use case
+    // If in edit mode, update the SI
     if (this.mode === 'edit') {
       this.updateUseCase();
     }

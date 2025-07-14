@@ -41,7 +41,7 @@ export const createFetchUrlTool = (): ITool => {
           return `No content found at URL: ${url}. The page might be empty or require JavaScript to load content.`;
         }
         
-        const content = docs[0].pageContent.slice(0, 2000);
+        const content = docs[0].pageContent.trim().slice(0, 2000);
         return content;
       } catch (error) {
         return `Error fetching content from URL: ${error instanceof Error ? error.message : String(error)}. Please try a different URL or check your internet connection.`;

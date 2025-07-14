@@ -122,7 +122,7 @@ ${state.requirement?.description ? `Requirement: ${state.requirement.description
     await workflowEvents.dispatchAction(
       "research",
       {
-        title: "Research completed and prepared summary for use case generation",
+        title: "Research completed and prepared summary for strategic initiative generation",
         output: referenceInformation,
       },
       runnableConfig,
@@ -154,7 +154,7 @@ export const buildUseCaseGenerationNode = ({
       const useCaseGenerationCorrelationId = uuid();
       await workflowEvents.dispatchThinking(
         "usecase-generation",
-        { title: "Generating Business Use Case Proposal" },
+        { title: "Generating Strategic Initiative Proposal" },
         runnableConfig,
         useCaseGenerationCorrelationId
       );
@@ -170,7 +170,7 @@ export const buildUseCaseGenerationNode = ({
           The proposal should be well-structured, professional, and ready for presentation to stakeholders.
           
           Include the following sections:
-          1. Title: A concise, descriptive title for the business proposal (DO NOT include terms like "UC", "Use Case", or any reference to this being a use case in the title)
+          1. Title: A concise, descriptive title for the business proposal (DO NOT include terms like "SI", "Strategic Initiative", or any reference to this being a strategic initiative in the title)
           2. Summary: A one-sentence summary of the business case
           3. Goals and Business Outcomes: Tangible, measurable goals and clear business outcomes
           4. Strategic Approaches: At least 3 approaches, each detailing HOW (implementation strategy), WHO (key stakeholders), WHEN (timeline), INVESTMENT (costs), and ratings for complexity and sustainability
@@ -199,7 +199,7 @@ export const buildUseCaseGenerationNode = ({
           
           Make the content specific, actionable, and focused on business value.`,
           schema: z.object({
-            title: z.string().describe("A concise, descriptive title for the business proposal (without mentioning 'UC' or 'use case')"),
+            title: z.string().describe("A concise, descriptive title for the business proposal (without mentioning 'SI' or 'strategic initiative')"),
             requirement: z.string().describe("The complete business proposal content in properly escaped JSON string format"),
           }),
         },
@@ -210,7 +210,7 @@ export const buildUseCaseGenerationNode = ({
         project: state.project,
         requirement: state.requirement,
         requestId: uuid(),
-        requirementAbbr: "UC" as const
+        requirementAbbr: "SI" as const
       };
 
       const prompt = getUCPrompt(ucParams);
@@ -232,7 +232,7 @@ IMPORTANT: Generate a comprehensive business proposal. DO NOT ask questions or r
 
 TITLE INSTRUCTIONS:
 - Create a concise, descriptive title for the business proposal
-- DO NOT include terms like "UC", "Use Case", or any reference to this being a use case in the title
+- DO NOT include terms like "SI", "Strategic Initiative", or any reference to this being a strategic initiative in the title
 - The title should focus on the business value or solution being proposed
 
 MARKDOWN FORMATTING INSTRUCTIONS:
@@ -268,7 +268,7 @@ CRITICAL JSON FORMATTING INSTRUCTIONS:
       await workflowEvents.dispatchAction(
         "usecase-generation",
         {
-          title: "Business Use Case Proposal generated successfully",
+          title: "Strategic Initiative Proposal generated successfully",
           output: {
             title: response.structuredResponse.title,
             requirement: response.structuredResponse.requirement,
@@ -278,7 +278,7 @@ CRITICAL JSON FORMATTING INSTRUCTIONS:
         useCaseGenerationCorrelationId
       );
 
-      span?.end({ statusMessage: "Successfully generated use case proposal" });
+      span?.end({ statusMessage: "Successfully generated strategic initiative proposal" });
       return {
         useCaseDraft: {
           title: response.structuredResponse.title,
@@ -289,8 +289,8 @@ CRITICAL JSON FORMATTING INSTRUCTIONS:
       span?.end({ level: "ERROR" });
       return {
         useCaseDraft: {
-          title: state.requirement?.title || "Error generating use case",
-          requirement: `Error generating use case proposal: ${error}`,
+          title: state.requirement?.title || "Error generating strategic initiative",
+          requirement: `Error generating strategic initiative proposal: ${error}`,
         },
       };
     }

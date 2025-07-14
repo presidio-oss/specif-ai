@@ -167,7 +167,7 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
     
     if (folderName === this.requirementTypes.BP) {
       url = '/bp-edit';
-    } else if (folderName === this.requirementTypes.UC) {
+    } else if (folderName === this.requirementTypes.SI) {
       url = `/use-case/edit/${fileName}`;
     }
     
@@ -223,15 +223,15 @@ export class DocumentListingComponent implements OnInit, OnDestroy, AfterViewIni
           },
         });
       });
-    } else if (folderName === this.requirementTypes.UC) {
-      // Special handling for Use Case add
+    } else if (folderName === this.requirementTypes.SI) {
+      // Special handling for strategic initiative add
       this.router.navigate(['/use-case/add'], {
         state: {
           data: this.appInfo,
           id,
           folderName,
           breadcrumb: {
-            name: 'Add Use Case',
+            name: 'Add Strategic Initiative',
             link: this.currentRoute,
             icon: 'add',
           },

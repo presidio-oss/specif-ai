@@ -106,7 +106,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
 
     const messages = transformToLangchainMessages(validatedData.chatHistory);
     const prompt = new SystemMessage(
-      validatedData.requirementAbbr === "UC"
+      validatedData.requirementAbbr === "SI"
         ? getUCPrompt(validatedData as UCParams)
         : chatWithAIPrompt(validatedData)
     );

@@ -16,7 +16,7 @@ export interface UsecaseDraft {
   id: string;
   title: string;
   requirement: string;
-  requirementAbbr: "UC";
+  requirementAbbr: "SI";
   context: ContextItem[];
   chatHistory: ChatMessage[];
   status: "DRAFT" | "COMPLETE";
@@ -25,7 +25,7 @@ export interface UsecaseDraft {
 export const UsecaseDraftSchema = z.object({
   title: z.string(),
   requirement: z.string(),
-  requirementAbbr: z.literal("UC"),
+  requirementAbbr: z.literal("SI"),
   context: z.array(z.object({
     type: z.string(),
     source: z.string(),

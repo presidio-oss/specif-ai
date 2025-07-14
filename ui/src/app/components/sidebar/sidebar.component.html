@@ -121,13 +121,13 @@
           >
           </ng-icon>
           <ng-icon
-            *ngIf="folder.name === 'UC'"
+            *ngIf="folder.name === 'SI'"
             class="text-xl w-4 h-4 mr-2"
             [ngClass]="{
               'text-primary-600': selectedFolder?.title === folder.name,
               'text-secondary-500': selectedFolder?.title !== folder.name,
             }"
-            name="heroDocument"
+            [name]="getIconName(folder.name)"
           >
           </ng-icon>
           <h4

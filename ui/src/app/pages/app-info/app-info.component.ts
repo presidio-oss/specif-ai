@@ -49,6 +49,7 @@ import {
   heroServerStack,
   heroBeaker,
   heroDocument,
+  heroPresentationChartBar,
 } from '@ng-icons/heroicons/outline';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
@@ -121,7 +122,8 @@ import { ProjectCreationService } from '../../services/project-creation/project-
       heroChevronUp,
       heroServerStack,
       heroDocument,
-      heroBeaker
+      heroBeaker,
+      heroPresentationChartBar
     }),
   ],
 })
@@ -179,7 +181,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
 
   // Predefined order of folders
-  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC', 'UC'];
+  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC', 'SI'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
@@ -655,7 +657,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   }
 
   navigateToAdd(folderName: string) {
-    if (folderName === 'UC') {
+    if (folderName === 'SI') {
       this.router
         .navigate(['/use-case/add'], {
           state: {

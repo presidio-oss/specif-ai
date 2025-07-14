@@ -6,7 +6,7 @@ export const REQUIREMENT_TYPE = {
   BP: "BP",
   US: "US",
   TASK: "TASK",
-  UC: "UC",
+  SI: "SI",
 } as const;
 
 export const REQUIREMENT_DISPLAY_NAME_MAP = {
@@ -17,7 +17,7 @@ export const REQUIREMENT_DISPLAY_NAME_MAP = {
   [REQUIREMENT_TYPE.PRD]: "Product Requirement",
   [REQUIREMENT_TYPE.UIR]: "User Interface Requirement",
   [REQUIREMENT_TYPE.TASK]: "Task",
-  [REQUIREMENT_TYPE.UC]: "Use Case",
+  [REQUIREMENT_TYPE.SI]: "Strategic Initiative",
 };
 
 export const REQUIREMENT_DISPLAY_NAME_PLURAL_MAP = {
@@ -28,5 +28,5 @@ export const REQUIREMENT_DISPLAY_NAME_PLURAL_MAP = {
   [REQUIREMENT_TYPE.PRD]: "Product Requirements",
   [REQUIREMENT_TYPE.UIR]: "User Interface Requirements",
   [REQUIREMENT_TYPE.TASK]: "Tasks",
-  [REQUIREMENT_TYPE.UC]: "Use Cases",
+  [REQUIREMENT_TYPE.SI]: "Strategic Initiatives",
 };

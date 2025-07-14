@@ -4,7 +4,7 @@ export enum FileTypeEnum {
   UIR = 'User Interface Requirements',
   NFR = 'Non Functional Requirements',
   BP = 'Business Process',
-  UC = 'Use Cases',
+  SI = 'Strategic Initiatives',
   TC = 'Test Cases',
 }
 
@@ -14,6 +14,6 @@ export enum IconPairingEnum {
   UIR = 'heroCube',
   NFR = 'heroWindow',
   BP = 'heroSquare3Stack3d',
-  UC = 'heroDocument',
+  SI = 'heroPresentationChartBar',
   TC = 'heroBeaker',
 }
