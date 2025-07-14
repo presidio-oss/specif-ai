@@ -19,7 +19,7 @@ import { setupMcpHandlers } from "./handlers/mcp-handler";
 import { setupWorkflowHandlers } from "./handlers/workflow-handler";
 import { MCPHub } from "./mcp/mcp-hub";
 import { APP_MESSAGES } from "./constants/message.constants";
-import { setupUsecaseHandlers } from "./handlers/usecase";
+import { setupSIHandlers } from "./handlers/usecase";
 
 // ========================
 // CONFIGURATION
@@ -314,7 +314,7 @@ app.whenReady().then(async () => {
     setupContentGenerationHandlers();
     setupMcpHandlers();
     setupWorkflowHandlers();
-    setupUsecaseHandlers();
+    setupSIHandlers();
 
     // start mcp servers in the background
     MCPHub.getInstance();

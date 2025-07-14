@@ -327,7 +327,7 @@ export class ElectronService {
   ): Promise<IUseCaseResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
-        channel: 'usecase:add',
+        channel: 'strategic-initiative:add',
         args: [request],
       });
     }
@@ -351,7 +351,7 @@ export class ElectronService {
   ): Promise<{title: string; requirement: string; status: string}> {
     if (this.electronAPI) {
       return this.ipc.request({
-        channel: 'usecase:generate',
+        channel: 'strategic-initiative:generate',
         args: [request],
         skipLoading: true
       });
