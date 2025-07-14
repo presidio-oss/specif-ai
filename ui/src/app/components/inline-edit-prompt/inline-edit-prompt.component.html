@@ -1,91 +1,96 @@
-<div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-gray-100">
+<div class="relative bg-white backdrop-blur-md rounded-xl p-4 shadow-lg border border-secondary-200">
+  <!-- Beta tag -->
+  <div class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-semibold bg-primary-100 text-primary-700 rounded uppercase tracking-wide">
+    Beta
+  </div>
+
   <!-- Initial prompt mode -->
-  <form *ngIf="!isLoading && !isEditReady" [formGroup]="promptForm" (ngSubmit)="onSubmit(); $event.preventDefault();" class="flex flex-col">
-    <!-- Context display (small, subtle) -->
-    <div *ngIf="selectedText" class="mb-2">
-      <p class="text-xs text-gray-400 mb-1">Selected text:</p>
-      <div class="text-sm text-gray-300 bg-gray-800 rounded p-2 mb-3 max-h-24 overflow-y-auto">
+  <form *ngIf="!isLoading && !isEditReady" [formGroup]="promptForm" (ngSubmit)="onSubmit(); $event.preventDefault();" class="flex flex-col gap-3">
+    
+    <div *ngIf="selectedText">
+      <p class="text-xs text-muted-foreground mb-1">Selected text:</p>
+      <div class="text-sm text-foreground bg-secondary-100 rounded p-2 max-h-24 overflow-y-auto">
         {{ selectedText }}
       </div>
     </div>
     
-    <!-- Main input with icon -->
-    <div class="flex items-center bg-gray-800 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-primary-500">
-      <ng-icon name="heroSparklesSolid" size="18" class="text-primary-400 mr-2"></ng-icon>
-      
+    <!-- Input group -->
+    <div class="flex items-start bg-secondary-100 rounded-lg px-3 py-2 focus-within:ring-1 focus-within:ring-primary-400 transition-all">
+      <div class="mt-1 mr-2">
+        <ng-icon name="heroSparklesSolid" class="text-primary-500 w-5 h-5"></ng-icon>
+      </div>
       <textarea
         id="userPrompt"
         formControlName="userPrompt"
         rows="1"
-        class="w-full bg-transparent text-white border-none focus:outline-none focus:ring-0 resize-none"
+        class="w-full bg-transparent text-foreground border-none focus:outline-none focus:ring-0 resize-none placeholder-secondary-400"
         placeholder="Edit or explain..."
         (input)="autoResize($event)"
       ></textarea>
-      
       <button 
         type="submit" 
         [disabled]="promptForm.invalid"
-        class="ml-2 p-1 rounded-full bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+        class="ml-2 p-1.5 rounded-full bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
       </button>
     </div>
 
-    <!-- Error message for form validation -->
     <ng-container *ngIf="promptForm.get('userPrompt')?.invalid && promptForm.get('userPrompt')?.touched">
-      <span class="text-red-500 text-xs mt-1">Please enter a prompt</span>
+      <span class="text-danger-500 text-xs">Please enter a prompt</span>
     </ng-container>
-    
-    <!-- Error message from processing -->
-    <div *ngIf="errorMessage" class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+
+    <div *ngIf="errorMessage" class="p-2 bg-danger-100 border border-danger-200 rounded text-danger-700 text-sm">
       {{ errorMessage }}
     </div>
   </form>
-  
+
   <!-- Loading state -->
-  <div *ngIf="isLoading" class="flex flex-col items-center py-6">
-    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-r-2 border-primary-600 mb-3"></div>
-    <p class="text-gray-700 mb-2">Processing your edit...</p>
-    <p class="text-gray-500 text-sm mb-4">Please wait, this may take a moment</p>
-    
+  <div *ngIf="isLoading" class="flex flex-col items-center py-6 space-y-2">
+    <div class="relative w-10 h-10">
+      <div class="absolute top-0 left-0 w-full h-full border-2 border-primary-300/20 rounded-full"></div>
+      <div class="absolute top-0 left-0 w-full h-full border-t-2 border-r-2 border-primary-500 rounded-full animate-spin"></div>
+    </div>
+    <p class="text-foreground">Processing your edit...</p>
+    <p class="text-muted-foreground text-sm">Please wait, this may take a moment</p>
     <button 
       (click)="goBackToPrompt()" 
-      class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+      class="px-3 py-1.5 text-sm bg-secondary-200 border border-secondary-300 text-foreground rounded-md hover:bg-secondary-300 transition-colors">
       Cancel
     </button>
   </div>
-  
-  <!-- Review state - shows the AI-generated edit for approval -->
-  <div *ngIf="!isLoading && isEditReady" class="flex flex-col">
-    <div class="mb-4">
-      <p class="text-xs text-gray-500 mb-1">Original text:</p>
-      <div class="text-sm text-gray-700 bg-gray-100 rounded p-2 mb-3 max-h-28 overflow-y-auto">
+
+  <!-- Review state -->
+  <div *ngIf="!isLoading && isEditReady" class="flex flex-col gap-4">
+    <div>
+      <p class="text-xs text-muted-foreground mb-1">Original text:</p>
+      <div class="text-sm text-foreground bg-secondary-100 rounded p-2 max-h-28 overflow-y-auto">
         {{ selectedText }}
       </div>
-      
-      <p class="text-xs text-gray-500 mb-1">Suggested edit:</p>
-      <div class="text-sm text-gray-800 bg-green-50 border border-green-100 rounded p-2 max-h-36 overflow-y-auto prose prose-sm max-w-none">
+
+      <p class="text-xs text-muted-foreground mb-1">Suggested edit:</p>
+      <div class="text-sm text-foreground bg-primary-50 border border-primary-200 rounded p-2 max-h-36 overflow-y-auto prose prose-sm max-w-none prose-secondary-edit">
         <div [innerHTML]="renderedHtml"></div>
       </div>
     </div>
-    
-    <div class="flex justify-between items-center mt-2">
+
+    <div class="flex justify-between items-center">
       <button 
         (click)="goBackToPrompt()" 
-        class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+        class="px-3 py-1.5 text-sm bg-secondary-200 border border-secondary-300 text-foreground rounded-md hover:bg-secondary-300 transition-colors">
         Try again
       </button>
-      
       <div class="flex space-x-2">
         <button 
           (click)="rejectEdit()" 
-          class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+          class="px-3 py-1.5 text-sm bg-secondary-200 border border-secondary-300 text-foreground rounded-md hover:bg-secondary-300 transition-colors">
           Reject
         </button>
         <button 
           (click)="acceptEdit()" 
-          class="px-3 py-1 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-500">
+          class="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-500 transition-colors">
           Apply edit
         </button>
       </div>

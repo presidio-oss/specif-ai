@@ -32,7 +32,8 @@ export class InlineEditService {
     
     // Open dialog with initial prompt state
     const dialogRef = this.dialog.open(InlineEditPromptComponent, {
-      width: '500px',
+      width: '480px',
+      maxWidth: '90vw',
       data: { 
         selectedText, 
         context,
@@ -40,7 +41,10 @@ export class InlineEditService {
         processFunction: (prompt: string) => this.processInlineEdit(selectedText, prompt, context)
       },
       panelClass: 'inline-edit-dialog',
-      disableClose: true
+      disableClose: true,
+      backdropClass: 'inline-edit-backdrop',
+      autoFocus: true,
+      hasBackdrop: true,
     });
     
     // Handle dialog close
@@ -112,7 +116,7 @@ export class InlineEditService {
    * @param editedText The edited text to apply
    * @param selectionStart The start position of the selection
    * @param selectionEnd The end position of the selection
-   * @returns The updated content
+   * @returns The edited text that was inserted
    */
   applyInlineEdit(editor: any, editedText: string, selectionStart: number, selectionEnd: number): string {
     if (!editor) return '';
@@ -155,8 +159,8 @@ export class InlineEditService {
         }
       }
       
-      // Return the updated content
-      return editor.getHTML();
+      // Return only the edited text, not the entire HTML content
+      return editedText;
     } catch (error) {
       console.error('Error applying inline edit:', error);
       return '';

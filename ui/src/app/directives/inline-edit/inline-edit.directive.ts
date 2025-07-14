@@ -7,6 +7,8 @@ import { InlineEditService } from '../../services/inline-edit/inline-edit.servic
 import { DOCUMENT } from '@angular/common';
 import { InlineEditResponse } from '../../model/interfaces/chat.interface';
 import { markdownToHtml } from '../../utils/markdown.utils';
+import { htmlToMarkdown } from '../../utils/html.utils';
+import { heroSparklesSolid as sparkleIcon } from '@ng-icons/heroicons/solid';
 
 /**
  * Directive that adds inline edit functionality to elements
@@ -58,6 +60,16 @@ export class InlineEditDirective implements OnInit, OnDestroy {
           !this.sparkleIcon.contains(event.target as Node) &&
           event.target !== this.sparkleIcon
         ) {
+          this.hideSparkleIcon();
+        }
+      });
+      
+    // Listen for selection changes to hide icon when selection is cleared
+    fromEvent(this.document, 'selectionchange')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.toString().trim() === '') {
           this.hideSparkleIcon();
         }
       });
@@ -140,58 +152,54 @@ export class InlineEditDirective implements OnInit, OnDestroy {
     if (this.sparkleIcon) {
       this.hideSparkleIcon();
     }
-    
-    // Create a simple div for the sparkle icon
+
+    // Create the sparkle icon element
     this.sparkleIcon = this.renderer.createElement('div');
-    this.renderer.addClass(this.sparkleIcon, 'sparkle-icon');
-    this.renderer.setStyle(this.sparkleIcon, 'position', 'fixed');
-    this.renderer.setStyle(this.sparkleIcon, 'z-index', '1000');
-    this.renderer.setStyle(this.sparkleIcon, 'cursor', 'pointer');
-    this.renderer.setStyle(this.sparkleIcon, 'background-color', '#f0f9ff');
-    this.renderer.setStyle(this.sparkleIcon, 'border', '1px solid #bfdbfe');
-    this.renderer.setStyle(this.sparkleIcon, 'border-radius', '50%');
-    this.renderer.setStyle(this.sparkleIcon, 'width', '28px');
-    this.renderer.setStyle(this.sparkleIcon, 'height', '28px');
-    this.renderer.setStyle(this.sparkleIcon, 'display', 'flex');
-    this.renderer.setStyle(this.sparkleIcon, 'align-items', 'center');
-    this.renderer.setStyle(this.sparkleIcon, 'justify-content', 'center');
-    this.renderer.setStyle(this.sparkleIcon, 'box-shadow', '0 2px 4px rgba(0,0,0,0.1)');
-    this.renderer.setStyle(this.sparkleIcon, 'font-size', '16px');
-    
-    // Calculate position (offset from selection)
-    this.renderer.setStyle(this.sparkleIcon, 'left', `${this.lastSelectionPosition.x + 10}px`);
-    this.renderer.setStyle(this.sparkleIcon, 'top', `${this.lastSelectionPosition.y - 30}px`);
-    
-    // Use a sparkle emoji as the icon
-    this.renderer.setProperty(this.sparkleIcon, 'innerHTML', '✨');
-    
-    // Add click event to the sparkle icon
+    this.renderer.setAttribute(this.sparkleIcon, 'title', 'Edit with AI');
+
+    // Use Tailwind classes instead of inline styles
+    if (this.sparkleIcon) {
+      this.sparkleIcon.className = `
+        fixed z-50 w-6 h-6 bg-primary-100 text-primary-500
+        rounded-full flex items-center justify-center shadow
+        backdrop-blur-sm transition-500 scale-0 cursor-pointer
+      `.trim();
+    }
+
+    // Position it based on selection
+    if (this.sparkleIcon) {
+      this.sparkleIcon.style.left = `${this.lastSelectionPosition.x + 8}px`;
+      this.sparkleIcon.style.top = `${this.lastSelectionPosition.y - 26}px`;
+    }
+
+    // Inject the hero icon
+    const sparkleIconSvg = sparkleIcon.replace(
+      '<svg',
+      '<svg fill="currentColor" width="16" height="16"'
+    );
+    this.renderer.setProperty(this.sparkleIcon, 'innerHTML', sparkleIconSvg);
+
+    // Add click event
     if (this.sparkleIcon) {
       this.sparkleIcon.addEventListener('click', () => {
         this.openInlineEditPrompt();
       });
     }
-    
-    // Add tooltip attribute
-    if (this.sparkleIcon) {
-      this.renderer.setAttribute(this.sparkleIcon, 'title', 'Edit with AI');
-    }
-    
-    // Add to body
+
+    // Append to document
     if (this.sparkleIcon) {
       this.renderer.appendChild(this.document.body, this.sparkleIcon);
-      
-      // Add animation
-      this.renderer.setStyle(this.sparkleIcon, 'transform', 'scale(0)');
-      this.renderer.setStyle(this.sparkleIcon, 'transition', 'transform 0.2s ease-out');
     }
-    
+
+    // Animate in
     setTimeout(() => {
       if (this.sparkleIcon) {
-        this.renderer.setStyle(this.sparkleIcon, 'transform', 'scale(1)');
+        this.sparkleIcon.classList.remove('scale-0');
+        this.sparkleIcon.classList.add('scale-100');
       }
-    }, 10);
+    }, 0);
   }
+
   
   /**
    * Hide the sparkle icon
@@ -228,6 +236,12 @@ export class InlineEditDirective implements OnInit, OnDestroy {
    */
   private applyEdit(editedText: string): void {
     if (!this.selectionRange || !this.selectedText) {
+      this.toasterService.showError('No text selection found');
+      return;
+    }
+
+    if (!editedText || editedText.trim() === '') {
+      this.toasterService.showError('Edited text is empty');
       return;
     }
     
@@ -261,16 +275,55 @@ export class InlineEditDirective implements OnInit, OnDestroy {
           endPos = this.selectionRange.endOffset;
         }
         
-        // Use the service to apply the edit if we have an editor instance
-        const result = this.inlineEditService.applyInlineEdit(
+        // Apply the edit directly to the editor without affecting the whole content
+        this.inlineEditService.applyInlineEdit(
           this.editorInstance,
           editedText,
           startPos,
           endPos
         );
         
-        if (result && this.onContentUpdated) {
-          this.onContentUpdated(result);
+        // After applying the edit directly to the editor,
+        // get the full updated content from the editor and trigger save
+        if (this.onContentUpdated && this.editorInstance) {
+          // Set selection to the edited text
+          const selection = this.editorInstance.state.selection;
+          this.editorInstance.commands.setTextSelection({
+            from: startPos,
+            to: startPos + editedText.length
+          });
+          
+          // Get the full HTML content from the editor
+          const htmlContent = this.editorInstance.getHTML();
+          
+          // Convert the HTML back to markdown before saving
+          htmlToMarkdown(htmlContent)
+            .then(markdownContent => {
+              // Call the update callback with the markdown content (if defined)
+              if (this.onContentUpdated) {
+                this.onContentUpdated(markdownContent as string);
+              }
+            })
+            .catch(error => {
+              console.error('Error converting HTML to markdown:', error);
+              this.toasterService.showError('Error converting content format');
+              // Fallback to the edited text directly if conversion fails
+              if (this.onContentUpdated) {
+                this.onContentUpdated(editedText);
+              }
+            });
+        }
+        
+        // Position cursor at the end of inserted text and ensure focus
+        try {
+          // Calculate the new cursor position after the inserted text
+          const newCursorPos = startPos + editedText.length;
+          
+          // Set cursor position and focus
+          this.editorInstance.commands.setTextSelection(newCursorPos);
+          this.editorInstance.commands.focus();
+        } catch (e) {
+          console.warn('Could not set cursor position:', e);
         }
       } catch (error) {
         console.error('Error applying inline edit:', error);
@@ -290,9 +343,33 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       this.toasterService.showError('Could not apply edit');
     }
     
+    // Clean up
     this.hideSparkleIcon();
+    this.cleanupSelection();
     
     // Show success toast
     this.toasterService.showSuccess('Text updated successfully');
+  }
+  
+  /**
+   * Clean up any lingering selections
+   */
+  private cleanupSelection(): void {
+    // Clear browser selection to avoid glitches
+    if (window.getSelection) {
+      const selection = window.getSelection();
+      if (selection) {
+        if (selection.empty) {
+          selection.empty(); // Chrome
+        } else if (selection.removeAllRanges) {
+          selection.removeAllRanges(); // Firefox
+        }
+      }
+    }
+    
+    // Reset internal state
+    this.selection = null;
+    this.selectionRange = null;
+    this.selectedText = '';
   }
 }
