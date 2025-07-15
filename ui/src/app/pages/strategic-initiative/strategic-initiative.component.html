@@ -204,7 +204,7 @@
               <!-- Rich Text Editor with content -->
               <app-rich-text-editor
                 #richTextEditor
-                [content]="strategicInitiativeForm.get('requirement')?.value"
+                formControlName="requirement"
                 [editorClass]="'h-full flex-1 min-h-[240px]'"
                 [editable]="true"
                 [noRounding]="true"

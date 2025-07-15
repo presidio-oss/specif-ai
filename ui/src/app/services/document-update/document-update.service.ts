@@ -29,7 +29,7 @@ export class DocumentUpdateService {
     if (!toolResponse) return false;
 
     try {
-      const response = JSON.parse(toolResponse);
+      const response = toolResponse as any;
       
       if (response.updateRequest) {
         const { updateRequest } = response;

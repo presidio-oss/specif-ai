@@ -215,6 +215,20 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       .describe("The text block to replace the search block with"),
   });
 
+  const addToRequirementDescription = tool(
+    ({}: { contentToAdd: string }): string => {
+      return "Tool called successfully, The user is notified that you've suggested adding content to the description";
+    },
+    {
+      name: "add_to_requirement_description",
+      description:
+        "Suggest adding content to the current requirement description",
+      schema: z.object({
+        contentToAdd: z.string(),
+      }),
+    }
+  );
+
   const replaceTextBlock = tool(
     async (input: z.infer<typeof textBlockReplaceSchema>) => {
       const { searchBlock, replaceBlock } = input;
@@ -226,6 +240,9 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
         });
       }
 
+      console.log("[replaceTextBlock] Attempting to replace text block");
+      console.log("Current content:", latestContent);
+      console.log("Search block:", searchBlock);
       if (latestContent && latestContent.includes(searchBlock)) {
         latestContent = latestContent.replace(searchBlock, replaceBlock);
       } else {
@@ -246,6 +263,7 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
         replaceBlock,
       };
 
+      console.log("[replaceTextBlock] Update request created:", updateRequest);
       return JSON.stringify({
         success: true,
         message: `Text block replace request created. Replacing specific text block with new content.`,
@@ -271,7 +289,11 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     }
   );
 
-  const tools = [getCurrentRequirementContent, replaceTextBlock];
+  const tools = [
+    getCurrentRequirementContent,
+    addToRequirementDescription,
+    replaceTextBlock,
+  ];
 
   switch (data.requirementAbbr) {
     case "BP": {
