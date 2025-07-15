@@ -50,6 +50,55 @@ Integrate JIRA to transform Specifai-generated requirements into actionable JIRA
 
 ---
 
+## 🔷 Azure DevOps Integration
+
+Integrate Azure DevOps to synchronize Specifai-generated requirements with your ADO work items, enabling seamless project management across platforms.
+
+<div align="center">
+
+![Azure DevOps Integration](../../static/img/specifai-ado-integration.png)
+*Manage Azure DevOps integrations within Specifai*
+
+</div>
+
+### ✨ Features and Benefits
+
+* **Hierarchical Work Item Management:** Support for Features → Platform Features → User Stories mapping that aligns with ADO's structure.
+* **Bidirectional Synchronization:** Pull work items from ADO into Specifai or push Specifai requirements to ADO.
+* **Flexible Mapping:** Configure work item types to match your ADO project structure (PRD→Feature, User Story→Platform Feature, Task→User Story).
+* **Bulk Operations:** Import or export multiple work items efficiently, maintaining parent-child relationships.
+* **Personal Access Token Authentication:** Secure authentication using Azure DevOps PATs with granular permission control.
+
+### ⚡ Quick Start Guide
+
+1. **Prerequisites:** You'll need an active Azure DevOps organization, project access with work item permissions, and the Specifai desktop application.
+
+2. **Detailed Setup:** For comprehensive PAT creation and configuration, refer to our [Azure DevOps Integration Guide](ADO-README.md).
+
+3. **Pull from Azure DevOps:**
+   * Navigate to your solution's integration page in Specifai.
+   * Click **Sync with Azure DevOps** to access the ADO integration modal.
+   * Select the Features, Platform Features, and User Stories you want to import.
+   * Click **Pull from ADO** to import selected items into Specifai as PRDs, User Stories, and Tasks.
+
+4. **Push to Azure DevOps:**
+   * From your solution, select the PRDs, User Stories, and Tasks you want to export.
+   * Click **Push to ADO** to create corresponding work items in Azure DevOps.
+   * The system maintains hierarchical relationships (PRD→Feature, User Story→Platform Feature, Task→User Story).
+
+5. **Successful Integration:**
+   * Upon successful sync, you'll see confirmation messages and ADO work item IDs displayed in Specifai.
+   * Work items maintain bidirectional references for easy tracking and updates.
+   
+   <div align="center">
+
+   ![ADO Integration Connected](../../static/img/specifai-ado-integration-connected.png)
+   *Successfully connected Azure DevOps integration*
+
+   </div>
+
+---
+
 ## 🚀 AWS Bedrock Knowledge Base Direct Solution Integration
 
 Connect your enterprise knowledge base to Specifai's AI chat, enhancing suggestions and enabling context-aware requirement generation for all document types.

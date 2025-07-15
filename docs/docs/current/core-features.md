@@ -488,6 +488,11 @@ Specifai provides seamless options to share and integrate your generated require
     * Directly synchronize your requirements with Jira projects.
     * Automatically creates epics, stories, and tasks, maintaining hierarchy and relationships.
 
+4.  **Azure DevOps Sync** (Individual PRD - User Stories level)
+    * Seamlessly synchronize your requirements with Azure DevOps projects.
+    * Automatically creates Features, Platform Features, and User Stories, maintaining hierarchical relationships.
+    * Supports bidirectional sync for pulling existing work items from ADO into Specifai.
+
 <div align="center">
 
 ![Export Options for User Stories](../../static/img/specifai-stories-export.png)

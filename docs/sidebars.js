@@ -34,6 +34,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'current/ADO-README',
+          label: 'Detailed Azure DevOps Setup',
+        },
+        {
+          type: 'doc',
           id: 'current/aws-bedrock-kb-configuration',
           label: 'Detailed AWS Bedrock KB MCP Setup',
         },

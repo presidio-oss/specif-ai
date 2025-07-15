@@ -146,6 +146,7 @@ You're ready to start using Specifai! Here's what to do next:
 
 2.  **Set up integrations:**
     - Configure Jira integration.
+    - Configure Azure DevOps integration.
     - Set up AWS Bedrock.
     - Add custom MCP servers.
     (See: [Integrations Setup Guide](integrations-setup.md))
