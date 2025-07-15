@@ -4,6 +4,7 @@ export interface IAddStrategicInitiativeRequest {
   requirementAbbr: 'SI';
   chatHistory: any[];
   status: 'DRAFT' | 'COMPLETE';
+  researchUrls?: string[];
 }
 
 export interface IUpdateStrategicInitiativeRequest {
@@ -13,6 +14,7 @@ export interface IUpdateStrategicInitiativeRequest {
   requirementAbbr: 'SI';
   chatHistory: any[];
   status: 'DRAFT' | 'COMPLETE';
+  researchUrls?: string[];
 }
 
 export interface IStrategicInitiativeResponse {

@@ -5,7 +5,6 @@ import {
 import {
   SectionInfo,
   parseMarkdownSections,
-  generateSectionId,
   replaceSection,
   appendContent,
 } from '../../utils/section.utils';
@@ -64,7 +63,6 @@ import { IList } from '../../model/interfaces/IList';
 import { ElectronService } from '../../electron-bridge/electron.service';
 import {
   IAddStrategicInitiativeRequest,
-  IUpdateStrategicInitiativeRequest,
 } from '../../model/interfaces/strategic-initiative.interface';
 import {
   WorkflowType,
@@ -168,19 +166,16 @@ export class StrategicInitiativeComponent implements OnInit {
     private workflowProgressService: WorkflowProgressService,
     private documentUpdateService: DocumentUpdateService,
   ) {
-    // Initialize document update handler
     this.documentUpdateHandler = new DocumentUpdateHandlerService(
       documentUpdateService,
       this.toastService,
     );
 
-    // Get mode from route parameters
     this.route.params.subscribe((params) => {
       this.mode = params['mode'] === 'add' ? 'add' : 'edit';
       this.fileName = params['fileName'] || '';
     });
 
-    // Get state data if available
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras?.state) {
       this.data = navigation.extras.state['data'] || {};
@@ -189,7 +184,6 @@ export class StrategicInitiativeComponent implements OnInit {
       this.selectedRequirement = navigation.extras.state['req'] || {};
     }
 
-    // Set up first breadcrumb
     this.store.dispatch(
       new AddBreadcrumb({
         url: `/apps/${this.projectId}`,
@@ -208,16 +202,14 @@ export class StrategicInitiativeComponent implements OnInit {
     if (this.mode === 'edit') {
       this.absoluteFilePath = `${this.folderName}/${this.fileName}`;
       this.name = this.data?.name;
-      this.requirement = this.data?.description; // Access description from data but store in requirement
+      this.requirement = this.data?.description;
       this.ucRequirementId = this.fileName.split('-')[0];
 
-      // Set edit label with ID after ID is initialized
       this.editLabel = `Edit ${this.ucRequirementId}`;
     } else {
       this.editLabel = 'Add';
     }
 
-    // Set up second breadcrumb after ID is initialized
     this.store.dispatch(
       new AddBreadcrumb({
         label: this.editLabel,
@@ -234,7 +226,6 @@ export class StrategicInitiativeComponent implements OnInit {
 
     this.initializeStrategicInitiativeForm();
 
-    // Clear any existing workflow status
     if (this.projectId) {
       this.showProgressDialog = false;
       this.isGeneratingStrategicInitiative = false;
@@ -243,8 +234,6 @@ export class StrategicInitiativeComponent implements OnInit {
   }
 
   private handleStrategicInitiativeCreation(fileData: IAddStrategicInitiativeRequest) {
-    // Format the data for the CreateFile action to match the expected format
-    // The document listing component expects 'title' and 'requirement' fields
     const formattedData = {
       title: fileData.title,
       requirement: fileData.requirement,
@@ -252,7 +241,6 @@ export class StrategicInitiativeComponent implements OnInit {
       status: fileData.status,
     };
 
-    // Create the SI using the store action with properly formatted data
     this.store.dispatch(new CreateFile(`${this.folderName}`, formattedData));
 
     this.allowForceRedirect = true;
@@ -265,16 +253,16 @@ export class StrategicInitiativeComponent implements OnInit {
   addStrategicInitiative() {
     const formValue = this.strategicInitiativeForm.getRawValue();
 
-    // Create the SI data
     const strategicInitiativeData: IAddStrategicInitiativeRequest = {
       title: formValue.title,
       requirement: formValue.requirement,
       requirementAbbr: RequirementTypeEnum.SI,
       chatHistory: this.chatHistory,
       status: 'DRAFT',
+      researchUrls: formValue.researchUrls,
     };
 
-    // Clear workflow status before navigating away
+
     if (this.projectId) {
       this.showProgressDialog = false;
       this.isGeneratingStrategicInitiative = false;
@@ -287,23 +275,15 @@ export class StrategicInitiativeComponent implements OnInit {
   updateStrategicInitiative() {
     const formValue = this.strategicInitiativeForm.getRawValue();
 
-    const strategicInitiativeData: IUpdateStrategicInitiativeRequest = {
-      id: this.ucRequirementId,
-      title: formValue.title,
-      requirement: formValue.requirement,
-      requirementAbbr: 'SI',
-      chatHistory: this.chatHistory,
-      status: formValue.status,
-    };
-
-    const formattedData = {
+    const updatedData = {
       title: formValue.title,
       requirement: formValue.requirement,
       chatHistory: this.chatHistory,
       status: formValue.status,
+      researchUrls: formValue.researchUrls,
     };
 
-    this.store.dispatch(new UpdateFile(this.absoluteFilePath, formattedData));
+    this.store.dispatch(new UpdateFile(this.absoluteFilePath, updatedData));
 
     this.toastService.showSuccess(
       TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
@@ -373,8 +353,6 @@ export class StrategicInitiativeComponent implements OnInit {
         });
     }
     
-    // Initialize document sections when component loads
-    // This is important since chat is expanded by default
     if (this.mode === 'edit') {
       this.updateDocumentSections();
     }
@@ -443,7 +421,6 @@ export class StrategicInitiativeComponent implements OnInit {
   }
 
   navigateBackToDocumentList(data: any) {
-    // Clear workflow status before navigating away
     if (this.projectId) {
       this.showProgressDialog = false;
       this.isGeneratingStrategicInitiative = false;
@@ -467,7 +444,6 @@ export class StrategicInitiativeComponent implements OnInit {
   updateChatHistory(chatHistory: any) {
     this.chatHistory = chatHistory;
 
-    // Process the chat history for document updates
     this.processDocumentUpdates();
 
     if (this.mode === 'edit') {
@@ -483,49 +459,30 @@ export class StrategicInitiativeComponent implements OnInit {
     }
   }
 
-  /**
-   * Process the chat history for document updates
-   * This method checks for tool responses in the chat history and applies document updates
-   */
   private processDocumentUpdates(): void {
-    // Check if there are any tool messages in the chat history
     const toolMessages = this.chatHistory.filter(
       (message: any) => message.tool,
     );
 
     if (toolMessages.length > 0) {
-      // Process each tool message
       for (const message of toolMessages) {
-        // Check if the message has already been processed
         if (message.processed) continue;
-
-        // Try to handle the tool response
         const handled = this.documentUpdateHandler.handleToolResponse(
           message.tool,
           (updatedContent: string, replacementInfo?: any) => {
-            // Update the form with the updated content
             this.strategicInitiativeForm.patchValue({
               requirement: updatedContent,
             });
 
-            // Update the document sections
             this.updateDocumentSections();
 
-            // If in edit mode, update the SI
             if (this.mode === 'edit') {
               this.updateStrategicInitiative();
             }
-
-            // Handle visual highlighting if replacement info is provided
-            if (replacementInfo) {
-              this.highlightReplacement(replacementInfo);
-            }
           },
-          // Function to get the current content
           () => this.strategicInitiativeForm.get('requirement')?.value || '',
         );
 
-        // Mark the message as processed
         if (handled) {
           message.processed = true;
         }
@@ -577,10 +534,6 @@ export class StrategicInitiativeComponent implements OnInit {
     }
   }
 
-  /**
-   * Export the business proposal as a Word document
-   * Uses the utility function to convert markdown to Word format
-   */
   exportAsWord() {
     const title = this.strategicInitiativeForm.get('title')?.value || 'Business Proposal';
     const markdownContent = this.strategicInitiativeForm.get('requirement')?.value || '';
@@ -602,19 +555,13 @@ export class StrategicInitiativeComponent implements OnInit {
   }
 
   canDeactivate(): boolean {
-    return !this.allowForceRedirect && this.strategicInitiativeForm.dirty;
+    return this.allowForceRedirect && !this.strategicInitiativeForm.dirty;
   }
 
-  /**
-   * Generates a strategic initiative draft using the agentic flow
-   * This method calls the backend API to generate a strategic initiative draft based on the project and requirement information
-   */
-  // Getter for the research URLs form array
   get researchUrlsFormArray(): FormArray {
     return this.strategicInitiativeForm.get('researchUrls') as FormArray;
   }
 
-  // Add a new research URL field
   addResearchUrl() {
     this.researchUrlsFormArray.push(
       new FormControl('', [
@@ -623,17 +570,13 @@ export class StrategicInitiativeComponent implements OnInit {
     );
   }
 
-  // Remove a research URL field
   removeResearchUrl(index: number) {
     this.researchUrlsFormArray.removeAt(index);
   }
 
   async generateStrategicInitiativeDraft() {
-
-    // Setup workflow progress
     this.setupStrategicInitiativeProgressListener();
 
-    // Show progress dialog immediately
     this.showProgressDialog = true;
     this.isGeneratingStrategicInitiative = true;
     this.strategicInitiativeGenerationComplete = false;
@@ -644,20 +587,16 @@ export class StrategicInitiativeComponent implements OnInit {
     );
 
     try {
-      // Get the current form values
       const formValue = this.strategicInitiativeForm.getRawValue();
 
-      // Filter out empty research URLs
       const researchUrls = formValue.researchUrls.filter(
         (url: string) => url.trim() !== '',
       );
 
-      // Prepare the request data
       const requestData = {
         project: {
           name: this.folderName,
           description: this.data?.description || '',
-          // Include solution metadata
           solution: {
             solutionId: this.projectId,
             name: this.data?.name || '',
@@ -677,7 +616,6 @@ export class StrategicInitiativeComponent implements OnInit {
         requestData,
       );
 
-      // Call the backend API to generate the strategic initiative draft
       const result = await this.electronService.generateStrategicInitiative(requestData);
 
       console.log(
@@ -686,7 +624,6 @@ export class StrategicInitiativeComponent implements OnInit {
       );
 
       if (result && result.status === 'success') {
-        // Add a completion event
         this.workflowProgressService.addProgressEvent(
           this.projectId,
           WorkflowType.StrategicInitiative,
@@ -702,7 +639,6 @@ export class StrategicInitiativeComponent implements OnInit {
           },
         );
 
-        // Update the form with the generated content
         this.strategicInitiativeForm.patchValue({
           title: result.title || formValue.title,
           requirement: result.requirement,
@@ -712,10 +648,8 @@ export class StrategicInitiativeComponent implements OnInit {
           'Business proposal generated successfully',
         );
 
-        // Close the progress dialog immediately after successful generation
         this.showProgressDialog = false;
 
-        // If in add mode, create the strategic initiative
         this.mode === 'add' ? this.addStrategicInitiative() : this.updateStrategicInitiative();
       } else {
         console.error('Failed to generate business proposal:', result);
@@ -740,51 +674,31 @@ export class StrategicInitiativeComponent implements OnInit {
     }
   }
 
-  // setupWorkflowProgressListener method removed - using setupStrategicInitiativeProgressListener instead
-
-  /**
-   * Handle content changes from the canvas editor
-   * @param content The updated content
-   */
   onCanvasContentChange(content: string): void {
     this.strategicInitiativeForm.patchValue({
       requirement: content,
     });
   }
 
-  /**
-   * Handle title changes from the canvas editor
-   * @param title The updated title
-   */
+
   onTitleChange(title: string): void {
     this.strategicInitiativeForm.patchValue({
       title: title,
     });
   }
 
-  /**
-   * Handle section selection in the canvas editor
-   * @param section The selected section
-   */
   onSectionSelected(section: SectionInfo): void {
     this.selectedSection = section;
     this.loggerService.debug('Selected section:', section);
   }
 
-  /**
-   * Handle edit proposals from the chat or canvas editor
-   * Uses utility functions for section replacement and content appending
-   * @param edit The proposed edit
-   */
   onEditProposed(edit: EditProposal): void {
     try {
       const currentContent = this.strategicInitiativeForm.get('requirement')?.value || '';
       let updatedContent: string;
 
-      // Determine how to apply the edit based on its type
       switch (edit.type) {
         case 'append':
-          // Use the utility function to append content
           updatedContent = appendContent(currentContent, edit.content);
           this.strategicInitiativeForm.patchValue({ requirement: updatedContent });
           this.toastService.showSuccess(
@@ -813,7 +727,6 @@ export class StrategicInitiativeComponent implements OnInit {
           break;
 
         case 'full':
-          // Replace the entire content
           this.strategicInitiativeForm.patchValue({ requirement: edit.content });
           this.toastService.showSuccess('Document content replaced');
           break;
@@ -823,12 +736,10 @@ export class StrategicInitiativeComponent implements OnInit {
           return;
       }
 
-      // If in edit mode, update the SI
       if (this.mode === 'edit') {
         this.updateStrategicInitiative();
       }
 
-      // Update document sections after content changes
       this.updateDocumentSections();
     } catch (error) {
       console.error('Error applying edit:', error);
@@ -836,14 +747,9 @@ export class StrategicInitiativeComponent implements OnInit {
     }
   }
 
-  /**
-   * Select a document section from the sidebar
-   * @param section The section to select
-   */
   selectDocumentSection(section: SectionInfo): void {
     this.selectedSection = section;
 
-    // If we have a canvas editor, tell it to select this section
     const canvasEditor = document.querySelector('app-canvas-editor');
     if (
       canvasEditor &&
@@ -868,17 +774,11 @@ export class StrategicInitiativeComponent implements OnInit {
     }
   }
 
-  /**
-   * Update the document sections based on the current content
-   * Uses the utility function to parse markdown headings into sections
-   */
   private updateDocumentSections(): void {
     const content = this.strategicInitiativeForm.get('requirement')?.value || '';
 
-    // Use the utility function to parse sections
     this.documentSections = parseMarkdownSections(content);
 
-    // If we have a selected section, make sure it's still valid after parsing
     if (this.selectedSection) {
       const stillExists = this.documentSections.some(
         (s) => s.id === this.selectedSection?.id,
@@ -889,42 +789,7 @@ export class StrategicInitiativeComponent implements OnInit {
     }
   }
 
-  /**
-   * Highlight the replaced text in the document
-   * This is a simplified version that just shows a toast notification
-   * @param replacementInfo Information about the replacement
-   */
-  private highlightReplacement(replacementInfo: any): void {
-    // Show a toast notification with the replacement details
-    if (replacementInfo.searchText && replacementInfo.replaceText) {
-      this.toastService.showSuccess(
-        `Replaced "${replacementInfo.searchText}" with "${replacementInfo.replaceText}"`,
-      );
-    } else if (
-      replacementInfo.startPosition !== undefined &&
-      replacementInfo.endPosition !== undefined
-    ) {
-      this.toastService.showSuccess(
-        `Updated text at positions ${replacementInfo.startPosition}-${replacementInfo.endPosition}`,
-      );
-    }
-
-    // Find the canvas editor component and tell it to focus on the updated section
-    const canvasEditor = document.querySelector('app-canvas-editor');
-    if (
-      canvasEditor &&
-      typeof (canvasEditor as any).refreshContent === 'function'
-    ) {
-      // If the canvas editor has a refreshContent method, call it to refresh the editor
-      (canvasEditor as any).refreshContent();
-    }
-  }
-
   private setupStrategicInitiativeProgressListener(): void {
-    console.log(
-      "Krithiak here's my setupTaskProgressListener method",
-      this.projectId,
-    );
     if (!this.projectId) return;
 
     if (
@@ -945,27 +810,17 @@ export class StrategicInitiativeComponent implements OnInit {
     );
   }
   
-  /**
-   * Gets the document context for inline editing
-   * This provides the full document content for better AI context
-   */
   getDocumentContext = (): string => {
     return this.strategicInitiativeForm.get('requirement')?.value || '';
   }
   
-  /**
-   * Handles inline edit content updates
-   * @param newContent The new content from inline edit
-   */
   handleInlineEdit = (newContent: string): void => {
     this.onCanvasContentChange(newContent);
     
-    // If in edit mode, update the SI
     if (this.mode === 'edit') {
       this.updateStrategicInitiative();
     }
     
-    // Update document sections
     this.updateDocumentSections();
   }
 }

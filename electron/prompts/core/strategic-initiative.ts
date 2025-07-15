@@ -69,6 +69,7 @@ CONTENT REQUIREMENTS:
 - Use ACTUAL market data with specific figures (e.g., "$2.3 million investment" not "significant investment")
 - Provide SPECIFIC timelines with actual dates or quarters (e.g., "Q3 2025" not "next quarter")
 - Include CONCRETE examples for all claims and recommendations
+- Add a "References" section at the end of the document that lists all research sources used
 - Double-check all facts before finalizing the content to avoid inconsistencies or errors
 
 TITLE INSTRUCTIONS:

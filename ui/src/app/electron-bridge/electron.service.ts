@@ -322,18 +322,6 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  async addStrategicInitiative(
-    request: IAddStrategicInitiativeRequest,
-  ): Promise<IStrategicInitiativeResponse> {
-    if (this.electronAPI) {
-      return this.ipc.request({
-        channel: 'strategic-initiative:add',
-        args: [request],
-      });
-    }
-    throw new Error('Electron is not available');
-  }
-
   async generateStrategicInitiative(
     request: any,
   ): Promise<{title: string; requirement: string; status: string}> {
