@@ -1,4 +1,4 @@
-import { USE_CASE_DEFINITION_CONTEXT } from "../../prompts/context/usecase";
+import { STRATEGIC_INITIATIVE_DEFINITION_CONTEXT } from "../context/strategic-initiative";
 import { REQUIREMENT_DISPLAY_NAME_MAP, REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 import { BP_DEFINITION_CONTEXT } from "../../prompts/context/bp";
 import { BRD_DEFINITION_CONTEXT } from "../../prompts/context/brd";
@@ -83,7 +83,7 @@ const getRequirementTypeContext = (params: ChatWithAIParams) => {
       return USER_STORY_DEFINITION_CONTEXT;
     }
     case "SI": {
-      return USE_CASE_DEFINITION_CONTEXT;
+      return STRATEGIC_INITIATIVE_DEFINITION_CONTEXT;
     }
     default: {
       return "";

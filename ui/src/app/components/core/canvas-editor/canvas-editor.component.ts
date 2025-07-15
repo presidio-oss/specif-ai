@@ -27,11 +27,7 @@ import {
 import { Subscription } from 'rxjs';
 import { RichTextEditorComponent } from '../rich-text-editor/rich-text-editor.component';
 import { DocumentSectionsComponent } from '../document-sections/document-sections.component';
-import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
-import { ElectronService } from 'src/app/electron-bridge/electron.service';
-import { DocumentUpdateResponse } from 'src/app/electron-bridge/electron.interface';
-import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
 import { SectionParserService } from 'src/app/services/document/section-parser.service';
 import { SectionInfo } from 'src/app/utils/section.utils';
 
@@ -107,9 +103,6 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
   
   constructor(
     private logger: NGXLogger,
-    private electronService: ElectronService,
-    private dialog: MatDialog,
-    private documentUpdateService: DocumentUpdateService,
     private sectionParserService: SectionParserService
   ) {}
   
@@ -185,41 +178,6 @@ export class CanvasEditorComponent implements AfterViewInit, OnChanges, OnDestro
     this.content = content;
     this.contentChange.emit(content);
     this.parseContentSections();
-  }
-  
-  /**
-   * Search for text in the document and replace it with new text
-   * @param searchText The text to search for
-   * @param replaceText The text to replace it with
-   */
-  searchAndReplaceText(searchText: string, replaceText: string): void {
-    if (!this.richTextEditor?.editor) return;
-    
-    // Get the current content
-    const content = this.richTextEditor.editor?.getHTML() ?? '';
-    
-    // Use the document update service to replace the text block
-    this.documentUpdateService.applyUpdate({
-      requestId: `search-replace-${Date.now()}`,
-      documentId: 'current-document', // Use a generic document ID
-      updateType: 'text_block_replace',
-      searchBlock: searchText,
-      replaceBlock: replaceText
-    }).then((response: DocumentUpdateResponse) => {
-      if (response.success) {
-        // Replace all occurrences of the search text with the replace text
-        const updatedContent = content.replace(new RegExp(searchText, 'g'), replaceText);
-        
-        // Update the editor content
-        this.richTextEditor.editor?.commands.setContent(updatedContent);
-        
-        // Emit the content change event
-        this.contentChange.emit(updatedContent);
-        
-        // Update the document sections
-        this.parseContentSections();
-      }
-    });
   }
   
   /**

@@ -13,10 +13,10 @@ Include the following sections:
 1. Title: A concise, descriptive title for the business proposal (DO NOT include terms like "SI", "Strategic Initiative", or any reference to this being a strategic initiative in the title)
 2. Summary: A one-sentence summary of the business case
 3. Goals and Business Outcomes: Tangible, measurable goals and clear business outcomes
-4. Strategic Approaches: At least 3 approaches, each detailing HOW (implementation strategy), WHO (key stakeholders), WHEN (timeline), INVESTMENT (costs), and ratings for complexity and sustainability
-5. Competitor Analysis: Supporting case studies of similar companies
-6. Potential Challenges: Identification of gaps or risks
-7. Innovation Opportunities: How this approach could position the organization as an innovation leader
+4. Strategic Approaches: At least 3 approaches, each detailing HOW (implementation strategy), WHO (key stakeholders), WHEN (timeline), INVESTMENT (costs with specific dollar figures), and ratings for complexity and sustainability
+5. Competitor Analysis: Supporting case studies using REAL company names and ACTUAL market data (NEVER use placeholder names like "Company A/B/C" or made-up statistics)
+6. Potential Challenges: Identification of specific, realistic gaps or risks
+7. Innovation Opportunities: How this approach could position the organization as an innovation leader with concrete examples
 
 MARKDOWN FORMATTING INSTRUCTIONS:
 - Use consistent heading levels: # for title, ## for main sections, ### for subsections
@@ -59,6 +59,12 @@ Solution Information:
 - Technical Details: ${solutionInfo.techDetails}
 
 IMPORTANT: Generate a comprehensive business proposal. DO NOT ask questions or request additional information. Make reasonable assumptions based on the information provided and generate a complete draft that is ready for presentation to stakeholders.
+
+CONTENT REQUIREMENTS:
+- Include REAL company names in competitor analysis (NEVER use "Company A/B/C" placeholders)
+- Use ACTUAL market data with specific figures (e.g., "$2.3 million investment" not "significant investment")
+- Provide SPECIFIC timelines with actual dates or quarters (e.g., "Q3 2025" not "next quarter")
+- Include CONCRETE examples for all claims and recommendations
 
 TITLE INSTRUCTIONS:
 - Create a concise, descriptive title for the business proposal

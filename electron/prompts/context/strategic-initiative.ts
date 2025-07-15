@@ -1,4 +1,4 @@
-export const USE_CASE_DEFINITION_CONTEXT = `
+export const STRATEGIC_INITIATIVE_DEFINITION_CONTEXT = `
 You are assisting in creating a Strategic Business Proposal.
 
 The user will provide:

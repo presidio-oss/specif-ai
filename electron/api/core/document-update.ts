@@ -20,10 +20,12 @@ export type DocumentUpdateParams = z.infer<typeof DocumentUpdateSchema>;
  */
 export const updateDocument = async (_: IpcMainInvokeEvent, data: unknown) => {
   try {
-    // Validate the request data
     const validatedData = await DocumentUpdateSchema.parseAsync(data);
     
-    // Create a response object with the update details
+    if (!validatedData) {
+      throw new Error("Invalid data format for document update");
+    }
+
     const changes = {
       searchBlock: validatedData.searchBlock,
       replaceBlock: validatedData.replaceBlock
@@ -37,18 +39,9 @@ export const updateDocument = async (_: IpcMainInvokeEvent, data: unknown) => {
       changes
     };
     
-    // Send an event with the update details to the UI
-    _.sender.send(`document:${validatedData.requestId}-update`, response);
-    
     return response;
   } catch (error) {
     console.error('[update-document] error', error);
-    
-    // Send an error event to the UI
-    _.sender.send(`document:${(data as any)?.requestId}-update`, {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
     
     throw error;
   }
