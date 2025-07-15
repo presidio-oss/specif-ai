@@ -118,7 +118,6 @@ If your Azure DevOps project uses different work item types, you can configure c
 - **Update Existing Items**: The integration can update existing work items in both directions.
 - **Maintain Relationships**: Parent-child relationships are preserved during synchronization.
 - **Bulk Operations**: Import or export multiple work items efficiently.
-- **Conflict Resolution**: The system handles conflicts by prioritizing the source of truth based on the sync direction.
 
 ## Troubleshooting
 

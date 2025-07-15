@@ -1,25 +1,19 @@
-import React from 'react';
-import clsx from 'clsx';
-import styles from './styles.module.css';
+import React from "react";
+import clsx from "clsx";
+import Link from "@docusaurus/Link";
+import styles from "./styles.module.css";
 
 const FeatureList = [
   {
-    title: 'AI-Powered Document Generation',
+    title: "AI-Powered Document Generation",
+    link: "/current/core-features#-solution-creation",
     icon: (
       <svg
-        className={styles['feature-card__icon']}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        className={styles["feature-card__icon"]}
+        viewBox="0 0 32 32"
+        fill="currentColor"
       >
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <path d="M14 2v6h6" />
-        <path d="M8 13h8" />
-        <path d="M8 17h8" />
-        <path d="M8 9h2" />
+        <path d="M9.5 9.625l-0.906 2.906-0.875-2.906-2.906-0.906 2.906-0.875 0.875-2.938 0.906 2.938 2.906 0.875zM14.563 8.031l-0.438 1.469-0.5-1.469-1.438-0.469 1.438-0.438 0.5-1.438 0.438 1.438 1.438 0.438zM0.281 24l17.906-17.375c0.125-0.156 0.313-0.25 0.531-0.25 0.281-0.031 0.563 0.063 0.781 0.281 0.094 0.063 0.219 0.188 0.406 0.344 0.344 0.313 0.719 0.688 1 1.063 0.125 0.188 0.188 0.344 0.188 0.5 0.031 0.313-0.063 0.594-0.25 0.781l-17.906 17.438c-0.156 0.156-0.344 0.219-0.563 0.25-0.281 0.031-0.563-0.063-0.781-0.281-0.094-0.094-0.219-0.188-0.406-0.375-0.344-0.281-0.719-0.656-0.969-1.063-0.125-0.188-0.188-0.375-0.219-0.531-0.031-0.313 0.063-0.563 0.281-0.781zM14.656 11.375l1.313 1.344 4.156-4.031-1.313-1.375zM5.938 13.156l-0.406 1.438-0.438-1.438-1.438-0.469 1.438-0.438 0.438-1.469 0.406 1.469 1.5 0.438zM20.5 12.063l0.469 1.469 1.438 0.438-1.438 0.469-0.469 1.438-0.469-1.438-1.438-0.469 1.438-0.438z" />
       </svg>
     ),
     description: (
@@ -31,10 +25,11 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Intuitive Requirements Management',
+    title: "Intuitive Requirements Management",
+    link: "/current/core-features#-requirements-document-types-and-best-practices",
     icon: (
       <svg
-        className={styles['feature-card__icon']}
+        className={styles["feature-card__icon"]}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -56,10 +51,11 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Seamless Enterprise Integrations',
+    title: "Seamless Enterprise Integrations",
+    link: "/current/integrations-setup",
     icon: (
       <svg
-        className={styles['feature-card__icon']}
+        className={styles["feature-card__icon"]}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -80,26 +76,28 @@ const FeatureList = [
   },
 ];
 
-function Feature({ title, description, icon }) {
+function Feature({ title, description, icon, link }) {
   return (
-    <div className={clsx('col col--4', styles['feature-section__column'])}>
-      <div className={styles['feature-card']}>
-        <div className={styles['feature-card__shine']}></div>
-        <div className='text--center'>
-          {icon}
-          <h3 className={styles['feature-card__title']}>{title}</h3>
+    <div className={clsx("col col--4", styles["feature-section__column"])}>
+      <Link to={link} style={{ textDecoration: "none", color: "inherit" }}>
+        <div className={styles["feature-card"]}>
+          <div className={styles["feature-card__shine"]}></div>
+          <div className="text--center">
+            {icon}
+            <h3 className={styles["feature-card__title"]}>{title}</h3>
+          </div>
+          <p className={styles["feature-card__description"]}>{description}</p>
         </div>
-        <p className={styles['feature-card__description']}>{description}</p>
-      </div>
+      </Link>
     </div>
   );
 }
 
 export default function HomepageFeatures() {
   return (
-    <section className={styles['features-section']}>
-      <div className='container'>
-        <div className='row'>
+    <section className={styles["features-section"]}>
+      <div className="container">
+        <div className="row">
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />
           ))}
