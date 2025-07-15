@@ -335,18 +335,6 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  async updateDocument(request: DocumentUpdateRequest): Promise<DocumentUpdateResponse> {
-    if (this.electronAPI) {
-      return this.ipc.request({
-        channel: 'core:updateDocument',
-        args: [request],
-        skipLoading: true
-      });
-    }
-    throw new Error('Electron is not available');
-  }
-
-
   async addUserStory(
     request: IUpdateUserStoryRequest,
   ): Promise<IUserStoryResponse> {

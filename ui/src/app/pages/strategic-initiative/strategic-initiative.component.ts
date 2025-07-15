@@ -75,7 +75,6 @@ import {
   EditProposal,
 } from '../../components/core/canvas-editor/canvas-editor.component';
 import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
-import { DocumentUpdateHandlerService } from 'src/app/services/document-update/document-update-handler.service';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 
 @Component({
@@ -154,9 +153,6 @@ export class StrategicInitiativeComponent implements OnInit {
   documentSections: SectionInfo[] = [];
   isChatExpanded: boolean = true;
 
-  // Document update handler
-  private documentUpdateHandler: DocumentUpdateHandlerService;
-
   constructor(
     private store: Store,
     private router: Router,
@@ -166,10 +162,6 @@ export class StrategicInitiativeComponent implements OnInit {
     private workflowProgressService: WorkflowProgressService,
     private documentUpdateService: DocumentUpdateService,
   ) {
-    this.documentUpdateHandler = new DocumentUpdateHandlerService(
-      documentUpdateService,
-      this.toastService,
-    );
 
     this.route.params.subscribe((params) => {
       this.mode = params['mode'] === 'add' ? 'add' : 'edit';
@@ -467,7 +459,7 @@ export class StrategicInitiativeComponent implements OnInit {
     if (toolMessages.length > 0) {
       for (const message of toolMessages) {
         if (message.processed) continue;
-        const handled = this.documentUpdateHandler.handleToolResponse(
+        const handled = this.documentUpdateService.handleToolResponse(
           message.tool,
           (updatedContent: string, replacementInfo?: any) => {
             this.strategicInitiativeForm.patchValue({
