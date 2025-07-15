@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
@@ -9,6 +10,7 @@ import {
   SetCurrentConfig,
   SetSelectedProject,
   BulkEditUserStories,
+  SetSelectedUserStory,
 } from '../../store/user-stories/user-stories.actions';
 import { ProjectsState } from '../../store/projects/projects.state';
 import {
@@ -17,6 +19,7 @@ import {
 } from '../../model/interfaces/IUserStory';
 import { FeatureService } from '../../services/feature/feature.service';
 import {
+  ArchiveFile,
   CreateFile,
   ReadFile,
   UpdateFile,
@@ -39,7 +42,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroArrowRight } from '@ng-icons/heroicons/outline';
+import { heroArrowRight, heroDocumentText } from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
@@ -64,6 +67,8 @@ import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dro
 import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
+import { AppSystemService } from 'src/app/services/app-system/app-system.service';
+import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils.service';
 
 @Component({
   selector: 'app-user-stories',
@@ -87,6 +92,7 @@ import { WorkflowProgressService } from '../../services/workflow-progress/workfl
   providers: [
     provideIcons({
       heroArrowRight,
+      heroDocumentText,
     }),
   ],
 })
@@ -136,7 +142,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   filteredUserStories$ = this.searchService.filterItems(
     this.userStories$,
     this.searchTerm$,
-    (story: IUserStory) => [story.id, story.name, story.storyTicketId],
+    (story: IUserStory) => [story.id, story.name, story.pmoId],
   );
 
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
@@ -163,6 +169,8 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     private toast: ToasterService,
     private requirementIdService: RequirementIdService,
     private workflowProgressService: WorkflowProgressService,
+    private appSystemService: AppSystemService,
+    private testCaseUtilsService: TestCaseUtilsService,
   ) {
     this.navigation = getNavigationParams(this.router.getCurrentNavigation());
     this.store.dispatch(
@@ -285,6 +293,19 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .then();
   }
 
+  navigateBackToPRD() {
+    this.router.navigate(['/apps', this.navigation.projectId], {
+      state: {
+        data: this.navigation.data,
+        selectedFolder: {
+          title: this.navigation.folderName,
+          id: this.navigation.projectId,
+          metadata: this.navigation.data,
+        },
+      },
+    });
+  }
+
   navigateToEditUserStory(selectedUserStory: IUserStory) {
     this.router
       .navigate(['/story', 'edit', selectedUserStory.id], {
@@ -317,10 +338,48 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     });
   }
 
+  navigateToTestCases(userStory: IUserStory, index: number) {
+    this.store.dispatch(new SetSelectedUserStory(userStory.id));
+    this.router.navigate(['/test-cases', userStory.id,], {
+      queryParams: {
+        projectName: this.currentProject,
+        prdId: this.newFileName.split('-')[0],
+        prdTitle: encodeURIComponent(this.navigation.selectedRequirement.title),
+        prdDescription: encodeURIComponent(this.navigation.selectedRequirement.requirement)
+      },
+      state: {
+        projectId: this.navigation.projectId,
+        folderName: this.navigation.folderName,
+        fileName: this.navigation.fileName,
+        selectedRequirement: userStory,
+        data: this.navigation.data,
+      },
+    });
+  }
+
   navigateToAppIntegrations() {
     this.router.navigate([`/apps/${this.navigation.projectId}`], {
-      state: { openAppIntegrations: 'true' },
+      state: { 
+        data: this.navigation,
+        selectedFolder: {
+          title: 'app-integrations',
+          id: this.navigation.projectId
+        },
+        selectedIntegration: 'jira',
+        openPmoAccordion: true 
+      }
     });
+  }
+
+  private async deleteTestCasesForUserStories(userStories: IUserStory[]): Promise<void> {
+    if (!userStories || userStories.length === 0) {
+      return;
+    }
+    
+    this.logger.debug(`Checking for test cases to delete for ${userStories.length} user stories`);
+    
+    const userStoryIds = userStories.map(story => story.id);
+    await this.testCaseUtilsService.deleteTestCasesForUserStories(this.currentProject, userStoryIds);
   }
 
   async generateUserStories(
@@ -332,6 +391,15 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       this.navigation.projectId,
       WorkflowType.Story,
     );
+
+    if (regenerate && this.userStoriesInState && this.userStoriesInState.length > 0) {
+      try {
+        await this.deleteTestCasesForUserStories(this.userStoriesInState);
+        this.logger.debug('Successfully deleted test cases for existing user stories');
+      } catch (error) {
+        this.logger.error('Error deleting test cases:', error);
+      }
+    }
 
     let request: IUserStoriesRequest = {
       appId: this.navigation.projectId,
@@ -502,7 +570,51 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     );
   }
 
+  private async checkForLinkedTestCases(userStoryId: string): Promise<boolean> {
+    return this.testCaseUtilsService.checkForLinkedTestCases(this.currentProject, userStoryId);
+  }
+
+  private async checkForAnyLinkedTestCases(userStories: IUserStory[]): Promise<boolean> {
+    if (!userStories || userStories.length === 0) {
+      return false;
+    }
+    
+    for (const userStory of userStories) {
+      const hasLinkedTestCases = await this.checkForLinkedTestCases(userStory.id);
+      if (hasLinkedTestCases) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
   addMoreContext(regenerate: boolean = false) {
+    if (regenerate && this.userStoriesInState && this.userStoriesInState.length > 0) {
+      this.checkForAnyLinkedTestCases(this.userStoriesInState).then(hasLinkedTestCases => {
+        if (hasLinkedTestCases) {
+          this.dialogService
+            .confirm({
+              title: 'Warning: Test Cases Will Be Deleted',
+              description: 'Regenerating user stories will delete all associated test cases. Are you sure you want to proceed?',
+              cancelButtonText: 'Cancel',
+              confirmButtonText: 'Proceed',
+            })
+            .subscribe((confirmed) => {
+              if (confirmed) {
+                this.showContextDialog(regenerate);
+              }
+            });
+        } else {
+          this.showContextDialog(regenerate);
+        }
+      });
+    } else {
+      this.showContextDialog(regenerate);
+    }
+  }
+
+  private showContextDialog(regenerate: boolean) {
     this.dialogService
       .createBuilder()
       .forComponent(ModalDialogCustomComponent)
@@ -533,7 +645,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .subscribe((confirmed) => {
         if (!confirmed) return;
         this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
-          console.log('Token exists and is valid, making API call', token);
+          console.log('Token exists and is valid, making API call');
           this.syncJira(token, jiraUrl);
         });
       });
@@ -550,7 +662,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .subscribe((confirmed) => {
         if (!confirmed) return;
         this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
-          console.log('Token exists and is valid, syncing from JIRA', token);
+          console.log('Token exists and is valid, syncing from JIRA');
           this.syncFromJira(token, jiraUrl);
         });
       });
@@ -613,7 +725,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     const requestPayload: any = {
       epicName: '',
       epicDescription: '',
-      epicTicketId: '',
+      pmoId: '',
       jiraUrl: jiraUrl,
       token: token,
       projectKey: this.metadata.integration.jira.jiraProjectKey,
@@ -622,8 +734,8 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     requestPayload.epicName = this.requirementFile.title;
     requestPayload.epicDescription = this.requirementFile.requirement;
-    requestPayload.epicTicketId = this.requirementFile.epicTicketId
-      ? this.requirementFile.epicTicketId
+    requestPayload.pmoId = this.requirementFile.pmoId
+      ? this.requirementFile.pmoId
       : '';
 
     this.userStories = this.userStoriesInState;
@@ -633,13 +745,13 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         id: story.id,
         name: story.name,
         description: story.description,
-        storyTicketId: story.storyTicketId ? story.storyTicketId : '',
+        pmoId: story.pmoId ? story.pmoId : '',
         tasks: story?.tasks?.map((task) => {
           return {
             list: task.list,
             acceptance: task.acceptance,
             id: task.id,
-            subTaskTicketId: task.subTaskTicketId ? task.subTaskTicketId : '',
+            pmoId: task.pmoId ? task.pmoId : '',
           };
         }),
       };
@@ -652,7 +764,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         const matchedEpic = response.epicName === this.requirementFile.title;
 
         if (matchedEpic) {
-          this.requirementFile.epicTicketId = response.epicTicketId;
+          this.requirementFile.pmoId = response.pmoId;
         }
 
         this.requirementFile.lastPushToJiraTimestamp = new Date().toISOString();
@@ -666,7 +778,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           );
 
           if (matchedFeature) {
-            existingFeature.storyTicketId = matchedFeature.storyTicketId;
+            existingFeature.pmoId = matchedFeature.pmoId;
             existingFeature.tasks.forEach((existingTask: any) => {
               const matchedTask = matchedFeature.tasks.find(
                 (responseTask: any) =>
@@ -674,7 +786,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
               );
 
               if (matchedTask) {
-                existingTask.subTaskTicketId = matchedTask.subTaskTicketId;
+                existingTask.pmoId = matchedTask.pmoId;
               }
             });
           }
@@ -707,7 +819,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     const requestPayload: any = {
       epicName: '',
       epicDescription: '',
-      epicTicketId: '',
+      pmoId: '',
       jiraUrl: jiraUrl,
       token: token,
       projectKey: this.metadata.integration.jira.jiraProjectKey,
@@ -716,7 +828,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     requestPayload.epicName = this.requirementFile.title;
     requestPayload.epicDescription = this.requirementFile.requirement;
-    requestPayload.epicTicketId = this.requirementFile.epicTicketId || '';
+    requestPayload.pmoId = this.requirementFile.pmoId || '';
 
     this.userStories = this.userStoriesInState;
 
@@ -724,12 +836,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       id: story.id,
       name: story.name,
       description: story.description,
-      storyTicketId: story.storyTicketId || '',
+      pmoId: story.pmoId || '',
       tasks: story?.tasks?.map((task) => ({
         id: task.id,
         list: task.list,
         acceptance: task.acceptance,
-        subTaskTicketId: task.subTaskTicketId || '',
+        pmoId: task.pmoId || '',
       })) || [],
     }));
 
@@ -761,7 +873,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         ...this.requirementFile,
         title: syncResponse.epic.title,
         requirement: syncResponse.epic.requirement,
-        epicTicketId: syncResponse.epic.epicTicketId,
+        pmoId: syncResponse.epic.pmoId,
         lastPullFromJiraTimestamp: this.requirementFile.lastPullFromJiraTimestamp
       };
 
@@ -777,7 +889,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       const updatedUserStories = this.userStories.map((existingStory) => {
         const syncedStory = syncResponse.features.find(
           (feature: any) =>
-            feature.storyTicketId === existingStory.storyTicketId ||
+            feature.pmoId === existingStory.pmoId ||
             feature.id === existingStory.id
         );
 
@@ -785,7 +897,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           const updatedTasks = existingStory.tasks?.map((existingTask) => {
             const syncedTask = syncedStory.tasks?.find(
               (task: any) =>
-                task.subTaskTicketId === existingTask.subTaskTicketId ||
+                task.pmoId === existingTask.pmoId ||
                 task.id === existingTask.id
             );
 
@@ -794,7 +906,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
                 ...existingTask,
                 list: syncedTask.list || existingTask.list,
                 acceptance: syncedTask.acceptance || existingTask.acceptance,
-                subTaskTicketId: syncedTask.subTaskTicketId || existingTask.subTaskTicketId,
+                pmoId: syncedTask.pmoId || existingTask.pmoId,
                 status: syncedTask.status,
                 lastUpdated: syncedTask.lastUpdated,
               };
@@ -806,7 +918,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
             ...existingStory,
             name: syncedStory.name,
             description: syncedStory.description,
-            storyTicketId: syncedStory.storyTicketId,
+            pmoId: syncedStory.pmoId,
             status: syncedStory.status,
             lastUpdated: syncedStory.lastUpdated,
             tasks: updatedTasks,
@@ -1006,7 +1118,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         }
       ];
 
-      if (this.requirementFile?.epicTicketId) {
+      if (this.requirementFile?.pmoId) {
         jiraOptions.push({
           label: 'Pull from JIRA',
           callback: pullFromJira.bind(this),
@@ -1016,10 +1128,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         });
       }
 
-      this.exportOptions.push({
-        groupName: 'JIRA',
-        options: jiraOptions,
-      });
+      if (this.metadata?.integration?.selectedPmoTool === 'jira') {
+        this.exportOptions.push({
+          groupName: 'JIRA',
+          options: jiraOptions,
+        });
+      }
     }
 
     return this.exportOptions;

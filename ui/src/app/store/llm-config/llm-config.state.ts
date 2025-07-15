@@ -55,7 +55,6 @@ export class LLMConfigState {
   @Action(SyncLLMConfig)
   syncLLMConfig({ getState }: StateContext<LLMConfigModel>) {
     const state = getState();
-    localStorage.setItem('llmConfig', JSON.stringify(state));
     this.electronService.setStoreValue('llmConfig', state);
   }
 
@@ -108,7 +107,7 @@ export class LLMConfigState {
           // Always sync the config after verification, regardless of success or failure
           dispatch(new SyncLLMConfig());
         } catch (error) {
-          console.error('Error verifying LLM config:', error);
+          console.error('Error verifying LLM config');
           const providerDisplayName = AvailableProviders.find(p => p.key === state.activeProvider)?.displayName || state.activeProvider;
           this.toasterService.showError(
             `Failed to verify ${providerDisplayName} configuration. Please check your credentials and try again.`, 

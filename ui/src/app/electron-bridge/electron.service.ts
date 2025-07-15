@@ -280,6 +280,22 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async createTestCases(
+    request: any,
+  ): Promise<any> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'workflow:invoke',
+        args: [{ 
+          type: 'test-case',
+          ...request
+        }],
+        skipLoading: true
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async addTask(
     request: IAddTaskRequest,
   ): Promise<ITasksResponse> {
@@ -473,6 +489,21 @@ export class ElectronService {
     } else {
       throw new Error('Electron is not available');
     }
+  }
+
+  async validateAdoCredentials(
+    organization: string,
+    projectName: string,
+    personalAccessToken: string,
+  ): Promise<{ isValid: boolean; error?: string }> {
+    if (this.electronAPI) {
+      return this.electronAPI.invoke('validate-ado-credentials', {
+        organization,
+        projectName,
+        personalAccessToken,
+      });
+    }
+    throw new Error('Electron is not available');
   }
 
   async openDirectory(): Promise<Array<string>> {

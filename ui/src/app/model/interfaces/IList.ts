@@ -12,7 +12,7 @@ export interface SelectedDocument {
 export interface IProjectDocument {
   requirement?: string;
   title?: string;
-  epicTicketId?: string;
+  pmoId?: string;
   features?: IFeature[];
   linkedBRDIds?: string[];
   selectedBRDs?: SelectedDocument[];
@@ -32,4 +32,10 @@ export interface ITask {
   acceptance?: string;
   id?: string;
   chatHistory?: [];
+}
+
+export interface ISelectedFolder {
+  title: string;
+  id?: string;
+  metadata?: any;
 }

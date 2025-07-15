@@ -209,10 +209,19 @@ async function appendFile({
 
     const fileCount = baseFileCount;
 
-    let newFileName =
-      featureFile === ""
-        ? `${keyName}${(fileCount + 1).toString().padStart(2, "0")}-base.json`
-        : `${featureFile}-feature.json`;
+    let newFileName;
+    
+    if (featureFile === "") {
+      // For base files, use the prefix with the counter
+      const countStr = (fileCount + 1).toString().padStart(2, "0");
+        
+      newFileName = `${keyName}${countStr}-base.json`;
+      console.log(`Generated filename: ${newFileName}`);
+    } else {
+      // For feature files, use the standard format
+      newFileName = `${featureFile}-feature.json`;
+    }
+    
     const newFilePath = pathModule.join(path, newFileName);
 
     await fsPromise.writeFile(newFilePath, content, "utf-8");
@@ -245,7 +254,7 @@ type FileChunk = {
   title: string | null;
   message?: string;
   linkedBRDIds?: Array<string>;
-  epicTicketId?: string | null;
+  pmoId?: string | null;
   selectedBRDs?: Array<ISelectedRequirement>;
   selectedPRDs?: Array<ISelectedRequirement>;
 };
@@ -257,7 +266,7 @@ function readFileChunk(
   const CHUNK_SIZE = 400;
   const buffer = Buffer.alloc(CHUNK_SIZE);
   let accumulatedData = "";
-  let dataExtracted: FileChunk = { requirement: null, title: null, epicTicketId: null };
+  let dataExtracted: FileChunk = { requirement: null, title: null, pmoId: null };
   const fileName = path.split("/").pop() || "";
 
   // Build regex based on the filter string
@@ -284,8 +293,8 @@ function readFileChunk(
           if (parsed.title && !dataExtracted.title) {
             dataExtracted.title = parsed.title;
           }
-          if (parsed.epicTicketId && !dataExtracted.epicTicketId) {
-            dataExtracted.epicTicketId = parsed.epicTicketId;
+          if (parsed.pmoId && !dataExtracted.pmoId) {
+            dataExtracted.pmoId = parsed.pmoId;
           }
           // populated linked brd ids in prd base files
           if (parsed.linkedBRDIds && !dataExtracted.linkedBRDIds) {
@@ -297,7 +306,7 @@ function readFileChunk(
           if (parsed.selectedPRDs && !dataExtracted.selectedPRDs) {
             dataExtracted.selectedPRDs = parsed.selectedPRDs;
           }
-          if (dataExtracted.requirement && dataExtracted.title) {
+          if (dataExtracted.title) {
             fs.close(fd, () => {});
             resolve(dataExtracted);
           }
@@ -316,7 +325,7 @@ function readFileChunk(
           if (nread === 0) {
             fs.close(fd, (err) => {
               if (err) reject(err);
-              if (!dataExtracted.requirement || !dataExtracted.title) {
+              if (!dataExtracted.title) {
                 reject(
                   new Error(
                     "Could not find 'requirement' or 'title' field in the available data."
@@ -331,7 +340,7 @@ function readFileChunk(
           accumulatedData += chunk;
           tryParse();
 
-          if (!dataExtracted.requirement || !dataExtracted.title) {
+          if (!dataExtracted.title) {
             readNextChunk();
           }
         });

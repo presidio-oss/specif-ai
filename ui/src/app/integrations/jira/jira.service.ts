@@ -52,7 +52,7 @@ export class JiraService {
   }
 
   private updateEpic(payload: any, token: string, adfContent: any): Observable<any> {
-    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${payload.epicTicketId}?returnIssue=true`;
+    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${payload.pmoId}?returnIssue=true`;
     const updateData = {
       fields: {
         summary: payload.epicName,
@@ -69,8 +69,8 @@ export class JiraService {
   }
 
   createOrUpdateEpic(payload: any, token: string): Observable<any> {
-    if (payload.epicTicketId) {
-      const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${payload.epicTicketId}`;
+    if (payload.pmoId) {
+      const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${payload.pmoId}`;
       return this.http.get(issueUrl, { headers: this.getHeaders(token) }).pipe(
         switchMap((issue: any) => {
           return convertMarkdownToADF(payload.epicDescription).pipe(
@@ -108,8 +108,8 @@ export class JiraService {
     feature: any,
     token: string,
   ): Observable<any> {
-    if (feature.storyTicketId) {
-      const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${feature.storyTicketId}`;
+    if (feature.pmoId) {
+      const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${feature.pmoId}`;
       return this.http.get(issueUrl, { headers: this.getHeaders(token) }).pipe(
         switchMap((issue: any) => {
           return convertMarkdownToADF(feature.description).pipe(
@@ -155,7 +155,7 @@ export class JiraService {
         summary: feature.name,
         description: { ...adfContent, version: 1 },
         issuetype: { name: 'Story' },
-        parent: { key: payload.epicTicketId },
+        parent: { key: payload.pmoId },
       },
     };
 
@@ -173,7 +173,7 @@ export class JiraService {
     token: string,
     adfContent: any,
   ): Observable<any> {
-    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${feature.storyTicketId}?returnIssue=true`;
+    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${feature.pmoId}?returnIssue=true`;
     const updatedData = {
       fields: {
         summary: feature.name,
@@ -281,11 +281,11 @@ export class JiraService {
     this.toast.showInfo(JIRA_TOAST.INFO);
     return this.createOrUpdateEpic(payload, payload.token).pipe(
       switchMap((epic: any) => {
-        payload.epicTicketId = epic.key;
+        payload.pmoId = epic.key;
 
         const result = {
           epicName: payload.epicName,
-          epicTicketId: epic.key,
+          pmoId: epic.key,
           features: [] as any[],
         };
 
@@ -296,7 +296,7 @@ export class JiraService {
                 switchMap((story: any) => {
                   const storyDetails = {
                     storyName: feature.name,
-                    storyTicketId: story.key,
+                    pmoId: story.key,
                     tasks: [] as any[],
                   };
 
@@ -355,13 +355,13 @@ export class JiraService {
 
     const syncRequests: Observable<any>[] = [];
 
-    if (payload.epicTicketId) {
+    if (payload.pmoId) {
       syncRequests.push(this.getEpicFromJira(payload, payload.token));
     }
 
 
     payload.features.forEach((feature: any) => {
-      if (feature.storyTicketId) {
+      if (feature.pmoId) {
         syncRequests.push(this.getStoryFromJira(payload, feature, payload.token));
       }
     });
@@ -390,7 +390,7 @@ export class JiraService {
   }
 
   private getEpicFromJira(payload: any, token: string): Observable<any> {
-    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${payload.epicTicketId}`;
+    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${payload.pmoId}`;
 
     return this.http.get(issueUrl, { headers: this.getHeaders(token) }).pipe(
       switchMap((epic: any) => {
@@ -400,7 +400,7 @@ export class JiraService {
             data: {
               title: epic.fields.summary,
               requirement: markdownDescription,
-              epicTicketId: epic.key,
+              pmoId: epic.key,
               status: epic.fields.status.name,
               lastUpdated: epic.fields.updated
             }
@@ -408,14 +408,14 @@ export class JiraService {
         );
       }),
       catchError((error) => {
-        console.error(`Error fetching epic ${payload.epicTicketId}:`, error);
+        console.error(`Error fetching epic ${payload.pmoId}:`, error);
         return of({ type: 'epic', data: null });
       })
     );
   }
 
   private getStoryFromJira(payload: any, feature: any, token: string): Observable<any> {
-    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${feature.storyTicketId}`;
+    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${feature.pmoId}`;
 
     return this.http.get(issueUrl, { headers: this.getHeaders(token) }).pipe(
       switchMap((story: any) => {
@@ -427,7 +427,7 @@ export class JiraService {
                 id: feature.id,
                 name: story.fields.summary,
                 description: markdownDescription,
-                storyTicketId: story.key,
+                pmoId: story.key,
                 status: story.fields.status.name,
                 lastUpdated: story.fields.updated,
                 tasks: [...(feature.tasks || [])]
@@ -471,7 +471,7 @@ export class JiraService {
         );
       }),
       catchError((error) => {
-        console.error(`Error fetching story ${feature.storyTicketId}:`, error);
+        console.error(`Error fetching story ${feature.pmoId}:`, error);
         return of({ type: 'story', data: null });
       })
     );

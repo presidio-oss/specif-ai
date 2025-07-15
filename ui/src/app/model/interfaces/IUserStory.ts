@@ -1,13 +1,14 @@
 import { ITask } from "./ITask";
 
 export interface IUserStory {
-    storyTicketId?: string;
+    pmoId?: string;
     id: string;
     name: string;
     description: string;
     tasks?: ITask[];
     archivedTasks?: ITask[];
     chatHistory?: [];
+    prdId?: string; // Added for better identification in test case generation
 }
 
 export interface IUserStoryResponse {
@@ -67,5 +68,5 @@ export interface IUpdateUserStoryRequest{
 
 export interface EpicResponse {
   epicName: string;
-  epicTicketId: string;
+  pmoId: string;
 }

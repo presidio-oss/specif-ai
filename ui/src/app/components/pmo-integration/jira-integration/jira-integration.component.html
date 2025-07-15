@@ -1,0 +1,86 @@
+<section class="space-y-4 mb-6" aria-labelledby="jira-info">
+  <div class="text-sm text-secondary-500">
+    <p>{{ APP_MESSAGES.JIRA_ACCORDION }}</p>
+  </div>
+  <div class="text-sm text-secondary-500">
+    <p [innerHTML]="APP_MESSAGES.JIRA_PREREQUISITE"></p>
+  </div>
+</section>
+
+<form [formGroup]="jiraForm" class="space-y-6" novalidate>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <app-input-field
+        formControlName="jiraProjectKey"
+        elementId="jiraProjectKey"
+        elementName="Jira Project Key"
+        elementPlaceHolder="Enter Jira Project Key"
+        [required]="true"
+        aria-describedby="project-key-help"
+      />
+      <small id="project-key-help" class="sr-only">
+        Enter your Jira project key
+      </small>
+    </div>
+
+    <div>
+      <app-input-field
+        formControlName="clientId"
+        elementId="clientId"
+        elementName="Jira App Client ID"
+        elementPlaceHolder="Enter Jira Client ID"
+        elementType="password"
+        [required]="true"
+        aria-describedby="client-id-help"
+      />
+      <small id="client-id-help" class="sr-only">
+        Enter your Jira application client ID
+      </small>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <app-input-field
+        formControlName="clientSecret"
+        elementId="clientSecret"
+        elementName="Jira App Client Secret"
+        elementPlaceHolder="Enter Client Secret"
+        elementType="password"
+        [required]="true"
+        aria-describedby="client-secret-help"
+      />
+      <small id="client-secret-help" class="sr-only">
+        Enter your Jira application client secret
+      </small>
+    </div>
+
+    <div>
+      <app-input-field
+        formControlName="redirectUrl"
+        elementId="redirectUrl"
+        elementName="Redirect URL"
+        elementPlaceHolder="Enter Redirect URL"
+        [required]="true"
+        aria-describedby="redirect-url-help"
+      />
+      <small id="redirect-url-help" class="sr-only">
+        Enter the OAuth redirect URL for your Jira application
+      </small>
+    </div>
+  </div>
+
+  <div class="flex justify-end pt-4">
+    <app-button
+      [buttonContent]="getButtonText()"
+      [theme]="isConnected() ? 'danger' : 'primary'"
+      size="sm"
+      (click)="isConnected() ? onDisconnect() : onConnect()"
+      [disabled]="buttonDisabled()"
+      [attr.aria-label]="
+        isConnected() ? 'Disconnect from Jira' : 'Connect to Jira'
+      "
+    >
+    </app-button>
+  </div>
+</form>

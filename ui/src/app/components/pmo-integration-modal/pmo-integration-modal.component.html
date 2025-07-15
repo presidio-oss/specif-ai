@@ -1,0 +1,441 @@
+<div role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div
+    class="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white rounded-t-2xl"
+  >
+    <div class="flex items-center space-x-3">
+      <ng-icon name="heroCog6Tooth" class="size-7 text-blue-600"></ng-icon>
+      <div>
+        <h2
+          id="modalTitle"
+          class="text-2xl font-bold text-gray-900 tracking-tight"
+        >
+          {{
+            action() === "pull" ? config.title : "Push to " + config.serviceName
+          }}
+        </h2>
+        <p class="text-sm text-gray-500 mt-1">
+          {{
+            action() === "pull"
+              ? "Import work items from"
+              : "Export work items to"
+          }}
+          {{ config.serviceName }}
+        </p>
+      </div>
+    </div>
+    <button
+      (click)="onClose()"
+      class="text-gray-400 hover:text-red-500 hover:bg-red-50 smooth-transition rounded-full p-3 group"
+      aria-label="Close modal"
+    >
+      <ng-icon
+        name="heroXMark"
+        class="size-6 group-hover:scale-110 smooth-transition"
+      ></ng-icon>
+    </button>
+  </div>
+
+  <div
+    class="px-8 py-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar"
+  >
+    <!-- Error Message -->
+    <div
+      *ngIf="!isLoading() && connectionStatus().errorMessage"
+      class="bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-400 rounded-lg p-5 flex items-start space-x-4 shadow-sm"
+      role="alert"
+      aria-live="assertive"
+    >
+      <div class="p-1 bg-red-100 rounded-full">
+        <ng-icon
+          name="heroExclamationTriangle"
+          class="size-5 text-red-600"
+        ></ng-icon>
+      </div>
+      <div class="flex-1">
+        <h4 class="text-base font-semibold text-red-800 mb-1">
+          Connection Error
+        </h4>
+        <p class="text-sm text-red-700 leading-relaxed">
+          {{ connectionStatus().errorMessage }}
+        </p>
+        <p class="text-xs text-red-600 mt-3 font-medium">
+          Please check your connection settings or try again.
+        </p>
+      </div>
+    </div>
+
+    <!-- Work Items Section -->
+    <div
+      *ngIf="connectionStatus().isConnected"
+      class="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm"
+    >
+      <div
+        class="border-b border-gray-200 px-6 py-5 bg-gradient-to-r from-gray-50 to-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
+        <div>
+          <h4 class="font-bold text-gray-900 text-xl mb-1">
+            {{
+              action() === "pull"
+                ? "Work Items from " + config.serviceName
+                : "Items to Push to " + config.serviceName
+            }}
+          </h4>
+          <p class="text-sm text-gray-600 flex items-center">
+            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+            {{
+              action() === "pull"
+                ? config.itemLabels.topLevel + "s and their child items"
+                : "Select items to push to " + config.serviceName
+            }}
+          </p>
+        </div>
+        <div
+          class="flex items-center bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200"
+        >
+          <!-- Custom Checkbox: Indeterminate state logic in TS -->
+          <input
+            type="checkbox"
+            id="selectAllItems"
+            [checked]="allItemsSelected()"
+            (click)="toggleSelectAllItems($event)"
+            class="w-5 h-5 text-blue-600 bg-white border-2 border-gray-300 rounded-md smooth-transition hover:border-blue-400"
+            [attr.aria-checked]="
+              allItemsSelected()
+                ? 'true'
+                : someItemsSelected()
+                  ? 'mixed'
+                  : 'false'
+            "
+            aria-label="Select all work items"
+          />
+          <label
+            for="selectAllItems"
+            class="ml-3 text-sm text-gray-800 cursor-pointer font-semibold select-none"
+            >Select All</label
+          >
+          <span
+            *ngIf="selectedCount() > 0"
+            class="ml-3 text-xs text-white font-bold bg-gradient-to-r from-blue-500 to-blue-600 rounded-full px-3 py-1 shadow-sm"
+          >
+            {{ selectedCount() }} selected
+          </span>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div
+        *ngIf="isLoadingWorkItems()"
+        class="flex flex-col items-center justify-center py-16 bg-gradient-to-b from-blue-50 to-white"
+      >
+        <div class="relative">
+          <div
+            class="w-12 h-12 border-4 border-blue-200 rounded-full animate-pulse"
+          ></div>
+          <ng-icon
+            name="heroArrowPath"
+            class="animate-spin text-blue-600 size-8 absolute inset-0 m-auto"
+          ></ng-icon>
+        </div>
+        <span class="text-gray-700 text-base font-medium mt-4"
+          >Loading work items...</span
+        >
+        <span class="text-gray-500 text-sm mt-1"
+          >Please wait while we fetch your data</span
+        >
+      </div>
+
+      <!-- No Items State -->
+      <div
+        *ngIf="!isLoadingWorkItems() && prdsWithChildren().length === 0"
+        class="py-16 text-center flex flex-col items-center bg-gradient-to-b from-gray-50 to-white"
+      >
+        <div class="p-4 bg-gray-100 rounded-full mb-4">
+          <ng-icon name="heroInbox" class="size-12 text-gray-400"></ng-icon>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">
+          No Work Items Found
+        </h3>
+        <p class="text-gray-500 text-base max-w-md leading-relaxed">
+          No work items found in this {{ config.serviceName }} project.
+        </p>
+        <p class="text-sm text-gray-400 mt-2">
+          Try refreshing or check your project configuration.
+        </p>
+      </div>
+
+      <!-- Work Items List -->
+      <div
+        *ngIf="!isLoadingWorkItems() && prdsWithChildren().length > 0"
+        class="divide-y divide-gray-50 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-gray-50"
+      >
+        <div *ngFor="let prd of prdsWithChildren()" class="py-2 px-6 group">
+          <!-- PRD (Top-level) Item -->
+          <div
+            (click)="togglePrdExpansion(prd.specifaiId)"
+            class="flex items-center py-3 cursor-pointer rounded-lg"
+            tabindex="0"
+            [attr.aria-expanded]="isPrdExpanded(prd.specifaiId)"
+          >
+            <!-- Checkbox -->
+            <input
+              type="checkbox"
+              [id]="'prd-' + prd.specifaiId"
+              [checked]="isPrdSelected(prd.specifaiId)"
+              (click)="togglePrdSelection($event, prd.specifaiId)"
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2 shadow-sm"
+              [attr.aria-label]="
+                'Select ' + config.itemLabels.topLevel + ' ' + prd.title
+              "
+            />
+            <ng-icon
+              [name]="
+                isPrdExpanded(prd.specifaiId)
+                  ? 'heroChevronDown'
+                  : 'heroChevronRight'
+              "
+              class="size-4 text-gray-400 mr-2 transition-transform duration-200"
+            ></ng-icon>
+            <div class="flex-grow">
+              <div class="flex items-center">
+                <span
+                  *ngIf="prd.isUpdate; else newPrd"
+                  class="flex items-center"
+                >
+                  <ng-icon
+                    name="heroDocumentCheck"
+                    class="w-5 h-5 text-amber-600 mr-1"
+                    title="Update existing file - This item will update an existing work item"
+                  ></ng-icon>
+                </span>
+                <ng-template #newPrd>
+                  <span class="flex items-center">
+                    <ng-icon
+                      name="heroDocumentPlus"
+                      class="w-5 h-5 text-green-600 mr-1"
+                      title="Add new file - This item will create a new work item"
+                    ></ng-icon>
+                  </span>
+                </ng-template>
+                <span class="text-base font-medium text-gray-900 truncate">{{
+                  prd.title
+                }}</span>
+                <span
+                  class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-blue-200 bg-blue-50 text-blue-700"
+                >
+                  {{ prd.pmoIssueType
+                  }}<span *ngIf="prd.pmoId"> &bull; {{ prd.pmoId }}</span>
+                </span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1 truncate">
+                #{{ prd.reqId }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Mid-level Items (Platform Features / Stories) -->
+          <div
+            *ngIf="isPrdExpanded(prd.specifaiId)"
+            class="ml-8 pl-4 border-l-2 border-gray-100 bg-gray-50 rounded-lg mt-2"
+          >
+            <!-- No Mid-level Items State -->
+            <div
+              *ngIf="!prd.child || prd.child.length === 0"
+              class="py-3 text-center"
+            >
+              <span class="text-xs text-gray-400"
+                >No {{ config.itemLabels.midLevel }}s</span
+              >
+            </div>
+
+            <!-- Mid-level Items -->
+            <div *ngFor="let platformFeature of prd.child" class="py-2">
+              <div
+                (click)="toggleUserStoryExpansion(platformFeature.specifaiId)"
+                class="flex items-center py-2 cursor-pointer rounded-lg"
+                tabindex="0"
+                [attr.aria-expanded]="
+                  isUserStoryExpanded(platformFeature.specifaiId)
+                "
+              >
+                <!-- Checkbox -->
+                <input
+                  type="checkbox"
+                  [id]="'platform-feature-' + platformFeature.specifaiId"
+                  [checked]="isUserStorySelected(platformFeature.specifaiId)"
+                  (click)="
+                    toggleUserStorySelection($event, platformFeature.specifaiId)
+                  "
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2 shadow-sm"
+                  [attr.aria-label]="
+                    'Select ' +
+                    config.itemLabels.midLevel +
+                    ' ' +
+                    platformFeature.title
+                  "
+                />
+                <ng-icon
+                  [name]="
+                    isUserStoryExpanded(platformFeature.specifaiId)
+                      ? 'heroChevronDown'
+                      : 'heroChevronRight'
+                  "
+                  class="size-4 text-gray-400 mr-2 transition-transform duration-200"
+                ></ng-icon>
+                <div class="flex-grow">
+                  <div class="flex items-center">
+                    <span
+                      *ngIf="platformFeature.isUpdate; else newMid"
+                      class="flex items-center"
+                    >
+                      <ng-icon
+                        name="heroDocumentCheck"
+                        class="w-4 h-4 text-amber-600 mr-1"
+                        title="Update existing file - This item will update an existing work item in the PMO system"
+                      ></ng-icon>
+                    </span>
+                    <ng-template #newMid>
+                      <span class="flex items-center">
+                        <ng-icon
+                          name="heroDocumentPlus"
+                          class="w-4 h-4 text-green-600 mr-1"
+                          title="Add new file - This item will create a new work item in the PMO system"
+                        ></ng-icon>
+                      </span>
+                    </ng-template>
+                    <span class="text-sm font-medium text-gray-800 truncate">{{
+                      platformFeature.title
+                    }}</span>
+                    <span
+                      class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-blue-200 bg-blue-50 text-blue-700"
+                    >
+                      {{ platformFeature.pmoIssueType }}
+                      <span *ngIf="platformFeature.pmoId">
+                        &bull; {{ platformFeature.pmoId }}</span
+                      >
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1 truncate">
+                    #{{ platformFeature.reqId }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Bottom-level Items (User Stories / Sub-tasks) -->
+              <div
+                *ngIf="isUserStoryExpanded(platformFeature.specifaiId)"
+                class="ml-8 pl-4 border-l-2 border-gray-100 bg-gray-50 rounded-lg mt-2"
+              >
+                <!-- No Bottom-level Items State -->
+                <div
+                  *ngIf="
+                    !platformFeature.child || platformFeature.child.length === 0
+                  "
+                  class="py-3 text-center"
+                >
+                  <span class="text-xs text-gray-400"
+                    >No {{ config.itemLabels.bottomLevel }}s</span
+                  >
+                </div>
+
+                <!-- Bottom-level Items -->
+                <div
+                  *ngFor="let userStory of platformFeature.child"
+                  class="py-2"
+                >
+                  <div class="flex items-center">
+                    <!-- Checkbox -->
+                    <input
+                      type="checkbox"
+                      [id]="'user-story-' + userStory.specifaiId"
+                      [checked]="isTaskSelected(userStory.specifaiId)"
+                      (click)="
+                        toggleTaskSelection($event, userStory.specifaiId)
+                      "
+                      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-2 shadow-sm"
+                      [attr.aria-label]="
+                        'Select ' +
+                        config.itemLabels.bottomLevel +
+                        ' ' +
+                        userStory.title
+                      "
+                    />
+                    <div class="flex-grow">
+                      <div class="flex items-center">
+                        <span
+                          *ngIf="userStory.isUpdate; else newBottom"
+                          class="flex items-center"
+                        >
+                          <ng-icon
+                            name="heroDocumentCheck"
+                            class="w-4 h-4 text-amber-600 mr-1"
+                            title="Update existing file - This item will update an existing work item"
+                          ></ng-icon>
+                        </span>
+                        <ng-template #newBottom>
+                          <span class="flex items-center">
+                            <ng-icon
+                              name="heroDocumentPlus"
+                              class="w-4 h-4 text-green-600 mr-1"
+                              title="Add new file - This item will create a new work item"
+                            ></ng-icon>
+                          </span>
+                        </ng-template>
+                        <span
+                          class="text-sm font-medium text-gray-800 truncate"
+                          >{{ userStory.title }}</span
+                        >
+                        <span
+                          class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full border border-blue-200 bg-blue-50 text-blue-700"
+                        >
+                          {{ userStory.pmoIssueType }}
+                          <span *ngIf="userStory.pmoId">
+                            &bull; {{ userStory.pmoId }}</span
+                          >
+                        </span>
+                      </div>
+                      <p class="text-xs text-gray-500 mt-1 truncate">
+                        #{{ userStory.reqId }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div
+    class="flex flex-col sm:flex-row justify-end gap-3 px-8 py-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl"
+  >
+    <app-button
+      buttonContent="Cancel"
+      theme="secondary"
+      size="sm"
+      (click)="onClose()"
+      aria-label="Cancel and close modal"
+    ></app-button>
+
+    <app-button
+      *ngIf="!connectionStatus().isConnected"
+      buttonContent="Configure Integration"
+      theme="primary"
+      size="sm"
+      (click)="onConfigureIntegration()"
+      aria-label="Configure integration"
+    ></app-button>
+
+    <app-button
+      *ngIf="connectionStatus().isConnected"
+      [buttonContent]="action() === 'pull' ? 'Pull Items' : 'Push Items'"
+      theme="primary"
+      size="sm"
+      (click)="onProceed()"
+      [disabled]="selectedCount() === 0 || isLoading()"
+      aria-label="Proceed with selected items"
+    ></app-button>
+  </div>
+</div>
