@@ -104,6 +104,8 @@ export class RichTextEditorComponent
   @Input('content') value: ValueType = '';
   @Input('mode') mode: 'edit' | 'view' = 'edit';
   @Input('editorClass') editorClass = '';
+  @Input('noRounding') noRounding = false;
+  @Input('contentPadding') contentPadding: 'sm' | 'md' | 'lg' | 'xl' = 'md';
 
   editor: Editor | null = null;
   touched = false;
@@ -146,11 +148,30 @@ export class RichTextEditorComponent
   }
 
   private getEditorClass(): string {
+    // Generate padding class based on contentPadding value
+    let paddingClass = '';
+    switch (this.contentPadding) {
+      case 'sm':
+        paddingClass = 'p-1.5';
+        break;
+      case 'md':
+        paddingClass = 'p-2.5';
+        break;
+      case 'lg':
+        paddingClass = 'p-4';
+        break;
+      case 'xl':
+        paddingClass = 'p-6';
+        break;
+      default:
+        paddingClass = 'p-2.5';
+    }
+    
     return `${
       this.mode === 'edit'
-        ? 'p-2.5 focus-visible:outline-none prose-secondary-edit'
+        ? `${paddingClass} focus-visible:outline-none prose-secondary-edit`
         : ''
-    } rounded-lg disabled:bg-secondary-100 max-w-none prose prose-sm prose-p:m-0 prose-p:mb-[0.625rem] prose-li:m-0 ${this.editorClass}`;
+    } disabled:bg-secondary-100 max-w-none prose prose-sm prose-p:m-0 prose-p:mb-[0.625rem] prose-li:m-0 ${this.editorClass}`;
   }
 
   private async setupEditor() {

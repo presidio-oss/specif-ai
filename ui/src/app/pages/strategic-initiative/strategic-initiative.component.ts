@@ -6,7 +6,7 @@ import {
   SectionInfo,
   parseMarkdownSections,
 } from '../../utils/section.utils';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, inject } from '@angular/core';
 import { InlineEditModule } from '../../directives/inline-edit/inline-edit.module';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
@@ -53,7 +53,17 @@ import {
   heroSparklesSolid,
   heroDocumentTextSolid,
 } from '@ng-icons/heroicons/solid';
-import { heroChevronLeft, heroChevronRight, heroLink, heroTrash } from '@ng-icons/heroicons/outline';
+import { 
+  heroChevronLeft, 
+  heroChevronRight, 
+  heroLink, 
+  heroTrash, 
+  heroPencil,
+  heroDocumentArrowDown,
+  heroEllipsisVertical,
+  heroCheckCircle,
+  heroArrowPath
+} from '@ng-icons/heroicons/outline';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { Observable, Subject, takeUntil, distinctUntilChanged } from 'rxjs';
@@ -68,12 +78,10 @@ import {
 } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
-import {
-  CanvasEditorComponent,
-  EditProposal,
-} from '../../components/core/canvas-editor/canvas-editor.component';
 import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
+import { SectionParserService } from 'src/app/services/document/section-parser.service';
+import { ExportDropdownComponent, DropdownOptionGroup } from 'src/app/export-dropdown/export-dropdown.component';
 
 @Component({
   selector: 'app-strategic-initiative',
@@ -95,9 +103,10 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
     RichTextEditorComponent,
     CommonModule,
     WorkflowProgressDialogComponent,
-    CanvasEditorComponent,
     InlineEditModule,
-  ],
+    ExportDropdownComponent,
+    PillComponent
+],
   providers: [
     provideIcons({
       heroSparklesSolid,
@@ -105,11 +114,16 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
       heroLink,
       heroTrash,
       heroChevronLeft,
-      heroChevronRight
+      heroChevronRight,
+      heroPencil,
+      heroDocumentArrowDown,
+      heroEllipsisVertical,
+      heroCheckCircle,
+      heroArrowPath
     }),
   ],
 })
-export class StrategicInitiativeComponent implements OnInit {
+export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
   projectId: string = '';
   folderName: string = '';
   fileName: string = '';
@@ -144,6 +158,16 @@ export class StrategicInitiativeComponent implements OnInit {
   protected readonly JSON = JSON;
   toastService = inject(ToasterService);
 
+  // New properties that were in canvas-editor
+  isEditingTitle: boolean = false;
+  documentTitle: string = '';
+  
+  // Options for the dropdown menu
+  documentActionOptions: DropdownOptionGroup[] = [];
+
+  // Access the rich text editor directly
+  @ViewChild('richTextEditor') richTextEditor!: RichTextEditorComponent;
+
   originalDocumentList$: Observable<IList[]> = this.store.select(
     ProjectsState.getSelectedFileContents,
   );
@@ -161,6 +185,7 @@ export class StrategicInitiativeComponent implements OnInit {
     private electronService: ElectronService,
     private workflowProgressService: WorkflowProgressService,
     private documentUpdateService: DocumentUpdateService,
+    private sectionParserService: SectionParserService
   ) {
 
     this.route.params.subscribe((params) => {
@@ -198,6 +223,9 @@ export class StrategicInitiativeComponent implements OnInit {
       this.ucRequirementId = this.fileName.split('-')[0];
 
       this.editLabel = `Edit ${this.ucRequirementId}`;
+      
+      // Initialize the document action options
+      this.initializeDocumentActions();
     } else {
       this.editLabel = 'Add';
     }
@@ -223,6 +251,43 @@ export class StrategicInitiativeComponent implements OnInit {
       this.isGeneratingStrategicInitiative = false;
       this.strategicInitiativeGenerationComplete = false;
     }
+  }
+
+  /**
+   * Initialize the document action dropdown options
+   */
+  private initializeDocumentActions(): void {
+    const isDraft = this.strategicInitiativeForm?.get('status')?.value === 'DRAFT';
+    
+    this.documentActionOptions = [
+      {
+        groupName: "Document Actions",
+        options: [
+          {
+            label: "Export as Word",
+            icon: "heroDocumentArrowDown",
+            callback: () => this.exportAsWord()
+          }
+        ]
+      },
+      {
+        groupName: "Management",
+        options: [
+          {
+            label: isDraft ? "Finalize Document" : "Return to Draft",
+            icon: isDraft ? "heroCheckCircle" : "heroArrowPath",
+            callback: () => this.toggleDocumentStatus(),
+            additionalInfo: isDraft ? 'Mark as complete' : 'Mark as draft'
+          },
+          {
+            label: "Delete Document",
+            icon: "heroTrash",
+            callback: () => this.deleteStrategicInitiative(),
+            additionalInfo: "Remove permanently"
+          }
+        ]
+      }
+    ];
   }
 
   private handleStrategicInitiativeCreation(fileData: IAddStrategicInitiativeRequest) {
@@ -287,6 +352,9 @@ export class StrategicInitiativeComponent implements OnInit {
 
     this.strategicInitiativeForm.markAsUntouched();
     this.strategicInitiativeForm.markAsPristine();
+    
+    // Update dropdown options to reflect status changes
+    this.initializeDocumentActions();
   }
 
   initializeStrategicInitiativeForm() {
@@ -317,7 +385,17 @@ export class StrategicInitiativeComponent implements OnInit {
           requirement: res.requirement,
           status: res.status,
           researchUrls: res.researchUrls
-        });        
+        });
+        
+        // Update documentTitle for the title editing functionality
+        this.documentTitle = res.title || '';
+        
+        // Initialize document actions after form is populated
+        this.initializeDocumentActions();
+        
+        // Mark the form as pristine and untouched after initial data load
+        this.strategicInitiativeForm.markAsPristine();
+        this.strategicInitiativeForm.markAsUntouched();
       });
     }
   }
@@ -352,6 +430,47 @@ export class StrategicInitiativeComponent implements OnInit {
     }
     
     this.clearStaleData();
+  }
+  
+  ngAfterViewInit() {
+    // Wait for rich text editor to initialize
+    setTimeout(() => {
+      if (this.mode === 'edit') {
+        this.updateDocumentSections();
+        this.setupSelectionHandler();
+      }
+    }, 500);
+  }
+  
+  private setupSelectionHandler(): void {
+    if (!this.richTextEditor?.editor) return;
+    
+    const editor = this.richTextEditor.editor;
+    
+    editor.on('selectionUpdate', ({ editor }) => {
+      const { from, to } = editor.state.selection;
+      
+      // Find which section contains this selection
+      const section = this.documentSections.find(
+        s => from >= s.startPos && from <= s.endPos
+      );
+      
+      if (section && (!this.selectedSection || this.selectedSection.id !== section.id)) {
+        this.selectedSection = section;
+        this.onSectionSelected(section);
+      }
+    });
+  }
+  
+  // Method to get editor instance safely
+  getEditorInstance(): any {
+    return this.richTextEditor?.editor || null;
+  }
+  
+  // Handle content changes from the rich text editor
+  onRichTextEditorChange(content: string): void {
+    this.onCanvasContentChange(content);
+    this.updateDocumentSections();
   }
   
   private clearStaleData(): void {
@@ -516,16 +635,34 @@ export class StrategicInitiativeComponent implements OnInit {
     this.activeTab = tab;
   }
 
-  finalizeStrategicInitiative() {
-    if (
-      this.mode === 'edit' &&
-      this.strategicInitiativeForm.get('status')?.value === 'DRAFT'
-    ) {
+  /**
+   * Toggle the document status between DRAFT and COMPLETE
+   */
+  toggleDocumentStatus() {
+    if (this.mode === 'edit') {
+      const currentStatus = this.strategicInitiativeForm.get('status')?.value;
+      const newStatus = currentStatus === 'DRAFT' ? 'COMPLETE' : 'DRAFT';
+      
       this.strategicInitiativeForm.patchValue({
-        status: 'COMPLETE',
+        status: newStatus,
       });
+      
       this.updateStrategicInitiative();
+      
+      const statusMessage = newStatus === 'COMPLETE' ? 
+        'Document marked as complete' : 
+        'Document returned to draft status';
+      
+      this.toastService.showSuccess(statusMessage);
     }
+  }
+
+  /**
+   * Legacy method kept for backward compatibility
+   * @deprecated Use toggleDocumentStatus instead
+   */
+  finalizeStrategicInitiative() {
+    this.toggleDocumentStatus();
   }
 
   exportAsWord() {
@@ -637,6 +774,9 @@ export class StrategicInitiativeComponent implements OnInit {
           title: result.title || formValue.title,
           requirement: result.requirement,
         });
+        
+        // Update documentTitle for the title editing functionality
+        this.documentTitle = result.title || formValue.title;
 
         this.toastService.showSuccess(
           'Business proposal generated successfully',
@@ -674,8 +814,8 @@ export class StrategicInitiativeComponent implements OnInit {
     });
   }
 
-
   onTitleChange(title: string): void {
+    this.documentTitle = title;
     this.strategicInitiativeForm.patchValue({
       title: title,
     });
@@ -688,16 +828,68 @@ export class StrategicInitiativeComponent implements OnInit {
 
   selectDocumentSection(section: SectionInfo): void {
     this.selectedSection = section;
-
-    const canvasEditor = document.querySelector('app-canvas-editor');
-    if (
-      canvasEditor &&
-      typeof (canvasEditor as any).selectSection === 'function'
-    ) {
-      (canvasEditor as any).selectSection(section.id);
+    
+    if (this.richTextEditor?.editor) {
+      // Set the selection to the beginning of the section
+      this.richTextEditor.editor.commands.setTextSelection({
+        from: section.startPos,
+        to: section.startPos
+      });
+      
+      // Scroll to the section
+      this.scrollToSection(section);
     }
 
     this.loggerService.debug('Selected document section:', section);
+  }
+
+  /**
+   * Scroll to a specific section in the editor
+   * @param section The section to scroll to
+   */
+  private scrollToSection(section: SectionInfo | null): void {
+    if (!section || !this.richTextEditor?.editor || !this.richTextEditor.editorElement) return;
+    
+    setTimeout(() => {
+      try {
+        // Get the editor element
+        const editorElement = this.richTextEditor.editorElement.nativeElement;
+        if (!editorElement) return;
+        
+        // First try to find an element with the exact section ID
+        let targetElement: HTMLElement | null = document.getElementById(section.id);
+        
+        // If not found, try to find a heading with matching text content
+        if (!targetElement) {
+          const headings = editorElement.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
+          
+          for (let i = 0; i < headings.length; i++) {
+            const heading = headings[i] as HTMLElement;
+            const headingText = heading.textContent || '';
+            if (headingText && headingText.includes(section.title)) {
+              targetElement = heading;
+              break;
+            }
+          }
+        }
+        
+        // If we found a target element, scroll to it
+        if (targetElement) {
+          // Find the scrollable container
+          const scrollContainer = editorElement.closest('.overflow-y-auto') || editorElement;
+          
+          if (scrollContainer instanceof HTMLElement) {
+            // Scroll with smooth behavior
+            scrollContainer.scrollTo({
+              top: targetElement.offsetTop - 50, // Add padding at the top
+              behavior: 'smooth'
+            });
+          }
+        }
+      } catch (error) {
+        this.loggerService.error('Error scrolling to section:', error);
+      }
+    }, 100);
   }
 
   /**
@@ -714,9 +906,14 @@ export class StrategicInitiativeComponent implements OnInit {
   }
 
   private updateDocumentSections(): void {
-    const content = this.strategicInitiativeForm.get('requirement')?.value || '';
-
-    this.documentSections = parseMarkdownSections(content);
+    if (this.richTextEditor?.editor) {
+      // Use the section parser service to parse sections from the editor
+      this.documentSections = this.sectionParserService.parseContentSections(this.richTextEditor.editor);
+    } else {
+      // Fallback to parsing from markdown content if editor is not available
+      const content = this.strategicInitiativeForm.get('requirement')?.value || '';
+      this.documentSections = parseMarkdownSections(content);
+    }
 
     if (this.selectedSection) {
       const stillExists = this.documentSections.some(
