@@ -29,14 +29,14 @@
             }}
           </h1>
         </div>
-        
+
         <!-- Document title editing - now in the same row -->
         <div class="flex-1" *ngIf="mode === 'edit' && !isEditingTitle">
           <h2
             class="text-base font-medium text-gray-800 cursor-pointer hover:text-primary-600"
             (click)="isEditingTitle = true"
           >
-            {{ strategicInitiativeForm.get('title')?.value }}
+            {{ strategicInitiativeForm.get("title")?.value }}
             <ng-icon
               name="heroPencil"
               class="ml-1 text-gray-400 hover:text-primary-500"
@@ -48,7 +48,7 @@
           <input
             type="text"
             [(ngModel)]="documentTitle"
-            [ngModelOptions]="{standalone: true}"
+            [ngModelOptions]="{ standalone: true }"
             class="w-full px-2 py-1 text-base rounded focus:outline-none"
             (blur)="isEditingTitle = false; onTitleChange(documentTitle)"
             (keyup.enter)="isEditingTitle = false; onTitleChange(documentTitle)"
@@ -56,22 +56,23 @@
           />
         </div>
       </div>
-      
+
       <div class="flex items-center gap-2">
         <!-- Status indicator using proper app-pill component -->
-        <div 
+        <div
           *ngIf="mode === 'edit'"
           class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
           [ngClass]="{
-            'bg-yellow-100 text-yellow-800': strategicInitiativeForm.get('status')?.value === 'DRAFT',
-            'bg-green-100 text-green-800': strategicInitiativeForm.get('status')?.value === 'COMPLETE'
+            'bg-yellow-100 text-yellow-800':
+              strategicInitiativeForm.get('status')?.value === 'DRAFT',
+            'bg-green-100 text-green-800':
+              strategicInitiativeForm.get('status')?.value === 'COMPLETE',
           }"
         >
-          {{ strategicInitiativeForm.get('status')?.value }}
+          {{ strategicInitiativeForm.get("status")?.value }}
         </div>
-        
         <!-- Using export-dropdown component -->
-        <app-export-dropdown 
+        <app-export-dropdown
           *ngIf="mode === 'edit'"
           [groupedOptions]="documentActionOptions"
           buttonLabel="Options"
@@ -224,7 +225,8 @@
             >
               <!-- Collapse/Expand Button -->
               <div
-                class="p-3 border-b border-secondary-200 flex justify-between items-center"
+                class="p-3 flex justify-between items-center"
+                [ngClass]="{ 'border-b border-secondary-200': isChatExpanded }"
               >
                 <h3
                   *ngIf="isChatExpanded"
@@ -242,7 +244,7 @@
                 >
                   <ng-icon
                     [name]="
-                      isChatExpanded ? 'heroChevronLeft' : 'heroChevronRight'
+                      isChatExpanded ? 'heroChevronRight' : 'heroChevronLeft'
                     "
                   ></ng-icon>
                 </button>
@@ -288,7 +290,7 @@
             (click)="navigateBackToDocumentList(data)"
           />
         </div>
-        
+
         <!-- Generate Draft and Add/Update buttons on right -->
         <div class="flex gap-2">
           <app-button

@@ -2,10 +2,6 @@ import {
   exportMarkdownToDocx,
   WordFileExtension,
 } from '../../utils/markdown.utils';
-import {
-  SectionInfo,
-  parseMarkdownSections,
-} from '../../utils/section.utils';
 import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, inject } from '@angular/core';
 import { InlineEditModule } from '../../directives/inline-edit/inline-edit.module';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -29,7 +25,6 @@ import {
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
-import { TextareaFieldComponent } from '../../components/core/textarea-field/textarea-field.component';
 import {
   AsyncPipe,
   NgClass,
@@ -40,7 +35,6 @@ import {
 import { PillComponent } from '../../components/pill/pill.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { ExpandDescriptionPipe } from '../../pipes/expand-description.pipe';
-import { TruncateEllipsisPipe } from '../../pipes/truncate-ellipsis-pipe';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { NGXLogger } from 'ngx-logger';
 import {
@@ -80,7 +74,6 @@ import { WorkflowProgressService } from '../../services/workflow-progress/workfl
 import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
-import { SectionParserService } from 'src/app/services/document/section-parser.service';
 import { ExportDropdownComponent, DropdownOptionGroup } from 'src/app/export-dropdown/export-dropdown.component';
 
 @Component({
@@ -123,7 +116,7 @@ import { ExportDropdownComponent, DropdownOptionGroup } from 'src/app/export-dro
     }),
   ],
 })
-export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
+export class StrategicInitiativeComponent implements OnInit {
   projectId: string = '';
   folderName: string = '';
   fileName: string = '';
@@ -173,8 +166,6 @@ export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
   );
 
   chatHistory: any = [];
-  selectedSection: SectionInfo | null = null;
-  documentSections: SectionInfo[] = [];
   isChatExpanded: boolean = true;
 
   constructor(
@@ -184,8 +175,7 @@ export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
     private loggerService: NGXLogger,
     private electronService: ElectronService,
     private workflowProgressService: WorkflowProgressService,
-    private documentUpdateService: DocumentUpdateService,
-    private sectionParserService: SectionParserService
+    private documentUpdateService: DocumentUpdateService
   ) {
 
     this.route.params.subscribe((params) => {
@@ -425,42 +415,9 @@ export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
         });
     }
     
-    if (this.mode === 'edit') {
-      this.updateDocumentSections();
-    }
-    
     this.clearStaleData();
   }
   
-  ngAfterViewInit() {
-    // Wait for rich text editor to initialize
-    setTimeout(() => {
-      if (this.mode === 'edit') {
-        this.updateDocumentSections();
-        this.setupSelectionHandler();
-      }
-    }, 500);
-  }
-  
-  private setupSelectionHandler(): void {
-    if (!this.richTextEditor?.editor) return;
-    
-    const editor = this.richTextEditor.editor;
-    
-    editor.on('selectionUpdate', ({ editor }) => {
-      const { from, to } = editor.state.selection;
-      
-      // Find which section contains this selection
-      const section = this.documentSections.find(
-        s => from >= s.startPos && from <= s.endPos
-      );
-      
-      if (section && (!this.selectedSection || this.selectedSection.id !== section.id)) {
-        this.selectedSection = section;
-        this.onSectionSelected(section);
-      }
-    });
-  }
   
   // Method to get editor instance safely
   getEditorInstance(): any {
@@ -470,16 +427,12 @@ export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
   // Handle content changes from the rich text editor
   onRichTextEditorChange(content: string): void {
     this.onCanvasContentChange(content);
-    this.updateDocumentSections();
   }
   
   private clearStaleData(): void {
     if (this.mode === 'add') {
       this.chatHistory = [];
     }
-    
-    this.documentSections = [];
-    this.selectedSection = null;
   }
 
   ngOnDestroy(): void {
@@ -504,6 +457,7 @@ export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
           WorkflowType.StrategicInitiative
         );
       } catch (error) {
+        
       }
     }
   }
@@ -586,8 +540,6 @@ export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
             this.strategicInitiativeForm.patchValue({
               requirement: updatedContent,
             });
-
-            this.updateDocumentSections();
 
             if (this.mode === 'edit') {
               this.updateStrategicInitiative();
@@ -821,108 +773,11 @@ export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onSectionSelected(section: SectionInfo): void {
-    this.selectedSection = section;
-    this.loggerService.debug('Selected section:', section);
-  }
-
-  selectDocumentSection(section: SectionInfo): void {
-    this.selectedSection = section;
-    
-    if (this.richTextEditor?.editor) {
-      // Set the selection to the beginning of the section
-      this.richTextEditor.editor.commands.setTextSelection({
-        from: section.startPos,
-        to: section.startPos
-      });
-      
-      // Scroll to the section
-      this.scrollToSection(section);
-    }
-
-    this.loggerService.debug('Selected document section:', section);
-  }
-
-  /**
-   * Scroll to a specific section in the editor
-   * @param section The section to scroll to
-   */
-  private scrollToSection(section: SectionInfo | null): void {
-    if (!section || !this.richTextEditor?.editor || !this.richTextEditor.editorElement) return;
-    
-    setTimeout(() => {
-      try {
-        // Get the editor element
-        const editorElement = this.richTextEditor.editorElement.nativeElement;
-        if (!editorElement) return;
-        
-        // First try to find an element with the exact section ID
-        let targetElement: HTMLElement | null = document.getElementById(section.id);
-        
-        // If not found, try to find a heading with matching text content
-        if (!targetElement) {
-          const headings = editorElement.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
-          
-          for (let i = 0; i < headings.length; i++) {
-            const heading = headings[i] as HTMLElement;
-            const headingText = heading.textContent || '';
-            if (headingText && headingText.includes(section.title)) {
-              targetElement = heading;
-              break;
-            }
-          }
-        }
-        
-        // If we found a target element, scroll to it
-        if (targetElement) {
-          // Find the scrollable container
-          const scrollContainer = editorElement.closest('.overflow-y-auto') || editorElement;
-          
-          if (scrollContainer instanceof HTMLElement) {
-            // Scroll with smooth behavior
-            scrollContainer.scrollTo({
-              top: targetElement.offsetTop - 50, // Add padding at the top
-              behavior: 'smooth'
-            });
-          }
-        }
-      } catch (error) {
-        this.loggerService.error('Error scrolling to section:', error);
-      }
-    }, 100);
-  }
-
   /**
    * Toggle the expanded state of the chat panel
    */
   toggleChatExpanded(): void {
     this.isChatExpanded = !this.isChatExpanded;
-
-    // When the chat is expanded, we should update the document sections
-    if (this.isChatExpanded) {
-      // Parse the content to extract sections
-      this.updateDocumentSections();
-    }
-  }
-
-  private updateDocumentSections(): void {
-    if (this.richTextEditor?.editor) {
-      // Use the section parser service to parse sections from the editor
-      this.documentSections = this.sectionParserService.parseContentSections(this.richTextEditor.editor);
-    } else {
-      // Fallback to parsing from markdown content if editor is not available
-      const content = this.strategicInitiativeForm.get('requirement')?.value || '';
-      this.documentSections = parseMarkdownSections(content);
-    }
-
-    if (this.selectedSection) {
-      const stillExists = this.documentSections.some(
-        (s) => s.id === this.selectedSection?.id,
-      );
-      if (!stillExists && this.documentSections.length > 0) {
-        this.selectedSection = this.documentSections[0];
-      }
-    }
   }
 
   private setupStrategicInitiativeProgressListener(): void {
@@ -956,7 +811,5 @@ export class StrategicInitiativeComponent implements OnInit, AfterViewInit {
     if (this.mode === 'edit') {
       this.updateStrategicInitiative();
     }
-    
-    this.updateDocumentSections();
   }
 }
