@@ -14,10 +14,10 @@ Include the following sections:
 1. Title: A concise, descriptive title for the business proposal (DO NOT include terms like "SI", "Strategic Initiative", or any reference to this being a strategic initiative in the title)
 2. Summary: A one-sentence summary of the business case
 3. Goals and Business Outcomes: Tangible, measurable goals and clear business outcomes
-4. Strategic Approaches: At least 3 approaches, each detailing HOW (implementation strategy), WHO (key stakeholders), WHEN (timeline), INVESTMENT (costs with specific dollar figures), and ratings for complexity and sustainability
-5. Competitor Analysis: Supporting case studies using REAL company names and ACTUAL market data (NEVER use placeholder names like "Company A/B/C" or made-up statistics)
-6. Potential Challenges: Identification of specific, realistic gaps or risks
-7. Innovation Opportunities: How this approach could position the organization as an innovation leader with concrete examples
+4. Strategic Approaches: At least 3 approaches, each detailing HOW (implementation strategy), WHO (key stakeholders), general timeline considerations (short/medium/long-term), estimated INVESTMENT LEVEL (low/medium/high rather than specific figures), and ratings for complexity and sustainability
+5. Competitor Analysis: Supporting case studies using industry trends and general market patterns (avoid making claims about specific companies without verifiable data)
+6. Potential Challenges: Identification of realistic gaps or risks without speculating on specific market conditions
+7. Innovation Opportunities: How this approach could position the organization as an innovation leader using general industry concepts
 
 MARKDOWN FORMATTING INSTRUCTIONS:
 - Use consistent heading levels: # for title, ## for main sections, ### for subsections
@@ -63,12 +63,12 @@ IMPORTANT: Generate a comprehensive business proposal. DO NOT ask questions or r
 
 CONTENT REQUIREMENTS:
 - CAREFULLY REVIEW the solution information and ensure all content aligns with it
-- Include REAL company names in competitor analysis (NEVER use "Company A/B/C" placeholders)
+- When discussing competitors, use general industry trends and patterns rather than making claims about specific companies
 - NEVER list the solution's own company (${solutionInfo.name}) as a competitor - it should only appear as the implementer
 - Be VIGILANT about correctly representing the solution's capabilities and limitations
-- Use ACTUAL market data with specific figures (e.g., "$2.3 million investment" not "significant investment")
-- Provide SPECIFIC timelines with actual dates or quarters (e.g., "Q3 2025" not "next quarter")
-- Include CONCRETE examples for all claims and recommendations
+- Use general investment level descriptions (e.g., "low-investment approach" or "high-investment strategy") rather than specific dollar figures
+- Use general timeframes (e.g., "short-term", "medium-term", "long-term") rather than specific dates or quarters
+- Include well-reasoned examples for all claims and recommendations based on general industry knowledge
 - Add a "References" section at the end of the document that lists all research sources used
 - Double-check all facts before finalizing the content to avoid inconsistencies or errors
 
@@ -183,21 +183,21 @@ Create a comprehensive business proposal with:
 3. **Strategic Approaches**: Provide at least 3 approaches, each detailing:
    - HOW: Implementation strategy
    - WHO: Key stakeholders and teams involved
-   - WHEN: Timeline with specific dates/quarters (e.g., "Q3 2025")
-   - INVESTMENT: Cost estimates with specific dollar figures
+   - WHEN: General timeline considerations (short-term, medium-term, long-term)
+   - INVESTMENT: Relative investment level (low, medium, high) without specific dollar figures
    - Rate each approach on:
      * Complexity of implementation and adoption
-     * Sustainability based on ROI
+     * Sustainability based on general ROI potential
 
 4. **Competitor Analysis**:
-   - Include REAL company names (NEVER use placeholders like "Company A/B/C")
+   - Focus on industry trends and market patterns rather than specific companies
    - NEVER list ${project.name} as a competitor - it should only appear as the implementer
-   - Use ACTUAL market data and real examples
-   - Verify all facts and figures for accuracy
+   - Discuss general competitive strategies and approaches observed in the industry
+   - Present analysis based on general industry knowledge without speculating about specific market data
 
-5. **Potential Challenges**: Identify specific, realistic gaps or risks
+5. **Potential Challenges**: Identify realistic gaps or risks that might affect implementation
 
-6. **Innovation Opportunities**: Provide concrete examples of how this approach could position the organization as an innovation leader
+6. **Innovation Opportunities**: Describe how this approach could position the organization as an innovation leader using general industry concepts
 
 ## Output Guidelines
 - Make reasonable assumptions based on the information provided

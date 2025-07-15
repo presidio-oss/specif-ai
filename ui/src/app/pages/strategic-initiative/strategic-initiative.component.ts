@@ -317,7 +317,7 @@ export class StrategicInitiativeComponent implements OnInit {
           requirement: res.requirement,
           status: res.status,
           researchUrls: res.researchUrls
-        });
+        });        
       });
     }
   }
@@ -549,7 +549,7 @@ export class StrategicInitiativeComponent implements OnInit {
   }
 
   canDeactivate(): boolean {
-    return this.allowForceRedirect && !this.strategicInitiativeForm.dirty;
+    return !this.allowForceRedirect && this.strategicInitiativeForm.dirty && this.strategicInitiativeForm.touched;
   }
 
   get researchUrlsFormArray(): FormArray {

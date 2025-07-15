@@ -25,6 +25,7 @@ import { APP_MESSAGES } from "../../constants/message.constants";
 import { GuardrailsShouldBlock, validateGuardrails } from "../../guardrails";
 import { isLangfuseDetailedTracesEnabled } from "../../services/observability/observability.util";
 import { getSIPrompt } from "../../prompts/core/strategic-initiative";
+import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 
 // Message type mapping
 const MESSAGE_TYPES = {
@@ -108,7 +109,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
 
     const messages = transformToLangchainMessages(validatedData.chatHistory);
     const prompt = new SystemMessage(
-      validatedData.requirementAbbr === "SI"
+      validatedData.requirementAbbr === REQUIREMENT_TYPE.SI
         ? getSIPrompt(validatedData as SIParams)
         : chatWithAIPrompt(validatedData)
     );
@@ -199,7 +200,7 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     {
       name: "get_current_requirement_content",
       description:
-        data.requirementAbbr === "SI"
+        data.requirementAbbr === REQUIREMENT_TYPE.SI
           ? "Get current requirement content. Always use this tool first before attempting to update the document to ensure you're working with the latest content."
           : "Get current requirement content.",
     }
