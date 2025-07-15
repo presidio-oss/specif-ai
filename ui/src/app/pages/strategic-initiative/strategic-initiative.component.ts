@@ -5,8 +5,6 @@ import {
 import {
   SectionInfo,
   parseMarkdownSections,
-  replaceSection,
-  appendContent,
 } from '../../utils/section.utils';
 import { Component, OnInit, inject } from '@angular/core';
 import { InlineEditModule } from '../../directives/inline-edit/inline-edit.module';
@@ -55,7 +53,7 @@ import {
   heroSparklesSolid,
   heroDocumentTextSolid,
 } from '@ng-icons/heroicons/solid';
-import { heroLink, heroTrash } from '@ng-icons/heroicons/outline';
+import { heroChevronLeft, heroChevronRight, heroLink, heroTrash } from '@ng-icons/heroicons/outline';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { Observable, Subject, takeUntil, distinctUntilChanged } from 'rxjs';
@@ -106,6 +104,8 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
       heroDocumentTextSolid,
       heroLink,
       heroTrash,
+      heroChevronLeft,
+      heroChevronRight
     }),
   ],
 })
@@ -231,6 +231,7 @@ export class StrategicInitiativeComponent implements OnInit {
       requirement: fileData.requirement,
       chatHistory: fileData.chatHistory,
       status: fileData.status,
+      researchUrls: fileData.researchUrls
     };
 
     this.store.dispatch(new CreateFile(`${this.folderName}`, formattedData));
@@ -315,6 +316,7 @@ export class StrategicInitiativeComponent implements OnInit {
           title: res.title,
           requirement: res.requirement,
           status: res.status,
+          researchUrls: res.researchUrls
         });
       });
     }
@@ -682,61 +684,6 @@ export class StrategicInitiativeComponent implements OnInit {
   onSectionSelected(section: SectionInfo): void {
     this.selectedSection = section;
     this.loggerService.debug('Selected section:', section);
-  }
-
-  onEditProposed(edit: EditProposal): void {
-    try {
-      const currentContent = this.strategicInitiativeForm.get('requirement')?.value || '';
-      let updatedContent: string;
-
-      switch (edit.type) {
-        case 'append':
-          updatedContent = appendContent(currentContent, edit.content);
-          this.strategicInitiativeForm.patchValue({ requirement: updatedContent });
-          this.toastService.showSuccess(
-            'Content added to the end of the document',
-          );
-          break;
-
-        case 'section':
-          // Replace a specific section if one is selected
-          if (this.selectedSection) {
-            // Use the utility function to replace the section
-            updatedContent = replaceSection(
-              currentContent,
-              this.selectedSection,
-              edit.content,
-            );
-            this.strategicInitiativeForm.patchValue({ requirement: updatedContent });
-            this.toastService.showSuccess(
-              `Updated section: ${this.selectedSection.title}`,
-            );
-          } else {
-            this.toastService.showWarning(
-              'No section selected. Please select a section to edit.',
-            );
-          }
-          break;
-
-        case 'full':
-          this.strategicInitiativeForm.patchValue({ requirement: edit.content });
-          this.toastService.showSuccess('Document content replaced');
-          break;
-
-        default:
-          this.toastService.showError(`Unknown edit type: ${edit.type}`);
-          return;
-      }
-
-      if (this.mode === 'edit') {
-        this.updateStrategicInitiative();
-      }
-
-      this.updateDocumentSections();
-    } catch (error) {
-      console.error('Error applying edit:', error);
-      this.toastService.showError('Failed to apply edit');
-    }
   }
 
   selectDocumentSection(section: SectionInfo): void {

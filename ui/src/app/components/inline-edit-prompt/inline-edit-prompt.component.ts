@@ -10,6 +10,7 @@ import { heroSparklesSolid, heroArrowRightCircleSolid } from '@ng-icons/heroicon
 import { InlineEditResponse } from '../../model/interfaces/chat.interface';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { markdownToHtml } from '../../utils/markdown.utils';
+import { heroArrowRight } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-inline-edit-prompt',
@@ -52,7 +53,8 @@ import { markdownToHtml } from '../../utils/markdown.utils';
   providers: [
     provideIcons({ 
       heroSparklesSolid, 
-      heroArrowRightCircleSolid 
+      heroArrowRightCircleSolid,
+      heroArrowRight
     })
   ]
 })

@@ -21,9 +21,9 @@ import { LLMConfigModel } from "../../services/llm/llm-types";
 import { ObservabilityManager } from "../../services/observability/observability.manager";
 import { store } from "../../services/store";
 import { z } from "zod";
-import { APP_MESSAGES } from '../../constants/message.constants';
+import { APP_MESSAGES } from "../../constants/message.constants";
 import { GuardrailsShouldBlock, validateGuardrails } from "../../guardrails";
-import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
+import { isLangfuseDetailedTracesEnabled } from "../../services/observability/observability.util";
 import { getSIPrompt } from "../../prompts/core/strategic-initiative";
 
 // Message type mapping
@@ -31,13 +31,15 @@ const MESSAGE_TYPES = {
   SystemMessage: "system",
   HumanMessage: "user",
   AIMessage: "assistant",
-  ToolMessage: "tool"
+  ToolMessage: "tool",
 } as const;
 
 // Helper functions for message conversion
 function determineLangchainMessageRole(message: any): string {
   if (message.constructor && message.constructor.name in MESSAGE_TYPES) {
-    return MESSAGE_TYPES[message.constructor.name as keyof typeof MESSAGE_TYPES];
+    return MESSAGE_TYPES[
+      message.constructor.name as keyof typeof MESSAGE_TYPES
+    ];
   }
   return "user";
 }
@@ -45,8 +47,8 @@ function determineLangchainMessageRole(message: any): string {
 function extractContent(content: any): string {
   if (Array.isArray(content)) {
     return content
-      .filter(item => item.type === "text")
-      .map(item => item.text)
+      .filter((item) => item.type === "text")
+      .map((item) => item.text)
       .join("\n");
   }
   return content?.toString() || "";
@@ -57,21 +59,21 @@ export function convertToGuardrailMessage(message: any): any {
     role: determineLangchainMessageRole(message),
     content: extractContent(message.content),
     ...(message.id && { id: message.id }),
-    ...(message.tool_calls && { tool_calls: message.tool_calls })
+    ...(message.tool_calls && { tool_calls: message.tool_calls }),
   };
 }
 
 export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
   let validatedData: ChatWithAIParams | undefined;
-  
+
   try {
     const o11y = ObservabilityManager.getInstance();
-    const trace = o11y.createTrace('chat-with-ai');
+    const trace = o11y.createTrace("chat-with-ai");
 
-    const llmConfig = store.get<LLMConfigModel>('llmConfig');
+    const llmConfig = store.get<LLMConfigModel>("llmConfig");
 
     if (!llmConfig) {
-      throw new Error('LLM configuration not found');
+      throw new Error("LLM configuration not found");
     }
 
     const model = buildLangchainModelProvider(
@@ -79,7 +81,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
       llmConfig.providerConfigs[llmConfig.activeProvider].config
     );
 
-    const validationSpan = trace.span({ name: 'input-validation' });
+    const validationSpan = trace.span({ name: "input-validation" });
     validatedData = await ChatWithAISchema.parseAsync(data);
     validationSpan.end();
 
@@ -111,14 +113,12 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
         : chatWithAIPrompt(validatedData)
     );
 
-    const allMessages = [
-      prompt,
-      ...messages,
-    ];
+    const allMessages = [prompt, ...messages];
 
     const lastUserMessage = messages[messages.length - 1];
     if (lastUserMessage) {
-      const lastMessageForGuardrails = convertToGuardrailMessage(lastUserMessage);
+      const lastMessageForGuardrails =
+        convertToGuardrailMessage(lastUserMessage);
       await validateGuardrails([lastMessageForGuardrails]);
     }
 
@@ -127,7 +127,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
         messages: allMessages,
       },
       {
-        version: 'v2',
+        version: "v2",
         ...config,
       }
     );
@@ -141,7 +141,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
     });
 
     const completionEvent = {
-      event: 'specif.chat.complete',
+      event: "specif.chat.complete",
       state: finalState,
     };
 
@@ -152,23 +152,24 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
 
     return finalState;
   } catch (error) {
-    console.error('[chat-with-ai] error', error);
-    
-    const errorResponse = error instanceof GuardrailsShouldBlock 
-      ? {
-          response: 'Request blocked by guardrails',
-          blocked: true,
-          blockedReason: APP_MESSAGES.BLOCKED_REASON,
-        }
-      : {
-          response: 'Request not processed',
-          blocked: true,
-          blockedReason: APP_MESSAGES.RESPONSE_NOT_PROCESSES,
-        };
+    console.error("[chat-with-ai] error", error);
+
+    const errorResponse =
+      error instanceof GuardrailsShouldBlock
+        ? {
+            response: "Request blocked by guardrails",
+            blocked: true,
+            blockedReason: APP_MESSAGES.BLOCKED_REASON,
+          }
+        : {
+            response: "Request not processed",
+            blocked: true,
+            blockedReason: APP_MESSAGES.RESPONSE_NOT_PROCESSES,
+          };
     _.sender.send(`core:${validatedData?.requestId}-chatStream`, {
-      event: 'on_chat_model_stream',
+      event: "on_chat_model_stream",
       metadata: {
-        langgraph_node: 'llm',
+        langgraph_node: "llm",
       },
       data: {
         chunk: errorResponse,
@@ -176,11 +177,12 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
     });
     const blockedState = {
       messages: validatedData?.chatHistory || [],
-      conversationSummary: '',
+      conversationSummary: "",
       structuredResponse: {
         response: errorResponse.response,
         blocked: true,
-        blockedReason: errorResponse.blockedReason      },
+        blockedReason: errorResponse.blockedReason,
+      },
     };
     return blockedState;
   }
@@ -196,23 +198,30 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     },
     {
       name: "get_current_requirement_content",
-      description: "Get current requirement content. Always use this tool first before attempting to update the document to ensure you're working with the latest content.",
+      description:
+        data.requirementAbbr === "SI"
+          ? "Get current requirement content. Always use this tool first before attempting to update the document to ensure you're working with the latest content."
+          : "Get current requirement content.",
     }
   );
-  
+
   const textBlockReplaceSchema = z.object({
-    searchBlock: z.string().describe("The exact text block to search for in the document"),
-    replaceBlock: z.string().describe("The text block to replace the search block with")
+    searchBlock: z
+      .string()
+      .describe("The exact text block to search for in the document"),
+    replaceBlock: z
+      .string()
+      .describe("The text block to replace the search block with"),
   });
 
   const replaceTextBlock = tool(
     async (input: z.infer<typeof textBlockReplaceSchema>) => {
       const { searchBlock, replaceBlock } = input;
-      
+
       if (!searchBlock) {
         return JSON.stringify({
           success: false,
-          error: "searchBlock is required"
+          error: "searchBlock is required",
         });
       }
 
@@ -221,7 +230,7 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       } else {
         return JSON.stringify({
           success: false,
-          error: "Search block not found in the document"
+          error: "Search block not found in the document",
         });
       }
 
@@ -233,13 +242,13 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
         documentId,
         updateType: "text_block_replace",
         searchBlock,
-        replaceBlock
+        replaceBlock,
       };
 
       return JSON.stringify({
         success: true,
         message: `Text block replace request created. Replacing specific text block with new content.`,
-        updateRequest
+        updateRequest,
       });
     },
     {
@@ -317,31 +326,27 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       break;
     }
     case "TASK": {
-      if ('userStory' in data) {
-        const getLinkedUS = tool(
-          () => {
-            return data.userStory;
-          },
-          {
-            name: "get_linked_us",
-            description: "Get linked US",
-          }
-        );
-        tools.push(getLinkedUS);
-      }
+      const getLinkedUS = tool(
+        () => {
+          return data.userStory;
+        },
+        {
+          name: "get_linked_us",
+          description: "Get linked US",
+        }
+      );
 
-      if ('prd' in data) {
-        const getLinkedPRD = tool(
-          () => {
-            return data.prd;
-          },
-          {
-            name: "get_linked_prd",
-            description: "Get linked PRD",
-          }
-        );
-        tools.push(getLinkedPRD);
-      }
+      const getLinkedPRD = tool(
+        () => {
+          return data.prd;
+        },
+        {
+          name: "get_linked_prd",
+          description: "Get linked PRD",
+        }
+      );
+
+      tools.push(getLinkedUS, getLinkedPRD);
       break;
     }
   }
