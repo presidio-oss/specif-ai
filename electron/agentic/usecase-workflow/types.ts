@@ -1,7 +1,7 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { LangfuseObservationClient } from "../../types/o11y";
 
-export interface UseCaseWorkflowRunnableConfig extends LangGraphRunnableConfig {
+export interface StrategicInitiativeWorkflowRunnableConfig extends LangGraphRunnableConfig {
   configurable?: {
     thread_id?: string;
     trace?: LangfuseObservationClient;

@@ -47,7 +47,7 @@ import {
 import { AutoUpdateModalComponent } from '../components/auto-update-modal/auto-update-modal.component';
 import { htmlToMarkdown } from '../utils/html.utils';
 import { WorkflowType } from '../model/interfaces/workflow-progress.interface';
-import { IAddUseCaseRequest, IUpdateUseCaseRequest, IUseCaseResponse } from '../model/interfaces/IUseCase';
+import { IAddStrategicInitiativeRequest, IUpdateStrategicInitiativeRequest, IStrategicInitiativeResponse } from '../model/interfaces/strategic-initiative.interface';
 import { DocumentUpdateRequest, DocumentUpdateResponse } from './electron.interface';
 
 @Injectable({
@@ -322,9 +322,9 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  async addUseCase(
-    request: IAddUseCaseRequest,
-  ): Promise<IUseCaseResponse> {
+  async addStrategicInitiative(
+    request: IAddStrategicInitiativeRequest,
+  ): Promise<IStrategicInitiativeResponse> {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'strategic-initiative:add',
@@ -334,19 +334,7 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  async updateUseCase(
-    request: IUpdateUseCaseRequest,
-  ): Promise<IUseCaseResponse> {
-    if (this.electronAPI) {
-      return this.ipc.request({
-        channel: 'usecase:update',
-        args: [request],
-      });
-    }
-    throw new Error('Electron is not available');
-  }
-
-  async generateUseCase(
+  async generateStrategicInitiative(
     request: any,
   ): Promise<{title: string; requirement: string; status: string}> {
     if (this.electronAPI) {
@@ -359,11 +347,6 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
-  /**
-   * Update a document with search and replace or range replace
-   * @param request The document update request
-   * @returns The document update response
-   */
   async updateDocument(request: DocumentUpdateRequest): Promise<DocumentUpdateResponse> {
     if (this.electronAPI) {
       return this.ipc.request({

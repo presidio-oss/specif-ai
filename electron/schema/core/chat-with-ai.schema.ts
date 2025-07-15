@@ -90,11 +90,11 @@ const TaskParamsSchema = BaseParamsSchema.extend({
   prd: z.string().optional(),
 });
 
-const UCParamsSchema = BaseParamsSchema.extend({
+const SIParamsSchema = BaseParamsSchema.extend({
   requirementAbbr: z.literal("SI"),
 });
 
-export type UCParams = z.infer<typeof UCParamsSchema>;
+export type SIParams = z.infer<typeof SIParamsSchema>;
 
 export const ChatWithAISchema = z.discriminatedUnion("requirementAbbr", [
   PRDParamsSchema,
@@ -104,7 +104,7 @@ export const ChatWithAISchema = z.discriminatedUnion("requirementAbbr", [
   BPParamsSchema,
   USParamsSchema,
   TaskParamsSchema,
-  UCParamsSchema
+  SIParamsSchema
 ]);
 
 export type ChatWithAIParams = z.infer<typeof ChatWithAISchema>;

@@ -63,9 +63,9 @@ import { Observable, Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 import { IList } from '../../model/interfaces/IList';
 import { ElectronService } from '../../electron-bridge/electron.service';
 import {
-  IAddUseCaseRequest,
-  IUpdateUseCaseRequest,
-} from '../../model/interfaces/IUseCase';
+  IAddStrategicInitiativeRequest,
+  IUpdateStrategicInitiativeRequest,
+} from '../../model/interfaces/strategic-initiative.interface';
 import {
   WorkflowType,
   WorkflowProgressEventType,
@@ -76,15 +76,14 @@ import {
   CanvasEditorComponent,
   EditProposal,
 } from '../../components/core/canvas-editor/canvas-editor.component';
-import { FloatingChatComponent } from '../../components/core/floating-chat/floating-chat.component';
 import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
 import { DocumentUpdateHandlerService } from 'src/app/services/document-update/document-update-handler.service';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 
 @Component({
   selector: 'app-use-case',
-  templateUrl: './use-case.component.html',
-  styleUrls: ['./use-case.component.scss'],
+  templateUrl: './strategic-initiative.component.html',
+  styleUrls: ['./strategic-initiative.component.scss'],
   standalone: true,
   imports: [
     ButtonComponent,
@@ -92,21 +91,16 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
     FormsModule,
     MatMenuModule,
     InputFieldComponent,
-    TextareaFieldComponent,
     NgIf,
     NgForOf,
     NgClass,
-    AsyncPipe,
     AiChatComponent,
     ExpandDescriptionPipe,
-    TruncateEllipsisPipe,
     NgIconComponent,
     RichTextEditorComponent,
     CommonModule,
-    PillComponent,
     WorkflowProgressDialogComponent,
     CanvasEditorComponent,
-    FloatingChatComponent,
     InlineEditModule,
   ],
   providers: [
@@ -118,7 +112,7 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
     }),
   ],
 })
-export class UseCaseComponent implements OnInit {
+export class StrategicInitiativeComponent implements OnInit {
   projectId: string = '';
   folderName: string = '';
   fileName: string = '';
@@ -135,15 +129,15 @@ export class UseCaseComponent implements OnInit {
   public loading: boolean = false;
   workflowProgress: { title: string; timestamp: number }[] = [];
   currentWorkflowStep: string = '';
-  isGeneratingUseCase: boolean = false;
-  useCaseGenerationComplete: boolean = false;
+  isGeneratingStrategicInitiative: boolean = false;
+  strategicInitiativeGenerationComplete: boolean = false;
   showProgressDialog: boolean = false;
   protected readonly WorkflowType = WorkflowType;
   private destroy$ = new Subject<void>();
   selectedUCFileContent$ = this.store.select(
     ProjectsState.getSelectedFileContent,
   );
-  useCaseForm!: FormGroup;
+  strategicInitiativeForm!: FormGroup;
   response: IList = {} as IList;
   editLabel: string = '';
   ucRequirementId: string = '';
@@ -238,17 +232,17 @@ export class UseCaseComponent implements OnInit {
       }),
     );
 
-    this.initializeUseCaseForm();
+    this.initializeStrategicInitiativeForm();
 
     // Clear any existing workflow status
     if (this.projectId) {
       this.showProgressDialog = false;
-      this.isGeneratingUseCase = false;
-      this.useCaseGenerationComplete = false;
+      this.isGeneratingStrategicInitiative = false;
+      this.strategicInitiativeGenerationComplete = false;
     }
   }
 
-  private handleUseCaseCreation(fileData: IAddUseCaseRequest) {
+  private handleStrategicInitiativeCreation(fileData: IAddStrategicInitiativeRequest) {
     // Format the data for the CreateFile action to match the expected format
     // The document listing component expects 'title' and 'requirement' fields
     const formattedData = {
@@ -268,11 +262,11 @@ export class UseCaseComponent implements OnInit {
     );
   }
 
-  addUseCase() {
-    const formValue = this.useCaseForm.getRawValue();
+  addStrategicInitiative() {
+    const formValue = this.strategicInitiativeForm.getRawValue();
 
     // Create the SI data
-    const useCaseData: IAddUseCaseRequest = {
+    const strategicInitiativeData: IAddStrategicInitiativeRequest = {
       title: formValue.title,
       requirement: formValue.requirement,
       requirementAbbr: RequirementTypeEnum.SI,
@@ -283,17 +277,17 @@ export class UseCaseComponent implements OnInit {
     // Clear workflow status before navigating away
     if (this.projectId) {
       this.showProgressDialog = false;
-      this.isGeneratingUseCase = false;
-      this.useCaseGenerationComplete = false;
+      this.isGeneratingStrategicInitiative = false;
+      this.strategicInitiativeGenerationComplete = false;
     }
 
-    this.handleUseCaseCreation(useCaseData);
+    this.handleStrategicInitiativeCreation(strategicInitiativeData);
   }
 
-  updateUseCase() {
-    const formValue = this.useCaseForm.getRawValue();
+  updateStrategicInitiative() {
+    const formValue = this.strategicInitiativeForm.getRawValue();
 
-    const useCaseData: IUpdateUseCaseRequest = {
+    const strategicInitiativeData: IUpdateStrategicInitiativeRequest = {
       id: this.ucRequirementId,
       title: formValue.title,
       requirement: formValue.requirement,
@@ -318,12 +312,12 @@ export class UseCaseComponent implements OnInit {
       ),
     );
 
-    this.useCaseForm.markAsUntouched();
-    this.useCaseForm.markAsPristine();
+    this.strategicInitiativeForm.markAsUntouched();
+    this.strategicInitiativeForm.markAsPristine();
   }
 
-  initializeUseCaseForm() {
-    this.useCaseForm = new FormGroup({
+  initializeStrategicInitiativeForm() {
+    this.strategicInitiativeForm = new FormGroup({
       title: new FormControl('', Validators.compose([Validators.required])),
       requirement: new FormControl(
         '',
@@ -345,7 +339,7 @@ export class UseCaseComponent implements OnInit {
         this.oldContent = res.requirement;
         this.chatHistory = res.chatHistory || [];
 
-        this.useCaseForm.patchValue({
+        this.strategicInitiativeForm.patchValue({
           title: res.title,
           requirement: res.requirement,
           status: res.status,
@@ -357,7 +351,7 @@ export class UseCaseComponent implements OnInit {
   ngOnInit() {
     if (this.projectId) {
       this.workflowProgressService
-        .getCreationStatusObservable(this.projectId, WorkflowType.UseCase)
+        .getCreationStatusObservable(this.projectId, WorkflowType.StrategicInitiative)
         .pipe(
           takeUntil(this.destroy$),
           distinctUntilChanged(
@@ -368,13 +362,13 @@ export class UseCaseComponent implements OnInit {
           ),
         )
         .subscribe((status) => {
-          const wasGenerating = this.isGeneratingUseCase;
-          this.isGeneratingUseCase = status.isCreating;
-          this.useCaseGenerationComplete = status.isComplete;
+          const wasGenerating = this.isGeneratingStrategicInitiative;
+          this.isGeneratingStrategicInitiative = status.isCreating;
+          this.strategicInitiativeGenerationComplete = status.isComplete;
 
           this.showProgressDialog = status.isCreating || status.isComplete;
           if (wasGenerating && !status.isCreating && status.isComplete) {
-            this.resetUseCaseProgress();
+            this.resetStrategicInitiativeProgress();
           }
         });
     }
@@ -404,11 +398,11 @@ export class UseCaseComponent implements OnInit {
     if (this.projectId) {
       this.workflowProgressService.clearCreationStatus(
         this.projectId,
-        WorkflowType.UseCase,
+        WorkflowType.StrategicInitiative,
       );
       this.workflowProgressService.clearProgressEvents(
         this.projectId,
-        WorkflowType.UseCase,
+        WorkflowType.StrategicInitiative,
       );
     }
     
@@ -416,7 +410,7 @@ export class UseCaseComponent implements OnInit {
       try {
         this.workflowProgressService.removeGlobalListener(
           this.projectId,
-          WorkflowType.UseCase
+          WorkflowType.StrategicInitiative
         );
       } catch (error) {
       }
@@ -429,22 +423,22 @@ export class UseCaseComponent implements OnInit {
     if (this.projectId) {
       this.workflowProgressService.clearCreationStatus(
         this.projectId,
-        WorkflowType.UseCase,
+        WorkflowType.StrategicInitiative,
       );
 
       this.workflowProgressService.clearProgressEvents(
         this.projectId,
-        WorkflowType.UseCase,
+        WorkflowType.StrategicInitiative,
       );
     }
   }
 
-  private resetUseCaseProgress(): void {
+  private resetStrategicInitiativeProgress(): void {
     if (!this.projectId) return;
 
     this.workflowProgressService.removeGlobalListener(
       this.projectId,
-      WorkflowType.UseCase,
+      WorkflowType.StrategicInitiative,
     );
   }
 
@@ -452,8 +446,8 @@ export class UseCaseComponent implements OnInit {
     // Clear workflow status before navigating away
     if (this.projectId) {
       this.showProgressDialog = false;
-      this.isGeneratingUseCase = false;
-      this.useCaseGenerationComplete = false;
+      this.isGeneratingStrategicInitiative = false;
+      this.strategicInitiativeGenerationComplete = false;
     }
 
     this.router
@@ -479,9 +473,9 @@ export class UseCaseComponent implements OnInit {
     if (this.mode === 'edit') {
       this.store.dispatch(
         new UpdateFile(this.absoluteFilePath, {
-          title: this.useCaseForm.get('title')?.value,
-          requirement: this.useCaseForm.get('requirement')?.value,
-          status: this.useCaseForm.get('status')?.value,
+          title: this.strategicInitiativeForm.get('title')?.value,
+          requirement: this.strategicInitiativeForm.get('requirement')?.value,
+          status: this.strategicInitiativeForm.get('status')?.value,
           requirementAbbr: 'SI',
           chatHistory: chatHistory,
         }),
@@ -510,7 +504,7 @@ export class UseCaseComponent implements OnInit {
           message.tool,
           (updatedContent: string, replacementInfo?: any) => {
             // Update the form with the updated content
-            this.useCaseForm.patchValue({
+            this.strategicInitiativeForm.patchValue({
               requirement: updatedContent,
             });
 
@@ -519,7 +513,7 @@ export class UseCaseComponent implements OnInit {
 
             // If in edit mode, update the SI
             if (this.mode === 'edit') {
-              this.updateUseCase();
+              this.updateStrategicInitiative();
             }
 
             // Handle visual highlighting if replacement info is provided
@@ -528,7 +522,7 @@ export class UseCaseComponent implements OnInit {
             }
           },
           // Function to get the current content
-          () => this.useCaseForm.get('requirement')?.value || '',
+          () => this.strategicInitiativeForm.get('requirement')?.value || '',
         );
 
         // Mark the message as processed
@@ -539,7 +533,7 @@ export class UseCaseComponent implements OnInit {
     }
   }
 
-  deleteUseCase() {
+  deleteStrategicInitiative() {
     this.dialogService
       .confirm({
         title: CONFIRMATION_DIALOG.DELETION.TITLE,
@@ -564,22 +558,22 @@ export class UseCaseComponent implements OnInit {
   }
 
   checkFormValidity(): boolean {
-    return !this.useCaseForm.valid;
+    return !this.strategicInitiativeForm.valid;
   }
 
   switchTab(tab: string) {
     this.activeTab = tab;
   }
 
-  finalizeUseCase() {
+  finalizeStrategicInitiative() {
     if (
       this.mode === 'edit' &&
-      this.useCaseForm.get('status')?.value === 'DRAFT'
+      this.strategicInitiativeForm.get('status')?.value === 'DRAFT'
     ) {
-      this.useCaseForm.patchValue({
+      this.strategicInitiativeForm.patchValue({
         status: 'COMPLETE',
       });
-      this.updateUseCase();
+      this.updateStrategicInitiative();
     }
   }
 
@@ -588,8 +582,8 @@ export class UseCaseComponent implements OnInit {
    * Uses the utility function to convert markdown to Word format
    */
   exportAsWord() {
-    const title = this.useCaseForm.get('title')?.value || 'Business Proposal';
-    const markdownContent = this.useCaseForm.get('requirement')?.value || '';
+    const title = this.strategicInitiativeForm.get('title')?.value || 'Business Proposal';
+    const markdownContent = this.strategicInitiativeForm.get('requirement')?.value || '';
 
     exportMarkdownToDocx(markdownContent, title, {
       fileExtension: WordFileExtension.DOCX,
@@ -608,7 +602,7 @@ export class UseCaseComponent implements OnInit {
   }
 
   canDeactivate(): boolean {
-    return !this.allowForceRedirect && this.useCaseForm.dirty;
+    return !this.allowForceRedirect && this.strategicInitiativeForm.dirty;
   }
 
   /**
@@ -617,7 +611,7 @@ export class UseCaseComponent implements OnInit {
    */
   // Getter for the research URLs form array
   get researchUrlsFormArray(): FormArray {
-    return this.useCaseForm.get('researchUrls') as FormArray;
+    return this.strategicInitiativeForm.get('researchUrls') as FormArray;
   }
 
   // Add a new research URL field
@@ -634,24 +628,24 @@ export class UseCaseComponent implements OnInit {
     this.researchUrlsFormArray.removeAt(index);
   }
 
-  async generateUseCaseDraft() {
+  async generateStrategicInitiativeDraft() {
 
     // Setup workflow progress
-    this.setupUseCaseProgressListener();
+    this.setupStrategicInitiativeProgressListener();
 
     // Show progress dialog immediately
     this.showProgressDialog = true;
-    this.isGeneratingUseCase = true;
-    this.useCaseGenerationComplete = false;
+    this.isGeneratingStrategicInitiative = true;
+    this.strategicInitiativeGenerationComplete = false;
 
     await this.workflowProgressService.setCreating(
       this.projectId,
-      WorkflowType.UseCase,
+      WorkflowType.StrategicInitiative,
     );
 
     try {
       // Get the current form values
-      const formValue = this.useCaseForm.getRawValue();
+      const formValue = this.strategicInitiativeForm.getRawValue();
 
       // Filter out empty research URLs
       const researchUrls = formValue.researchUrls.filter(
@@ -684,7 +678,7 @@ export class UseCaseComponent implements OnInit {
       );
 
       // Call the backend API to generate the strategic initiative draft
-      const result = await this.electronService.generateUseCase(requestData);
+      const result = await this.electronService.generateStrategicInitiative(requestData);
 
       console.log(
         'Received response from business proposal generation:',
@@ -695,9 +689,9 @@ export class UseCaseComponent implements OnInit {
         // Add a completion event
         this.workflowProgressService.addProgressEvent(
           this.projectId,
-          WorkflowType.UseCase,
+          WorkflowType.StrategicInitiative,
           {
-            node: 'generate-usecase',
+            node: 'generate-strategic-initiative',
             type: WorkflowProgressEventType.Action,
             message: {
               title: 'Business proposal generated successfully',
@@ -709,7 +703,7 @@ export class UseCaseComponent implements OnInit {
         );
 
         // Update the form with the generated content
-        this.useCaseForm.patchValue({
+        this.strategicInitiativeForm.patchValue({
           title: result.title || formValue.title,
           requirement: result.requirement,
         });
@@ -722,7 +716,7 @@ export class UseCaseComponent implements OnInit {
         this.showProgressDialog = false;
 
         // If in add mode, create the strategic initiative
-        this.mode === 'add' ? this.addUseCase() : this.updateUseCase();
+        this.mode === 'add' ? this.addStrategicInitiative() : this.updateStrategicInitiative();
       } else {
         console.error('Failed to generate business proposal:', result);
         this.toastService.showError(
@@ -737,7 +731,7 @@ export class UseCaseComponent implements OnInit {
 
       await this.workflowProgressService.setFailed(
         this.projectId,
-        WorkflowType.UseCase,
+        WorkflowType.StrategicInitiative,
         {
           timestamp: new Date().toISOString(),
           reason: String(error),
@@ -746,14 +740,14 @@ export class UseCaseComponent implements OnInit {
     }
   }
 
-  // setupWorkflowProgressListener method removed - using setupUseCaseProgressListener instead
+  // setupWorkflowProgressListener method removed - using setupStrategicInitiativeProgressListener instead
 
   /**
    * Handle content changes from the canvas editor
    * @param content The updated content
    */
   onCanvasContentChange(content: string): void {
-    this.useCaseForm.patchValue({
+    this.strategicInitiativeForm.patchValue({
       requirement: content,
     });
   }
@@ -763,7 +757,7 @@ export class UseCaseComponent implements OnInit {
    * @param title The updated title
    */
   onTitleChange(title: string): void {
-    this.useCaseForm.patchValue({
+    this.strategicInitiativeForm.patchValue({
       title: title,
     });
   }
@@ -784,7 +778,7 @@ export class UseCaseComponent implements OnInit {
    */
   onEditProposed(edit: EditProposal): void {
     try {
-      const currentContent = this.useCaseForm.get('requirement')?.value || '';
+      const currentContent = this.strategicInitiativeForm.get('requirement')?.value || '';
       let updatedContent: string;
 
       // Determine how to apply the edit based on its type
@@ -792,7 +786,7 @@ export class UseCaseComponent implements OnInit {
         case 'append':
           // Use the utility function to append content
           updatedContent = appendContent(currentContent, edit.content);
-          this.useCaseForm.patchValue({ requirement: updatedContent });
+          this.strategicInitiativeForm.patchValue({ requirement: updatedContent });
           this.toastService.showSuccess(
             'Content added to the end of the document',
           );
@@ -807,7 +801,7 @@ export class UseCaseComponent implements OnInit {
               this.selectedSection,
               edit.content,
             );
-            this.useCaseForm.patchValue({ requirement: updatedContent });
+            this.strategicInitiativeForm.patchValue({ requirement: updatedContent });
             this.toastService.showSuccess(
               `Updated section: ${this.selectedSection.title}`,
             );
@@ -820,7 +814,7 @@ export class UseCaseComponent implements OnInit {
 
         case 'full':
           // Replace the entire content
-          this.useCaseForm.patchValue({ requirement: edit.content });
+          this.strategicInitiativeForm.patchValue({ requirement: edit.content });
           this.toastService.showSuccess('Document content replaced');
           break;
 
@@ -831,7 +825,7 @@ export class UseCaseComponent implements OnInit {
 
       // If in edit mode, update the SI
       if (this.mode === 'edit') {
-        this.updateUseCase();
+        this.updateStrategicInitiative();
       }
 
       // Update document sections after content changes
@@ -879,7 +873,7 @@ export class UseCaseComponent implements OnInit {
    * Uses the utility function to parse markdown headings into sections
    */
   private updateDocumentSections(): void {
-    const content = this.useCaseForm.get('requirement')?.value || '';
+    const content = this.strategicInitiativeForm.get('requirement')?.value || '';
 
     // Use the utility function to parse sections
     this.documentSections = parseMarkdownSections(content);
@@ -926,7 +920,7 @@ export class UseCaseComponent implements OnInit {
     }
   }
 
-  private setupUseCaseProgressListener(): void {
+  private setupStrategicInitiativeProgressListener(): void {
     console.log(
       "Krithiak here's my setupTaskProgressListener method",
       this.projectId,
@@ -936,18 +930,18 @@ export class UseCaseComponent implements OnInit {
     if (
       !this.workflowProgressService.hasGlobalListener(
         this.projectId,
-        WorkflowType.UseCase,
+        WorkflowType.StrategicInitiative,
       )
     ) {
       this.workflowProgressService.registerGlobalListener(
         this.projectId,
-        WorkflowType.UseCase,
+        WorkflowType.StrategicInitiative,
       );
     }
 
     this.workflowProgressService.clearProgressEvents(
       this.projectId,
-      WorkflowType.UseCase,
+      WorkflowType.StrategicInitiative,
     );
   }
   
@@ -956,7 +950,7 @@ export class UseCaseComponent implements OnInit {
    * This provides the full document content for better AI context
    */
   getDocumentContext = (): string => {
-    return this.useCaseForm.get('requirement')?.value || '';
+    return this.strategicInitiativeForm.get('requirement')?.value || '';
   }
   
   /**
@@ -968,7 +962,7 @@ export class UseCaseComponent implements OnInit {
     
     // If in edit mode, update the SI
     if (this.mode === 'edit') {
-      this.updateUseCase();
+      this.updateStrategicInitiative();
     }
     
     // Update document sections

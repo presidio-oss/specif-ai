@@ -14,7 +14,7 @@ import { chatWithAIPrompt } from "../../prompts/core/chat-with-ai";
 import {
   ChatWithAIParams,
   ChatWithAISchema,
-  UCParams,
+  SIParams,
 } from "../../schema/core/chat-with-ai.schema";
 import { buildLangchainModelProvider } from "../../services/llm/llm-langchain";
 import { LLMConfigModel } from "../../services/llm/llm-types";
@@ -24,7 +24,7 @@ import { z } from "zod";
 import { APP_MESSAGES } from '../../constants/message.constants';
 import { GuardrailsShouldBlock, validateGuardrails } from "../../guardrails";
 import { isLangfuseDetailedTracesEnabled } from '../../services/observability/observability.util';
-import { getUCPrompt } from "../../prompts/core/usecase";
+import { getSIPrompt } from "../../prompts/core/strategic-initiative";
 
 // Message type mapping
 const MESSAGE_TYPES = {
@@ -107,7 +107,7 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
     const messages = transformToLangchainMessages(validatedData.chatHistory);
     const prompt = new SystemMessage(
       validatedData.requirementAbbr === "SI"
-        ? getUCPrompt(validatedData as UCParams)
+        ? getSIPrompt(validatedData as SIParams)
         : chatWithAIPrompt(validatedData)
     );
 

@@ -6,9 +6,9 @@ import { WorkflowEventsService } from "../../services/events/workflow-events.ser
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { ITool } from "../common/types";
 import { buildReactAgent } from "../react-agent";
-import { IUseCaseWorkflowStateAnnotation } from "./state";
-import { UseCaseWorkflowRunnableConfig } from "./types";
-import { getUCPrompt } from "../../prompts/core/usecase";
+import { IStrategicInitiativeWorkflowStateAnnotation } from "./state";
+import { StrategicInitiativeWorkflowRunnableConfig } from "./types";
+import { getSIPrompt } from "../../prompts/core/strategic-initiative";
 import { 
   getResearchPrompt, 
   getResearchSummaryPrompt,
@@ -16,7 +16,7 @@ import {
   getStrategicInitiativeResponseFormatPrompt 
 } from "../../prompts/core/strategic-initiative";
 
-const workflowEvents = new WorkflowEventsService("usecase");
+const workflowEvents = new WorkflowEventsService("strategic-initiative");
 
 type BuildResearchNodeParams = {
   model: LangChainModelProvider;
@@ -30,8 +30,8 @@ export const buildResearchNode = ({
   checkpointer,
 }: BuildResearchNodeParams) => {
   return async (
-    state: IUseCaseWorkflowStateAnnotation["State"],
-    runnableConfig: UseCaseWorkflowRunnableConfig
+    state: IStrategicInitiativeWorkflowStateAnnotation["State"],
+    runnableConfig: StrategicInitiativeWorkflowRunnableConfig
   ) => {
     const { trace, sendMessagesInTelemetry = false } = runnableConfig.configurable ?? {};
     const span = trace?.span({ name: "research" });
@@ -127,24 +127,24 @@ type BuildGenerationNodeParams = {
   checkpointer?: BaseCheckpointSaver | false | undefined;
 };
 
-export const buildUseCaseGenerationNode = ({
+export const buildStrategicInitiativeGenerationNode = ({
   model,
   checkpointer,
 }: BuildGenerationNodeParams) => {
   return async (
-    state: IUseCaseWorkflowStateAnnotation["State"],
-    runnableConfig: UseCaseWorkflowRunnableConfig
+    state: IStrategicInitiativeWorkflowStateAnnotation["State"],
+    runnableConfig: StrategicInitiativeWorkflowRunnableConfig
   ) => {
     const { trace, sendMessagesInTelemetry = false } = runnableConfig.configurable ?? {};
-    const span = trace?.span({ name: "generate-usecase" });
+    const span = trace?.span({ name: "generate-strategic-initiative" });
 
     try {
-      const useCaseGenerationCorrelationId = uuid();
+      const strategicInitiativeGenerationCorrelationId = uuid();
       await workflowEvents.dispatchThinking(
-        "usecase-generation",
+        "strategic-initiative-generation",
         { title: "Generating Strategic Initiative Proposal" },
         runnableConfig,
-        useCaseGenerationCorrelationId
+        strategicInitiativeGenerationCorrelationId
       );
 
       const agent = buildReactAgent({
@@ -167,7 +167,7 @@ export const buildUseCaseGenerationNode = ({
         requirementAbbr: "SI" as const
       };
 
-      const prompt = getUCPrompt(ucParams);
+      const prompt = getSIPrompt(ucParams);
       
       const solutionInfo = {
         name: state.project.solution.name,
@@ -197,7 +197,7 @@ export const buildUseCaseGenerationNode = ({
       );
 
       await workflowEvents.dispatchAction(
-        "usecase-generation",
+        "strategic-initiative-generation",
         {
           title: "Strategic Initiative Proposal generated successfully",
           output: {
@@ -206,12 +206,12 @@ export const buildUseCaseGenerationNode = ({
           }
         },
         runnableConfig,
-        useCaseGenerationCorrelationId
+        strategicInitiativeGenerationCorrelationId
       );
 
       span?.end({ statusMessage: "Successfully generated strategic initiative proposal" });
       return {
-        useCaseDraft: {
+        strategicInitiativeDraft: {
           title: response.structuredResponse.title,
           requirement: response.structuredResponse.requirement,
         },
@@ -219,7 +219,7 @@ export const buildUseCaseGenerationNode = ({
     } catch (error) {
       span?.end({ level: "ERROR" });
       return {
-        useCaseDraft: {
+        strategicInitiativeDraft: {
           title: state.requirement?.title || "Error generating strategic initiative",
           requirement: `Error generating strategic initiative proposal: ${error}`,
         },

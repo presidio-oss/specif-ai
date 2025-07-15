@@ -1,6 +1,6 @@
 import { IpcMainInvokeEvent } from "electron/main";
-import { createUseCaseWorkflow } from "../../agentic/usecase-workflow";
-import { createUseCaseWorkflowTools } from "../../agentic/usecase-workflow/tools";
+import { createStrategicInitiativeWorkflow } from "../../agentic/usecase-workflow";
+import { createStrategicInitiativeWorkflowTools } from "../../agentic/usecase-workflow/tools";
 import { getMcpToolsForActiveProvider } from "../../mcp";
 import { buildLangchainModelProvider } from "../../services/llm/llm-langchain";
 import { LLMConfigModel } from "../../services/llm/llm-types";
@@ -10,7 +10,7 @@ import { isLangfuseDetailedTracesEnabled } from '../../services/observability/ob
 import { WorkflowEventsService, WorkflowEventType } from "../../services/events/workflow-events.service";
 import { MemorySaver } from "@langchain/langgraph";
 
-interface UseCaseGenerationRequest {
+interface StrategicInitiativeGenerationRequest {
   project?: {
     name?: string;
     description?: string;
@@ -28,12 +28,12 @@ interface UseCaseGenerationRequest {
   };
 }
 
-export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown) => {
-  const request = data as Partial<UseCaseGenerationRequest>;
+export const generateStrategicInitiative = async (_event: IpcMainInvokeEvent, data: unknown) => {
+  const request = data as Partial<StrategicInitiativeGenerationRequest>;
   try {
-    const workflowEvents = new WorkflowEventsService("usecase");
+    const workflowEvents = new WorkflowEventsService("strategic-initiative");
     const o11y = ObservabilityManager.getInstance();
-    const trace = o11y.createTrace('generate-usecase');
+    const trace = o11y.createTrace('generate-strategic-initiative');
 
     const llmConfig = store.get<LLMConfigModel>('llmConfig');
 
@@ -47,12 +47,12 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
     );
 
     const mcpTools = await getMcpToolsForActiveProvider();
-    const customTools = createUseCaseWorkflowTools();
+    const customTools = createStrategicInitiativeWorkflowTools();
     const allTools = [...mcpTools, ...customTools];
     
     const memoryCheckpointer = new MemorySaver();
     
-    const workflow = createUseCaseWorkflow({
+    const workflow = createStrategicInitiativeWorkflow({
       model: model,
       tools: allTools,
       checkpointer: memoryCheckpointer,
@@ -80,7 +80,7 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
 
     const config = {
       configurable: {
-        thread_id: `${requestId}_generate_usecase`,
+        thread_id: `${requestId}_generate_strategic_initiative`,
         trace: trace,
         sendMessagesInTelemetry: isLangfuseDetailedTracesEnabled(),
       },
@@ -93,7 +93,7 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
     });
     
     for await (const streamEvent of stream) {
-      const channel = `usecase:${requestId}-workflow-progress`;
+      const channel = `strategic-initiative:${requestId}-workflow-progress`;
       
       switch (streamEvent.event) {
         case "on_tool_end":
@@ -117,34 +117,34 @@ export const generateUseCase = async (_event: IpcMainInvokeEvent, data: unknown)
     
     const result = await workflow.getState(config);
 
-    if (!result.values.useCaseDraft || !result.values.useCaseDraft.requirement) {
+    if (!result.values.strategicInitiativeDraft || !result.values.strategicInitiativeDraft.requirement) {
       throw new Error('Workflow did not return a valid strategic initiative draft');
     }
     
     try {
-      JSON.parse(`{"test": ${JSON.stringify(result.values.useCaseDraft.requirement)}}`);
+      JSON.parse(`{"test": ${JSON.stringify(result.values.strategicInitiativeDraft.requirement)}}`);
       
-      const processedRequirement = result.values.useCaseDraft.requirement
+      const processedRequirement = result.values.strategicInitiativeDraft.requirement
         .replace(/\\n/g, '\n')
         .replace(/\n{3,}/g, '\n\n')
         .replace(/```(markdown|json)?/g, '')
         .trim();
       
       return {
-        title: result.values.useCaseDraft.title,
+        title: result.values.strategicInitiativeDraft.title,
         requirement: processedRequirement,
         status: "success",
         requestId: requestId,
       };
     } catch (jsonError) {
-      const cleanedRequirement = result.values.useCaseDraft.requirement
+      const cleanedRequirement = result.values.strategicInitiativeDraft.requirement
         .replace(/```(markdown|json)?/g, '')
         .replace(/\\n/g, '\n')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
       
       return {
-        title: result.values.useCaseDraft.title,
+        title: result.values.strategicInitiativeDraft.title,
         requirement: cleanedRequirement,
         status: "success",
         requestId: requestId,

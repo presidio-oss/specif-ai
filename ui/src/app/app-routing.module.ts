@@ -19,7 +19,7 @@ import { MainLayoutComponent } from './layouts/main-layout/main-layout.component
 import { TestCaseListComponent } from './pages/test-cases/test-case-list/test-case-list.component';
 import { TestCaseDetailPageComponent } from './pages/test-cases/test-case-detail/test-case-detail.component';
 import { TestCaseHomeComponent } from './pages/test-cases/test-case-home/test-case-home.component';
-import { UseCaseComponent } from './pages/use-case/use-case.component';
+import { StrategicInitiativeComponent } from './pages/strategic-initiative/strategic-initiative.component';
 
 const routes: Routes = [
   {
@@ -182,13 +182,13 @@ const routes: Routes = [
       },
       {
         path: 'use-case/:mode',
-        component: UseCaseComponent,
+        component: StrategicInitiativeComponent,
         canActivate: [UserGuard],
         canDeactivate: [CanDeactivateGuard],
       },
       {
         path: 'use-case/:mode/:fileName',
-        component: UseCaseComponent,
+        component: StrategicInitiativeComponent,
         canActivate: [UserGuard],
         canDeactivate: [CanDeactivateGuard],
       },

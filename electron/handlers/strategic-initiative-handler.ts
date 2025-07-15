@@ -3,7 +3,7 @@ import { store } from "../services/store";
 import { AppConfig } from "../schema/core/store.schema";
 import { appendUsecaseRequirement } from "../utils/file";
 import { StrategicInitiativeDraftSchema } from "../schema/core/strategic-initiative.schema";
-import { generateUseCase } from "../api/core/usecase";
+import { generateStrategicInitiative } from "../api/core/strategic-initiative";
 
 export function setupSIHandlers() {
   // TODO: remove this and use CreateFile from ui
@@ -14,5 +14,5 @@ export function setupSIHandlers() {
     return appendUsecaseRequirement(WORKING_DIR, parsed);
   });
 
-  ipcMain.handle("strategic-initiative:generate", generateUseCase);
+  ipcMain.handle("strategic-initiative:generate", generateStrategicInitiative);
 }

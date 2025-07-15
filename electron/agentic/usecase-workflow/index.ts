@@ -1,22 +1,22 @@
 import { BaseCheckpointSaver, END, START, StateGraph } from "@langchain/langgraph";
 import { LangChainModelProvider } from "../../services/llm/langchain-providers/base";
 import { ITool } from "../common/types";
-import { buildResearchNode, buildUseCaseGenerationNode } from "./nodes";
-import { UseCaseWorkflowStateAnnotation } from "./state";
+import { buildResearchNode, buildStrategicInitiativeGenerationNode } from "./nodes";
+import { StrategicInitiativeWorkflowStateAnnotation } from "./state";
 
-type UseCaseWorkflowParams = {
+type StrategicInitiativeWorkflowParams = {
   tools: Array<ITool>;
   model: LangChainModelProvider;
   checkpointer?: BaseCheckpointSaver | false | undefined;
 };
 
-export const createUseCaseWorkflow = ({ tools, model, checkpointer }: UseCaseWorkflowParams) => {
-  const builder = new StateGraph(UseCaseWorkflowStateAnnotation)
+export const createStrategicInitiativeWorkflow = ({ tools, model, checkpointer }: StrategicInitiativeWorkflowParams) => {
+  const builder = new StateGraph(StrategicInitiativeWorkflowStateAnnotation)
     .addNode("research", buildResearchNode({ model, tools, checkpointer }))
-    .addNode("generate_usecase", buildUseCaseGenerationNode({ model, checkpointer }))
+    .addNode("generate_strategic_initiative", buildStrategicInitiativeGenerationNode({ model, checkpointer }))
     .addEdge(START, "research")
-    .addEdge("research", "generate_usecase")
-    .addEdge("generate_usecase", END);
+    .addEdge("research", "generate_strategic_initiative")
+    .addEdge("generate_strategic_initiative", END);
 
   return builder.compile({ checkpointer });
 };

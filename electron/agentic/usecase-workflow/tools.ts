@@ -41,7 +41,10 @@ export const createFetchUrlTool = (): ITool => {
           return `No content found at URL: ${url}. The page might be empty or require JavaScript to load content.`;
         }
         
-        const content = docs[0].pageContent.trim().slice(0, 2000);
+        const content = docs[0].pageContent.replace(/<[^>]+>/g, '')
+          .replace(/\s{2,}/g, ' ')
+          .replace(/\n{2,}/g, '\n')
+          .trim();
         console.log("Content fetched from URL:", content);
         return content;
       } catch (error) {
@@ -58,7 +61,7 @@ export const createFetchUrlTool = (): ITool => {
   );
 };
 
-export const createUseCaseWorkflowTools = (): ITool[] => {
+export const createStrategicInitiativeWorkflowTools = (): ITool[] => {
   return [
     createFetchUrlTool(),
   ];

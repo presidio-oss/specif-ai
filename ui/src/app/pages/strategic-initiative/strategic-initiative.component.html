@@ -2,8 +2,8 @@
   <app-workflow-progress-dialog
     [isVisible]="showProgressDialog"
     [projectId]="projectId"
-    [workflowType]="WorkflowType.UseCase"
-    [isCompleted]="useCaseGenerationComplete"
+    [workflowType]="WorkflowType.StrategicInitiative"
+    [isCompleted]="strategicInitiativeGenerationComplete"
     initialTitle="Generating Business Proposal..."
     completedTitle="Business Proposal Generated Successfully!"
     subtitle="Creating a comprehensive business proposal..."
@@ -33,25 +33,25 @@
             class="ml-3 px-3 py-1 text-xs font-medium uppercase tracking-wider"
             [ngClass]="{
               'bg-yellow-100 text-yellow-800':
-                useCaseForm.get('status')?.value === 'DRAFT',
+                strategicInitiativeForm.get('status')?.value === 'DRAFT',
               'bg-green-100 text-green-800':
-                useCaseForm.get('status')?.value === 'COMPLETE',
+                strategicInitiativeForm.get('status')?.value === 'COMPLETE',
             }"
           >
-            {{ useCaseForm.get("status")?.value }}
+            {{ strategicInitiativeForm.get("status")?.value }}
           </span>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <app-button
           *ngIf="
-            mode === 'edit' && useCaseForm.get('status')?.value === 'DRAFT'
+            mode === 'edit' && strategicInitiativeForm.get('status')?.value === 'DRAFT'
           "
           buttonContent="Finalize"
           theme="secondary"
           size="sm"
           rounded="md"
-          (click)="finalizeUseCase()"
+          (click)="finalizeStrategicInitiative()"
         />
 
         <app-button
@@ -69,14 +69,14 @@
           theme="danger"
           size="sm"
           rounded="md"
-          (click)="deleteUseCase()"
+          (click)="deleteStrategicInitiative()"
         ></app-button>
       </div>
     </header>
 
     <!-- Main Content Area with 3-column layout in edit mode, single column in add mode -->
     <form
-      [formGroup]="useCaseForm"
+      [formGroup]="strategicInitiativeForm"
       class="flex flex-col flex-grow overflow-hidden"
     >
       <!-- Title input and research URLs in add mode -->
@@ -95,8 +95,8 @@
             />
             <div
               *ngIf="
-                useCaseForm.get('title')?.errors?.['required'] &&
-                useCaseForm.get('title')?.touched
+                strategicInitiativeForm.get('title')?.errors?.['required'] &&
+                strategicInitiativeForm.get('title')?.touched
               "
               class="text-danger-500 text-sm"
             >
@@ -170,9 +170,9 @@
                 formControlName="requirement"
                 [editorClass]="'h-full min-h-[400px] overflow-y-auto'"
               ></app-rich-text-editor>
-              <ng-container *ngIf="useCaseForm.get('requirement')?.touched">
+              <ng-container *ngIf="strategicInitiativeForm.get('requirement')?.touched">
                 <span
-                  *ngIf="useCaseForm.get('requirement')?.errors?.['required']"
+                  *ngIf="strategicInitiativeForm.get('requirement')?.errors?.['required']"
                   class="text-red-500 text-sm"
                 >
                   Requirement is required
@@ -193,8 +193,8 @@
                 <div class="h-full overflow-y-auto">
                   <app-canvas-editor
                     #canvasEditor
-                    [content]="useCaseForm.get('requirement')?.value"
-                    [documentTitle]="useCaseForm.get('title')?.value"
+                    [content]="strategicInitiativeForm.get('requirement')?.value"
+                    [documentTitle]="strategicInitiativeForm.get('title')?.value"
                     [editable]="true"
                     [showSidebar]="true"
                     appInlineEdit
@@ -271,7 +271,7 @@
                   [fileName]="fileName"
                   [chatHistory]="chatHistory"
                   [supportsAddFromCode]="false"
-                  [baseContent]="useCaseForm.getRawValue().requirement"
+                  [baseContent]="strategicInitiativeForm.getRawValue().requirement"
                   (updateChatHistory)="updateChatHistory($event)"
                   [containerClass]="'border-none h-full overflow-hidden'"
                   [hideHeader]="true"
@@ -295,7 +295,7 @@
             size="sm"
             rounded="md"
             icon="heroSparklesSolid"
-            (click)="generateUseCaseDraft()"
+            (click)="generateStrategicInitiativeDraft()"
           />
         </div>
         <div class="flex gap-2">
@@ -312,7 +312,7 @@
             size="sm"
             rounded="md"
             *ngIf="mode === 'edit'"
-            (click)="updateUseCase()"
+            (click)="updateStrategicInitiative()"
             [disabled]="checkFormValidity()"
           />
           <app-button
@@ -322,7 +322,7 @@
             rounded="md"
             *ngIf="mode === 'add'"
             [disabled]="checkFormValidity()"
-            (click)="addUseCase()"
+            (click)="addStrategicInitiative()"
           />
         </div>
       </div>

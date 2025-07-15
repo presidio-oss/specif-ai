@@ -1,6 +1,6 @@
 import { Annotation } from "@langchain/langgraph";
 
-export const UseCaseWorkflowStateAnnotation = Annotation.Root({
+export const StrategicInitiativeWorkflowStateAnnotation = Annotation.Root({
   project: Annotation<{
     name: string;
     description: string;
@@ -18,10 +18,10 @@ export const UseCaseWorkflowStateAnnotation = Annotation.Root({
   
   referenceInformation: Annotation<string>(),
   
-  useCaseDraft: Annotation<{
+  strategicInitiativeDraft: Annotation<{
     title: string;
     requirement: string;
   }>(),
 });
 
-export type IUseCaseWorkflowStateAnnotation = typeof UseCaseWorkflowStateAnnotation;
+export type IStrategicInitiativeWorkflowStateAnnotation = typeof StrategicInitiativeWorkflowStateAnnotation;
