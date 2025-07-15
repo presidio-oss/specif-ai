@@ -160,14 +160,14 @@ export const buildStrategicInitiativeGenerationNode = ({
         checkpointer: checkpointer,
       });
 
-      const ucParams = {
+      const strategicInitiativeParams = {
         project: state.project,
         requirement: state.requirement,
         requestId: uuid(),
         requirementAbbr: "SI" as const
       };
 
-      const prompt = getSIPrompt(ucParams);
+      const prompt = getSIPrompt(strategicInitiativeParams);
       
       const solutionInfo = {
         name: state.project.solution.name,

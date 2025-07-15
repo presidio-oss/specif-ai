@@ -169,13 +169,13 @@ const routes: Routes = [
         canDeactivate: [CanDeactivateGuard]
       },
       {
-        path: 'use-case/:mode',
+        path: 'strategic-initiative/:mode',
         component: StrategicInitiativeComponent,
         canActivate: [UserGuard],
         canDeactivate: [CanDeactivateGuard],
       },
       {
-        path: 'use-case/:mode/:fileName',
+        path: 'strategic-initiative/:mode/:fileName',
         component: StrategicInitiativeComponent,
         canActivate: [UserGuard],
         canDeactivate: [CanDeactivateGuard],

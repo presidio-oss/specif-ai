@@ -590,7 +590,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   navigateToAdd(folderName: string) {
     if (folderName === 'SI') {
       this.router
-        .navigate(['/use-case/add'], {
+        .navigate(['/strategic-initiative/add'], {
           state: {
             data: this.appInfo,
             id: this.projectId,

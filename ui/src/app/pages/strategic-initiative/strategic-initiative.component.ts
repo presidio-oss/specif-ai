@@ -79,7 +79,7 @@ import { DocumentUpdateHandlerService } from 'src/app/services/document-update/d
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 
 @Component({
-  selector: 'app-use-case',
+  selector: 'app-strategic-initiative',
   templateUrl: './strategic-initiative.component.html',
   styleUrls: ['./strategic-initiative.component.scss'],
   standalone: true,

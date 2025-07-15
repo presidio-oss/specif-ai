@@ -216,7 +216,7 @@ export class DocumentListingComponent
     if (folderName === this.requirementTypes.BP) {
       url = '/bp-edit';
     } else if (folderName === this.requirementTypes.SI) {
-      url = `/use-case/edit/${fileName}`;
+      url = `/strategic-initiative/edit/${fileName}`;
     }
     
     this.router.navigate([url], {
@@ -282,7 +282,7 @@ export class DocumentListingComponent
         });
     } else if (folderName === this.requirementTypes.SI) {
       // Special handling for strategic initiative add
-      this.router.navigate(['/use-case/add'], {
+      this.router.navigate(['/strategic-initiative/add'], {
         state: {
           data: this.appInfo,
           id,
