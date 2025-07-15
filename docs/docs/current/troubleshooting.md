@@ -57,7 +57,15 @@ This guide helps you resolve common issues you might encounter while using Speci
     * **Ensure Proper Permissions:** The Jira user account used for integration needs sufficient permissions to create/update issues and projects.
     * **Validate Project Key:** Ensure the Jira project key you're trying to integrate with is correct and accessible.
 
-2.  **AWS Bedrock KB**
+2.  **Azure DevOps Integration**
+    * **Verify Personal Access Token:** Ensure your Azure DevOps PAT is correctly configured and hasn't expired.
+    * **Check Token Permissions:** The PAT must have "Work Items: Read & write" and "Project and team: Read" permissions.
+    * **Validate Organization and Project Names:** Ensure the organization and project names are spelled correctly and match exactly (case-sensitive).
+    * **Confirm Project Access:** Verify that your account has access to the specified Azure DevOps project.
+    * **Check Work Item Types:** Ensure the work item types (Feature, Platform Feature, User Story) exist in your ADO project.
+    * **Network Connectivity:** Verify that your network allows connections to `dev.azure.com`.
+
+3.  **AWS Bedrock KB**
     * **Confirm AWS Credentials:** Verify your AWS access key ID and secret access key are correctly configured and have the necessary permissions for Bedrock KB access.
     * **Verify Region Configuration:** Ensure the AWS region configured in Specifai matches your Bedrock Knowledge Base region.
     * **Check Tag Key Setup:** If Specifai uses specific tags to identify Bedrock KBs, ensure they are correctly set up.

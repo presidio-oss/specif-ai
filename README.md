@@ -191,6 +191,16 @@ The stories and tasks generated as part of the solutions can be used to create a
 
 For Jira setup instructions, please refer to our [Jira Setup Guide](docs/docs/current/JIRA-README.md).
 
+#### Azure DevOps Integration
+Seamlessly integrate with Azure DevOps to synchronize your requirements and work items. The ADO integration supports hierarchical work item management and bidirectional synchronization. Features include:
+- **Hierarchical Work Item Management**: Support for Features → Platform Features → User Stories mapping
+- **Bidirectional Sync**: Pull work items from ADO or push Specifai requirements to ADO
+- **Flexible Mapping**: Configure work item types to match your ADO project structure
+- **Bulk Operations**: Import/export multiple work items efficiently
+- **Personal Access Token Authentication**: Secure authentication using Azure DevOps PATs
+
+For Azure DevOps setup instructions, please refer to our [Azure DevOps Setup Guide](docs/docs/current/ADO-README.md).
+
 #### AWS Bedrock Knowledge Base
 The enterprise knowledge base is integrated with AI-powered chat to enhance suggestions and enable iterative conversations for Business Requirement Documents (BRDs), Product Requirement Documents (PRDs), Non-functional Requirements, User Stories, and Tasks. Features include: 
 
