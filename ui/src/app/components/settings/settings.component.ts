@@ -514,7 +514,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   private checkForChanges() {
     const formValue = this.configForm.value;
-    const currentConfig = this.currentLLMConfig?.providerConfigs[this.currentLLMConfig.activeProvider]?.config;
+
+    // Add null checks for currentLLMConfig
+    const activeProvider = this.currentLLMConfig?.activeProvider;
+    const currentConfig = activeProvider && this.currentLLMConfig?.providerConfigs?.[activeProvider]?.config;
 
     // Compare provider
     const hasProviderChanged = formValue.provider !== this.initialProvider;
@@ -567,6 +570,61 @@ export class SettingsComponent implements OnInit, OnDestroy {
           }
         });
       return;
+    }
+  }
+
+  resetApp() {
+    this.dialogService
+      .confirm({
+        title: 'Reset Settings',
+        description: 'Are you sure you want to reset the Settings? This will clear all settings and configurations.',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Reset Settings',
+      })
+      .subscribe((confirmed: boolean) => {
+        if (confirmed) {
+          this.performAppReset();
+        }
+      });
+  }
+
+  private async performAppReset() {
+    try {
+      // Clear localStorage
+      localStorage.removeItem(APP_CONSTANTS.USER_NAME);
+      localStorage.removeItem(APP_CONSTANTS.WORKING_DIR);
+      localStorage.removeItem(APP_CONSTANTS.USER_ID);
+
+      // Clear electron store values
+      await this.electronService.setStoreValue('llmConfig', null);
+      await this.electronService.setStoreValue('APP_CONFIG', null);
+      await this.electronService.setStoreValue('analyticsEnabled', false);
+      await this.electronService.setStoreValue(LANGFUSE_CONFIG_STORE_KEY, null);
+
+      // Clear in-memory store
+      await this.store.dispatch(new SetLLMConfig({
+        activeProvider: '',
+        providerConfigs: {},
+        isDefault: true
+      })).toPromise();
+
+      // Reset analytics state
+      setAnalyticsToggleState(false);
+
+      // Clear form data
+      this.configForm.reset();
+      this.langfuseForm.reset();
+      this.analyticsEnabled.setValue(false);
+      this.autoUpdateEnabled.setValue(true);
+      this.useLangfuseCustomConfig.setValue(false);
+
+      this.toasterService.showSuccess('Settings reset successfully. Redirecting to login...');
+      
+      this.startupService.logout()
+      
+    } catch (error) {
+      this.logger.error('Error during app reset:', error);
+      this.toasterService.showError('Failed to reset application. Please try again.');
     }
   }
 
