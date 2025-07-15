@@ -169,18 +169,6 @@ const routes: Routes = [
         canDeactivate: [CanDeactivateGuard]
       },
       {
-        path: 'test-cases-home',
-        component: TestCaseHomeComponent,
-        canActivate: [UserGuard],
-        data: {
-          breadcrumb: {
-            name: 'Test Cases',
-            link: '/apps',
-            icon: 'test',
-          },
-        },
-      },
-      {
         path: 'use-case/:mode',
         component: StrategicInitiativeComponent,
         canActivate: [UserGuard],

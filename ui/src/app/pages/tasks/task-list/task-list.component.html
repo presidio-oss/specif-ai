@@ -89,7 +89,8 @@
             description: task.formattedAcceptance ?? '',
             name: task.list,
             id: task.id,
-            jiraTicketId: task.subTaskTicketId,
+            pmoId: task.pmoId,
+            metadata: metadata,
           }"
           [tag]="task.id"
           *ngFor="let task of taskList"

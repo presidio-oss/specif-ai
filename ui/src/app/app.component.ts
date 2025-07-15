@@ -21,6 +21,7 @@ import { geoAzimuthalEquidistantRaw } from 'd3';
 import { ANALYTICS_TOGGLE_KEY } from './services/analytics/utils/analytics.utils';
 import { APP_CONSTANTS } from './constants/app.constants';
 import { WorkflowProgressService } from './services/workflow-progress/workflow-progress.service';
+import { LLMConfigSchema } from './model/schemas/llm-config.schema';
 
 @Component({
   selector: 'app-root',
@@ -108,65 +109,41 @@ export class AppComponent implements OnInit, OnDestroy {
     this.logger.debug('Initializing LLM configuration');
 
     try {
-      const localConfig =
-        localStorage.getItem('llmConfig') ||
-        (await this.electronService.getStoreValue('llmConfig'));
-      if (localConfig) {
-        try {
-          const config = JSON.parse(localConfig);
-          const response = await this.electronService.verifyLLMConfig(
-            config.activeProvider,
-            config.providerConfigs[config.activeProvider].config,
-          );
-          if (response.status === 'success') {
-            this.logger.debug('LLM configuration verified successfully');
-          } else {
-            this.logger.error(
-              'LLM configuration verification failed:',
-              response.message,
-            );
-          }
-          return;
-        } catch (e) {
-          this.logger.error('Error parsing saved LLM config:', e);
-        }
-      }
+      const config = await this.electronService.getStoreValue('llmConfig');
+      
+      if (config) {
+        const validationResult = LLMConfigSchema.safeParse(config);
 
-      const savedConfig = await this.electronService.getStoreValue('llmConfig');
-      if (savedConfig) {
-        await this.store.dispatch(new SetLLMConfig(savedConfig)).toPromise();
+        if (!validationResult.success) {
+          this.logger.warn('Invalid LLM configuration format, clearing config:', validationResult.error.issues);
+          await this.electronService.setStoreValue('llmConfig', null);
+          return;
+        }
+
+        const parsedConfig = validationResult.data;
+
+        // Ensure the active provider exists in providerConfigs
+        if (!parsedConfig.providerConfigs[parsedConfig.activeProvider]) {
+          this.logger.warn('Active provider not found in provider configs, clearing config');
+          await this.electronService.setStoreValue('llmConfig', null);
+          return;
+        }
+        
         const response = await this.electronService.verifyLLMConfig(
-          savedConfig.activeProvider,
-          savedConfig.providerConfigs[savedConfig.activeProvider].config,
+          parsedConfig.activeProvider,
+          parsedConfig.providerConfigs[parsedConfig.activeProvider].config,
         );
+        
         if (response.status === 'success') {
+          await this.store.dispatch(new SetLLMConfig(parsedConfig)).toPromise();
           this.logger.debug('LLM configuration verified successfully');
         } else {
-          this.logger.error(
-            'LLM configuration verification failed:',
-            response.message,
-          );
+          this.logger.error('LLM configuration verification failed:', response.message);
         }
         return;
       }
 
-      const currentState = this.store.selectSnapshot(LLMConfigState.getConfig);
-      if (currentState?.activeProvider) {
-        const response = await this.electronService.verifyLLMConfig(
-          currentState.activeProvider,
-          currentState.providerConfigs[currentState.activeProvider].config,
-        );
-        if (response.status === 'success') {
-          this.logger.debug('LLM configuration verified successfully');
-        } else {
-          this.logger.error(
-            'LLM configuration verification failed:',
-            response.message,
-          );
-        }
-      } else {
-        this.logger.debug('No LLM configuration found to verify');
-      }
+      this.logger.debug('No LLM configuration found to verify');
     } catch (error) {
       this.logger.error('Error initializing LLM configuration:', error);
     }

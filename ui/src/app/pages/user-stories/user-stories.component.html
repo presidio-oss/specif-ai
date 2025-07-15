@@ -33,6 +33,15 @@
 
       <div class="flex items-center justify-between gap-3">
         <app-button
+          buttonContent="View PRD"
+          icon="heroDocumentText"
+          theme="secondary_outline"
+          size="sm"
+          rounded="lg"
+          (click)="navigateBackToPRD()"
+          matTooltip="View PRD"
+        />
+        <app-button
           *ngIf="userStories.length === 0"
           buttonContent="Generate User Stories"
           theme="secondary"
@@ -68,7 +77,8 @@
         description: userStory.formattedDescription ?? '',
         name: userStory.name,
         id: userStory.id,
-        jiraTicketId: userStory.storyTicketId,
+        pmoId: userStory.pmoId,
+        metadata: metadata,
       }"
       *ngFor="let userStory of filteredUserStories$ | async; let i = index"
       [tag]="userStory.id"

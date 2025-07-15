@@ -1,7 +1,7 @@
 export interface RequestEpic {
   epicName: string;
   epicDescription: string;
-  epicTicketId: string;
+  pmoId: string;
   projectKey: string;
   features: RequestFeature[];
 }
@@ -9,7 +9,7 @@ export interface RequestEpic {
 export interface RequestFeature {
   id: string;
   name: string;
-  storyTicketId: string;
+  pmoId: string;
   description: string;
   tasks: RequestTask[];
   chatHistory: RequestChatHistory[];
@@ -30,13 +30,13 @@ export interface RequestChatHistory {
 
 export interface ResponseEpic {
   epicName: string;
-  epicTicketId: string;
+  pmoId: string;
   features: ResponseFeature[];
 }
 
 export interface ResponseFeature {
   storyName: string;
-  storyTicketId: string;
+  pmoId: string;
   tasks: ResponseTask[];
 }
 

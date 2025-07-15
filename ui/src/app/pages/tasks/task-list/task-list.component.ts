@@ -114,7 +114,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   filteredTaskList$ = this.searchService.filterItems(
     this.taskList$,
     this.searchTerm$,
-    (task: any) => [task.id, task.list, task.subTaskTicketId],
+    (task: any) => [task.id, task.list, task.pmoId],
   );
   selectedUserStory$ = this.store.select(UserStoriesState.getSelectedUserStory);
   userStories$ = this.store.select(UserStoriesState.getUserStories);

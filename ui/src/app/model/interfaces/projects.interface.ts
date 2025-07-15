@@ -15,6 +15,25 @@ export interface IRequirementConfig {
   minCount?: number;
   count: number;
 }
+
+export interface JiraIntegrationConfig {
+  readonly jiraProjectKey: string;
+  readonly clientId: string;
+  readonly clientSecret: string;
+  readonly redirectUrl: string;
+}
+
+export interface WorkItemTypeMapping {
+  [key: string]: string;
+}
+
+export interface AdoIntegrationConfig {
+  readonly organization: string;
+  readonly projectName: string;
+  readonly personalAccessToken: string;
+  readonly workItemTypeMapping?: WorkItemTypeMapping;
+}
+
 export interface IProjectMetadata {
   id: string;
   name: string;
@@ -32,6 +51,11 @@ export interface IProjectMetadata {
   SI: IRequirementConfig;
   US: IRequirementConfig;
   TASK: IRequirementConfig;
+  integration?: {
+    selectedPmoTool?: string;
+    jira?: JiraIntegrationConfig;
+    ado?: AdoIntegrationConfig;
+  };
   isFailed?: boolean;
   failureInfo?: WorkflowErrorEvent;
 }

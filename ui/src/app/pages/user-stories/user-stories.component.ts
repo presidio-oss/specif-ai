@@ -42,7 +42,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroArrowRight } from '@ng-icons/heroicons/outline';
+import { heroArrowRight, heroDocumentText } from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
@@ -92,6 +92,7 @@ import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils
   providers: [
     provideIcons({
       heroArrowRight,
+      heroDocumentText,
     }),
   ],
 })
@@ -141,7 +142,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   filteredUserStories$ = this.searchService.filterItems(
     this.userStories$,
     this.searchTerm$,
-    (story: IUserStory) => [story.id, story.name, story.storyTicketId],
+    (story: IUserStory) => [story.id, story.name, story.pmoId],
   );
 
   selectedProject$ = this.store.select(ProjectsState.getSelectedProject);
@@ -292,6 +293,19 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .then();
   }
 
+  navigateBackToPRD() {
+    this.router.navigate(['/apps', this.navigation.projectId], {
+      state: {
+        data: this.navigation.data,
+        selectedFolder: {
+          title: this.navigation.folderName,
+          id: this.navigation.projectId,
+          metadata: this.navigation.data,
+        },
+      },
+    });
+  }
+
   navigateToEditUserStory(selectedUserStory: IUserStory) {
     this.router
       .navigate(['/story', 'edit', selectedUserStory.id], {
@@ -345,7 +359,15 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   navigateToAppIntegrations() {
     this.router.navigate([`/apps/${this.navigation.projectId}`], {
-      state: { openAppIntegrations: 'true' },
+      state: { 
+        data: this.navigation,
+        selectedFolder: {
+          title: 'app-integrations',
+          id: this.navigation.projectId
+        },
+        selectedIntegration: 'jira',
+        openPmoAccordion: true 
+      }
     });
   }
 
@@ -623,7 +645,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .subscribe((confirmed) => {
         if (!confirmed) return;
         this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
-          console.log('Token exists and is valid, making API call', token);
+          console.log('Token exists and is valid, making API call');
           this.syncJira(token, jiraUrl);
         });
       });
@@ -640,7 +662,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .subscribe((confirmed) => {
         if (!confirmed) return;
         this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
-          console.log('Token exists and is valid, syncing from JIRA', token);
+          console.log('Token exists and is valid, syncing from JIRA');
           this.syncFromJira(token, jiraUrl);
         });
       });
@@ -703,7 +725,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     const requestPayload: any = {
       epicName: '',
       epicDescription: '',
-      epicTicketId: '',
+      pmoId: '',
       jiraUrl: jiraUrl,
       token: token,
       projectKey: this.metadata.integration.jira.jiraProjectKey,
@@ -712,8 +734,8 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     requestPayload.epicName = this.requirementFile.title;
     requestPayload.epicDescription = this.requirementFile.requirement;
-    requestPayload.epicTicketId = this.requirementFile.epicTicketId
-      ? this.requirementFile.epicTicketId
+    requestPayload.pmoId = this.requirementFile.pmoId
+      ? this.requirementFile.pmoId
       : '';
 
     this.userStories = this.userStoriesInState;
@@ -723,13 +745,13 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         id: story.id,
         name: story.name,
         description: story.description,
-        storyTicketId: story.storyTicketId ? story.storyTicketId : '',
+        pmoId: story.pmoId ? story.pmoId : '',
         tasks: story?.tasks?.map((task) => {
           return {
             list: task.list,
             acceptance: task.acceptance,
             id: task.id,
-            subTaskTicketId: task.subTaskTicketId ? task.subTaskTicketId : '',
+            pmoId: task.pmoId ? task.pmoId : '',
           };
         }),
       };
@@ -742,7 +764,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         const matchedEpic = response.epicName === this.requirementFile.title;
 
         if (matchedEpic) {
-          this.requirementFile.epicTicketId = response.epicTicketId;
+          this.requirementFile.pmoId = response.pmoId;
         }
 
         this.requirementFile.lastPushToJiraTimestamp = new Date().toISOString();
@@ -756,7 +778,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           );
 
           if (matchedFeature) {
-            existingFeature.storyTicketId = matchedFeature.storyTicketId;
+            existingFeature.pmoId = matchedFeature.pmoId;
             existingFeature.tasks.forEach((existingTask: any) => {
               const matchedTask = matchedFeature.tasks.find(
                 (responseTask: any) =>
@@ -764,7 +786,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
               );
 
               if (matchedTask) {
-                existingTask.subTaskTicketId = matchedTask.subTaskTicketId;
+                existingTask.pmoId = matchedTask.pmoId;
               }
             });
           }
@@ -797,7 +819,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     const requestPayload: any = {
       epicName: '',
       epicDescription: '',
-      epicTicketId: '',
+      pmoId: '',
       jiraUrl: jiraUrl,
       token: token,
       projectKey: this.metadata.integration.jira.jiraProjectKey,
@@ -806,7 +828,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
     requestPayload.epicName = this.requirementFile.title;
     requestPayload.epicDescription = this.requirementFile.requirement;
-    requestPayload.epicTicketId = this.requirementFile.epicTicketId || '';
+    requestPayload.pmoId = this.requirementFile.pmoId || '';
 
     this.userStories = this.userStoriesInState;
 
@@ -814,12 +836,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       id: story.id,
       name: story.name,
       description: story.description,
-      storyTicketId: story.storyTicketId || '',
+      pmoId: story.pmoId || '',
       tasks: story?.tasks?.map((task) => ({
         id: task.id,
         list: task.list,
         acceptance: task.acceptance,
-        subTaskTicketId: task.subTaskTicketId || '',
+        pmoId: task.pmoId || '',
       })) || [],
     }));
 
@@ -851,7 +873,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         ...this.requirementFile,
         title: syncResponse.epic.title,
         requirement: syncResponse.epic.requirement,
-        epicTicketId: syncResponse.epic.epicTicketId,
+        pmoId: syncResponse.epic.pmoId,
         lastPullFromJiraTimestamp: this.requirementFile.lastPullFromJiraTimestamp
       };
 
@@ -867,7 +889,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       const updatedUserStories = this.userStories.map((existingStory) => {
         const syncedStory = syncResponse.features.find(
           (feature: any) =>
-            feature.storyTicketId === existingStory.storyTicketId ||
+            feature.pmoId === existingStory.pmoId ||
             feature.id === existingStory.id
         );
 
@@ -875,7 +897,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
           const updatedTasks = existingStory.tasks?.map((existingTask) => {
             const syncedTask = syncedStory.tasks?.find(
               (task: any) =>
-                task.subTaskTicketId === existingTask.subTaskTicketId ||
+                task.pmoId === existingTask.pmoId ||
                 task.id === existingTask.id
             );
 
@@ -884,7 +906,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
                 ...existingTask,
                 list: syncedTask.list || existingTask.list,
                 acceptance: syncedTask.acceptance || existingTask.acceptance,
-                subTaskTicketId: syncedTask.subTaskTicketId || existingTask.subTaskTicketId,
+                pmoId: syncedTask.pmoId || existingTask.pmoId,
                 status: syncedTask.status,
                 lastUpdated: syncedTask.lastUpdated,
               };
@@ -896,7 +918,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
             ...existingStory,
             name: syncedStory.name,
             description: syncedStory.description,
-            storyTicketId: syncedStory.storyTicketId,
+            pmoId: syncedStory.pmoId,
             status: syncedStory.status,
             lastUpdated: syncedStory.lastUpdated,
             tasks: updatedTasks,
@@ -1096,7 +1118,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         }
       ];
 
-      if (this.requirementFile?.epicTicketId) {
+      if (this.requirementFile?.pmoId) {
         jiraOptions.push({
           label: 'Pull from JIRA',
           callback: pullFromJira.bind(this),
@@ -1106,10 +1128,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
         });
       }
 
-      this.exportOptions.push({
-        groupName: 'JIRA',
-        options: jiraOptions,
-      });
+      if (this.metadata?.integration?.selectedPmoTool === 'jira') {
+        this.exportOptions.push({
+          groupName: 'JIRA',
+          options: jiraOptions,
+        });
+      }
     }
 
     return this.exportOptions;

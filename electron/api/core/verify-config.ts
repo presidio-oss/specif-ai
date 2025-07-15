@@ -9,7 +9,7 @@ export async function verifyConfig(event: IpcMainInvokeEvent, data: any): Promis
     // Validate input data using schema
     console.log('[verify-config] Validating input data...');
     const validatedData = verifyConfigSchema.parse(data);
-    console.log('[verify-config] Input data validated successfully:', validatedData);
+    console.debug('[verify-config] Input data validated successfully');
 
     const { provider, config = {} } = validatedData;
 
@@ -38,7 +38,7 @@ export async function verifyConfig(event: IpcMainInvokeEvent, data: any): Promis
     };
 
   } catch (error: any) {
-    console.error('[verify-config] Error during verification:', error);
+    console.error('[verify-config] Error during verification');
     
     return {
       status: 'failed',
