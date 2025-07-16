@@ -1,4 +1,13 @@
-import { Directive, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  HostListener,
+  Inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+} from '@angular/core';
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,42 +25,41 @@ import { heroSparklesSolid as sparkleIcon } from '@ng-icons/heroicons/solid';
  */
 @Directive({
   selector: '[appInlineEdit]',
-  standalone: true
+  standalone: true,
 })
 export class InlineEditDirective implements OnInit, OnDestroy {
   @Input() contextProvider?: () => string;
   @Input() onContentUpdated?: (newContent: string) => void;
   @Input() editable = true;
   @Input() editorInstance?: any; // Input for the editor instance
-  
+
   private sparkleIcon: HTMLElement | null = null;
   private selection: Selection | null = null;
   private selectedText: string = '';
   private selectionRange: Range | null = null;
   private destroy$ = new Subject<void>();
   private lastSelectionPosition = { x: 0, y: 0 };
-  
+
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
     private electronService: ElectronService,
     private toasterService: ToasterService,
     private inlineEditService: InlineEditService,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
   ) {}
-  
+
   ngOnInit(): void {
     // Add event listener for mouseup to detect text selection
     fromEvent(this.el.nativeElement, 'mouseup')
       .pipe(takeUntil(this.destroy$))
       .subscribe((event) => this.handleTextSelection(event as MouseEvent));
-      
+
     // Add event listener for keyup to detect text selection via keyboard
     fromEvent(this.el.nativeElement, 'keyup')
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.handleTextSelection());
-    
-      
+
     // Listen for selection changes to hide icon when selection is cleared
     fromEvent(this.document, 'selectionchange')
       .pipe(takeUntil(this.destroy$))
@@ -61,7 +69,7 @@ export class InlineEditDirective implements OnInit, OnDestroy {
           this.hideSparkleIcon();
         }
       });
-      
+
     // Subscribe to the inline edit service's edit result
     this.inlineEditService.editResult$
       .pipe(takeUntil(this.destroy$))
@@ -71,60 +79,65 @@ export class InlineEditDirective implements OnInit, OnDestroy {
         }
       });
   }
-  
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
     this.hideSparkleIcon();
   }
-  
+
   private isHandlingSparkleIconClick = false;
-  
+
   @HostListener('blur')
   onBlur(): void {
     setTimeout(() => {
-      if (!this.inlineEditService.isPromptOpen && !this.isHandlingSparkleIconClick) {
+      if (
+        !this.inlineEditService.isPromptOpen &&
+        !this.isHandlingSparkleIconClick
+      ) {
         this.hideSparkleIcon();
       }
     }, 500);
   }
-  
+
   /**
    * Handle text selection events
    * @param event Optional MouseEvent if triggered by mouse
    */
   private handleTextSelection(event?: MouseEvent): void {
     if (!this.editable) return;
-    
+
     this.selection = window.getSelection();
-    
+
     if (this.selection && this.selection.toString().trim() !== '') {
       this.selectedText = this.selection.toString();
       this.selectionRange = this.selection.getRangeAt(0);
-      
-      // Check if selection is within this element
-      if (this.selectionRange && this.el.nativeElement.contains(this.selectionRange.commonAncestorContainer)) {
-        // Store the selection position for placing the icon
+
+      if (
+        this.selectionRange &&
+        this.el.nativeElement.contains(
+          this.selectionRange.commonAncestorContainer,
+        )
+      ) {
         try {
           const rect = this.selectionRange.getBoundingClientRect();
           if (rect) {
             this.lastSelectionPosition = {
               x: rect.right,
-              y: rect.top
+              y: rect.top,
             };
           }
         } catch (e) {
           console.warn('Could not get selection rectangle', e);
         }
-        
-        // If triggered by mouse event, use that position instead
+
         if (event) {
           this.lastSelectionPosition = {
             x: event.clientX,
-            y: event.clientY
+            y: event.clientY,
           };
         }
-        
+
         this.showSparkleIcon();
       } else {
         this.hideSparkleIcon();
@@ -133,7 +146,7 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       this.hideSparkleIcon();
     }
   }
-  
+
   /**
    * Show the sparkle icon near the selected text
    */
@@ -142,11 +155,9 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       this.hideSparkleIcon();
     }
 
-    // Create the sparkle icon element
     this.sparkleIcon = this.renderer.createElement('div');
     this.renderer.setAttribute(this.sparkleIcon, 'title', 'Edit with AI');
 
-    // Use Tailwind classes instead of inline styles
     if (this.sparkleIcon) {
       this.sparkleIcon.className = `
         fixed z-[9999] w-6 h-6 bg-primary-100 text-primary-500
@@ -155,16 +166,14 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       `.trim();
     }
 
-    // Position it based on selection
     if (this.sparkleIcon) {
       this.sparkleIcon.style.left = `${this.lastSelectionPosition.x + 8}px`;
       this.sparkleIcon.style.top = `${this.lastSelectionPosition.y - 26}px`;
     }
 
-    // Inject the hero icon
     const sparkleIconSvg = sparkleIcon.replace(
       '<svg',
-      '<svg fill="currentColor" width="16" height="16"'
+      '<svg fill="currentColor" width="16" height="16"',
     );
     this.renderer.setProperty(this.sparkleIcon, 'innerHTML', sparkleIconSvg);
 
@@ -173,9 +182,9 @@ export class InlineEditDirective implements OnInit, OnDestroy {
         this.isHandlingSparkleIconClick = true;
         event.preventDefault();
         event.stopPropagation();
-        
+
         this.openInlineEditPrompt();
-        
+
         setTimeout(() => {
           this.isHandlingSparkleIconClick = false;
         }, 1000);
@@ -187,7 +196,6 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       this.renderer.appendChild(this.document.body, this.sparkleIcon);
     }
 
-    // Animate in
     setTimeout(() => {
       if (this.sparkleIcon) {
         this.sparkleIcon.classList.remove('scale-0');
@@ -196,7 +204,6 @@ export class InlineEditDirective implements OnInit, OnDestroy {
     }, 0);
   }
 
-  
   /**
    * Hide the sparkle icon
    */
@@ -206,7 +213,7 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       this.sparkleIcon = null;
     }
   }
-  
+
   /**
    * Open the inline edit prompt dialog
    */
@@ -217,15 +224,15 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       if (this.contextProvider) {
         context = this.contextProvider();
       }
-      
+
       // Hide the sparkle icon when opening the dialog
       this.hideSparkleIcon();
-      
+
       // Open the prompt dialog through the service
       this.inlineEditService.openPromptDialog(this.selectedText, context);
     }
   }
-  
+
   /**
    * Apply the edited text to the selection
    * @param editedText The text to replace the selection with
@@ -240,25 +247,25 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       this.toasterService.showError('Edited text is empty');
       return;
     }
-    
+
     if (this.editorInstance) {
       try {
-        // Find the actual start and end positions within the editor's document model
-        // This is important because DOM Range offsets might not map directly to the editor's model
         let startPos = 0;
         let endPos = 0;
-        
+
         try {
           const editorElement = this.editorInstance.view.dom;
-          const documentBody = editorElement.querySelector('.ProseMirror') || editorElement;
-          
-          // Create a Range that represents the editor's content
+          const documentBody =
+            editorElement.querySelector('.ProseMirror') || editorElement;
+
           const editorRange = document.createRange();
           editorRange.selectNodeContents(documentBody);
-          
+
           // Calculate the offset relative to the editor content
-          if (this.selectionRange.commonAncestorContainer === documentBody ||
-              documentBody.contains(this.selectionRange.commonAncestorContainer)) {
+          if (
+            this.selectionRange.commonAncestorContainer === documentBody ||
+            documentBody.contains(this.selectionRange.commonAncestorContainer)
+          ) {
             // Use the TipTap selection state instead, which is more reliable
             const selection = this.editorInstance.state.selection;
             startPos = selection.from;
@@ -270,37 +277,34 @@ export class InlineEditDirective implements OnInit, OnDestroy {
           startPos = this.selectionRange.startOffset;
           endPos = this.selectionRange.endOffset;
         }
-        
+
         // Apply the edit directly to the editor without affecting the whole content
         this.inlineEditService.applyInlineEdit(
           this.editorInstance,
           editedText,
           startPos,
-          endPos
+          endPos,
         );
-        
-        // After applying the edit directly to the editor,
-        // get the full updated content from the editor and trigger save
+
         if (this.onContentUpdated && this.editorInstance) {
-          // Set selection to the edited text
           const selection = this.editorInstance.state.selection;
           this.editorInstance.commands.setTextSelection({
             from: startPos,
-            to: startPos + editedText.length
+            to: startPos + editedText.length,
           });
-          
+
           // Get the full HTML content from the editor
           const htmlContent = this.editorInstance.getHTML();
-          
+
           // Convert the HTML back to markdown before saving
           htmlToMarkdown(htmlContent)
-            .then(markdownContent => {
+            .then((markdownContent) => {
               // Call the update callback with the markdown content (if defined)
               if (this.onContentUpdated) {
                 this.onContentUpdated(markdownContent as string);
               }
             })
-            .catch(error => {
+            .catch((error) => {
               console.error('Error converting HTML to markdown:', error);
               this.toasterService.showError('Error converting content format');
               // Fallback to the edited text directly if conversion fails
@@ -309,12 +313,11 @@ export class InlineEditDirective implements OnInit, OnDestroy {
               }
             });
         }
-        
-        // Position cursor at the end of inserted text and ensure focus
+
         try {
           // Calculate the new cursor position after the inserted text
           const newCursorPos = startPos + editedText.length;
-          
+
           // Set cursor position and focus
           this.editorInstance.commands.setTextSelection(newCursorPos);
           this.editorInstance.commands.focus();
@@ -326,8 +329,6 @@ export class InlineEditDirective implements OnInit, OnDestroy {
         this.toasterService.showError('Failed to apply edit');
       }
     } else if (this.onContentUpdated) {
-      // If no editor instance but we have content updated callback,
-      // provide the edited text and let the parent handle it
       try {
         this.onContentUpdated(editedText);
       } catch (error) {
@@ -338,20 +339,19 @@ export class InlineEditDirective implements OnInit, OnDestroy {
       console.error('No editor instance or content updated callback available');
       this.toasterService.showError('Could not apply edit');
     }
-    
+
     // Clean up
     this.hideSparkleIcon();
     this.cleanupSelection();
-    
+
     // Show success toast
     this.toasterService.showSuccess('Text updated successfully');
   }
-  
+
   /**
    * Clean up any lingering selections
    */
   private cleanupSelection(): void {
-    // Clear browser selection to avoid glitches
     if (window.getSelection) {
       const selection = window.getSelection();
       if (selection) {
@@ -362,8 +362,7 @@ export class InlineEditDirective implements OnInit, OnDestroy {
         }
       }
     }
-    
-    // Reset internal state
+
     this.selection = null;
     this.selectionRange = null;
     this.selectedText = '';
