@@ -603,7 +603,7 @@ export class StrategicInitiativeComponent implements OnInit {
     const markdownContent = this.strategicInitiativeForm.get('requirement')?.value || '';
 
     exportMarkdownToDocx(markdownContent, title, {
-      fileExtension: WordFileExtension.DOCX,
+      fileExtension: WordFileExtension.DOC,
     })
       .then(() => {
         this.toastService.showSuccess(

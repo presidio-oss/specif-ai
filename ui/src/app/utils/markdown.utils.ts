@@ -51,9 +51,9 @@ const truncateMarkdown = (
 /**
  * Enum for Word document file extensions
  */
+// TODO: Add support for DOCX in the future
 export enum WordFileExtension {
   DOC = 'doc',
-  DOCX = 'docx'
 }
 
 /**

@@ -15,31 +15,7 @@ import { heroArrowRight } from '@ng-icons/heroicons/outline';
 @Component({
   selector: 'app-inline-edit-prompt',
   templateUrl: './inline-edit-prompt.component.html',
-  styles: [`
-    :host {
-      display: block;
-    }
-    
-    ::ng-deep .inline-edit-dialog .mat-mdc-dialog-container {
-      border-radius: 16px !important;
-      overflow: hidden;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2) !important;
-    }
-    
-    ::ng-deep .inline-edit-dialog .mdc-dialog__surface {
-      background-color: transparent !important;
-      color: var(--foreground);
-      border: none !important;
-    }
-    
-    ::ng-deep .inline-edit-dialog .mdc-dialog__container {
-      backdrop-filter: blur(10px);
-    }
-    
-    ::ng-deep .inline-edit-backdrop {
-      background: rgba(255, 255, 255, 0.5);
-    }
-  `],
+  styleUrls: ['./inline-edit-prompt.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
