@@ -195,8 +195,8 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
       return "Tool called successfully, The user is notified that you've suggested adding content to the description";
     },
     {
-      name: "add_to_requirement_description",
-      description: "Suggest adding content to the current requirement description",
+      name: "update_requirement_description",
+      description: "Suggest content modifications to the current requirement description",
       schema: z.object({
         contentToAdd: z.string()
       })

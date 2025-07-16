@@ -384,7 +384,7 @@ export class BusinessProcessComponent implements OnInit {
         data.selectedPRDs,
         formValue.selectedPRDs,
       );
-  
+
       await this.handleBusinessProcessUpdate({
         requirement: data.updated.requirement,
         title: data.updated.title,
@@ -536,27 +536,19 @@ export class BusinessProcessComponent implements OnInit {
     );
   }
 
-  appendRequirement(data: any) {
+  updateRequirementFromChat(data: any) {
     let { chat, chatHistory } = data;
-    if (chat.contentToAdd) {
+    if (chat?.contentToAdd) {
       this.businessProcessForm.patchValue({
-        content: `${this.businessProcessForm.get('content')?.value} ${chat.contentToAdd}`,
+        content: `${chat.contentToAdd}`,
       });
       let newArray = chatHistory.map((item: any) => {
         if (item.name == chat.tool_name && item.tool_call_id == chat.tool_call_id) return { ...item, isAdded: true };
         else return item;
       });
-      this.store.dispatch(
-        new UpdateFile(this.absoluteFilePath, {
-          requirement: this.businessProcessForm.get('content')?.value,
-          title: this.businessProcessForm.get('title')?.value,
-          selectedBRDs: this.businessProcessForm.get('selectedBRDs')?.value,
-          selectedPRDs: this.businessProcessForm.get('selectedPRDs')?.value,
-          flowChartDiagram: this.existingFlowDiagram,
-          chatHistory: newArray,
-        }),
-      );
-      this.updateBusinessProcess(true);
+      // Store updated chat history locally - updateBusinessProcess will handle the store update
+      this.chatHistory = newArray;
+      this.updateBusinessProcess(false);
     }
   }
 
@@ -654,7 +646,7 @@ export class BusinessProcessComponent implements OnInit {
 
   truncatePRDandBRDRequirement(requirement: string | undefined, folderName: string): string {
     if (!requirement) return '';
-    
+
     const requirementType = FOLDER_REQUIREMENT_TYPE_MAP[folderName];
     if (requirementType === REQUIREMENT_TYPE.PRD) {
       return processPRDContentForView(requirement, 64);
@@ -665,17 +657,17 @@ export class BusinessProcessComponent implements OnInit {
 
   private areSelectionsEqual(original: any[], current: any[]): boolean {
     if (original.length !== current.length) return false;
-    
+
     // Create a Map to store current items for O(1) lookup
     const currentMap = new Map(
       current.map(item => [
-        `${item.requirement}-${item.fileName}`, 
+        `${item.requirement}-${item.fileName}`,
         item
       ])
     );
-    
+
     // Single pass through original array with O(1) lookups
-    return original.every(orig => 
+    return original.every(orig =>
       currentMap.has(`${orig.requirement}-${orig.fileName}`)
     );
   }
@@ -683,10 +675,10 @@ export class BusinessProcessComponent implements OnInit {
   canDeactivate(): boolean {
     // Check form changes
     const hasFormChanges = this.businessProcessForm.dirty && this.businessProcessForm.touched;
-    
+
     // Compare original vs current PRD selections
     const hasPRDChanges = !this.areSelectionsEqual(this.originalSelectedPRDs, this.selectedPRDs);
-    
+
     // Compare original vs current BRD selections
     const hasBRDChanges = !this.areSelectionsEqual(this.originalSelectedBRDs, this.selectedBRDs);
 
