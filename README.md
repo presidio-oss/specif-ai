@@ -196,6 +196,7 @@ Specifai seamlessly integrates with popular tools to enhance your workflow:
 #### Jira Integration
 The stories and tasks generated as part of the solutions can be used to create actual stories and tasks in your Jira instance using the Jira integration provided by the application. Features include:
 - Automatic story and task creation in Jira.
+- Bidirectional sync capabilities.
 - Bulk export capabilities.
 
 For Jira setup instructions, please refer to our [Jira Setup Guide](docs/docs/current/JIRA-README.md).
