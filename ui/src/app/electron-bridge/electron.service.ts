@@ -47,8 +47,6 @@ import {
 import { AutoUpdateModalComponent } from '../components/auto-update-modal/auto-update-modal.component';
 import { htmlToMarkdown } from '../utils/html.utils';
 import { WorkflowType } from '../model/interfaces/workflow-progress.interface';
-import { IAddStrategicInitiativeRequest, IUpdateStrategicInitiativeRequest, IStrategicInitiativeResponse } from '../model/interfaces/strategic-initiative.interface';
-import { DocumentUpdateRequest, DocumentUpdateResponse } from './electron.interface';
 
 @Injectable({
   providedIn: 'root',
