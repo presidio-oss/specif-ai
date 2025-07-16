@@ -195,8 +195,8 @@ export class JiraService {
     task: any,
     token: string,
   ): Observable<any> {
-    if (task.subTaskTicketId) {
-      const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${task.subTaskTicketId}`;
+    if (task.pmoId) {
+      const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${task.pmoId}`;
       return this.http.get(issueUrl, { headers: this.getHeaders(token) }).pipe(
         switchMap((issue: any) => {
           return convertMarkdownToADF(task.acceptance).pipe(
@@ -261,7 +261,7 @@ export class JiraService {
     token: string,
     adfContent: any,
   ): Observable<any> {
-    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${task.subTaskTicketId}?returnIssue=true`;
+    const issueUrl = `${payload.jiraUrl}/rest/api/3/issue/${task.pmoId}?returnIssue=true`;
     const updateData = {
       fields: {
         summary: task.list,
@@ -313,7 +313,7 @@ export class JiraService {
                             map((subTask: any) => {
                               storyDetails.tasks.push({
                                 subTaskName: task.list,
-                                subTaskTicketId: subTask.key,
+                                pmoId: subTask.key,
                               });
                             }),
                           ),
@@ -446,7 +446,7 @@ export class JiraService {
                   // Update existing tasks with JIRA data
                   storyData.data.tasks = storyData.data.tasks.map((existingTask: any) => {
                     const matchingSubTask = subTasks.find(st =>
-                      st && st.subTaskTicketId === existingTask.subTaskTicketId
+                      st && st.pmoId === existingTask.pmoId
                     );
 
                     if (matchingSubTask) {
@@ -484,7 +484,7 @@ export class JiraService {
       switchMap((task: any) => {
         return convertADFToMarkdown(task.fields.description).pipe(
           map((markdownDescription) => ({
-            subTaskTicketId: task.key,
+            pmoId: task.key,
             summary: task.fields.summary,
             description: markdownDescription,
             status: task.fields.status.name,
