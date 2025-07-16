@@ -2,7 +2,7 @@ import {
   exportMarkdownToDocx,
   WordFileExtension,
 } from '../../utils/markdown.utils';
-import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { InlineEditModule } from '../../directives/inline-edit/inline-edit.module';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
@@ -26,13 +26,11 @@ import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { InputFieldComponent } from '../../components/core/input-field/input-field.component';
 import {
-  AsyncPipe,
   NgClass,
   NgForOf,
   NgIf,
   CommonModule,
 } from '@angular/common';
-import { PillComponent } from '../../components/pill/pill.component';
 import { AiChatComponent } from '../../components/ai-chat/ai-chat.component';
 import { ExpandDescriptionPipe } from '../../pipes/expand-description.pipe';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -72,7 +70,6 @@ import {
 } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
-import { DocumentUpdateService } from 'src/app/services/document-update/document-update.service';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { ExportDropdownComponent, DropdownOptionGroup } from 'src/app/export-dropdown/export-dropdown.component';
 
@@ -98,7 +95,6 @@ import { ExportDropdownComponent, DropdownOptionGroup } from 'src/app/export-dro
     WorkflowProgressDialogComponent,
     InlineEditModule,
     ExportDropdownComponent,
-    PillComponent
 ],
   providers: [
     provideIcons({
@@ -151,14 +147,11 @@ export class StrategicInitiativeComponent implements OnInit {
   protected readonly JSON = JSON;
   toastService = inject(ToasterService);
 
-  // New properties that were in canvas-editor
   isEditingTitle: boolean = false;
   documentTitle: string = '';
   
-  // Options for the dropdown menu
   documentActionOptions: DropdownOptionGroup[] = [];
 
-  // Access the rich text editor directly
   @ViewChild('richTextEditor') richTextEditor!: RichTextEditorComponent;
 
   originalDocumentList$: Observable<IList[]> = this.store.select(
@@ -175,7 +168,6 @@ export class StrategicInitiativeComponent implements OnInit {
     private loggerService: NGXLogger,
     private electronService: ElectronService,
     private workflowProgressService: WorkflowProgressService,
-    private documentUpdateService: DocumentUpdateService
   ) {
 
     this.route.params.subscribe((params) => {
@@ -343,7 +335,6 @@ export class StrategicInitiativeComponent implements OnInit {
     this.strategicInitiativeForm.markAsUntouched();
     this.strategicInitiativeForm.markAsPristine();
     
-    // Update dropdown options to reflect status changes
     this.initializeDocumentActions();
   }
 
@@ -377,13 +368,10 @@ export class StrategicInitiativeComponent implements OnInit {
           researchUrls: res.researchUrls
         });
         
-        // Update documentTitle for the title editing functionality
         this.documentTitle = res.title || '';
         
-        // Initialize document actions after form is populated
         this.initializeDocumentActions();
         
-        // Mark the form as pristine and untouched after initial data load
         this.strategicInitiativeForm.markAsPristine();
         this.strategicInitiativeForm.markAsUntouched();
       });
@@ -418,13 +406,10 @@ export class StrategicInitiativeComponent implements OnInit {
     this.clearStaleData();
   }
   
-  
-  // Method to get editor instance safely
   getEditorInstance(): any {
     return this.richTextEditor?.editor || null;
   }
   
-  // Handle content changes from the rich text editor
   onRichTextEditorChange(content: string): void {
     this.onCanvasContentChange(content);
   }
@@ -528,28 +513,35 @@ export class StrategicInitiativeComponent implements OnInit {
 
   private processDocumentUpdates(): void {
     const toolMessages = this.chatHistory.filter(
-      (message: any) => message.tool,
+      (message: any) => message.tool && message.name === 'replace_text_block',
     );
 
     if (toolMessages.length > 0) {
       for (const message of toolMessages) {
+        console.log("[text-block-replace] Processing tool message:", message);
         if (message.processed) continue;
-        const handled = this.documentUpdateService.handleToolResponse(
-          message.tool,
-          (updatedContent: string, replacementInfo?: any) => {
-            this.strategicInitiativeForm.patchValue({
-              requirement: updatedContent,
-            });
-
-            if (this.mode === 'edit') {
-              this.updateStrategicInitiative();
+        
+        try {
+          const response = JSON.parse(message.tool);
+          
+          if (response && response.success && response.updateRequest) {
+            const { updatedContent } = response.updateRequest;
+            
+            if (updatedContent) {
+              this.strategicInitiativeForm.patchValue({
+                requirement: updatedContent,
+              });
+  
+              if (this.mode === 'edit') {
+                this.updateStrategicInitiative();
+              }
+              
+              this.toastService.showSuccess('Successfully updated document content');
+              message.processed = true;
             }
-          },
-          () => this.strategicInitiativeForm.get('requirement')?.value || '',
-        );
-
-        if (handled) {
-          message.processed = true;
+          }
+        } catch (error) {
+          console.error('Error processing tool message:', error);
         }
       }
     }
@@ -587,9 +579,6 @@ export class StrategicInitiativeComponent implements OnInit {
     this.activeTab = tab;
   }
 
-  /**
-   * Toggle the document status between DRAFT and COMPLETE
-   */
   toggleDocumentStatus() {
     if (this.mode === 'edit') {
       const currentStatus = this.strategicInitiativeForm.get('status')?.value;
@@ -607,14 +596,6 @@ export class StrategicInitiativeComponent implements OnInit {
       
       this.toastService.showSuccess(statusMessage);
     }
-  }
-
-  /**
-   * Legacy method kept for backward compatibility
-   * @deprecated Use toggleDocumentStatus instead
-   */
-  finalizeStrategicInitiative() {
-    this.toggleDocumentStatus();
   }
 
   exportAsWord() {
@@ -727,7 +708,6 @@ export class StrategicInitiativeComponent implements OnInit {
           requirement: result.requirement,
         });
         
-        // Update documentTitle for the title editing functionality
         this.documentTitle = result.title || formValue.title;
 
         this.toastService.showSuccess(
@@ -773,9 +753,6 @@ export class StrategicInitiativeComponent implements OnInit {
     });
   }
 
-  /**
-   * Toggle the expanded state of the chat panel
-   */
   toggleChatExpanded(): void {
     this.isChatExpanded = !this.isChatExpanded;
   }

@@ -261,6 +261,7 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
         updateType: "text_block_replace",
         searchBlock,
         replaceBlock,
+        updatedContent: latestContent,
       };
 
       console.log("[replaceTextBlock] Update request created:", updateRequest);
@@ -273,7 +274,7 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     {
       name: "replace_text_block",
       description: `
-        Purpose: Update specific sections of the document by replacing exact text blocks
+        Purpose: Update specific sections of the document by replacing exact text blocks and suggest user the updated content.
         When to use: 
         - When you need to update a specific paragraph, section, or code block
         - When you want to preserve the exact formatting and structure of surrounding content
@@ -291,7 +292,7 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
 
   const tools = [
     getCurrentRequirementContent,
-    addToRequirementDescription,
+    ...(data.requirementAbbr !== REQUIREMENT_TYPE.SI ? [addToRequirementDescription] : []),
     replaceTextBlock,
   ];
 
