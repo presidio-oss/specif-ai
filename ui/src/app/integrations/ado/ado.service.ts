@@ -133,12 +133,15 @@ export class AdoService implements PmoService {
    * This creates a three-level hierarchy that can be displayed in a tree view
    * Mapped to the Ticket interface for PMO integration
    */
-  async getWorkPlanItemsHierarchy(): Promise<Ticket[]> {
+  async getWorkPlanItemsHierarchy(
+    skip: number = 0,
+    top: number = 200,
+  ): Promise<{ tickets: Ticket[]; totalCount: number }> {
     if (!this.config || !this.baseUrl) {
       console.error(
         'Azure DevOps service not configured. Call configure() first.',
       );
-      return [];
+      return { tickets: [], totalCount: 0 };
     }
 
     try {
@@ -171,21 +174,24 @@ export class AdoService implements PmoService {
       };
       buildMappingFromHierarchy(currentHierarchy);
 
-      // 2. Get Features from ADO
+      // 2. Get Features from ADO with pagination
+      const featureWorkItemType =
+        this.config.workItemTypeMapping?.PRD || 'Feature';
       const query = `
         SELECT [System.Id]
         FROM WorkItems
-        WHERE [System.WorkItemType] = 'Feature'
+        WHERE [System.WorkItemType] = '${featureWorkItemType}'
         AND [System.TeamProject] = @project
-        ORDER BY [System.ChangedDate] DESC
+        ORDER BY [System.Id] DESC
       `;
 
-      const featureIds = await this.executeWiqlQuery(query);
-      if (featureIds.length === 0) {
-        return [];
+      const allFeatureIds = await this.executeWiqlQuery(query);
+      if (allFeatureIds.length === 0) {
+        return { tickets: [], totalCount: 0 };
       }
 
-      const features = await this.getWorkItemsByIds(featureIds);
+      const paginatedFeatureIds = allFeatureIds.slice(skip, skip + top);
+      const features = await this.getWorkItemsByIds(paginatedFeatureIds);
 
       // 3. Build the hierarchy using existing mappings where available
       const hierarchy = await Promise.all(
@@ -349,10 +355,10 @@ export class AdoService implements PmoService {
         }),
       );
 
-      return hierarchy;
+      return { tickets: hierarchy, totalCount: allFeatureIds.length };
     } catch (err) {
       console.error('Error fetching Features hierarchy:', err);
-      return [];
+      return { tickets: [], totalCount: 0 };
     }
   }
 
@@ -398,14 +404,21 @@ export class AdoService implements PmoService {
   private async getPlatformFeaturesByParentId(
     parentId: number,
   ): Promise<any[]> {
-    return this.getWorkItemsByParentIdAndType(parentId, 'Platform Feature');
+    const platformFeatureWorkItemType =
+      this.config?.workItemTypeMapping?.US || 'Platform Feature';
+    return this.getWorkItemsByParentIdAndType(
+      parentId,
+      platformFeatureWorkItemType,
+    );
   }
 
   /**
    * Get only UserStory work items for a specific parent PlatformFeature
    */
   private async getUserStoriesByParentId(parentId: number): Promise<any[]> {
-    return this.getWorkItemsByParentIdAndType(parentId, 'User Story');
+    const userStoryWorkItemType =
+      this.config?.workItemTypeMapping?.TASK || 'User Story';
+    return this.getWorkItemsByParentIdAndType(parentId, userStoryWorkItemType);
   }
 
   /**
@@ -1535,9 +1548,7 @@ export class AdoService implements PmoService {
         .dispatch(new BulkUpdateFiles(updates))
         .pipe(first())
         .subscribe(() => {
-          this.toast.showSuccess(
-            'Successfully pushed selected items to ADO',
-          );
+          this.toast.showSuccess('Successfully pushed selected items to ADO');
           const projectId = appInfo?.id;
           if (projectId) {
             this.store.dispatch(new GetProjectFiles(projectId));
