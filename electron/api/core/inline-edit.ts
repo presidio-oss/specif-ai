@@ -87,14 +87,12 @@ export async function inlineEditWithAI(
     });
     
     // Return the response
-    console.log("Inline edit response:", response.values.editedText);
     return {
       requestId,
       editedText: response.values.editedText || "",
       success: true,
     };
   } catch (error: any) {
-    console.error("Error in inlineEditWithAI:", error);
     return {
       requestId: payload.requestId || uuidv4(),
       editedText: "",

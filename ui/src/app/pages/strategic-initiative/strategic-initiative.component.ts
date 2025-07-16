@@ -518,7 +518,6 @@ export class StrategicInitiativeComponent implements OnInit {
 
     if (toolMessages.length > 0) {
       for (const message of toolMessages) {
-        console.log("[text-block-replace] Processing tool message:", message);
         if (message.processed) continue;
         
         try {
@@ -541,7 +540,7 @@ export class StrategicInitiativeComponent implements OnInit {
             }
           }
         } catch (error) {
-          console.error('Error processing tool message:', error);
+          // Error processing tool message
         }
       }
     }
@@ -611,7 +610,6 @@ export class StrategicInitiativeComponent implements OnInit {
         );
       })
       .catch((error) => {
-        console.error('Error exporting document:', error);
         this.toastService.showError(
           `Failed to export document: ${error.message}`,
         );
@@ -675,17 +673,7 @@ export class StrategicInitiativeComponent implements OnInit {
         },
       };
 
-      console.log(
-        'Sending request to generate business proposal:',
-        requestData,
-      );
-
       const result = await this.electronService.generateStrategicInitiative(requestData);
-
-      console.log(
-        'Received response from business proposal generation:',
-        result,
-      );
 
       if (result && result.status === 'success') {
         this.workflowProgressService.addProgressEvent(
@@ -718,13 +706,11 @@ export class StrategicInitiativeComponent implements OnInit {
 
         this.mode === 'add' ? this.addStrategicInitiative() : this.updateStrategicInitiative();
       } else {
-        console.error('Failed to generate business proposal:', result);
         this.toastService.showError(
           'Failed to generate business proposal. Please try again.',
         );
       }
     } catch (error) {
-      console.error('Error generating business proposal:', error);
       this.toastService.showError(
         'An error occurred while generating the business proposal',
       );

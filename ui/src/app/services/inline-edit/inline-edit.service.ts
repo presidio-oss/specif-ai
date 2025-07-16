@@ -89,7 +89,6 @@ export class InlineEditService {
 
       return response;
     } catch (error) {
-      console.error('Error processing inline edit:', error);
       return {
         requestId: uuidv4(),
         editedText: '',
@@ -135,14 +134,12 @@ export class InlineEditService {
             }
           });
         } catch (e) {
-          console.warn('Failed to parse as HTML, inserting as plain text', e);
-          editor.commands.insertText(editedText);
+              editor.commands.insertText(editedText);
         }
       }
 
       return editedText;
     } catch (error) {
-      console.error('Error applying inline edit:', error);
       return '';
     }
   }

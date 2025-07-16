@@ -7,7 +7,6 @@ export function setupSIHandlers() {
       const result = await generateStrategicInitiative(_event, data);
       return result;
     } catch (error: any) {
-      console.error("Error handling solution:createSolution:", error.message);
       throw error;
     }
   });

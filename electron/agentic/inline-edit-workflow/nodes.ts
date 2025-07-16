@@ -64,11 +64,9 @@ export const buildInlineEditNode = (modelProvider: LangChainModelProvider) => {
         messages: [...state.messages, new HumanMessage(prompt)],
       };
     } catch (error) {
-      const message = `[inline-edit-workflow] Error in inline-edit node: ${error}`;
-      console.error(message, error);
       span?.end({
         level: "ERROR",
-        statusMessage: message,
+        statusMessage: "Error in inline-edit node",
       });
 
       return {

@@ -10,12 +10,10 @@ import {
 } from '@angular/core';
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { v4 as uuidv4 } from 'uuid';
 import { Subject, fromEvent, takeUntil } from 'rxjs';
 import { InlineEditService } from '../../services/inline-edit/inline-edit.service';
 import { DOCUMENT } from '@angular/common';
 import { InlineEditResponse } from '../../model/interfaces/chat.interface';
-import { markdownToHtml } from '../../utils/markdown.utils';
 import { htmlToMarkdown } from '../../utils/html.utils';
 import { heroSparklesSolid as sparkleIcon } from '@ng-icons/heroicons/solid';
 
@@ -304,8 +302,7 @@ export class InlineEditDirective implements OnInit, OnDestroy {
                 this.onContentUpdated(markdownContent as string);
               }
             })
-            .catch((error) => {
-              console.error('Error converting HTML to markdown:', error);
+            .catch(() => {
               this.toasterService.showError('Error converting content format');
               // Fallback to the edited text directly if conversion fails
               if (this.onContentUpdated) {
@@ -325,18 +322,15 @@ export class InlineEditDirective implements OnInit, OnDestroy {
           console.warn('Could not set cursor position:', e);
         }
       } catch (error) {
-        console.error('Error applying inline edit:', error);
         this.toasterService.showError('Failed to apply edit');
       }
     } else if (this.onContentUpdated) {
       try {
         this.onContentUpdated(editedText);
       } catch (error) {
-        console.error('Error in content updated callback:', error);
         this.toasterService.showError('Failed to update content');
       }
     } else {
-      console.error('No editor instance or content updated callback available');
       this.toasterService.showError('Could not apply edit');
     }
 
