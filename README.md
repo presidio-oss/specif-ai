@@ -49,6 +49,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 - 📱 Product Requirement Documents (PRD)
 - 🎨 User Interface Requirements (UIR)
 - 🔄 Business Process Flows
+- 🧪 Test Cases
 
 <div align="center">
     <img src="docs/static/gif/specifai-sections.gif" alt="Document Generation Demo" width="900">
@@ -92,6 +93,14 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 ![User story and task generation](docs/static/gif/specifai-user-stories.gif)  
 *User story and task generation*
+</div>
+
+- **🧪 Automated Test Case Generation**: Generate comprehensive test cases from user stories through an intelligent workflow.
+
+<div align="center">
+
+![Test case generation](docs/static/gif/specifai-test-cases.gif)  
+*Automated test case generation workflow*
 </div>
 
 - **🔍 Analytics & Observability**: Optional analytics and observability tracked in PostHog and Langfuse.
