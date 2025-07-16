@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ElectronService } from '../../electron-bridge/electron.service';
-import { ToasterService } from '../toaster/toaster.service';
 import { InlineEditPromptComponent } from '../../components/inline-edit-prompt/inline-edit-prompt.component';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { InlineEditResponse } from '../../model/interfaces/chat.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { markdownToHtml } from '../../utils/markdown.utils';
@@ -15,11 +14,10 @@ export class InlineEditService {
   private editResultSubject = new Subject<InlineEditResponse | null>();
   public editResult$ = this.editResultSubject.asObservable();
   public isPromptOpen = false;
-  
+
   constructor(
     private dialog: MatDialog,
     private electronService: ElectronService,
-    private toasterService: ToasterService
   ) {}
   
   /**
@@ -29,15 +27,13 @@ export class InlineEditService {
    */
   openPromptDialog(selectedText: string, context?: string): void {
     this.isPromptOpen = true;
-    
-    // Open dialog with initial prompt state
+
     const dialogRef = this.dialog.open(InlineEditPromptComponent, {
       width: '480px',
       maxWidth: '90vw',
       data: { 
         selectedText, 
         context,
-        // Pass reference to process function so component can handle state transitions
         processFunction: (prompt: string) => this.processInlineEdit(selectedText, prompt, context)
       },
       panelClass: 'inline-edit-dialog',
@@ -46,13 +42,11 @@ export class InlineEditService {
       autoFocus: true,
       hasBackdrop: true,
     });
-    
-    // Handle dialog close
+
     dialogRef.afterClosed().subscribe(result => {
       this.isPromptOpen = false;
-      
+
       if (result && result.accepted) {
-        // User accepted the edit
         const response: InlineEditResponse = {
           requestId: uuidv4(),
           editedText: result.editedText,
@@ -60,7 +54,6 @@ export class InlineEditService {
         };
         this.editResultSubject.next(response);
       } else {
-        // User cancelled or rejected
         this.editResultSubject.next(null);
       }
     });
@@ -80,10 +73,8 @@ export class InlineEditService {
     context?: string
   ): Promise<InlineEditResponse> {
     try {
-      // Generate a unique request ID
       const requestId = uuidv4();
-      
-      // Call the electron service to process the inline edit
+
       const response = await this.electronService.inlineEditWithAI({
         requestId,
         selectedText,
@@ -91,13 +82,11 @@ export class InlineEditService {
         context,
         preserveFormatting: true
       });
-      
-      // Ensure markdown formatting is preserved in the response
+
       if (response.success && response.editedText) {
-        // The response is already in markdown format, so we return it as-is
         return response;
       }
-      
+
       return response;
     } catch (error) {
       console.error('Error processing inline edit:', error);
@@ -120,32 +109,25 @@ export class InlineEditService {
    */
   applyInlineEdit(editor: any, editedText: string, selectionStart: number, selectionEnd: number): string {
     if (!editor) return '';
-    
+
     try {
-      // Set the selection
       editor.commands.setTextSelection({
         from: selectionStart,
         to: selectionEnd
       });
-      
-      // Check if the edited text contains HTML tags
+
       const containsHtml = /<[a-z][\s\S]*>/i.test(editedText);
-      
-      // First delete the current selection
+
       editor.chain().focus().deleteSelection().run();
-      
-      // Then insert the new content at the current position
+
       if (containsHtml) {
-        // If it contains HTML, use insertContent to parse HTML
         editor.commands.insertContent(editedText, {
           parseOptions: {
             preserveWhitespace: 'full'
           }
         });
       } else {
-        // If it's markdown or plain text, convert it to HTML using the utility
         try {
-          // Use the existing markdownToHtml utility
           const html = markdownToHtml(editedText);
           editor.commands.insertContent(html, {
             parseOptions: {
@@ -153,13 +135,11 @@ export class InlineEditService {
             }
           });
         } catch (e) {
-          // Fallback to inserting as plain text
           console.warn('Failed to parse as HTML, inserting as plain text', e);
           editor.commands.insertText(editedText);
         }
       }
-      
-      // Return only the edited text, not the entire HTML content
+
       return editedText;
     } catch (error) {
       console.error('Error applying inline edit:', error);
