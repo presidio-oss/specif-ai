@@ -59,9 +59,9 @@ Specifai leverages powerful MCP Tools including:
 - Custom Server Support
 
 ### 🔗 Jira Integration
-Create and manage epics, stories, and tasks directly in your Jira instance.
+Create and manage epics, stories, and tasks directly in your Jira instance. Support for bidirectional synchronization with pull and push capabilities.
 
-### 🔗 Azure DevOps Integration
+### 🔷 Azure DevOps Integration
 Seamlessly synchronize requirements and work items with Azure DevOps. Support for hierarchical work item management with bidirectional sync capabilities.
 
 ### ☁️ AWS Bedrock Knowledge Base

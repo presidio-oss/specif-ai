@@ -17,8 +17,9 @@ Integrate JIRA to transform Specifai-generated requirements into actionable JIRA
 
 ### ✨ Features and Benefits
 
+* **Bidirectional Synchronization:** Pull issues from Jira into Specifai or push Specifai requirements to Jira.
 * **Automated Ticket Creation:** Convert PRDs, User Stories, and Tasks into JIRA epics, stories, and tasks, maintaining hierarchy.
-* **Bulk Export:** Export multiple stories and tasks at once, saving manual creation time.
+* **Bulk Operations:** Import or export multiple prds, stories and tasks efficiently, maintaining parent-child relationships.
 * **Seamless Synchronization:** Create and update JIRA tickets based on Specifai changes, ensuring data consistency.
 
 ### ⚡ Quick Start Guide
