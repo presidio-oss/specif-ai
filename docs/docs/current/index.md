@@ -61,6 +61,9 @@ Specifai leverages powerful MCP Tools including:
 ### 🔗 Jira Integration
 Create and manage epics, stories, and tasks directly in your Jira instance.
 
+### 🔗 Azure DevOps Integration
+Seamlessly synchronize requirements and work items with Azure DevOps. Support for hierarchical work item management with bidirectional sync capabilities.
+
 ### ☁️ AWS Bedrock Knowledge Base
 Enterprise knowledge base integration for enhanced AI suggestions and iterative conversations.
 
@@ -116,6 +119,7 @@ Choose the AI model that best suits your needs from a variety of providers. Spec
 
 ### [🔌 Integrations Setup](integrations-setup.md)
 - Jira Integration
+- Azure DevOps Integration
 - AWS Bedrock KB
 - MCP Configuration
 
