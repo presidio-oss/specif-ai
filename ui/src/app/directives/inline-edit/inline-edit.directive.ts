@@ -78,14 +78,15 @@ export class InlineEditDirective implements OnInit, OnDestroy {
     this.hideSparkleIcon();
   }
   
+  private isHandlingSparkleIconClick = false;
+  
   @HostListener('blur')
   onBlur(): void {
-    // Hide the sparkle icon when the element loses focus
     setTimeout(() => {
-      if (!this.inlineEditService.isPromptOpen) {
+      if (!this.inlineEditService.isPromptOpen && !this.isHandlingSparkleIconClick) {
         this.hideSparkleIcon();
       }
-    }, 200);
+    }, 500);
   }
   
   /**
@@ -167,10 +168,17 @@ export class InlineEditDirective implements OnInit, OnDestroy {
     );
     this.renderer.setProperty(this.sparkleIcon, 'innerHTML', sparkleIconSvg);
 
-    // Add click event
     if (this.sparkleIcon) {
-      this.sparkleIcon.addEventListener('click', () => {
+      this.sparkleIcon.addEventListener('mousedown', (event) => {
+        this.isHandlingSparkleIconClick = true;
+        event.preventDefault();
+        event.stopPropagation();
+        
         this.openInlineEditPrompt();
+        
+        setTimeout(() => {
+          this.isHandlingSparkleIconClick = false;
+        }, 1000);
       });
     }
 
