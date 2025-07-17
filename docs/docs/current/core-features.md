@@ -13,6 +13,7 @@ Discover the powerful features that make Specifai your ultimate companion for SD
 - Intelligent Chat Interface
 - Automating User Story & Task Creation
 - Model Configuration
+- AI-Powered Inline Editing
 - Export & Integration Options
 
 ---
@@ -469,6 +470,40 @@ Specifai offers flexible AI model configuration, allowing you to choose and conn
 *Easily configurable multi-provider AI model support*
 
 </div>
+
+---
+
+## 🪄 AI-Powered Inline Editing
+
+Specifai's inline editing feature allows you to instantly improve any text within editable fields using AI assistance, without disrupting your workflow.
+
+<div align="center">
+
+![Inline Editing Feature](../../static/gif/specifai-inline-edit.gif)
+*Inline Editing Demo*
+
+</div>
+
+### How to Use Inline Editing
+
+1. **Select Text:** Highlight any text you want to improve in your requirements, user stories, or descriptions.
+2. **Activate AI:** Click the ✨ sparkle icon that appears near your selection.
+3. **Provide Instructions:** Enter specific instructions like "Make this more concise" or "Add technical details."
+4. **Apply Changes:** Review the AI's suggestions and click "Accept" to apply them to your document.
+
+### Best Practices
+
+* **Be Specific:** Give clear instructions for better results (e.g., "Convert to bullet points highlighting key features").
+* **Select Appropriately:** Include enough context for the AI to understand what you're trying to improve.
+* **Iterate:** Start with general improvements, then refine with more specific editing passes.
+
+### Use Cases
+
+* Improve requirement clarity and specificity
+* Enhance technical descriptions with proper terminology
+* Convert vague user stories into structured formats with acceptance criteria
+* Fix grammar and improve readability of documentation
+* Standardize content format across documents
 
 ---
 
