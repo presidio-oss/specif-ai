@@ -328,7 +328,7 @@ Alternative Flows:
 
 <div align="center">
 
-![SI Details](../../static/img/specifai-test-cases.png)
+![SI Details](../../static/img/specifai-si.png)
 *Strategic Initiative in Specifai*
 
 </div>
