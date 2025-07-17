@@ -77,6 +77,7 @@ import { WorkflowProgressService } from '../../services/workflow-progress/workfl
 import { ProjectFailureMessageComponent } from '../../components/project-failure-message/project-failure-message.component';
 import { ProjectCreationService } from '../../services/project-creation/project-creation.service';
 import { PmoIntegrationComponent } from '../../components/pmo-integration/pmo-integration.component';
+import { JiraToPmoMigrationService } from '../../services/migration/jira-to-pmo-migration.service';
 
 @Component({
   selector: 'app-info',
@@ -188,6 +189,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private logger: NGXLogger,
     private workflowProgressService: WorkflowProgressService,
     private projectCreationService: ProjectCreationService,
+    private jiraToPmoMigrationService: JiraToPmoMigrationService,
   ) {
     const navigation = this.router.getCurrentNavigation();
     this.appInfo = navigation?.extras?.state?.['data'];
@@ -255,6 +257,15 @@ export class AppInfoComponent implements OnInit, OnDestroy {
               },
             ]),
           );
+
+          // Check if we need to migrate legacy JIRA references
+          if (this.jiraToPmoMigrationService.shouldMigrateLegacyJira(this.appInfo)) {
+            this.logger.info('Legacy JIRA project detected. Starting migration...');
+            this.jiraToPmoMigrationService.migrateLegacyJiraReferences(this.appName as string, this.appInfo)
+              .catch(error => {
+                this.logger.error('Migration failed:', error);
+              });
+          }
         } else {
           console.error('Project not found with id:', this.projectId);
         }
@@ -333,20 +344,20 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.isBedrockConnected && this.bedrockForm.disable();
 
     this.initMcpForm();
-  }  
+  }
 
   private setupCustomEventListeners(): void {
     // Listen for open-pmo-integration event
     window.addEventListener('open-pmo-integration', (event: Event) => {
       const customEvent = event as CustomEvent;
       const state = customEvent.detail;
-      
+
       if (state) {
         // Update selected folder if provided
         if (state.selectedFolder) {
           this.selectedFolder = state.selectedFolder;
         }
-        
+
         // Open PMO integration accordion if requested
         if (state.openPmoAccordion) {
           this.accordionState['pmoIntegration'] = true;
@@ -594,7 +605,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       },
     });
   }
-  
+
   navigateToTestCasesHome() {
     this.selectFolder({ name: 'TC', children: [] });
   }
@@ -747,7 +758,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.complete();
-    
+
     // Remove custom event listeners
     window.removeEventListener('open-pmo-integration', () => {});
   }
