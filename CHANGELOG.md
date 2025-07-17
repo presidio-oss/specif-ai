@@ -1,12 +1,37 @@
 # Changelog
 
+## [2.7.0]
+
+### Added
+
+- Added documentation for Specifai using Docusaurus for streamlined onboarding and usage reference.
+- Implemented JIRA bi-directional synchronization with custom ADF (Atlassian Document Format) conversion utilities for consistent formatting.
+- Enabled export dropdown grouping for improved usability.
+- Extended rich text editor support to include comprehensive table and link operations (add/edit/delete).
+- Introduced automated JIRA ID migration to convert legacy fields (`epicTicketId`, `userStoryId`, `subTaskTicketId`) to a unified `pmoId` for cross-platform consistency.
+- Added ADO Pull and Push functionality to sync with Azure DevOps.
+- Implemented test case generation feature.
+- Introduced bidirectional navigation between PRD and User Stories.
+
+### Enhancements
+
+- Redirects to solution view with real-time progress updates after 'Create Solution'.
+- Refined workflow UI with improved animations, padding, sticky headers, icons, and error handling.
+- Updated AI prompt logic to preserve tables and links during editor content updates.
+- Standardized chat header to display “Talk to HAI” with updated branding.
+- Added abort and retry controls in solution creation workflow for better control.
+- Refactored layout for consistent card height across all pages.
+- Extracted sidebar into a separate component for better modularity.
+
 ## [2.6.0]
 
 ### Added
+
 - Integrated thinking process visualization for generate/re-generate workflows in stories and tasks, providing better transparency into AI decision-making
 - Added support for Claude 4 models in LLM configurations, expanding available AI model options
 
 ### Enhancements
+
 - Improved thinking progress events with structured message format for better input/output handling and traceability
 - Enhanced login screen UX by adding window drag functionality, allowing users to reposition the application window
 
