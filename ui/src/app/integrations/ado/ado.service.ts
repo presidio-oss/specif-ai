@@ -1370,7 +1370,6 @@ export class AdoService implements PmoService {
         path: '/fields/System.Description',
         value: ticket.description || '',
       },
-      { op: 'add', path: '/fields/System.State', value: 'Active' },
       { op: 'add', path: '/fields/System.WorkItemType', value: workItemType },
     ];
     if (parentAdoId) {
