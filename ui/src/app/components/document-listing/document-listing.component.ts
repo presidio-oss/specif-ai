@@ -463,7 +463,10 @@ export class DocumentListingComponent
         ],
       },
     ];
-    if (this.appInfo?.integration?.selectedPmoTool === 'ado') {
+    if (
+      this.appInfo?.integration?.selectedPmoTool === 'ado' &&
+      this.selectedFolder.title == 'PRD'
+    ) {
       this.exportOptions.push({
         groupName: 'ADO',
         options: [
