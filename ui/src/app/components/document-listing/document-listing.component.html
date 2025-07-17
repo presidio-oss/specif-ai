@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center">
         <h1 class="text-normal font-semibold text-secondary-700">
-          {{ getDescription(projectList[0].folderName) }}
+          {{ projectList.length > 0 ? getDescription(projectList[0].folderName) : '' }}
         </h1>
         <app-badge [badgeText]="projectList.length" />
       </div>
@@ -17,7 +17,7 @@
           theme="secondary"
           size="sm"
           rounded="lg"
-          (click)="navigateToAdd(projectList[0].id, projectList[0].folderName)"
+          (click)="projectList.length > 0 ? navigateToAdd(projectList[0].id, projectList[0].folderName) : navigateToAdd(selectedFolder.id, selectedFolder.title)"
         />
         <ng-container *ngIf="documentList$ | async as documentList">
           <app-export-dropdown

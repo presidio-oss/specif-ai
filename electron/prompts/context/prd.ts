@@ -19,5 +19,5 @@ STRICT:
 
 Instructions:
 - Generate an apt title for all the following requirements. Title should be a one-liner not more than 5 words.
-- Generate feature specifications related to the use case and domain.
+- Generate feature specifications related to the strategic initiative and domain.
 - List the capabilities and qualities the solution should have. Provide the appropriate level of detail to allow for the development and implementation of the solution.`;

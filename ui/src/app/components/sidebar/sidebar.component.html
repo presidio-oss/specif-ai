@@ -117,7 +117,17 @@
               'text-primary-600': selectedFolder?.title === folder.name,
               'text-secondary-500': selectedFolder?.title !== folder.name,
             }"
-            name="heroServerStack"
+            name="heroBeaker"
+          >
+          </ng-icon>
+          <ng-icon
+            *ngIf="folder.name === 'SI'"
+            class="text-xl w-4 h-4 mr-2"
+            [ngClass]="{
+              'text-primary-600': selectedFolder?.title === folder.name,
+              'text-secondary-500': selectedFolder?.title !== folder.name,
+            }"
+            [name]="getIconName(folder.name)"
           >
           </ng-icon>
           <h4
@@ -157,7 +167,7 @@
                 'text-primary-600': selectedFolder?.title === 'TC',
                 'text-secondary-500': selectedFolder?.title !== 'TC'
               }"
-              name="heroServerStack"
+              name="heroBeaker"
             >
             </ng-icon>
             <h4

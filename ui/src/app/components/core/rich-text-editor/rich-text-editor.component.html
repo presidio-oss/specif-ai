@@ -1,14 +1,17 @@
 <div
   [ngClass]="[
-    'w-full flex flex-col',
-    mode == 'edit'
+    'w-full flex flex-col relative',
+    mode == 'edit' && !noRounding
       ? 'rounded-lg border border-secondary-200 focus-within:border-primary-500 focus-within:ring-primary-500 focus-within:ring-1 focus-within:outline-none'
-      : '',
+      : mode == 'edit'
+      ? 'border border-secondary-200 focus-within:border-primary-500 focus-within:ring-primary-500 focus-within:ring-1 focus-within:outline-none'
+      : ''
   ]"
 >
   <div
     *ngIf="mode == 'edit'"
-    class="flex items-center rounded-t-xl p-2 border-b border-b-secondary-200 gap-0.5"
+    class="flex items-center p-2 border-b border-b-secondary-200 gap-0.5 sticky top-0 bg-white z-10"
+    [ngClass]="{ 'rounded-t-lg': !noRounding }"
   >
     <!-- Heading selector -->
     <button
@@ -123,7 +126,7 @@
 
   </div>
 
-  <div #richTextEditor></div>
+  <div #richTextEditor class="overflow-y-auto"></div>
 </div>
 
 <!-- Heading Selector Menu -->

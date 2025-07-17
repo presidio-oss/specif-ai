@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { DialogService } from '../services/dialog/dialog.service';
 import { IpcInterceptor } from '../interceptor/ipc.interceptor';
 import { PortErrorDialogComponent } from 'src/app/components/port-error-dialog/port-error-dialog.component';
-import { BedrockValidationPayload, ChatWithAIResponse, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
+import { BedrockValidationPayload, ChatWithAIResponse, InlineEditPayload, InlineEditResponse, suggestionPayload } from 'src/app/model/interfaces/chat.interface';
 import {
   ICreateSolutionRequest,
   ISolutionResponse,
@@ -320,6 +320,19 @@ export class ElectronService {
     throw new Error('Electron is not available');
   }
 
+  async generateStrategicInitiative(
+    request: any,
+  ): Promise<{title: string; requirement: string; status: string}> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'strategic-initiative:generate',
+        args: [request],
+        skipLoading: true
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
   async addUserStory(
     request: IUpdateUserStoryRequest,
   ): Promise<IUserStoryResponse> {
@@ -349,6 +362,17 @@ export class ElectronService {
     if (this.electronAPI) {
       return this.ipc.request({
         channel: 'core:chat',
+        args: [request],
+        skipLoading: true
+      });
+    }
+    throw new Error('Electron is not available');
+  }
+
+  async inlineEditWithAI(request: InlineEditPayload): Promise<InlineEditResponse> {
+    if (this.electronAPI) {
+      return this.ipc.request({
+        channel: 'core:inline-edit',
         args: [request],
         skipLoading: true
       });

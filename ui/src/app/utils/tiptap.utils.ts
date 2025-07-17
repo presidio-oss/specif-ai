@@ -18,8 +18,6 @@ import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import Gapcursor from '@tiptap/extension-gapcursor'
 
-
-
 const TiptapExtensions = [
   Document,
   Paragraph,

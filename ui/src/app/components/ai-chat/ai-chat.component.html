@@ -5,7 +5,7 @@
   ]"
 >
   <!-- Fixed Header -->
-  <div *ngIf="isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation)" class="border-b border-secondary-200 p-1.5 space-y-1">
+  <div *ngIf="!hideHeader && (isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation))" class="border-b border-secondary-200 p-1.5 space-y-1">
     <div 
       *ngIf="!['BP', 'PRD'].includes(requirementAbbrivation)" 
       class="bg-primary-50 border border-primary-200 rounded-lg p-2 text-center"

@@ -100,6 +100,7 @@ export class AiChatComponent implements OnInit {
   @Input() prd: string | undefined;
   @Input() userStory: string | undefined;
   @Input() containerClass: string = '';
+  @Input() hideHeader: boolean = false;
   @Input() brds: Array<{
     id: string;
     title: string;

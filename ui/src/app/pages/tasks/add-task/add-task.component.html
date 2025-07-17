@@ -66,8 +66,15 @@
             </label>
             <div class="flex flex-col gap-1.5">
               <app-rich-text-editor
+                #editor
                 formControlName="acceptance"
                 editorClass="h-[calc(100vh-460px)] min-h-24 overflow-y-auto"
+                [editable]="mode === 'edit'"
+                appInlineEdit
+                [editorInstance]="editor?.editor"
+                [contextProvider]="getContentContext.bind(this)"
+                [onContentUpdated]="handleInlineEditUpdate.bind(this)"
+                (change)="onEditorReady(editor)"
               ></app-rich-text-editor>
               <ng-container *ngIf="taskForm.get('acceptance')?.touched">
                 <span

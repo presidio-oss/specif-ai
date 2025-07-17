@@ -211,7 +211,14 @@ export class DocumentListingComponent
   }
 
   navigateToEdit({ id, folderName, fileName, content }: any) {
-    const url = folderName === this.requirementTypes.BP ? '/bp-edit' : '/edit';
+    let url = '/edit';
+    
+    if (folderName === this.requirementTypes.BP) {
+      url = '/bp-edit';
+    } else if (folderName === this.requirementTypes.SI) {
+      url = `/strategic-initiative/edit/${fileName}`;
+    }
+    
     this.router.navigate([url], {
       state: { data: this.appInfo, id, folderName, fileName, req: content },
     });
@@ -273,6 +280,20 @@ export class DocumentListingComponent
             },
           });
         });
+    } else if (folderName === this.requirementTypes.SI) {
+      // Special handling for strategic initiative add
+      this.router.navigate(['/strategic-initiative/add'], {
+        state: {
+          data: this.appInfo,
+          id,
+          folderName,
+          breadcrumb: {
+            name: 'Add Strategic Initiative',
+            link: this.currentRoute,
+            icon: 'add',
+          },
+        },
+      });
     } else {
       this.router.navigate(['/add'], {
         state: {

@@ -40,6 +40,7 @@ const coreListeners = {
     ipcRenderer.invoke("core:verifyLangfuseConfig", config),
   getAppConfig: () => ipcRenderer.invoke("core:getAppConfig"),
   chat: (data: any) => ipcRenderer.invoke("core:chat", data),
+  inlineEditWithAI: (data: any) => ipcRenderer.invoke("core:inline-edit", data),
 };
 
 const requirementListeners = {

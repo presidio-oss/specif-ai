@@ -95,3 +95,18 @@ export interface ChatUpdateRequirementResponse {
   blocked?: boolean;
   blockedReason?: string;
 }
+
+export interface InlineEditPayload {
+  requestId: string;
+  selectedText: string;
+  userPrompt: string;
+  context?: string;
+  preserveFormatting?: boolean;
+}
+
+export interface InlineEditResponse {
+  requestId: string;
+  editedText: string;
+  success: boolean;
+  error?: string;
+}
