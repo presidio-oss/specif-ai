@@ -18,9 +18,8 @@ const FeatureList = [
     ),
     description: (
       <>
-        Transform ideas into comprehensive SDLC documentation instantly.
-        Generate precise BRDs, PRDs, and technical specs with intelligent
-        assistance.
+        Transform ideas into SDLC documentation instantly. Generate precise
+        BRDs, PRDs, and technical specs with intelligent assistance.
       </>
     ),
   },
@@ -69,8 +68,8 @@ const FeatureList = [
     ),
     description: (
       <>
-        Enhance your workflow with Jira, AWS Bedrock KB, and custom MCP servers.
-        Leverage enterprise knowledge for smarter AI suggestions.
+        Enhance your workflow with Jira, ADO, AWS Bedrock KB, and custom MCP
+        servers. Leverage enterprise knowledge for smarter AI suggestions.
       </>
     ),
   },
