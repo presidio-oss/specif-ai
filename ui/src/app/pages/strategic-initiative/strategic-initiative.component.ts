@@ -598,7 +598,7 @@ export class StrategicInitiativeComponent implements OnInit {
   }
 
   exportAsWord() {
-    const title = this.strategicInitiativeForm.get('title')?.value || 'Business Proposal';
+    const title = this.strategicInitiativeForm.get('title')?.value || 'Strategic Initiative';
     const markdownContent = this.strategicInitiativeForm.get('requirement')?.value || '';
 
     exportMarkdownToDocx(markdownContent, title, {
@@ -606,7 +606,7 @@ export class StrategicInitiativeComponent implements OnInit {
     })
       .then(() => {
         this.toastService.showSuccess(
-          'Business proposal exported successfully as Word document',
+          'Strategic Initiative exported successfully as Word document',
         );
       })
       .catch((error) => {
@@ -683,7 +683,7 @@ export class StrategicInitiativeComponent implements OnInit {
             node: 'generate-strategic-initiative',
             type: WorkflowProgressEventType.Action,
             message: {
-              title: 'Business proposal generated successfully',
+              title: 'Strategic initiative generated successfully',
               input: undefined,
               output: { title: result.title },
             },
@@ -699,7 +699,7 @@ export class StrategicInitiativeComponent implements OnInit {
         this.documentTitle = result.title || formValue.title;
 
         this.toastService.showSuccess(
-          'Business proposal generated successfully',
+          'Strategic initiative generated successfully',
         );
 
         this.showProgressDialog = false;
@@ -707,12 +707,12 @@ export class StrategicInitiativeComponent implements OnInit {
         this.mode === 'add' ? this.addStrategicInitiative() : this.updateStrategicInitiative();
       } else {
         this.toastService.showError(
-          'Failed to generate business proposal. Please try again.',
+          'Failed to generate strategic initiative. Please try again.',
         );
       }
     } catch (error) {
       this.toastService.showError(
-        'An error occurred while generating the business proposal',
+        'An error occurred while generating the strategic initiative',
       );
 
       await this.workflowProgressService.setFailed(
