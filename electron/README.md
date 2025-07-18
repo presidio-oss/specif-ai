@@ -86,7 +86,7 @@ Please read our [Contributing Guidelines](../CONTRIBUTING.md) for details on sub
 - **Issue**: Code signing errors occur.
   - **Solution**: Verify the certificate configuration in `build-assets/build-mac.sh` and `package.json`.
 
-- **Issue**: If you encounter an issue such as "Port Error: Port 49152 is already in use by another application" while running Electron, follow these steps to resolve it:
+- **Issue**: If you encounter an issue such as "Port Error: Port 12345 is already in use by another application" while running Electron, follow these steps to resolve it:
 
    1. Check for processes running on the port:
 
