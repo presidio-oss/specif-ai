@@ -11,6 +11,7 @@ import {
   BulkUpdateFiles,
   GetProjectFiles,
   ReadFile,
+  UpdateMetadata,
 } from '../../store/projects/projects.actions';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { Router } from '@angular/router';
@@ -581,9 +582,11 @@ export class AdoService implements PmoService {
             // Prepare updates array for BulkUpdateFiles action
             const updates: { path: string; content: any }[] = [];
 
+            let nextPrdNumber = maxPrdNumber + 1;
+
             // Process each PRD (Feature from ADO)
             const processGroups = async () => {
-              for (const [index, group] of ticketGroups.entries()) {
+              for (const [, group] of ticketGroups.entries()) {
               const prd = group.prd;
 
               // Check if this PRD already exists based on pmoId
@@ -592,7 +595,7 @@ export class AdoService implements PmoService {
               // Determine PRD ID - use existing or generate new one with zero-padding (PRD01, PRD02, etc.)
               const prdId = existingPrd
                 ? existingPrd.specifaiId
-                : `PRD${String(maxPrdNumber + index + 1).padStart(2, '0')}`;
+                : `PRD${String(nextPrdNumber++).padStart(2, '0')}`;
 
               // Format the user stories and tasks for this PRD
               const features = await this.formatFeaturesForPrd(
@@ -740,7 +743,6 @@ export class AdoService implements PmoService {
                 }).length;
 
               // Update the metadata with the new PRD count
-              this.updatePrdCountInMetadata(newMaxPrdNumber, appInfo);
 
               this.store.dispatch(new BulkUpdateFiles(updates));
               this.toast.showSuccess(
@@ -752,6 +754,10 @@ export class AdoService implements PmoService {
               if (projectId) {
                 this.store.dispatch(new GetProjectFiles(projectId));
               }
+
+              setTimeout(() => {
+                this.updatePrdCountInMetadata(newMaxPrdNumber, appInfo);
+              }, 100);
             } else {
               this.toast.showInfo('No items to import from ADO');
             }
@@ -871,10 +877,9 @@ export class AdoService implements PmoService {
 
               console.log('Project metadata for PRD count:', appInfo);
 
-              // Check if we have project metadata with prdCount
-              if (appInfo && appInfo.prdCount) {
-                // Use the value from metadata.json
-                maxPrdNumber = parseInt(appInfo.prdCount, 10);
+              // Check if we have project metadata with PRD count
+              if (appInfo && appInfo.PRD?.count) {
+                maxPrdNumber = appInfo.PRD.count;
               } else {
                 // Fall back to scanning file names
                 baseFiles.forEach((file) => {
@@ -1049,21 +1054,17 @@ export class AdoService implements PmoService {
   private updatePrdCountInMetadata(newPrdCount: number, appInfo: any): void {
     // Only update if we have appInfo and the new count is higher than the current one
     if (appInfo) {
-      const currentCount = appInfo.prdCount
-        ? parseInt(appInfo.prdCount, 10)
-        : 0;
+      const currentCount = appInfo.PRD?.count || 0;
 
       if (newPrdCount > currentCount) {
-        // Create a copy of the metadata to update
-        const updatedMetadata = {
-          ...appInfo,
-          prdCount: String(newPrdCount),
-        };
-
-        // We should update the metadata in the project, but this would require
-        // invoking the electron service to update the .metadata.json file
-        // For now, just update our local copy
-        // TODO: Implement updating metadata file
+        this.store.dispatch(
+          new UpdateMetadata(appInfo.id, {
+            PRD: {
+              ...appInfo.PRD,
+              count: newPrdCount,
+            },
+          }),
+        );
       }
     }
   }

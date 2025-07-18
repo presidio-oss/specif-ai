@@ -55,4 +55,4 @@ export function resetJiraToken(projectId: string): void {
   sessionStorage.removeItem(`${projectId}-projectKey`);
 }
 
-export const DEFAULT_JIRA_PORT = 49153;
+export const DEFAULT_JIRA_PORT = 49152;
