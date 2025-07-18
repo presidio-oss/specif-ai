@@ -15,6 +15,7 @@ import {
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { Router } from '@angular/router';
 import { IProjectMetadata } from 'src/app/model/interfaces/projects.interface';
+import { convertHtmlToMarkdown, convertMarkdownToHtml } from './ado.util';
 
 const ADO_API_VERSION = '7.1';
 
@@ -132,6 +133,7 @@ export class AdoService implements PmoService {
    * Fetch Features, PlatformFeatures, and UserStories in a hierarchical structure
    * This creates a three-level hierarchy that can be displayed in a tree view
    * Mapped to the Ticket interface for PMO integration
+   * Used when Pull Popup is invoked to fetch the current work plan items from ADO
    */
   async getWorkPlanItemsHierarchy(
     skip: number = 0,
@@ -235,8 +237,9 @@ export class AdoService implements PmoService {
                         pmoIssueType: userStory.fields['System.WorkItemType'],
                         pmoParentId: platformFeaturePmoId,
 
-                        // Specifai mapping
+                        // Only used for UI Uniqueness
                         specifaiId: `TASK${userStory.id}`,
+                        // Specifai mapping
                         reqId:
                           existingUserStoryMapping?.specifaiId || `New Task`,
                         specifaiType: 'Task',
@@ -261,8 +264,9 @@ export class AdoService implements PmoService {
                     pmoIssueType: platformFeature.fields['System.WorkItemType'],
                     pmoParentId: featurePmoId,
 
-                    // Specifai mapping
+                    // UI Mapping for uniqueness
                     specifaiId: `US${platformFeature.id}`,
+                    // Specifai mapping
                     reqId:
                       existingPlatformFeatureMapping?.specifaiId ||
                       `New User Story`,
@@ -315,8 +319,9 @@ export class AdoService implements PmoService {
               pmoIssueType: feature.fields['System.WorkItemType'],
               pmoParentId: null, // Top-level items have no parent
 
-              // Specifai mapping
+              // Specifai UI uniqueness
               specifaiId: `PRD${feature.id}`,
+              // Specifai mapping
               reqId: existingFeatureMapping?.specifaiId || `New PRD`,
               specifaiType: 'PRD',
               specifaiParentId: null, // Top-level items have no parent
@@ -381,7 +386,7 @@ export class AdoService implements PmoService {
     const query = `
       SELECT [System.Id]
       FROM WorkItems
-      WHERE [System.WorkItemType] = '${workItemType}' 
+      WHERE [System.WorkItemType] = '${workItemType}'
       AND [System.Parent] = ${parentId}
       ORDER BY [System.ChangedDate] DESC
     `;
@@ -577,7 +582,8 @@ export class AdoService implements PmoService {
             const updates: { path: string; content: any }[] = [];
 
             // Process each PRD (Feature from ADO)
-            ticketGroups.forEach((group, index) => {
+            const processGroups = async () => {
+              for (const [index, group] of ticketGroups.entries()) {
               const prd = group.prd;
 
               // Check if this PRD already exists based on pmoId
@@ -589,7 +595,7 @@ export class AdoService implements PmoService {
                 : `PRD${String(maxPrdNumber + index + 1).padStart(2, '0')}`;
 
               // Format the user stories and tasks for this PRD
-              const features = this.formatFeaturesForPrd(
+              const features = await this.formatFeaturesForPrd(
                 group.userStories,
                 group.tasks,
                 existingPmoMap,
@@ -599,7 +605,7 @@ export class AdoService implements PmoService {
               const prdBaseContent = {
                 id: prdId,
                 title: prd.title,
-                requirement: prd.description || '', // Map description to requirement field
+                requirement: await convertHtmlToMarkdown(prd.description || ''), // Format description -> requirement mapping
                 state: 'Active',
                 createdAt: existingPrd
                   ? new Date().toISOString()
@@ -721,7 +727,7 @@ export class AdoService implements PmoService {
                 path: featureFilePath,
                 content: prdFeatureContent,
               });
-            });
+            }
 
             // If we have updates, dispatch the BulkUpdateFiles action
             if (updates.length > 0) {
@@ -749,11 +755,18 @@ export class AdoService implements PmoService {
             } else {
               this.toast.showInfo('No items to import from ADO');
             }
-          })
-          .catch((error) => {
+          };
+
+          // Execute the async processing
+          processGroups().catch((error) => {
             console.error('Error processing ADO items:', error);
             this.toast.showError('Failed to process ADO items');
           });
+        })
+        .catch((error) => {
+          console.error('Error processing ADO items:', error);
+          this.toast.showError('Failed to process ADO items');
+        });
       } catch (error) {
         console.error('Error importing items from ADO:', error);
         this.toast.showError('Failed to import items from ADO');
@@ -1271,7 +1284,7 @@ export class AdoService implements PmoService {
    * @param existingPmoMap Map of existing items with pmoId
    * @returns Array of formatted features
    */
-  private formatFeaturesForPrd(
+  private async formatFeaturesForPrd(
     userStories: Ticket[],
     tasks: { [userStoryId: string]: Ticket[] },
     existingPmoMap: {
@@ -1279,7 +1292,7 @@ export class AdoService implements PmoService {
       userStories: { [pmoId: string]: { specifaiId: string; path: string } };
       tasks: { [pmoId: string]: { specifaiId: string; path: string } };
     },
-  ): Array<any> {
+  ): Promise<Array<any>> {
     let nextUserStoryId = 1;
     let nextTaskId = 1;
 
@@ -1305,7 +1318,7 @@ export class AdoService implements PmoService {
     });
 
     // Format user stories into features
-    return userStories.map((userStory) => {
+    const features = await Promise.all(userStories.map(async (userStory) => {
       // Determine user story ID - use existing or generate new one
       const userStoryId = existingPmoMap.userStories[userStory.pmoId]
         ? existingPmoMap.userStories[userStory.pmoId].specifaiId
@@ -1315,7 +1328,7 @@ export class AdoService implements PmoService {
       const userStoryTasks = tasks[userStory.pmoId] || [];
 
       // Format tasks
-      const formattedTasks = userStoryTasks.map((task) => {
+      const formattedTasks = await Promise.all(userStoryTasks.map(async (task) => {
         // Determine task ID - use existing or generate new one
         const taskId = existingPmoMap.tasks[task.pmoId]
           ? existingPmoMap.tasks[task.pmoId].specifaiId
@@ -1324,21 +1337,23 @@ export class AdoService implements PmoService {
         return {
           id: taskId,
           list: task.title,
-          acceptance: task.description || '',
+          acceptance: await convertHtmlToMarkdown(task.description || ''),
           status: 'Active',
           pmoId: task.pmoId, // Store ADO ID for future reference
         };
-      });
+      }));
 
       // Return the feature object (user story)
       return {
         id: userStoryId,
         name: userStory.title,
-        description: userStory.description || '',
+        description: await convertHtmlToMarkdown(userStory.description || ''),
         pmoId: userStory.pmoId, // Store ADO ID for future reference
         tasks: formattedTasks,
       };
-    });
+    }));
+
+    return features;
   }
 
   /**
@@ -1368,7 +1383,7 @@ export class AdoService implements PmoService {
       {
         op: 'add',
         path: '/fields/System.Description',
-        value: ticket.description || '',
+        value: convertMarkdownToHtml(ticket.description || ''),
       },
       { op: 'add', path: '/fields/System.WorkItemType', value: workItemType },
     ];
