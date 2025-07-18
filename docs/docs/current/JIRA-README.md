@@ -45,7 +45,7 @@ This guide explains how to integrate the Specifai solution with Jira using OAuth
 
 3. **Set the Callback URL:**
    - Enter the **Callback URL** for the Requirements app. This URL is where users will be redirected after authorizing the app.
-     - Expected default value : `http://localhost:49152/callback`
+     - Expected default value : `http://localhost:12345/callback`
       > **Note**: If you modify the port value, replace it with your app's actual callback URL, updating the port accordingly.
    - Click **Save** to apply the configuration.
 
