@@ -200,7 +200,7 @@ export function setupJiraHandlers(mainWindow: BrowserWindow) {
     });
   
     ipcMain.on("start-server", () => {
-      const port = 49153;
+      const port = 49152;
       startServer(port);
     });
   
