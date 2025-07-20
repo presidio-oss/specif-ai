@@ -17,6 +17,7 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { Router } from '@angular/router';
 import { IProjectMetadata } from 'src/app/model/interfaces/projects.interface';
 import { convertHtmlToMarkdown, convertMarkdownToHtml } from './ado.util';
+import { ADO_TOAST } from '../../constants/toast.constant';
 
 const ADO_API_VERSION = '7.1';
 
@@ -568,6 +569,7 @@ export class AdoService implements PmoService {
     console.log('Project metadata:', appInfo);
 
     if (action === 'pull') {
+      this.toast.showInfo(ADO_TOAST.PULL_INITIATED);
       try {
         // First, get the existing PRD files to check for pmoId and get max PRD number
         this.getExistingPrdFiles(appInfo)
@@ -852,6 +854,7 @@ export class AdoService implements PmoService {
         this.toast.showError('Failed to import items from ADO');
       }
     } else {
+      this.toast.showInfo(ADO_TOAST.PUSH_INITIATED);
       (async () => {
         try {
           // Map to keep track of PRD/UserStory/Task pmoId <-> ADO ID
