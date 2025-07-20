@@ -116,7 +116,7 @@ import { JiraToPmoMigrationService } from '../../services/migration/jira-to-pmo-
       heroChevronDown,
       heroChevronUp,
       heroServerStack,
-      heroBeaker
+      heroBeaker,
     }),
   ],
 })
@@ -178,6 +178,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
   solutionCreationComplete: boolean = false;
+  private hasInitializedFromStore: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -237,7 +238,18 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     }
     this.store
       .select(ProjectsState.getProjects)
-      .pipe(first())
+      .pipe(
+        takeUntil(this.destroy$),
+        distinctUntilChanged((prev, curr) => {
+          const prevProject = prev.find(
+            (p) => p.metadata.id === this.projectId,
+          );
+          const currProject = curr.find(
+            (p) => p.metadata.id === this.projectId,
+          );
+          return JSON.stringify(prevProject) === JSON.stringify(currProject);
+        }),
+      )
       .subscribe((projects) => {
         const project = projects.find((p) => p.metadata.id === this.projectId);
 
@@ -245,26 +257,41 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           this.appInfo = project.metadata;
           this.appName = project.project;
 
-          this.store.dispatch(new GetProjectFiles(this.projectId as string));
+          if (!this.hasInitializedFromStore) {
+            this.hasInitializedFromStore = true;
 
-          this.store.dispatch(
-            new AddBreadcrumbs([
-              {
-                label: this.appName.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
-                  letter.toUpperCase(),
-                ),
-                url: `/apps/${this.appInfo.id}`,
-              },
-            ]),
-          );
+            this.store.dispatch(new GetProjectFiles(this.projectId as string));
 
-          // Check if we need to migrate legacy JIRA references
-          if (this.jiraToPmoMigrationService.shouldMigrateLegacyJira(this.appInfo)) {
-            this.logger.info('Legacy JIRA project detected. Starting migration...');
-            this.jiraToPmoMigrationService.migrateLegacyJiraReferences(this.appName as string, this.appInfo)
-              .catch(error => {
-                this.logger.error('Migration failed:', error);
-              });
+            this.store.dispatch(
+              new AddBreadcrumbs([
+                {
+                  label: this.appName.replace(
+                    /(^\w{1})|(\s+\w{1})/g,
+                    (letter) => letter.toUpperCase(),
+                  ),
+                  url: `/apps/${this.appInfo.id}`,
+                },
+              ]),
+            );
+
+            // Check if we need to migrate legacy JIRA references
+            if (
+              this.jiraToPmoMigrationService.shouldMigrateLegacyJira(
+                this.appInfo,
+              )
+            ) {
+              this.logger.info(
+                'Legacy JIRA project detected. Starting migration...',
+              );
+              this.jiraToPmoMigrationService
+                .migrateLegacyJiraReferences(
+                  this.appName as string,
+                  this.appInfo,
+                )
+                .catch((error) => {
+                  this.logger.error('Migration failed:', error);
+                });
+            }
           }
         } else {
           console.error('Project not found with id:', this.projectId);
@@ -364,7 +391,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         }
 
         // set the selected integration if provided
-        if(state.selectedIntegration) {
+        if (state.selectedIntegration) {
           this.selectedIntegration = state.selectedIntegration;
         }
       }
