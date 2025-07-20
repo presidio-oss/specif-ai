@@ -934,10 +934,9 @@ export class AdoService implements PmoService {
               }
 
               // Get all feature files (PRD*-feature.json)
-              const featureFiles = prdDir.children.filter(
-                (file) =>
-                  file.includes('-feature.json') && !file.includes('-archived'),
-              );
+              const featureFiles = prdDir.children
+                .filter((file) => !file.includes('-archived'))
+                .map((file) => file.replace('-base.json', '-feature.json'));
 
               // Get all base files (PRD*-base.json)
               const baseFiles = prdDir.children.filter(
