@@ -42,6 +42,18 @@ export const buildResearchNode = ({
       name: "research",
     });
 
+    // Debug: Log available tools
+    console.log(`[create-solution-research] Available tools count: ${tools.length}`);
+    console.log(`[create-solution-research] Tool names: ${tools.map(t => t.name).join(', ')}`);
+    
+    // Debug: Check for filesystem-related tools
+    const filesystemTools = tools.filter(t => 
+      t.name.toLowerCase().includes('file') || 
+      t.name.toLowerCase().includes('read') || 
+      t.name.toLowerCase().includes('mcp')
+    );
+    console.log(`[create-solution-research] Filesystem-related tools: ${filesystemTools.map(t => t.name).join(', ')}`);
+
     if (tools.length === 0) {
       const message = "No tools are passed so skipping research phase";
       span?.end({
