@@ -737,7 +737,7 @@ export class AiChatComponent implements OnInit {
   }
 
   /**
-   * Sends a message to set up the project path for the solution
+   * Sends a message to set up the project patdh for the solution
    * This is shown as the first action for solution chats when chat history is empty
    * 
    * Before setting the project path, it checks if MCP settings exist for the project

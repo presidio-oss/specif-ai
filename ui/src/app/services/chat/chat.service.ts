@@ -6,6 +6,7 @@ import {
 } from '../../model/interfaces/chat.interface';
 import { CHAT_TYPES } from '../../constants/app.constants';
 import { ElectronService } from '../../electron-bridge/electron.service';
+import { SPECIFAI_MCP_CONFIG } from 'src/app/constants/mcp.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -38,14 +39,6 @@ export class ChatService {
       }
 
       const settings = response.settings || { mcpServers: {} };
-      const SPECIFAI_MCP_CONFIG = {
-        command: 'npx',
-        args: ['--yes', '@presidio-dev/specifai-mcp-server@latest'],
-        disabled: false,
-        transportType: 'stdio' as const,
-        metadata: {} as Record<string, string>,
-        env: {} as Record<string, string>,
-      };
 
       const updatedSettings = {
         ...settings,
@@ -55,7 +48,6 @@ export class ChatService {
         },
       };
 
-      // Update settings
       const updateResponse =
         await this.electronService.updateProjectMCPSettings(
           projectId,

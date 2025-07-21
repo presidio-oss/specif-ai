@@ -273,7 +273,7 @@
           [name]="appInfo.name"
           [description]="appInfo.description"
           [chatType]="CHAT_TYPES.SOLUTION"
-          [chatHistory]="appInfo.chatHistory || []"
+          [chatHistory]="chatHistory"
           (updateChatHistory)="onChatHistoryUpdate($event)"
         ></app-chat>
       </div>

@@ -185,6 +185,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
   solutionCreationComplete: boolean = false;
+  chatHistory: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -202,8 +203,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.appInfo = navigation?.extras?.state?.['data'] || {};
     this.navigationState = navigation?.extras?.state;
     this.appName = this.appInfo?.name;
-    
-    this.appInfo.chatHistory = [];
   }
 
   ngOnInit(): void {
@@ -256,9 +255,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
           if (this.projectId) {
             try {
-              const chatHistory = await this.solutionChatService.loadChatHistory(this.projectId);
-              this.appInfo.chatHistory = chatHistory;
-              this.logger.debug('Loaded chat history:', chatHistory);
+              this.chatHistory = await this.solutionChatService.loadChatHistory(this.projectId);
+              this.logger.debug('Chat history loaded successfully');
             } catch (error) {
               this.logger.error('Error loading chat history:', error);
             }
@@ -744,7 +742,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     if (this.projectId) {
       try {
         await this.solutionChatService.saveChatHistory(this.projectId, chatHistory);
-        this.appInfo.chatHistory = chatHistory;
+        this.chatHistory = chatHistory;
       } catch (error) {
         this.logger.error('Error saving chat history:', error);
         this.toast.showError('Failed to save chat history');
