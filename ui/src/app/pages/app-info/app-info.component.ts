@@ -116,7 +116,7 @@ import { JiraToPmoMigrationService } from '../../services/migration/jira-to-pmo-
       heroChevronDown,
       heroChevronUp,
       heroServerStack,
-      heroBeaker
+      heroBeaker,
     }),
   ],
 })
@@ -237,7 +237,18 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     }
     this.store
       .select(ProjectsState.getProjects)
-      .pipe(first())
+      .pipe(
+        takeUntil(this.destroy$),
+        distinctUntilChanged((prev, curr) => {
+          const prevProject = prev.find(
+            (p) => p.metadata.id === this.projectId,
+          );
+          const currProject = curr.find(
+            (p) => p.metadata.id === this.projectId,
+          );
+          return JSON.stringify(prevProject) === JSON.stringify(currProject);
+        }),
+      )
       .subscribe((projects) => {
         const project = projects.find((p) => p.metadata.id === this.projectId);
 
@@ -259,10 +270,15 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           );
 
           // Check if we need to migrate legacy JIRA references
-          if (this.jiraToPmoMigrationService.shouldMigrateLegacyJira(this.appInfo)) {
-            this.logger.info('Legacy JIRA project detected. Starting migration...');
-            this.jiraToPmoMigrationService.migrateLegacyJiraReferences(this.appName as string, this.appInfo)
-              .catch(error => {
+          if (
+            this.jiraToPmoMigrationService.shouldMigrateLegacyJira(this.appInfo)
+          ) {
+            this.logger.info(
+              'Legacy JIRA project detected. Starting migration...',
+            );
+            this.jiraToPmoMigrationService
+              .migrateLegacyJiraReferences(this.appName as string, this.appInfo)
+              .catch((error) => {
                 this.logger.error('Migration failed:', error);
               });
           }
@@ -364,7 +380,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         }
 
         // set the selected integration if provided
-        if(state.selectedIntegration) {
+        if (state.selectedIntegration) {
           this.selectedIntegration = state.selectedIntegration;
         }
       }
