@@ -4,28 +4,28 @@
 
 ### Added
 
-- Comprehensive documentation platform powered by Docusaurus, providing streamlined onboarding experience and detailed usage reference materials for all users.
-- Full bi-directional JIRA synchronization with advanced custom ADF (Atlassian Document Format) conversion utilities, ensuring consistent formatting and seamless data exchange between platforms.
-- Enhanced export functionality with intelligent dropdown grouping, significantly improving user experience and workflow efficiency.
-- Automated JIRA ID migration system that converts legacy identifier fields (`epicTicketId`, `userStoryId`, `subTaskTicketId`) into a unified `pmoId` structure, ensuring cross-platform consistency and data integrity.
-- Complete Azure DevOps (ADO) integration with Pull and Push functionality, enabling seamless synchronization with Azure DevOps environments.
-- Intelligent test case generation feature that automatically creates comprehensive test scenarios based on requirements and specifications.
-- Bidirectional navigation system between Product Requirements Documents (PRD) and User Stories, facilitating smoother workflow transitions and improved traceability.
+- Docusaurus documentation platform for streamlined onboarding and comprehensive usage reference.
+- Bi-directional JIRA synchronization with custom ADF conversion utilities for consistent cross-platform formatting.
+- Export dropdown grouping for improved workflow efficiency.
+- Automated JIRA ID migration system converting legacy fields (`epicTicketId`, `userStoryId`, `subTaskTicketId`) to unified `pmoId` structure.
+- Azure DevOps (ADO) Pull and Push integration for seamless environment synchronization.
+- Intelligent test case generation feature creating comprehensive scenarios from requirements.
+- Bidirectional PRD-User Story navigation for improved workflow transitions and traceability.
 
 ### Enhancements
 
-- Comprehensive rich text editor capabilities, now supporting full table management (create, edit, delete) and advanced link operations for enhanced content creation.
-- Solution creation workflow now automatically redirects to solution view with real-time progress updates, providing immediate visibility into creation status and outcomes.
-- Completely refined workflow user interface featuring improved animations, optimized padding, persistent sticky headers, intuitive iconography, and robust error handling mechanisms.
-- Advanced AI prompt logic that intelligently preserves tables and links during editor content updates, maintaining formatting integrity across all content modifications.
-- Standardized chat interface header displaying "Talk to HAI" with updated branding elements and consistent visual identity throughout the application.
-- Enhanced solution creation workflow with abort and retry controls, giving users greater control and flexibility during the creation process.
-- Standardized layout system ensuring consistent card heights across all application pages, creating a more cohesive and professional user experience.
-- Modular sidebar architecture with extraction into separate component, improving code maintainability and overall system performance.
+- Rich text editor now supports full table and link management (create, edit, delete operations).
+- Solution creation workflow redirects to solution view with real-time progress updates.
+- Refined workflow UI with improved animations, padding, sticky headers, icons, and error handling.
+- AI prompt logic preserves tables and links during content updates, maintaining formatting integrity.
+- Standardized chat header displays "Talk to HAI" with updated branding consistency.
+- Added abort and retry controls to solution creation workflow for enhanced user control.
+- Consistent card heights across all pages for cohesive user experience.
+- Extracted sidebar into separate component for improved code maintainability.
 
 ### Fixed
 
-- Updated JIRA Callback Port configuration to port 12345, preventing conflicts with other system processes and ensuring reliable integration performance.
+- Updated JIRA Callback Port to 12345 to resolve conflicts with other system processes.
 
 ## [2.6.0]
 
