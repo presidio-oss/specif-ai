@@ -124,6 +124,7 @@ export const REQUIREMENT_TYPE = {
   US: 'US',
   TASK: 'TASK',
   TC: 'TC',
+  SI: 'SI',
 } as const;
 
 export const REQUIREMENT_DISPLAY_NAME_MAP = {
@@ -135,6 +136,7 @@ export const REQUIREMENT_DISPLAY_NAME_MAP = {
   [REQUIREMENT_TYPE.UIR]: 'User Interface Requirement',
   [REQUIREMENT_TYPE.TASK]: 'Task',
   [REQUIREMENT_TYPE.TC]: 'Tests',
+  [REQUIREMENT_TYPE.SI]: 'Strategic Initiative',
 };
 
 const getEntityDisplayName = (folderId: string): string => {
@@ -249,6 +251,7 @@ export const FOLDER = {
   UIR: 'UIR',
   BP: 'BP',
   TC: 'TC',
+  SI: 'SI',
 };
 
 export const REQUIREMENT_TYPE_FOLDER_MAP = {
@@ -258,6 +261,7 @@ export const REQUIREMENT_TYPE_FOLDER_MAP = {
   [REQUIREMENT_TYPE.UIR]: FOLDER.UIR,
   [REQUIREMENT_TYPE.BP]: FOLDER.BP,
   [REQUIREMENT_TYPE.TC]: FOLDER.TC,
+  [REQUIREMENT_TYPE.SI]: FOLDER.SI,
 } as const;
 
 export const FOLDER_REQUIREMENT_TYPE_MAP = {
@@ -267,6 +271,7 @@ export const FOLDER_REQUIREMENT_TYPE_MAP = {
   [FOLDER.UIR]: REQUIREMENT_TYPE.UIR,
   [FOLDER.BP]: REQUIREMENT_TYPE.BP,
   [FOLDER.TC]: REQUIREMENT_TYPE.TC,
+  [FOLDER.SI]: REQUIREMENT_TYPE.SI,
 } as const;
 
 // types
@@ -280,4 +285,5 @@ export type RootRequirementType = Exclude<
   | typeof REQUIREMENT_TYPE.TASK
   | typeof REQUIREMENT_TYPE.US
   | typeof REQUIREMENT_TYPE.TC
+  | typeof REQUIREMENT_TYPE.SI
 >;

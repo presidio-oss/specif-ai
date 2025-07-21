@@ -8,8 +8,8 @@ export const BRD_CONTEXT = `${BRD_DEFINITION_CONTEXT}
 
 Instructions:
 - Generate an apt title for all the following requirements. The title should be a one-liner not more than 5 words.
-- Generate only relevant BRD based on the use case and domain.
-- Generate a comprehensive list of requirements to meet the business needs of the use case given.
+- Generate only relevant BRD based on the strategic initiative and domain.
+- Generate a comprehensive list of requirements to meet the business needs of the strategic initiative given.
 - If the solution involves technical needs, include technical best practices as part of the business requirements. If not do not include.
 - Ensure that the requirements are unique and do not repeat similar content. Avoid generating repetitive requirements.
 
