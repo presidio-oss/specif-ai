@@ -1,0 +1,17 @@
+/* Modal specific styles - keeping minimal, using Tailwind for styling */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.smooth-transition {
+  transition: all 0.2s ease-in-out;
+}

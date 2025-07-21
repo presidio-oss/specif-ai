@@ -123,6 +123,7 @@ export const REQUIREMENT_TYPE = {
   BP: 'BP',
   US: 'US',
   TASK: 'TASK',
+  TC: 'TC',
 } as const;
 
 export const REQUIREMENT_DISPLAY_NAME_MAP = {
@@ -133,6 +134,7 @@ export const REQUIREMENT_DISPLAY_NAME_MAP = {
   [REQUIREMENT_TYPE.PRD]: 'Product Requirement',
   [REQUIREMENT_TYPE.UIR]: 'User Interface Requirement',
   [REQUIREMENT_TYPE.TASK]: 'Task',
+  [REQUIREMENT_TYPE.TC]: 'Tests',
 };
 
 const getEntityDisplayName = (folderId: string): string => {
@@ -230,6 +232,10 @@ export const APP_MESSAGES = {
     <li>Story</li>
     <li>Task</li>
   </ul>`,
+  ADO_ACCORDION:
+    'Azure DevOps Integration allows users to publish generated user stories as Azure DevOps work items by configuring their organization, project, and personal access token. Once configured and connected, users can sync their user stories directly to Azure DevOps.',
+  ADO_DETAILS_MISSING: 'It looks like your ADO details are missing. Please return to the integration settings, fill in your details, and save them to continue.',
+  ADO_INVALID_CREDENTIALS: 'Invalid ADO credentials. Please update those in integrations page and try again.'
 };
 
 export const TOOLTIP_CONTENT = {
@@ -242,6 +248,7 @@ export const FOLDER = {
   NFR: 'NFR',
   UIR: 'UIR',
   BP: 'BP',
+  TC: 'TC',
 };
 
 export const REQUIREMENT_TYPE_FOLDER_MAP = {
@@ -250,6 +257,7 @@ export const REQUIREMENT_TYPE_FOLDER_MAP = {
   [REQUIREMENT_TYPE.NFR]: FOLDER.NFR,
   [REQUIREMENT_TYPE.UIR]: FOLDER.UIR,
   [REQUIREMENT_TYPE.BP]: FOLDER.BP,
+  [REQUIREMENT_TYPE.TC]: FOLDER.TC,
 } as const;
 
 export const FOLDER_REQUIREMENT_TYPE_MAP = {
@@ -258,6 +266,7 @@ export const FOLDER_REQUIREMENT_TYPE_MAP = {
   [FOLDER.NFR]: REQUIREMENT_TYPE.NFR,
   [FOLDER.UIR]: REQUIREMENT_TYPE.UIR,
   [FOLDER.BP]: REQUIREMENT_TYPE.BP,
+  [FOLDER.TC]: REQUIREMENT_TYPE.TC,
 } as const;
 
 // types
@@ -270,4 +279,5 @@ export type RootRequirementType = Exclude<
   | typeof REQUIREMENT_TYPE.BP
   | typeof REQUIREMENT_TYPE.TASK
   | typeof REQUIREMENT_TYPE.US
+  | typeof REQUIREMENT_TYPE.TC
 >;

@@ -1,0 +1,55 @@
+<div class="p-6 flex flex-col justify-start">
+  <div>
+    <h1 class="text-2xl font-semibold mb-6">{{ data.title }}</h1>
+  </div>
+  <div class="rounded-md" [formGroup]="testCaseForm">
+    <!-- User Screens Involved Field -->
+    <div class="mb-4">
+      <label class="block text-secondary-700 text-sm font-medium mb-2">
+        User Screens Involved <span class="text-secondary-400">(Optional)</span>
+      </label>
+      <p class="text-secondary-500 text-xs mb-2">
+        List screens and UI components users will interact with.
+      </p>
+      <app-textarea-field
+        [elementPlaceHolder]="'E.g., Login Screen, Dashboard, Payment Form'"
+        elementId="userScreensInvolved"
+        formControlName="userScreensInvolved"
+        [rows]="5"
+      />
+    </div>
+    
+    <!-- Extra Context Field -->
+    <div>
+      <label class="block text-secondary-700 text-sm font-medium mb-2">
+        Extra Context <span class="text-secondary-400">(Optional)</span>
+      </label>
+      <p class="text-secondary-500 text-xs mb-2">
+        Add any helpful information for test case generation.
+      </p>
+      <app-textarea-field
+        [elementPlaceHolder]="'E.g., Edge cases, accessibility, user roles'"
+        elementId="extraContext"
+        formControlName="extraContext"
+        [rows]="5"
+      />
+    </div>
+  </div>
+  <div class="flex justify-between mt-6">
+    <app-button
+      buttonContent="Cancel"
+      theme="secondary"
+      size="sm"
+      rounded="lg"
+      (click)="onClose()"
+    />
+    <app-button
+      buttonContent="Generate"
+      theme="primary"
+      size="sm"
+      rounded="lg"
+      (click)="onGenerate()"
+      [disabled]="testCaseForm.get('selectedUserStoryId')?.invalid === true"
+    />
+  </div>
+</div>

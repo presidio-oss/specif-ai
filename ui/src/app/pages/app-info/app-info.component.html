@@ -11,6 +11,7 @@
         (folderSelected)="selectFolder($event)"
         (addDocument)="navigateToAdd($event)"
         (addBPDocument)="navigateToBPAdd()"
+        (navigateToTestCases)="navigateToTestCasesHome()"
       ></app-sidebar>
     </section>
     <section
@@ -21,7 +22,8 @@
         <div
           *ngIf="
             selectedFolder?.title !== 'solution' &&
-            selectedFolder?.title !== 'app-integrations'
+            selectedFolder?.title !== 'app-integrations' &&
+            selectedFolder?.title !== 'TC'
           "
           class="h-full"
         >
@@ -35,6 +37,11 @@
           >
             No documents available.
           </div>
+        </div>
+        
+        <!-- Test Cases Component -->
+        <div *ngIf="selectedFolder?.title === 'TC'" class="h-full">
+          <app-test-cases-home></app-test-cases-home>
         </div>
         <div *ngIf="selectedFolder?.title === 'solution'">
           <app-project-failure-message
@@ -89,92 +96,14 @@
           >
             Integrations
           </h1>
-          <app-accordion
-            [withConnectionStatus]="true"
-            [isConnected]="isJiraConnected"
-            title="Jira"
-            dynamicClass="text-sm font-medium text-secondary-950 ml-3"
-            iconImage="./assets/img/logo/mark_gradient_blue_jira.svg"
-            [isOpen]="accordionState['jira']"
-            (toggleAccordion)="toggleAccordion('jira')"
-          >
-            <div class="flex justify-start pb-4">
-              <p class="text-sm font-normal text-secondary-500">
-                {{ APP_MESSAGES.JIRA_ACCORDION }}
-              </p>
-            </div>
-            <div class="flex justify-start pb-4">
-              <p
-                class="text-sm font-normal text-secondary-500"
-                [innerHTML]="APP_MESSAGES.JIRA_PREREQUISITE"
-              ></p>
-            </div>
-            <div [formGroup]="jiraForm" class="grid grid-cols-2 gap-6 w-full">
-              <div class="flex items-start gap-2">
-                <div class="flex-1">
-                  <app-input-field
-                    formControlName="jiraProjectKey"
-                    elementId="jiraProjectKey"
-                    elementName="Jira Project Key"
-                    elementPlaceHolder="Enter Jira Project Key"
-                  ></app-input-field>
-                </div>
-              </div>
 
-              <!-- Jira Client ID Field -->
-              <div class="flex items-start gap-2">
-                <div class="flex-1">
-                  <app-input-field
-                    formControlName="clientId"
-                    elementId="clientId"
-                    elementName="Jira App Client ID"
-                    elementPlaceHolder="Enter Jira Client ID"
-                    elementType="password"
-                  ></app-input-field>
-                </div>
-              </div>
-
-              <!-- Client Secret Field -->
-              <div class="flex items-start gap-2">
-                <div class="flex-1">
-                  <app-input-field
-                    formControlName="clientSecret"
-                    elementId="clientSecret"
-                    elementName="Jira App Client Secret"
-                    elementPlaceHolder="Enter Client Secret"
-                    elementType="password"
-                  ></app-input-field>
-                </div>
-              </div>
-
-              <!-- Redirect URL Field -->
-              <div class="flex items-start gap-2">
-                <div class="flex-1">
-                  <app-input-field
-                    formControlName="redirectUrl"
-                    elementId="redirectUrl"
-                    elementName="Redirect URL"
-                    elementPlaceHolder="Enter Redirect URL"
-                  ></app-input-field>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-6 flex justify-end items-center">
-              <app-button
-                [buttonContent]="isJiraConnected ? 'Disconnect' : 'Connect'"
-                [theme]="isJiraConnected ? 'danger' : 'primary'"
-                size="sm"
-                (click)="
-                  isJiraConnected
-                    ? disconnectJira()
-                    : handleJiraAuthentication()
-                "
-                [disabled]="!isJiraConnected && editButtonDisabled"
-              >
-              </app-button>
-            </div>
-          </app-accordion>
+          <app-pmo-integration
+            [projectId]="projectId!"
+            [projectMetadata]="appInfo"
+            [isAccordionOpen]="accordionState['pmoIntegration']"
+            (toggleAccordion)="toggleAccordion('pmoIntegration')"
+            [selectedIntegration]="selectedIntegration"
+          ></app-pmo-integration>
 
           <app-accordion
             [withConnectionStatus]="true"
