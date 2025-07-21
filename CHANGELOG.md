@@ -12,6 +12,7 @@
 - Added ADO Pull and Push functionality to sync with Azure DevOps.
 - Implemented test case generation feature.
 - Introduced bidirectional navigation between PRD and User Stories.
+- Updated JIRA Callback Port to 12345 to avoid conflicts with other processess
 
 ### Enhancements
 
