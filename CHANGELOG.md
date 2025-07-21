@@ -4,28 +4,28 @@
 
 ### Added
 
+- Bi-directional JIRA synchronisation with custom ADF conversion utilities for consistent cross-platform formatting.
+- Azure DevOps (ADO) Pull and Push integration for seamless synchronisation.
+- Automated JIRA ID migration system converting legacy fields (epicTicketId, userStoryId, subTaskTicketId) to a unified pmoId structure.
+- Agentic test case generation feature for creating comprehensive test case scenarios from requirements.
 - Docusaurus documentation platform for streamlined onboarding and comprehensive usage reference.
-- Bi-directional JIRA synchronization with custom ADF conversion utilities for consistent cross-platform formatting.
-- Export dropdown grouping for improved workflow efficiency.
-- Automated JIRA ID migration system converting legacy fields (`epicTicketId`, `userStoryId`, `subTaskTicketId`) to unified `pmoId` structure.
-- Azure DevOps (ADO) Pull and Push integration for seamless environment synchronization.
-- Intelligent test case generation feature creating comprehensive scenarios from requirements.
-- Bidirectional PRD-User Story navigation for improved workflow transitions and traceability.
+- Solution creation workflow now redirects to the solution view with real-time progress updates. Added abort and retry controls for enhanced user control.
 
-### Enhancements
+### Enhancement
 
-- Rich text editor now supports full table and link management (create, edit, delete operations).
-- Solution creation workflow redirects to solution view with real-time progress updates.
-- Refined workflow UI with improved animations, padding, sticky headers, icons, and error handling.
-- AI prompt logic preserves tables and links during content updates, maintaining formatting integrity.
-- Standardized chat header displays "Talk to HAI" with updated branding consistency.
-- Added abort and retry controls to solution creation workflow for enhanced user control.
-- Consistent card heights across all pages for cohesive user experience.
-- Extracted sidebar into separate component for improved code maintainability.
+- Requirement description rich text editor now supports table and link management (create, edit, delete operations).
+- AI prompt logic now preserves tables and links during content updates, maintaining formatting integrity.
+- Bidirectional PRD–User Story navigation for improved workflow transitions and traceability.
+- Export dropdown grouping for improved user experience.
+- Standardised chat header displays "Talk to HAI" for updated branding consistency.
+- Added "Reset Settings" button on the settings page to reset LLM and other configurations.
 
-### Fixed
+Fixes
 
-- Updated JIRA Callback Port to 12345 to resolve conflicts with other system processes.
+- Consistent card heights across all pages for a cohesive user experience.
+- Extracted sidebar into a separate component for improved code maintainability.
+- Updated JIRA callback port to 12345 to resolve conflicts with other system processes.
+- Fixed Specifai LLM config Electron store issue when upgrading from v1.x to v2.x.
 
 ## [2.6.0]
 
