@@ -20,7 +20,7 @@
 - Standardised chat header displays "Talk to HAI" for updated branding consistency.
 - Added "Reset Settings" button on the settings page to reset LLM and other configurations.
 
-Fixes
+### Fixed
 
 - Consistent card heights across all pages for a cohesive user experience.
 - Extracted sidebar into a separate component for improved code maintainability.
