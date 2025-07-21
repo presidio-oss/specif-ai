@@ -633,49 +633,75 @@ export class AdoService implements PmoService {
                 if (existingPrd && existingFeatureFile) {
                   const existingFeatures = existingFeatureFile.features || [];
 
-                  // Create a map of existing features by pmoId for easy lookup
-                  const existingFeatureMap = new Map<string, any>();
+                  // Create maps for existing features - one by pmoId and one by feature id for manual features
+                  const existingFeatureByPmoId = new Map<string, any>();
+                  const existingFeatureById = new Map<string, any>();
+                  const processedFeatureIds = new Set<string>();
+
                   existingFeatures.forEach((feature: any) => {
                     if (feature.pmoId) {
-                      existingFeatureMap.set(feature.pmoId, feature);
+                      existingFeatureByPmoId.set(feature.pmoId, feature);
+                    }
+                    if (feature.id) {
+                      existingFeatureById.set(feature.id, feature);
                     }
                   });
 
                   // Merge or update features
                   const mergedFeatures = features.map((newFeature) => {
-                    const existingFeature = existingFeatureMap.get(
+                    const existingFeature = existingFeatureByPmoId.get(
                       newFeature.pmoId,
                     );
 
                     // If this feature already exists, update its properties but preserve any
                     // that might be set in the UI and not coming from ADO
                     if (existingFeature) {
-                      existingFeatureMap.delete(newFeature.pmoId); // Remove from map to track what's processed
+                      processedFeatureIds.add(existingFeature.id); // Track processed features
 
-                      // Create a map of existing tasks by pmoId
-                      const existingTaskMap = new Map<string, any>();
+                      // Create maps for existing tasks - one by pmoId and one by task id for manual tasks
+                      const existingTaskByPmoId = new Map<string, any>();
+                      const existingTaskById = new Map<string, any>();
+                      const processedTaskIds = new Set<string>();
+
                       (existingFeature.tasks || []).forEach((task: any) => {
                         if (task.pmoId) {
-                          existingTaskMap.set(task.pmoId, task);
+                          existingTaskByPmoId.set(task.pmoId, task);
+                        }
+                        if (task.id) {
+                          existingTaskById.set(task.id, task);
                         }
                       });
 
                       // Merge tasks within this feature
                       const mergedTasks = (newFeature.tasks || []).map(
                         (newTask: any) => {
-                          const existingTask = existingTaskMap.get(
+                          const existingTask = existingTaskByPmoId.get(
                             newTask.pmoId,
                           );
 
-                          // If task exists, update it
+                          // If task exists, update it while preserving local changes
                           if (existingTask) {
-                            existingTaskMap.delete(newTask.pmoId); // Remove from map to track what's processed
+                            processedTaskIds.add(existingTask.id); // Track processed tasks
                             return {
                               ...existingTask,
-                              list: newTask.list,
+                              // Only update title if it's different and not empty
+                              list:
+                                newTask.list && newTask.list.trim() !== ''
+                                  ? newTask.list
+                                  : existingTask.list,
+                              // Preserve local acceptance criteria if ADO doesn't have it
                               acceptance:
-                                newTask.acceptance || existingTask.acceptance,
-                              // Keep other properties from existing task
+                                newTask.acceptance &&
+                                newTask.acceptance.trim() !== ''
+                                  ? newTask.acceptance
+                                  : existingTask.acceptance,
+                              // Update pmoId and pmoIssueType from ADO
+                              pmoId: newTask.pmoId,
+                              pmoIssueType:
+                                newTask.pmoIssueType ||
+                                existingTask.pmoIssueType,
+                              // Keep all other existing properties (status, custom fields, etc.)
+                              status: existingTask.status,
                             };
                           }
 
@@ -684,19 +710,34 @@ export class AdoService implements PmoService {
                         },
                       );
 
-                      // Add any remaining existing tasks that weren't in the new data
-                      existingTaskMap.forEach((remainingTask) => {
-                        mergedTasks.push(remainingTask);
+                      // Add any remaining existing tasks that weren't processed (manual tasks without pmoId)
+                      existingTaskById.forEach((remainingTask, taskId) => {
+                        if (!processedTaskIds.has(taskId)) {
+                          mergedTasks.push(remainingTask);
+                        }
                       });
 
-                      // Return the merged feature
+                      // Return the merged feature with better preservation of existing data
                       return {
                         ...existingFeature,
-                        name: newFeature.name,
+                        // Only update name if it's different and not empty
+                        name:
+                          newFeature.name && newFeature.name.trim() !== ''
+                            ? newFeature.name
+                            : existingFeature.name,
+                        // Preserve local description if ADO doesn't have it or if local is more detailed
                         description:
-                          newFeature.description || existingFeature.description,
+                          newFeature.description &&
+                          newFeature.description.trim() !== ''
+                            ? newFeature.description
+                            : existingFeature.description,
+                        // Update pmoId and pmoIssueType from ADO
+                        pmoId: newFeature.pmoId,
+                        pmoIssueType:
+                          newFeature.pmoIssueType ||
+                          existingFeature.pmoIssueType,
                         tasks: mergedTasks,
-                        // Keep other properties from existing feature
+                        // Preserve all other existing properties
                       };
                     }
 
@@ -704,9 +745,11 @@ export class AdoService implements PmoService {
                     return newFeature;
                   });
 
-                  // Add any remaining existing features that weren't in the new data
-                  existingFeatureMap.forEach((remainingFeature) => {
-                    mergedFeatures.push(remainingFeature);
+                  // Add any remaining existing features that weren't processed (manual features without pmoId)
+                  existingFeatureById.forEach((remainingFeature, featureId) => {
+                    if (!processedFeatureIds.has(featureId)) {
+                      mergedFeatures.push(remainingFeature);
+                    }
                   });
 
                   // Update the feature content with merged features
@@ -1436,75 +1479,6 @@ export class AdoService implements PmoService {
       console.error('Error creating/updating work item in ADO:', error);
       throw error;
     }
-  }
-
-  /**
-   * Get existing PRD content for merging
-   * @param prdPath The path to the PRD file
-   * @returns Promise with the PRD content or null if not found
-   */
-  private async getExistingPrdContent(prdPath: string): Promise<any> {
-    try {
-      await lastValueFrom(
-        this.store.dispatch(new ReadFile(prdPath)).pipe(first()),
-      );
-      const content = await lastValueFrom(
-        this.store.select(ProjectsState.getSelectedFileContent).pipe(first()),
-      );
-      return content;
-    } catch (error) {
-      console.error(
-        `Error reading existing PRD content from ${prdPath}:`,
-        error,
-      );
-      return null;
-    }
-  }
-
-  /**
-   * merge two text fields, preserving local changes while incorporating ADO updates
-   * @param localText The local/existing text
-   * @param adoText The text from ADO
-   * @returns Merged text that combines both sources
-   */
-  private mergeTextFields(localText: string, adoText: string): string {
-    // If either is empty, return the other
-    if (!localText || localText.trim() === '') {
-      return adoText || '';
-    }
-    if (!adoText || adoText.trim() === '') {
-      return localText;
-    }
-
-    // If they're the same, return one
-    if (localText.trim() === adoText.trim()) {
-      return localText;
-    }
-
-    // If local text contains ADO text or vice versa, return the longer one
-    if (localText.toLowerCase().includes(adoText.toLowerCase())) {
-      return localText;
-    }
-    if (adoText.toLowerCase().includes(localText.toLowerCase())) {
-      return adoText;
-    }
-
-    // If they're different, combine them cleanly without labels
-    const localWords = localText.split(/\s+/).length;
-    const adoWords = adoText.split(/\s+/).length;
-
-    // If local has significantly more content, prioritize it but append ADO info
-    if (localWords > adoWords * 1.5) {
-      return `${localText}\n\n${adoText}`;
-    }
-
-    // If ADO has significantly more content, prioritize it but preserve local edits
-    if (adoWords > localWords * 1.5) {
-      return `${adoText}\n\n${localText}`;
-    }
-
-    // If similar length, combine them
-    return `${localText}\n\n${adoText}`;
   }
 
   /**
