@@ -17,6 +17,7 @@ import { ToasterService } from '../../services/toaster/toaster.service';
 import { Router } from '@angular/router';
 import { IProjectMetadata } from 'src/app/model/interfaces/projects.interface';
 import { convertHtmlToMarkdown, convertMarkdownToHtml } from './ado.util';
+import { ADO_TOAST } from '../../constants/toast.constant';
 
 const ADO_API_VERSION = '7.1';
 
@@ -568,6 +569,7 @@ export class AdoService implements PmoService {
     console.log('Project metadata:', appInfo);
 
     if (action === 'pull') {
+      this.toast.showInfo(ADO_TOAST.PULL_INITIATED);
       try {
         // First, get the existing PRD files to check for pmoId and get max PRD number
         this.getExistingPrdFiles(appInfo)
@@ -631,49 +633,75 @@ export class AdoService implements PmoService {
                 if (existingPrd && existingFeatureFile) {
                   const existingFeatures = existingFeatureFile.features || [];
 
-                  // Create a map of existing features by pmoId for easy lookup
-                  const existingFeatureMap = new Map<string, any>();
+                  // Create maps for existing features - one by pmoId and one by feature id for manual features
+                  const existingFeatureByPmoId = new Map<string, any>();
+                  const existingFeatureById = new Map<string, any>();
+                  const processedFeatureIds = new Set<string>();
+
                   existingFeatures.forEach((feature: any) => {
                     if (feature.pmoId) {
-                      existingFeatureMap.set(feature.pmoId, feature);
+                      existingFeatureByPmoId.set(feature.pmoId, feature);
+                    }
+                    if (feature.id) {
+                      existingFeatureById.set(feature.id, feature);
                     }
                   });
 
                   // Merge or update features
                   const mergedFeatures = features.map((newFeature) => {
-                    const existingFeature = existingFeatureMap.get(
+                    const existingFeature = existingFeatureByPmoId.get(
                       newFeature.pmoId,
                     );
 
                     // If this feature already exists, update its properties but preserve any
                     // that might be set in the UI and not coming from ADO
                     if (existingFeature) {
-                      existingFeatureMap.delete(newFeature.pmoId); // Remove from map to track what's processed
+                      processedFeatureIds.add(existingFeature.id); // Track processed features
 
-                      // Create a map of existing tasks by pmoId
-                      const existingTaskMap = new Map<string, any>();
+                      // Create maps for existing tasks - one by pmoId and one by task id for manual tasks
+                      const existingTaskByPmoId = new Map<string, any>();
+                      const existingTaskById = new Map<string, any>();
+                      const processedTaskIds = new Set<string>();
+
                       (existingFeature.tasks || []).forEach((task: any) => {
                         if (task.pmoId) {
-                          existingTaskMap.set(task.pmoId, task);
+                          existingTaskByPmoId.set(task.pmoId, task);
+                        }
+                        if (task.id) {
+                          existingTaskById.set(task.id, task);
                         }
                       });
 
                       // Merge tasks within this feature
                       const mergedTasks = (newFeature.tasks || []).map(
                         (newTask: any) => {
-                          const existingTask = existingTaskMap.get(
+                          const existingTask = existingTaskByPmoId.get(
                             newTask.pmoId,
                           );
 
-                          // If task exists, update it
+                          // If task exists, update it while preserving local changes
                           if (existingTask) {
-                            existingTaskMap.delete(newTask.pmoId); // Remove from map to track what's processed
+                            processedTaskIds.add(existingTask.id); // Track processed tasks
                             return {
                               ...existingTask,
-                              list: newTask.list,
+                              // Only update title if it's different and not empty
+                              list:
+                                newTask.list && newTask.list.trim() !== ''
+                                  ? newTask.list
+                                  : existingTask.list,
+                              // Preserve local acceptance criteria if ADO doesn't have it
                               acceptance:
-                                newTask.acceptance || existingTask.acceptance,
-                              // Keep other properties from existing task
+                                newTask.acceptance &&
+                                newTask.acceptance.trim() !== ''
+                                  ? newTask.acceptance
+                                  : existingTask.acceptance,
+                              // Update pmoId and pmoIssueType from ADO
+                              pmoId: newTask.pmoId,
+                              pmoIssueType:
+                                newTask.pmoIssueType ||
+                                existingTask.pmoIssueType,
+                              // Keep all other existing properties (status, custom fields, etc.)
+                              status: existingTask.status,
                             };
                           }
 
@@ -682,19 +710,34 @@ export class AdoService implements PmoService {
                         },
                       );
 
-                      // Add any remaining existing tasks that weren't in the new data
-                      existingTaskMap.forEach((remainingTask) => {
-                        mergedTasks.push(remainingTask);
+                      // Add any remaining existing tasks that weren't processed (manual tasks without pmoId)
+                      existingTaskById.forEach((remainingTask, taskId) => {
+                        if (!processedTaskIds.has(taskId)) {
+                          mergedTasks.push(remainingTask);
+                        }
                       });
 
-                      // Return the merged feature
+                      // Return the merged feature with better preservation of existing data
                       return {
                         ...existingFeature,
-                        name: newFeature.name,
+                        // Only update name if it's different and not empty
+                        name:
+                          newFeature.name && newFeature.name.trim() !== ''
+                            ? newFeature.name
+                            : existingFeature.name,
+                        // Preserve local description if ADO doesn't have it or if local is more detailed
                         description:
-                          newFeature.description || existingFeature.description,
+                          newFeature.description &&
+                          newFeature.description.trim() !== ''
+                            ? newFeature.description
+                            : existingFeature.description,
+                        // Update pmoId and pmoIssueType from ADO
+                        pmoId: newFeature.pmoId,
+                        pmoIssueType:
+                          newFeature.pmoIssueType ||
+                          existingFeature.pmoIssueType,
                         tasks: mergedTasks,
-                        // Keep other properties from existing feature
+                        // Preserve all other existing properties
                       };
                     }
 
@@ -702,9 +745,11 @@ export class AdoService implements PmoService {
                     return newFeature;
                   });
 
-                  // Add any remaining existing features that weren't in the new data
-                  existingFeatureMap.forEach((remainingFeature) => {
-                    mergedFeatures.push(remainingFeature);
+                  // Add any remaining existing features that weren't processed (manual features without pmoId)
+                  existingFeatureById.forEach((remainingFeature, featureId) => {
+                    if (!processedFeatureIds.has(featureId)) {
+                      mergedFeatures.push(remainingFeature);
+                    }
                   });
 
                   // Update the feature content with merged features
@@ -782,6 +827,7 @@ export class AdoService implements PmoService {
         this.toast.showError('Failed to import items from ADO');
       }
     } else {
+      this.toast.showInfo(ADO_TOAST.PUSH_INITIATED);
       (async () => {
         try {
           // Map to keep track of PRD/UserStory/Task pmoId <-> ADO ID
@@ -864,10 +910,9 @@ export class AdoService implements PmoService {
               }
 
               // Get all feature files (PRD*-feature.json)
-              const featureFiles = prdDir.children.filter(
-                (file) =>
-                  file.includes('-feature.json') && !file.includes('-archived'),
-              );
+              const featureFiles = prdDir.children
+                .filter((file) => !file.includes('-archived'))
+                .map((file) => file.replace('-base.json', '-feature.json'));
 
               // Get all base files (PRD*-base.json)
               const baseFiles = prdDir.children.filter(
@@ -1396,7 +1441,7 @@ export class AdoService implements PmoService {
       },
       { op: 'add', path: '/fields/System.WorkItemType', value: workItemType },
     ];
-    if (parentAdoId) {
+    if (parentAdoId && !ticket.pmoId) {
       patchBody.push({
         op: 'add',
         path: '/relations/-',
@@ -1406,6 +1451,7 @@ export class AdoService implements PmoService {
         },
       });
     }
+
     const options = {
       ...this.getRequestOptions(),
       headers: (this.getRequestOptions().headers as HttpHeaders).set(
