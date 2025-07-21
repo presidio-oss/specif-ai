@@ -1464,7 +1464,7 @@ export class AdoService implements PmoService {
       },
       { op: 'add', path: '/fields/System.WorkItemType', value: workItemType },
     ];
-    if (parentAdoId) {
+    if (parentAdoId && !ticket.pmoId) {
       patchBody.push({
         op: 'add',
         path: '/relations/-',
@@ -1474,6 +1474,7 @@ export class AdoService implements PmoService {
         },
       });
     }
+
     const options = {
       ...this.getRequestOptions(),
       headers: (this.getRequestOptions().headers as HttpHeaders).set(
