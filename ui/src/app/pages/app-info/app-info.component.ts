@@ -178,7 +178,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
   solutionCreationComplete: boolean = false;
-  private hasInitializedFromStore: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -257,41 +256,31 @@ export class AppInfoComponent implements OnInit, OnDestroy {
           this.appInfo = project.metadata;
           this.appName = project.project;
 
-          if (!this.hasInitializedFromStore) {
-            this.hasInitializedFromStore = true;
+          this.store.dispatch(new GetProjectFiles(this.projectId as string));
 
-            this.store.dispatch(new GetProjectFiles(this.projectId as string));
+          this.store.dispatch(
+            new AddBreadcrumbs([
+              {
+                label: this.appName.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+                  letter.toUpperCase(),
+                ),
+                url: `/apps/${this.appInfo.id}`,
+              },
+            ]),
+          );
 
-            this.store.dispatch(
-              new AddBreadcrumbs([
-                {
-                  label: this.appName.replace(
-                    /(^\w{1})|(\s+\w{1})/g,
-                    (letter) => letter.toUpperCase(),
-                  ),
-                  url: `/apps/${this.appInfo.id}`,
-                },
-              ]),
+          // Check if we need to migrate legacy JIRA references
+          if (
+            this.jiraToPmoMigrationService.shouldMigrateLegacyJira(this.appInfo)
+          ) {
+            this.logger.info(
+              'Legacy JIRA project detected. Starting migration...',
             );
-
-            // Check if we need to migrate legacy JIRA references
-            if (
-              this.jiraToPmoMigrationService.shouldMigrateLegacyJira(
-                this.appInfo,
-              )
-            ) {
-              this.logger.info(
-                'Legacy JIRA project detected. Starting migration...',
-              );
-              this.jiraToPmoMigrationService
-                .migrateLegacyJiraReferences(
-                  this.appName as string,
-                  this.appInfo,
-                )
-                .catch((error) => {
-                  this.logger.error('Migration failed:', error);
-                });
-            }
+            this.jiraToPmoMigrationService
+              .migrateLegacyJiraReferences(this.appName as string, this.appInfo)
+              .catch((error) => {
+                this.logger.error('Migration failed:', error);
+              });
           }
         } else {
           console.error('Project not found with id:', this.projectId);
