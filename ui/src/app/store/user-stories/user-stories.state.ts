@@ -405,8 +405,12 @@ export class UserStoriesState {
     try {
       const state = ctx.getState();
       const prdId = state.currentConfig?.reqId;
-      
-      this.toast.showInfo(`Exporting user stories of prd ${prdId}`);
+      if(exportOptions.type === 'xlsx'){
+        this.toast.showInfo(`Exporting user stories of prd ${prdId}`);
+      }
+      if(exportOptions.type === 'json'){
+        this.toast.showInfo(`Copied user stories of prd ${prdId}`);
+      }
       this.requirementExportService.exportRequirementData(
         {
           prdId: state.currentConfig?.reqId!,

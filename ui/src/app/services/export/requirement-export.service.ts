@@ -46,13 +46,13 @@ export class RequirementExportService {
       if (!result.success) {
         if (result.error) throw result.error;
         throw new Error(
-          `Failed to export ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} requirements.`,
+          `Failed to export/copy ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} requirements.`,
         );
       }
     } catch (error) {
       this.logger.error('Export failed:', error);
       this.toast.showError(
-        `Failed to export data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to export/copy data: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
       throw error;
     }
