@@ -12,14 +12,11 @@
     (closeDialog)="closeProgressDialog()"
   />
 
-  <!-- Canvas Layout -->
   <div class="canvas-container flex flex-col flex-grow">
-    <!-- Header - Compact design with options menu -->
     <header
-      class="flex justify-between items-center py-2 px-3 border-b border-secondary-200 bg-white"
+      class="flex justify-between items-center py-2 px-3 border-b border-secondary-200 bg-white z-20 relative"
     >
       <div class="flex items-center gap-3 flex-1">
-        <!-- ID in a cleaner format -->
         <div class="flex items-center">
           <h1 class="text-base font-bold">
             {{
@@ -30,7 +27,6 @@
           </h1>
         </div>
 
-        <!-- Document title editing - now in the same row -->
         <div class="flex-1" *ngIf="mode === 'edit' && !isEditingTitle">
           <h2
             class="text-base font-medium text-gray-800 cursor-pointer hover:text-primary-600"
@@ -58,7 +54,6 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- Status indicator using proper app-pill component -->
         <div
           *ngIf="mode === 'edit'"
           class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
@@ -71,7 +66,6 @@
         >
           {{ strategicInitiativeForm.get("status")?.value }}
         </div>
-        <!-- Using export-dropdown component -->
         <app-export-dropdown
           *ngIf="mode === 'edit'"
           [groupedOptions]="documentActionOptions"
@@ -80,12 +74,10 @@
       </div>
     </header>
 
-    <!-- Main Content Area with 3-column layout in edit mode, single column in add mode -->
     <form
       [formGroup]="strategicInitiativeForm"
       class="flex flex-col flex-grow overflow-hidden"
     >
-      <!-- Title input and research URLs in add mode -->
       <div
         *ngIf="mode === 'add'"
         class="p-4 bg-white border-b border-secondary-200"
@@ -162,9 +154,7 @@
         </div>
       </div>
 
-      <!-- Content area with different layouts for add vs edit mode -->
       <div class="flex-1 flex overflow-hidden bg-white">
-        <!-- Add Mode: Simple single-column layout -->
         <div *ngIf="mode === 'add'" class="flex-1 p-4 overflow-y-auto bg-white">
           <div class="flex flex-col gap-1.5">
             <label class="block text-sm font-medium text-secondary-500">
@@ -195,13 +185,9 @@
           </div>
         </div>
 
-        <!-- Edit Mode: Rich text editor and chat panel side by side -->
         <ng-container *ngIf="mode === 'edit'">
-          <!-- Main content area with flexible layout -->
           <div class="flex flex-1 overflow-hidden h-[calc(100vh-200px)]">
-            <!-- Editor Panel -->
             <div class="flex-1 flex flex-col overflow-y-auto">
-              <!-- Rich Text Editor with content -->
               <app-rich-text-editor
                 #richTextEditor
                 formControlName="requirement"
@@ -218,12 +204,10 @@
               ></app-rich-text-editor>
             </div>
 
-            <!-- Chat Panel (side panel that can be collapsed/expanded) -->
             <div
               class="border-l border-secondary-200 bg-white transition-all duration-300 ease-in-out"
               [ngClass]="{ 'w-96': isChatExpanded, 'w-10': !isChatExpanded }"
             >
-              <!-- Collapse/Expand Button -->
               <div
                 class="p-3 flex justify-between items-center"
                 [ngClass]="{ 'border-b border-secondary-200': isChatExpanded }"
@@ -250,7 +234,6 @@
                 </button>
               </div>
 
-              <!-- Chat Content (only visible when expanded) -->
               <div
                 *ngIf="isChatExpanded"
                 class="flex flex-col h-[calc(100%-48px)] overflow-hidden"
@@ -276,11 +259,9 @@
         </ng-container>
       </div>
 
-      <!-- Footer with action buttons -->
       <div
         class="flex justify-between gap-2 p-4 border-t border-secondary-200 bg-white"
       >
-        <!-- Cancel button moved to left -->
         <div>
           <app-button
             buttonContent="Cancel"
@@ -291,7 +272,6 @@
           />
         </div>
 
-        <!-- Generate Draft and Add/Update buttons on right -->
         <div class="flex gap-2">
           <app-button
             [buttonContent]="
