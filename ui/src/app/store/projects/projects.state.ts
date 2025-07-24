@@ -788,9 +788,15 @@ export class ProjectsState {
   ) {
     try {
       patchState({ exportingData: true });
-      this.toast.showInfo(
-        `Exporting ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} data`,
-      );
+      if (options.type === 'json') {
+        this.toast.showInfo(
+          `Copied ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} data`,
+        );
+      } else {
+        this.toast.showInfo(
+          `Exporting ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} data`,
+        );
+      }
       const state = getState();
 
       await this.requirementExportService.exportRequirementData(

@@ -12,13 +12,14 @@ import { IList } from 'src/app/model/interfaces/IList';
 
 // types
 
-type RequirementExportInputData = {
-  prdId:string;
-  userStories: Array<IUserStory>;
-} | Array<IList>;
+type RequirementExportInputData =
+  | {
+      prdId: string;
+      userStories: Array<IUserStory>;
+    }
+  | Array<IList>;
 
 // types
-
 
 @Injectable({
   providedIn: 'root',
@@ -45,15 +46,26 @@ export class RequirementExportService {
 
       if (!result.success) {
         if (result.error) throw result.error;
+        if (options.type === 'json') {
+          throw new Error(
+            `Failed to copy ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} requirements.`,
+          );
+        }
         throw new Error(
-          `Failed to export/copy ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} requirements.`,
+          `Failed to export ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} requirements.`,
         );
       }
     } catch (error) {
       this.logger.error('Export failed:', error);
-      this.toast.showError(
-        `Failed to export/copy data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      if (options.type === 'json') {
+        this.toast.showError(
+          `Failed to copy data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      } else {
+        this.toast.showError(
+          `Failed to export data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
       throw error;
     }
   }
