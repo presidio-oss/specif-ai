@@ -9,7 +9,8 @@
   },
   "scripts": {
     "changeset": "npx @changesets/cli",
-    "version-packages": "npm run changeset version"
+    "version-packages": "npm run changeset version",
+    "lint": "cd ui && ng lint"
   },
   "author": {
     "name": "Presidio"

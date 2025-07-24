@@ -8,7 +8,7 @@ We're excited you're interested in contributing to Specifai! This document outli
 2. Clone your fork locally:
    ```
    git clone https://github.com/presidio-oss/specif-ai
-   cd https://github.com/presidio-oss/specif-ai
+   cd specif-ai
    ```
 3. To set up and run the application locally, follow the guides provided for:
    - Electron: [Electron setup guide](./electron/README.md)
@@ -23,7 +23,7 @@ We're excited you're interested in contributing to Specifai! This document outli
    - UI Changes: Make your UI code file changes in the `ui/` and `electron/` folders respectively.
 3. Write or update tests as necessary.
 4. Format your code.
-5. Run linting checks.
+5. Run linting checks. ( Tip : Run ```npm run lint``` in the root directory )
 
 ## Submitting Changes
 
