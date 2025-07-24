@@ -360,7 +360,7 @@
           [chatHistory]="chatHistory"
           [supportsAddFromCode]="false"
           [baseContent]="businessProcessForm.getRawValue().content"
-          (getContent)="appendRequirement($event)"
+          (getContent)="updateRequirementFromChat($event)"
           (updateChatHistory)="updateChatHistory($event)"
           [containerClass]="'border-none h-full rounded-b-lg'"
         />
