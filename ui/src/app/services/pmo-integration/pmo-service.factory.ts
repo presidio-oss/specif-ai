@@ -19,8 +19,7 @@ export class PmoServiceFactory {
       case 'ado':
         return this.injector.get(AdoService);
       case 'jira':
-        // Note: JiraService will need to be updated to implement PmoService interface
-        return this.injector.get(JiraService) as any; // Temporary cast until JiraService is updated
+        return this.injector.get(JiraService);
       default:
         throw new Error(`Unsupported PMO type: ${pmoType}`);
     }

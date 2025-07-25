@@ -84,6 +84,9 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
       clientId: ['', [Validators.required, Validators.minLength(1)]],
       clientSecret: ['', [Validators.required, Validators.minLength(1)]],
       redirectUrl: ['', [Validators.required, Validators.minLength(1)]],
+      prdWorkItemType: ['Epic', [Validators.required]],
+      userStoryWorkItemType: ['Story', [Validators.required]],
+      taskWorkItemType: ['Sub-task', [Validators.required]],
     });
   }
 
@@ -96,6 +99,9 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
         clientId: jiraIntegration.clientId || '',
         clientSecret: jiraIntegration.clientSecret || '',
         redirectUrl: jiraIntegration.redirectUrl || '',
+        prdWorkItemType: jiraIntegration.workItemTypeMapping?.['PRD'] || 'Epic',
+        userStoryWorkItemType: jiraIntegration.workItemTypeMapping?.['US'] || 'Story',
+        taskWorkItemType: jiraIntegration.workItemTypeMapping?.['TASK'] || 'Sub-task',
       });
     }
 
@@ -182,12 +188,19 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
       });
   }
 
-  private saveJiraData(formData: JiraIntegrationConfig): void {
+  private saveJiraData(formData: any): void {
+    const workItemTypeMapping = {
+      PRD: formData.prdWorkItemType,
+      US: formData.userStoryWorkItemType,
+      TASK: formData.taskWorkItemType,
+    };
+
     const jiraConfig: JiraIntegrationConfig = {
       jiraProjectKey: formData.jiraProjectKey,
       clientId: formData.clientId,
       clientSecret: formData.clientSecret,
       redirectUrl: formData.redirectUrl,
+      workItemTypeMapping: workItemTypeMapping,
     };
 
     const updatedMetadata = this.createUpdatedMetadata({

@@ -2,12 +2,62 @@
   <div class="text-sm text-secondary-500">
     <p>{{ APP_MESSAGES.JIRA_ACCORDION }}</p>
   </div>
-  <div class="text-sm text-secondary-500">
-    <p [innerHTML]="APP_MESSAGES.JIRA_PREREQUISITE"></p>
-  </div>
 </section>
 
 <form [formGroup]="jiraForm" class="space-y-6" novalidate>
+  <div class="mt-6 p-4 bg-gray-50 rounded-lg border">
+    <h4 class="text-sm font-semibold text-gray-900 mb-4">
+      Work Item Type Mapping
+    </h4>
+    <p class="text-xs text-gray-600 mb-4">
+      Map SpecifAI requirement types to your Jira issue types
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <app-input-field
+          formControlName="prdWorkItemType"
+          elementId="prdWorkItemType"
+          elementName="PRD Issue Type"
+          elementPlaceHolder="Epic"
+          [required]="true"
+          aria-describedby="prd-type-help"
+        />
+        <small id="prd-type-help" class="text-xs text-gray-500 mt-1 block">
+          Jira issue type for Product Requirements (e.g., Epic)
+        </small>
+      </div>
+
+      <div>
+        <app-input-field
+          formControlName="userStoryWorkItemType"
+          elementId="userStoryWorkItemType"
+          elementName="User Story Issue Type"
+          elementPlaceHolder="Story"
+          [required]="true"
+          aria-describedby="story-type-help"
+        />
+        <small id="story-type-help" class="text-xs text-gray-500 mt-1 block">
+          Jira issue type for User Stories (e.g., Story)
+        </small>
+      </div>
+
+      <div>
+        <app-input-field
+          formControlName="taskWorkItemType"
+          elementId="taskWorkItemType"
+          elementName="Task Issue Type"
+          elementPlaceHolder="Sub-task"
+          [required]="true"
+          aria-describedby="task-type-help"
+        />
+        <small id="task-type-help" class="text-xs text-gray-500 mt-1 block">
+          Jira issue type for Tasks (e.g., Sub-task)
+        </small>
+      </div>
+    </div>
+  </div>
+
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
       <app-input-field

@@ -1,5 +1,4 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
@@ -9,7 +8,6 @@ import {
   GetUserStories,
   SetCurrentConfig,
   SetSelectedProject,
-  BulkEditUserStories,
   SetSelectedUserStory,
 } from '../../store/user-stories/user-stories.actions';
 import { ProjectsState } from '../../store/projects/projects.state';
@@ -18,35 +16,28 @@ import {
   IUserStory,
 } from '../../model/interfaces/IUserStory';
 import { FeatureService } from '../../services/feature/feature.service';
-import {
-  ArchiveFile,
-  CreateFile,
-  ReadFile,
-  UpdateFile,
-} from '../../store/projects/projects.actions';
+import { CreateFile, ReadFile } from '../../store/projects/projects.actions';
 import { ClipboardService } from '../../services/clipboard.service';
 import { ITaskRequest, ITasksResponse } from '../../model/interfaces/ITask';
-import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
-import { DialogService } from '../../services/dialog/dialog.service';
 import {
-  getJiraTokenInfo,
-  storeJiraToken,
-} from '../../integrations/jira/jira.utils';
-import { JiraService } from '../../integrations/jira/jira.service';
+  AddBreadcrumb,
+  DeleteBreadcrumb,
+} from '../../store/breadcrumb/breadcrumb.actions';
+import { DialogService } from '../../services/dialog/dialog.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
-import { APP_INTEGRATIONS, JIRA_TOAST } from '../../constants/toast.constant';
-import { ElectronService } from '../../electron-bridge/electron.service';
 import { getNavigationParams } from '../../utils/common.utils';
 import { ButtonComponent } from '../../components/core/button/button.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroArrowRight, heroArrowTopRightOnSquare } from '@ng-icons/heroicons/outline';
+import {
+  heroArrowRight,
+  heroArrowTopRightOnSquare,
+} from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
-  CONFIRMATION_DIALOG,
   REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
 } from '../../constants/app.constants';
@@ -59,15 +50,20 @@ import {
   takeUntil,
   distinctUntilChanged,
 } from 'rxjs';
-import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
+import {
+  EXPORT_FILE_FORMATS,
+  ExportFileFormat,
+} from 'src/app/constants/export.constants';
 import { processUserStoryContentForView } from 'src/app/utils/user-story.utils';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
 import { ModalDialogCustomComponent } from 'src/app/components/modal-dialog/modal-dialog.component';
-import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
+import {
+  DropdownOptionGroup,
+  ExportDropdownComponent,
+} from 'src/app/export-dropdown/export-dropdown.component';
 import { WorkflowProgressDialogComponent } from '../../components/workflow-progress/workflow-progress-dialog/workflow-progress-dialog.component';
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
-import { AppSystemService } from 'src/app/services/app-system/app-system.service';
 import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils.service';
 
 @Component({
@@ -123,12 +119,12 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
     selectedRequirement: any;
     data: any;
   } = {
-      projectId: '',
-      folderName: '',
-      fileName: '',
-      selectedRequirement: {},
-      data: {},
-    };
+    projectId: '',
+    folderName: '',
+    fileName: '',
+    selectedRequirement: {},
+    data: {},
+  };
 
   userStories$ = this.store.select(UserStoriesState.getUserStories).pipe(
     map((stories) =>
@@ -164,12 +160,9 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   constructor(
     private featureService: FeatureService,
     private clipboardService: ClipboardService,
-    private jiraService: JiraService,
-    private electronService: ElectronService,
     private toast: ToasterService,
     private requirementIdService: RequirementIdService,
     private workflowProgressService: WorkflowProgressService,
-    private appSystemService: AppSystemService,
     private testCaseUtilsService: TestCaseUtilsService,
   ) {
     this.navigation = getNavigationParams(this.router.getCurrentNavigation());
@@ -226,14 +219,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       new ReadFile(`${this.navigation.folderName}/${this.navigation.fileName}`),
     );
 
-    this.isTokenAvailable = (() => {
-      const tokenInfo = getJiraTokenInfo(this.navigation.projectId);
-      return (
-        tokenInfo.projectKey ===
-        this.metadata.integration?.jira?.jiraProjectKey && !!tokenInfo.token
-      );
-    })();
-
     if (this.navigation.projectId) {
       this.workflowProgressService
         .getCreationStatusObservable(
@@ -267,11 +252,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       this.logger.debug(project, 'selected project');
       this.newFileName = this.navigation.fileName.replace('base', 'feature');
       project && this.getLatestUserStories();
-    });
-
-    this.selectedFileContent$.subscribe((res: any) => {
-      this.requirementFile = res;
-      this.updateExportOptionsTimestamps();
     });
 
     this.userStories$.subscribe((userStories: IUserStory[]) => {
@@ -344,12 +324,14 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   navigateToTestCases(userStory: IUserStory, index: number) {
     this.store.dispatch(new SetSelectedUserStory(userStory.id));
-    this.router.navigate(['/test-cases', userStory.id,], {
+    this.router.navigate(['/test-cases', userStory.id], {
       queryParams: {
         projectName: this.currentProject,
         prdId: this.newFileName.split('-')[0],
         prdTitle: encodeURIComponent(this.navigation.selectedRequirement.title),
-        prdDescription: encodeURIComponent(this.navigation.selectedRequirement.requirement)
+        prdDescription: encodeURIComponent(
+          this.navigation.selectedRequirement.requirement,
+        ),
       },
       state: {
         projectId: this.navigation.projectId,
@@ -363,27 +345,34 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
 
   navigateToAppIntegrations() {
     this.router.navigate([`/apps/${this.navigation.projectId}`], {
-      state: { 
+      state: {
         data: this.navigation,
         selectedFolder: {
           title: 'app-integrations',
-          id: this.navigation.projectId
+          id: this.navigation.projectId,
         },
         selectedIntegration: 'jira',
-        openPmoAccordion: true 
-      }
+        openPmoAccordion: true,
+      },
     });
   }
 
-  private async deleteTestCasesForUserStories(userStories: IUserStory[]): Promise<void> {
+  private async deleteTestCasesForUserStories(
+    userStories: IUserStory[],
+  ): Promise<void> {
     if (!userStories || userStories.length === 0) {
       return;
     }
-    
-    this.logger.debug(`Checking for test cases to delete for ${userStories.length} user stories`);
-    
-    const userStoryIds = userStories.map(story => story.id);
-    await this.testCaseUtilsService.deleteTestCasesForUserStories(this.currentProject, userStoryIds);
+
+    this.logger.debug(
+      `Checking for test cases to delete for ${userStories.length} user stories`,
+    );
+
+    const userStoryIds = userStories.map((story) => story.id);
+    await this.testCaseUtilsService.deleteTestCasesForUserStories(
+      this.currentProject,
+      userStoryIds,
+    );
   }
 
   async generateUserStories(
@@ -396,10 +385,16 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       WorkflowType.Story,
     );
 
-    if (regenerate && this.userStoriesInState && this.userStoriesInState.length > 0) {
+    if (
+      regenerate &&
+      this.userStoriesInState &&
+      this.userStoriesInState.length > 0
+    ) {
       try {
         await this.deleteTestCasesForUserStories(this.userStoriesInState);
-        this.logger.debug('Successfully deleted test cases for existing user stories');
+        this.logger.debug(
+          'Successfully deleted test cases for existing user stories',
+        );
       } catch (error) {
         this.logger.error('Error deleting test cases:', error);
       }
@@ -575,44 +570,58 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   }
 
   private async checkForLinkedTestCases(userStoryId: string): Promise<boolean> {
-    return this.testCaseUtilsService.checkForLinkedTestCases(this.currentProject, userStoryId);
+    return this.testCaseUtilsService.checkForLinkedTestCases(
+      this.currentProject,
+      userStoryId,
+    );
   }
 
-  private async checkForAnyLinkedTestCases(userStories: IUserStory[]): Promise<boolean> {
+  private async checkForAnyLinkedTestCases(
+    userStories: IUserStory[],
+  ): Promise<boolean> {
     if (!userStories || userStories.length === 0) {
       return false;
     }
-    
+
     for (const userStory of userStories) {
-      const hasLinkedTestCases = await this.checkForLinkedTestCases(userStory.id);
+      const hasLinkedTestCases = await this.checkForLinkedTestCases(
+        userStory.id,
+      );
       if (hasLinkedTestCases) {
         return true;
       }
     }
-    
+
     return false;
   }
 
   addMoreContext(regenerate: boolean = false) {
-    if (regenerate && this.userStoriesInState && this.userStoriesInState.length > 0) {
-      this.checkForAnyLinkedTestCases(this.userStoriesInState).then(hasLinkedTestCases => {
-        if (hasLinkedTestCases) {
-          this.dialogService
-            .confirm({
-              title: 'Warning: Test Cases Will Be Deleted',
-              description: 'Regenerating user stories will delete all associated test cases. Are you sure you want to proceed?',
-              cancelButtonText: 'Cancel',
-              confirmButtonText: 'Proceed',
-            })
-            .subscribe((confirmed) => {
-              if (confirmed) {
-                this.showContextDialog(regenerate);
-              }
-            });
-        } else {
-          this.showContextDialog(regenerate);
-        }
-      });
+    if (
+      regenerate &&
+      this.userStoriesInState &&
+      this.userStoriesInState.length > 0
+    ) {
+      this.checkForAnyLinkedTestCases(this.userStoriesInState).then(
+        (hasLinkedTestCases) => {
+          if (hasLinkedTestCases) {
+            this.dialogService
+              .confirm({
+                title: 'Warning: Test Cases Will Be Deleted',
+                description:
+                  'Regenerating user stories will delete all associated test cases. Are you sure you want to proceed?',
+                cancelButtonText: 'Cancel',
+                confirmButtonText: 'Proceed',
+              })
+              .subscribe((confirmed) => {
+                if (confirmed) {
+                  this.showContextDialog(regenerate);
+                }
+              });
+          } else {
+            this.showContextDialog(regenerate);
+          }
+        },
+      );
     } else {
       this.showContextDialog(regenerate);
     }
@@ -638,364 +647,11 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       });
   }
 
-  syncRequirementWithJira(): void {
-    this.dialogService
-      .confirm({
-        title: 'Push to JIRA',
-        description: 'This action will override the existing content in JIRA with your local changes. Any updates made directly in JIRA will be lost. Do you want to continue?',
-        cancelButtonText: 'Cancel',
-        confirmButtonText: 'Push to JIRA',
-      })
-      .subscribe((confirmed) => {
-        if (!confirmed) return;
-        this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
-          console.log('Token exists and is valid, making API call');
-          this.syncJira(token, jiraUrl);
-        });
-      });
-  }
-
-  syncRequirementFromJira(): void {
-    this.dialogService
-      .confirm({
-        title: 'Pull from JIRA',
-        description: 'This action will override your local content with the latest updates from JIRA. Any unsaved local changes will be lost. Do you want to continue?',
-        cancelButtonText: 'Cancel',
-        confirmButtonText: 'Pull from JIRA',
-      })
-      .subscribe((confirmed) => {
-        if (!confirmed) return;
-        this.validateAndExecuteWithJiraToken((token, jiraUrl) => {
-          console.log('Token exists and is valid, syncing from JIRA');
-          this.syncFromJira(token, jiraUrl);
-        });
-      });
-  }
-
-  promptReauthentication(): void {
-    const jiraIntegration = this.metadata?.integration?.jira;
-
-    if (!jiraIntegration) {
-      this.openConfirmationDialog(
-        CONFIRMATION_DIALOG.JIRA_DETAILS_MISSING,
-        () => this.navigateToAppIntegrations(),
-      );
-      return;
-    }
-
-    this.openConfirmationDialog(CONFIRMATION_DIALOG.JIRA_REAUTHENTICATION, () =>
-      this.handleJiraOAuth(jiraIntegration),
-    );
-  }
-
-  private handleJiraOAuth(jiraIntegration: any): void {
-    const { clientId, clientSecret, redirectUrl } = jiraIntegration;
-
-    const oauthParams = { clientId, clientSecret, redirectUri: redirectUrl };
-    this.electronService
-      .startJiraOAuth(oauthParams)
-      .then((authResponse) => {
-        storeJiraToken(
-          authResponse,
-          jiraIntegration.jiraProjectKey,
-          this.navigation.projectId,
-        );
-        console.debug('Token received and stored.', authResponse.accessToken);
-        this.toast.showSuccess(APP_INTEGRATIONS.JIRA.SUCCESS);
-      })
-      .catch((error) => {
-        console.error('Error during OAuth process:', error);
-        this.toast.showError(APP_INTEGRATIONS.JIRA.ERROR);
-      });
-  }
-
-  private openConfirmationDialog(
-    dialogConfig: any,
-    onConfirm: () => void,
-  ): void {
-    this.dialogService
-      .confirm({
-        title: dialogConfig.TITLE,
-        description: dialogConfig.DESCRIPTION,
-        cancelButtonText: dialogConfig.CANCEL_BUTTON_TEXT,
-        confirmButtonText: dialogConfig.PROCEED_BUTTON_TEXT,
-      })
-      .subscribe((res) => {
-        if (res) onConfirm();
-      });
-  }
-
-  syncJira(token: string, jiraUrl: string): void {
-    const requestPayload: any = {
-      epicName: '',
-      epicDescription: '',
-      pmoId: '',
-      jiraUrl: jiraUrl,
-      token: token,
-      projectKey: this.metadata.integration.jira.jiraProjectKey,
-      features: [],
-    };
-
-    requestPayload.epicName = this.requirementFile.title;
-    requestPayload.epicDescription = this.requirementFile.requirement;
-    requestPayload.pmoId = this.requirementFile.pmoId
-      ? this.requirementFile.pmoId
-      : '';
-
-    this.userStories = this.userStoriesInState;
-
-    requestPayload.features = this.userStories.map((story) => {
-      return {
-        id: story.id,
-        name: story.name,
-        description: story.description,
-        pmoId: story.pmoId ? story.pmoId : '',
-        tasks: story?.tasks?.map((task) => {
-          return {
-            list: task.list,
-            acceptance: task.acceptance,
-            id: task.id,
-            pmoId: task.pmoId ? task.pmoId : '',
-          };
-        }),
-      };
-    });
-
-    this.jiraService.createOrUpdateTickets(requestPayload).subscribe({
-      next: (response) => {
-        console.debug('Jira API Response:', response);
-
-        const matchedEpic = response.epicName === this.requirementFile.title;
-
-        if (matchedEpic) {
-          this.requirementFile.pmoId = response.pmoId;
-        }
-
-        this.requirementFile.lastPushToJiraTimestamp = new Date().toISOString();
-
-        this.updateExportOptionsTimestamps();
-
-        const updatedFeatures = this.userStories.map((existingFeature: any) => {
-          const matchedFeature = response.features.find(
-            (responseFeature: any) =>
-              responseFeature.storyName === existingFeature.name,
-          );
-
-          if (matchedFeature) {
-            existingFeature.pmoId = matchedFeature.pmoId;
-            existingFeature.tasks.forEach((existingTask: any) => {
-              const matchedTask = matchedFeature.tasks.find(
-                (responseTask: any) =>
-                  responseTask.subTaskName === existingTask.list,
-              );
-
-              if (matchedTask) {
-                existingTask.pmoId = matchedTask.pmoId;
-              }
-            });
-          }
-
-          return existingFeature;
-        });
-
-        this.store.dispatch(
-          new UpdateFile(
-            `${this.navigation.folderName}/${this.navigation.fileName}`,
-            this.requirementFile,
-          ),
-        );
-
-        this.store.dispatch(
-          new BulkEditUserStories(
-            `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
-            updatedFeatures,
-          ),
-        );
-        this.toast.showSuccess(JIRA_TOAST.SUCCESS);
-      },
-      error: (error) => {
-        console.error('Error updating feature.json:', error);
-      },
-    });
-  }
-
-  private syncFromJira(token: string, jiraUrl: string): void {
-    const requestPayload: any = {
-      epicName: '',
-      epicDescription: '',
-      pmoId: '',
-      jiraUrl: jiraUrl,
-      token: token,
-      projectKey: this.metadata.integration.jira.jiraProjectKey,
-      features: [],
-    };
-
-    requestPayload.epicName = this.requirementFile.title;
-    requestPayload.epicDescription = this.requirementFile.requirement;
-    requestPayload.pmoId = this.requirementFile.pmoId || '';
-
-    this.userStories = this.userStoriesInState;
-
-    requestPayload.features = this.userStories.map((story) => ({
-      id: story.id,
-      name: story.name,
-      description: story.description,
-      pmoId: story.pmoId || '',
-      tasks: story?.tasks?.map((task) => ({
-        id: task.id,
-        list: task.list,
-        acceptance: task.acceptance,
-        pmoId: task.pmoId || '',
-      })) || [],
-    }));
-
-    this.jiraService.syncFromJira(requestPayload).subscribe({
-      next: (response) => {
-        console.debug('JIRA Sync Response:', response);
-        this.requirementFile.lastPullFromJiraTimestamp = new Date().toISOString();
-        this.updateExportOptionsTimestamps();
-        this.updateLocalContentFromJira(response);
-        this.toast.showSuccess('Successfully synced from JIRA');
-      },
-      error: (error) => {
-        console.error('Error syncing from JIRA:', error);
-        this.toast.showError('Failed to sync from JIRA');
-      },
-    });
-  }
-
   private formatDescriptionForView(
     description: string | undefined,
   ): string | null {
     if (!description) return null;
     return processUserStoryContentForView(description, 180);
-  }
-
-  private updateLocalContentFromJira(syncResponse: any): void {
-    if (syncResponse.epic) {
-      const updatedRequirementFile = {
-        ...this.requirementFile,
-        title: syncResponse.epic.title,
-        requirement: syncResponse.epic.requirement,
-        pmoId: syncResponse.epic.pmoId,
-        lastPullFromJiraTimestamp: this.requirementFile.lastPullFromJiraTimestamp
-      };
-
-      this.store.dispatch(
-        new UpdateFile(
-          `${this.navigation.folderName}/${this.navigation.fileName}`,
-          updatedRequirementFile,
-        ),
-      );
-    }
-
-    if (syncResponse.features && syncResponse.features.length > 0) {
-      const updatedUserStories = this.userStories.map((existingStory) => {
-        const syncedStory = syncResponse.features.find(
-          (feature: any) =>
-            feature.pmoId === existingStory.pmoId ||
-            feature.id === existingStory.id
-        );
-
-        if (syncedStory) {
-          const updatedTasks = existingStory.tasks?.map((existingTask) => {
-            const syncedTask = syncedStory.tasks?.find(
-              (task: any) =>
-                task.pmoId === existingTask.pmoId ||
-                task.id === existingTask.id
-            );
-
-            if (syncedTask) {
-              return {
-                ...existingTask,
-                list: syncedTask.list || existingTask.list,
-                acceptance: syncedTask.acceptance || existingTask.acceptance,
-                pmoId: syncedTask.pmoId || existingTask.pmoId,
-                status: syncedTask.status,
-                lastUpdated: syncedTask.lastUpdated,
-              };
-            }
-            return existingTask;
-          }) || [];
-
-          return {
-            ...existingStory,
-            name: syncedStory.name,
-            description: syncedStory.description,
-            pmoId: syncedStory.pmoId,
-            status: syncedStory.status,
-            lastUpdated: syncedStory.lastUpdated,
-            tasks: updatedTasks,
-          };
-        }
-
-        return existingStory;
-      });
-
-      this.store.dispatch(
-        new BulkEditUserStories(
-          `${this.navigation.folderName}/${this.navigation.fileName.replace(/\-base.json$/, '-feature.json')}`,
-          updatedUserStories,
-        ),
-      );
-
-      // Refresh the user stories view
-      setTimeout(() => {
-        this.getLatestUserStories();
-      }, 1000);
-    }
-  }
-
-
-  private updateExportOptionsTimestamps(): void {
-    if (this.exportOptions && this.exportOptions.length > 1) {
-      const jiraOptions = this.exportOptions[2].options;
-      if (jiraOptions && jiraOptions.length > 1) {
-        if (this.requirementFile?.lastPushToJiraTimestamp) {
-          jiraOptions[0].additionalInfo = this.requirementFile.lastPushToJiraTimestamp;
-        } else {
-          jiraOptions[0].additionalInfo = undefined;
-        }
-
-        if (this.requirementFile?.lastPullFromJiraTimestamp) {
-          jiraOptions[1].additionalInfo = this.requirementFile.lastPullFromJiraTimestamp;
-        } else {
-          jiraOptions[1].additionalInfo = undefined;
-        }
-      }
-    }
-  }
-
-  private validateAndExecuteWithJiraToken(callback: (token: string, jiraUrl: string) => void): void {
-    const { token, tokenExpiration, jiraURL, refreshToken } = getJiraTokenInfo(
-      this.navigation.projectId,
-    );
-    const isJiraTokenValid =
-      token &&
-      tokenExpiration &&
-      new Date() < new Date(tokenExpiration) &&
-      this.isTokenAvailable;
-
-    if (isJiraTokenValid) {
-      callback(token as string, jiraURL as string);
-    } else if (refreshToken) {
-      this.electronService
-        .refreshJiraToken(refreshToken)
-        .then((authResponse) => {
-          storeJiraToken(
-            authResponse,
-            this.metadata?.integration?.jira?.jiraProjectKey,
-            this.navigation.projectId,
-          );
-          callback(authResponse.accessToken, jiraURL as string);
-        })
-        .catch((error) => {
-          console.error('Error during token refresh:', error);
-          this.promptReauthentication();
-        });
-    } else {
-      this.promptReauthentication();
-    }
   }
 
   private setupStoryProgressListener(): void {
@@ -1069,14 +725,6 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       this.exportUserStories(EXPORT_FILE_FORMATS.EXCEL);
     };
 
-    const pushToJira = () => {
-      this.syncRequirementWithJira();
-    };
-
-    const pullFromJira = () => {
-      this.syncRequirementFromJira();
-    };
-
     if (this.userStoriesInState.length > 0) {
       this.exportOptions.push(
         {
@@ -1098,51 +746,23 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
               label: 'Copy to Clipboard',
               callback: exportJson.bind(this),
               icon: 'heroPaperClip',
-              additionalInfo: "JSON Format",
+              additionalInfo: 'JSON Format',
               isTimestamp: false,
             },
             {
               label: 'Download',
               callback: exportExcel.bind(this),
               icon: 'heroDocumentText',
-              additionalInfo: "Excel (.xlsx)",
+              additionalInfo: 'Excel (.xlsx)',
               isTimestamp: false,
             },
           ],
-        }
+        },
       );
-
-      const jiraOptions = [
-        {
-          label: 'Push to JIRA',
-          callback: pushToJira.bind(this),
-          icon: 'heroArrowUpTray',
-          additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
-          isTimestamp:true
-        }
-      ];
-
-      if (this.requirementFile?.pmoId) {
-        jiraOptions.push({
-          label: 'Pull from JIRA',
-          callback: pullFromJira.bind(this),
-          icon: 'heroArrowDownTray',
-          additionalInfo: this.requirementFile?.lastPullFromJiraTimestamp || undefined,
-          isTimestamp:true
-        });
-      }
-
-      if (this.metadata?.integration?.selectedPmoTool === 'jira') {
-        this.exportOptions.push({
-          groupName: 'JIRA',
-          options: jiraOptions,
-        });
-      }
     }
 
     return this.exportOptions;
   }
-
 
   ngOnDestroy() {
     this.destroy$.next();
