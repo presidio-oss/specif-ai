@@ -297,6 +297,10 @@ export class EditSolutionComponent {
         fileData.linkedBRDIds = formValue.linkedBRDIds;
       }
 
+      if (this.pmoId) {
+        fileData.pmoId = this.pmoId;
+      }
+
       this.store.dispatch(new UpdateFile(this.absoluteFilePath, fileData));
 
       if (this.isBRD()) {

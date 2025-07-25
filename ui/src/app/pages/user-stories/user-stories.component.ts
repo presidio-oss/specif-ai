@@ -26,7 +26,7 @@ import {
 } from '../../store/projects/projects.actions';
 import { ClipboardService } from '../../services/clipboard.service';
 import { ITaskRequest, ITasksResponse } from '../../model/interfaces/ITask';
-import { AddBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
+import { AddBreadcrumb, DeleteBreadcrumb } from '../../store/breadcrumb/breadcrumb.actions';
 import { DialogService } from '../../services/dialog/dialog.service';
 import {
   getJiraTokenInfo,
@@ -42,7 +42,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { heroArrowRight, heroDocumentText } from '@ng-icons/heroicons/outline';
+import { heroArrowRight, heroArrowTopRightOnSquare } from '@ng-icons/heroicons/outline';
 import { ListItemComponent } from '../../components/core/list-item/list-item.component';
 import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
@@ -92,7 +92,7 @@ import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils
   providers: [
     provideIcons({
       heroArrowRight,
-      heroDocumentText,
+      heroArrowTopRightOnSquare,
     }),
   ],
 })
@@ -293,15 +293,19 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
       .then();
   }
 
-  navigateBackToPRD() {
-    this.router.navigate(['/apps', this.navigation.projectId], {
+  navigateToEditPRD() {
+    this.store.dispatch(
+      new DeleteBreadcrumb(
+        `${this.navigation.fileName.split('-')[0] ?? ''} - User Stories`,
+      ),
+    );
+    this.router.navigate(['/edit'], {
       state: {
         data: this.navigation.data,
-        selectedFolder: {
-          title: this.navigation.folderName,
-          id: this.navigation.projectId,
-          metadata: this.navigation.data,
-        },
+        id: this.navigation.projectId,
+        folderName: this.navigation.folderName,
+        fileName: this.navigation.fileName,
+        req: this.navigation.selectedRequirement,
       },
     });
   }
