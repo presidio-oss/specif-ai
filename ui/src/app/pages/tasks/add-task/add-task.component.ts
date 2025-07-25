@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, ViewChild } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -46,6 +46,8 @@ import { provideIcons } from '@ng-icons/core';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { RequirementIdService } from 'src/app/services/requirement-id.service';
+import { InlineEditDirective } from '../../../directives/inline-edit/inline-edit.directive';
+import { Editor } from '@tiptap/core';
 
 @Component({
   selector: 'app-add-task',
@@ -63,7 +65,8 @@ import { RequirementIdService } from 'src/app/services/requirement-id.service';
     MultiUploadComponent,
     ErrorMessageComponent,
     MatTooltipModule,
-    RichTextEditorComponent
+    RichTextEditorComponent,
+    InlineEditDirective
   ],
   providers: [
     provideIcons({
@@ -102,6 +105,8 @@ export class AddTaskComponent implements OnDestroy {
   allowForceRedirect: boolean = false;
   entityType: string = 'TASK';
   absoluteFilePath: string = '';
+  @ViewChild(RichTextEditorComponent) richTextEditor?: RichTextEditorComponent;
+  public editorInstance: Editor | null = null;
 
   existingTask: {
     id: string;
@@ -500,5 +505,23 @@ ${chat.contentToAdd}`,
       this.taskForm.dirty &&
       this.taskForm.touched
     );
+  }
+
+  onEditorReady(editorComponent: RichTextEditorComponent): void {
+    if (editorComponent && editorComponent.editor) {
+      this.editorInstance = editorComponent.editor;
+    }
+  }
+
+  getContentContext(): string {
+    return `${this.userStory?.name || ''} - ${this.userStory?.description || ''} - Task: ${this.existingTask.task || ''}`;
+  }
+
+  handleInlineEditUpdate(newContent: string): void {
+    this.taskForm.patchValue({
+      acceptance: newContent
+    });
+    this.taskForm.markAsDirty();
+    this.taskForm.markAsTouched();
   }
 }

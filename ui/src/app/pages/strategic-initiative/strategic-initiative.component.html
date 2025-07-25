@@ -1,0 +1,308 @@
+<div class="w-full h-full flex flex-col px-0">
+  <app-workflow-progress-dialog
+    [isVisible]="showProgressDialog"
+    [projectId]="projectId"
+    [workflowType]="WorkflowType.StrategicInitiative"
+    [isCompleted]="strategicInitiativeGenerationComplete"
+    initialTitle="Generating Strategic Initiative..."
+    completedTitle="Strategic Initiative Generated Successfully!"
+    subtitle="Creating a comprehensive business proposal..."
+    completionButtonText="View Generated Proposal"
+    [showCancelButton]="false"
+    (closeDialog)="closeProgressDialog()"
+  />
+
+  <div class="canvas-container flex flex-col flex-grow">
+    <header
+      class="flex justify-between items-center py-2 px-3 border-b border-secondary-200 bg-white z-20 relative"
+    >
+      <div class="flex items-center gap-3 flex-1">
+        <div class="flex items-center">
+          <h1 class="text-base font-bold">
+            {{
+              mode === "add"
+                ? (folderName | expandDescription)
+                : ucRequirementId
+            }}
+          </h1>
+        </div>
+
+        <div class="flex-1" *ngIf="mode === 'edit' && !isEditingTitle">
+          <h2
+            class="text-base font-medium text-gray-800 cursor-pointer hover:text-primary-600"
+            (click)="isEditingTitle = true"
+          >
+            {{ strategicInitiativeForm.get("title")?.value }}
+            <ng-icon
+              name="heroPencil"
+              class="ml-1 text-gray-400 hover:text-primary-500"
+              size="14"
+            ></ng-icon>
+          </h2>
+        </div>
+        <div class="flex-1" *ngIf="mode === 'edit' && isEditingTitle">
+          <input
+            type="text"
+            [(ngModel)]="documentTitle"
+            [ngModelOptions]="{ standalone: true }"
+            class="w-full px-2 py-1 text-base rounded focus:outline-none"
+            (blur)="isEditingTitle = false; onTitleChange(documentTitle)"
+            (keyup.enter)="isEditingTitle = false; onTitleChange(documentTitle)"
+            autofocus
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div
+          *ngIf="mode === 'edit'"
+          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+          [ngClass]="{
+            'bg-yellow-100 text-yellow-800':
+              strategicInitiativeForm.get('status')?.value === 'DRAFT',
+            'bg-green-100 text-green-800':
+              strategicInitiativeForm.get('status')?.value === 'COMPLETE',
+          }"
+        >
+          {{ strategicInitiativeForm.get("status")?.value }}
+        </div>
+        <app-export-dropdown
+          *ngIf="mode === 'edit'"
+          [groupedOptions]="documentActionOptions"
+          buttonLabel="Options"
+        ></app-export-dropdown>
+      </div>
+    </header>
+
+    <form
+      [formGroup]="strategicInitiativeForm"
+      class="flex flex-col flex-grow overflow-hidden"
+    >
+      <div
+        *ngIf="mode === 'add'"
+        class="p-4 bg-white border-b border-secondary-200"
+      >
+        <div class="flex flex-col gap-4">
+          <div>
+            <app-input-field
+              elementPlaceHolder="Title"
+              elementId="title"
+              elementName="Title"
+              formControlName="title"
+              [required]="true"
+            />
+            <div
+              *ngIf="
+                strategicInitiativeForm.get('title')?.errors?.['required'] &&
+                strategicInitiativeForm.get('title')?.touched
+              "
+              class="text-danger-500 text-sm"
+            >
+              Title is required
+            </div>
+          </div>
+
+          <!-- Research URLs input -->
+          <div class="w-full">
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-sm font-medium text-secondary-500">
+                Research URLs
+                <span class="text-xs text-secondary-400"
+                  >(Optional - Add URLs for research context)</span
+                >
+              </label>
+              <app-button
+                buttonContent="Add Research URL"
+                theme="secondary_outline"
+                size="sm"
+                rounded="md"
+                icon="heroPlus"
+                (click)="addResearchUrl()"
+              ></app-button>
+            </div>
+            <div
+              formArrayName="researchUrls"
+              class="flex flex-col gap-3 w-full"
+            >
+              <div
+                *ngFor="
+                  let urlControl of researchUrlsFormArray.controls;
+                  let i = index
+                "
+                class="flex items-center gap-2 w-full"
+              >
+                <div class="w-full">
+                  <app-input-field
+                    [formControlName]="i"
+                    elementPlaceHolder="https://example.com"
+                    [elementId]="'url-' + i"
+                    elementName=""
+                    [customClass]="'w-full'"
+                  />
+                </div>
+                <app-button
+                  [isIconButton]="true"
+                  icon="heroTrash"
+                  theme="danger"
+                  size="sm"
+                  rounded="md"
+                  (click)="removeResearchUrl(i)"
+                ></app-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 flex overflow-hidden bg-white">
+        <div *ngIf="mode === 'add'" class="flex-1 p-4 overflow-y-auto bg-white">
+          <div class="flex flex-col gap-1.5">
+            <label class="block text-sm font-medium text-secondary-500">
+              Details
+              <span class="text-red-500 text-xs">*</span>
+            </label>
+            <div class="flex-1 min-h-[400px]">
+              <app-rich-text-editor
+                formControlName="requirement"
+                [editorClass]="'h-full min-h-[400px] overflow-y-auto'"
+                [contentPadding]="'lg'"
+              ></app-rich-text-editor>
+              <ng-container
+                *ngIf="strategicInitiativeForm.get('requirement')?.touched"
+              >
+                <span
+                  *ngIf="
+                    strategicInitiativeForm.get('requirement')?.errors?.[
+                      'required'
+                    ]
+                  "
+                  class="text-red-500 text-sm"
+                >
+                  Requirement is required
+                </span>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="mode === 'edit'">
+          <div class="flex flex-1 overflow-hidden h-[calc(100vh-200px)]">
+            <div class="flex-1 flex flex-col overflow-y-auto">
+              <app-rich-text-editor
+                #richTextEditor
+                formControlName="requirement"
+                [editorClass]="'h-full flex-1 min-h-[240px]'"
+                [editable]="true"
+                [noRounding]="true"
+                [contentPadding]="'lg'"
+                appInlineEdit
+                [editorInstance]="getEditorInstance()"
+                [contextProvider]="getDocumentContext"
+                [onContentUpdated]="handleInlineEdit"
+                (change)="onRichTextEditorChange($event)"
+                class="flex flex-col flex-grow"
+              ></app-rich-text-editor>
+            </div>
+
+            <div
+              class="border-l border-secondary-200 bg-white transition-all duration-300 ease-in-out"
+              [ngClass]="{ 'w-96': isChatExpanded, 'w-10': !isChatExpanded }"
+            >
+              <div
+                class="p-3 flex justify-between items-center"
+                [ngClass]="{ 'border-b border-secondary-200': isChatExpanded }"
+              >
+                <h3
+                  *ngIf="isChatExpanded"
+                  class="text-sm font-medium text-secondary-700"
+                >
+                  <ng-icon
+                    name="heroSparklesSolid"
+                    class="text-primary-500"
+                  ></ng-icon>
+                  Talk to HAI
+                </h3>
+                <button
+                  class="text-secondary-500 hover:text-secondary-700 ml-auto"
+                  (click)="toggleChatExpanded()"
+                >
+                  <ng-icon
+                    [name]="
+                      isChatExpanded ? 'heroChevronRight' : 'heroChevronLeft'
+                    "
+                  ></ng-icon>
+                </button>
+              </div>
+
+              <div
+                *ngIf="isChatExpanded"
+                class="flex flex-col h-[calc(100%-48px)] overflow-hidden"
+              >
+                <app-chat
+                  class="h-full flex-grow block"
+                  chatType="requirement"
+                  [name]="name"
+                  [description]="requirement"
+                  [fileName]="fileName"
+                  [chatHistory]="chatHistory"
+                  [supportsAddFromCode]="false"
+                  [baseContent]="
+                    strategicInitiativeForm.getRawValue().requirement
+                  "
+                  (updateChatHistory)="updateChatHistory($event)"
+                  [containerClass]="'border-none h-full overflow-hidden'"
+                  [hideHeader]="true"
+                />
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div
+        class="flex justify-between gap-2 p-4 border-t border-secondary-200 bg-white"
+      >
+        <div>
+          <app-button
+            buttonContent="Cancel"
+            theme="secondary_outline"
+            size="sm"
+            rounded="md"
+            (click)="navigateBackToDocumentList(data)"
+          />
+        </div>
+
+        <div class="flex gap-2">
+          <app-button
+            [buttonContent]="
+              mode === 'edit' ? 'Regenerate Draft' : 'Generate Draft'
+            "
+            theme="secondary"
+            size="sm"
+            rounded="md"
+            icon="heroSparklesSolid"
+            (click)="generateStrategicInitiativeDraft()"
+          />
+          <app-button
+            buttonContent="Update"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'edit'"
+            (click)="updateStrategicInitiative()"
+            [disabled]="checkFormValidity()"
+          />
+          <app-button
+            buttonContent="Add"
+            theme="primary"
+            size="sm"
+            rounded="md"
+            *ngIf="mode === 'add'"
+            [disabled]="checkFormValidity()"
+            (click)="addStrategicInitiative()"
+          />
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
