@@ -217,6 +217,7 @@ export class ProjectsState {
         [REQUIREMENT_TYPE.TASK]: 0,
         [REQUIREMENT_TYPE.BP]: 0,
         [REQUIREMENT_TYPE.TC]: 0,
+        [REQUIREMENT_TYPE.SI]: 0,
       };
 
       metadata = {
@@ -374,7 +375,7 @@ export class ProjectsState {
     }
 
     // Define the folder order
-    const folderOrder = ['solution', 'BRD', 'PRD', 'NFR', 'UIR', 'BP', 'TC']; // Update as needed
+    const folderOrder = ['solution', 'BRD', 'PRD', 'NFR', 'UIR', 'BP', 'TC', 'SI']; // Update as needed
 
     try {
       const files = await this.appSystemService.getFolders(

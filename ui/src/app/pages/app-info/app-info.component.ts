@@ -47,6 +47,8 @@ import {
   heroChevronUp,
   heroServerStack,
   heroBeaker,
+  heroDocument,
+  heroPresentationChartBar,
 } from '@ng-icons/heroicons/outline';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
@@ -116,7 +118,9 @@ import { JiraToPmoMigrationService } from '../../services/migration/jira-to-pmo-
       heroChevronDown,
       heroChevronUp,
       heroServerStack,
+      heroDocument,
       heroBeaker,
+      heroPresentationChartBar
     }),
   ],
 })
@@ -173,7 +177,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
 
   // Predefined order of folders
-  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC'];
+  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC', 'SI'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
@@ -588,22 +592,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     });
   }
 
-  navigateToAdd(folderName: string) {
-    this.router
-      .navigate(['/add'], {
-        state: {
-          data: this.appInfo,
-          id: this.projectId,
-          folderName: folderName,
-          breadcrumb: {
-            name: 'Add Document',
-            link: this.router.url,
-            icon: 'add',
-          },
-        },
-      })
-      .then();
-  }
 
   navigateToBPFlow(item: any) {
     this.router.navigate(['/bp-flow/view', item.id], {
@@ -624,6 +612,47 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
   navigateToTestCasesHome() {
     this.selectFolder({ name: 'TC', children: [] });
+  }
+
+  navigateToAdd(folderName: string) {
+    if (folderName === 'SI') {
+      this.router
+        .navigate(['/strategic-initiative/add'], {
+          state: {
+            data: this.appInfo,
+            id: this.projectId,
+            folderName: folderName,
+            breadcrumb: {
+              name: 'Add Document',
+              link: this.router.url,
+              icon: 'add',
+            },
+          },
+        })
+        .then();
+    } else {
+      this.router
+        .navigate(['/add'], {
+          state: {
+            data: this.appInfo,
+            id: this.projectId,
+            folderName: folderName,
+            breadcrumb: {
+              name: 'Add Document',
+              link: this.router.url,
+              icon: 'add',
+            },
+          },
+        })
+        .then();
+    }
+  }
+
+  handleIntegrationNavState(): void {
+    if (this.navigationState && this.navigationState['openAppIntegrations']) {
+      this.selectFolder({ name: 'app-integrations', children: [] });
+      this.toggleAccordion('jira');
+    }
   }
 
   getIconName(key: string): string {

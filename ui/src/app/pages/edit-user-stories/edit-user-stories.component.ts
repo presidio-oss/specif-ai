@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, ViewChild } from '@angular/core';
 import {
   IUpdateUserStoryRequest,
   IUserStory,
@@ -47,6 +47,8 @@ import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { ArchiveFile } from 'src/app/store/projects/projects.actions';
 import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils.service';
+import { InlineEditDirective } from '../../directives/inline-edit/inline-edit.directive';
+import { Editor } from '@tiptap/core';
 
 @Component({
   selector: 'app-edit-user-stories',
@@ -63,7 +65,8 @@ import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils
     AiChatComponent,
     MultiUploadComponent,
     MatTooltipModule,
-    RichTextEditorComponent
+    RichTextEditorComponent,
+    InlineEditDirective
   ],
   providers: [
     provideIcons({ 
@@ -113,6 +116,8 @@ export class EditUserStoriesComponent implements OnDestroy {
     ProjectsState.getSelectedFileContent,
   );
   readonly regex = /\-feature.json$/;
+  @ViewChild(RichTextEditorComponent) richTextEditor?: RichTextEditorComponent;
+  public editorInstance: Editor | null = null;
 
   constructor(
     private store: Store,
@@ -468,5 +473,23 @@ export class EditUserStoriesComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.store.dispatch(new DeleteBreadcrumb(this.editLabel));
+  }
+
+  onEditorReady(editorComponent: RichTextEditorComponent): void {
+    if (editorComponent && editorComponent.editor) {
+      this.editorInstance = editorComponent.editor;
+    }
+  }
+
+  getContentContext(): string {
+    return `${this.projectMetadata?.name || ''} - ${this.projectMetadata?.description || ''} - User Story: ${this.name || ''}`;
+  }
+
+  handleInlineEditUpdate(newContent: string): void {
+    this.userStoryForm.patchValue({
+      description: newContent
+    });
+    this.userStoryForm.markAsDirty();
+    this.userStoryForm.markAsTouched();
   }
 }
