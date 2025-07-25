@@ -80,7 +80,7 @@ const config = {
             label: 'Documentation',
           },
           {
-            href: 'https://github.com/hai/specif-ai',
+            href: 'https://github.com/presidio-oss/specif-ai',
             label: 'GitHub',
             position: 'right',
           },
@@ -119,7 +119,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/hai/specif-ai',
+                href: 'https://github.com/presidio-oss/specif-ai',
               },
               {
                 label: 'Support',

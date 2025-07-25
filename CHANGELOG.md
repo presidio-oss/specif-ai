@@ -1,12 +1,41 @@
 # Changelog
 
+## [2.7.0]
+
+### Added
+
+- Bi-directional JIRA synchronisation with custom ADF conversion utilities for consistent cross-platform formatting.
+- Azure DevOps (ADO) Pull and Push integration for seamless synchronisation.
+- Automated JIRA ID migration system converting legacy fields (epicTicketId, userStoryId, subTaskTicketId) to a unified pmoId structure.
+- Agentic test case generation feature for creating comprehensive test case scenarios from requirements.
+- Docusaurus documentation platform for streamlined onboarding and comprehensive usage reference.
+- Solution creation workflow now redirects to the solution view with real-time progress updates. Added abort and retry controls for enhanced user control.
+
+### Enhancement
+
+- Requirement description rich text editor now supports table and link management (create, edit, delete operations).
+- AI prompt logic now preserves tables and links during content updates, maintaining formatting integrity.
+- Bidirectional PRD–User Story navigation for improved workflow transitions and traceability.
+- Export dropdown grouping for improved user experience.
+- Standardised chat header displays "Talk to HAI" for updated branding consistency.
+- Added "Reset Settings" button on the settings page to reset LLM and other configurations.
+
+### Fixed
+
+- Consistent card heights across all pages for a cohesive user experience.
+- Extracted sidebar into a separate component for improved code maintainability.
+- Updated JIRA callback port to 12345 to resolve conflicts with other system processes.
+- Fixed Specifai LLM config Electron store issue when upgrading from v1.x to v2.x.
+
 ## [2.6.0]
 
 ### Added
+
 - Integrated thinking process visualization for generate/re-generate workflows in stories and tasks, providing better transparency into AI decision-making
 - Added support for Claude 4 models in LLM configurations, expanding available AI model options
 
 ### Enhancements
+
 - Improved thinking progress events with structured message format for better input/output handling and traceability
 - Enhanced login screen UX by adding window drag functionality, allowing users to reposition the application window
 

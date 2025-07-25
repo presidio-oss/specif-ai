@@ -17,7 +17,7 @@ export interface RequestFeature {
 
 export interface RequestTask {
   id: string;
-  subTaskTicketId: string;
+  pmoId: string;
   list: string;
   acceptance: string | string[];
 }
@@ -42,7 +42,7 @@ export interface ResponseFeature {
 
 export interface ResponseTask {
   subTaskName: string;
-  subTaskTicketId: string;
+  pmoId: string;
 }
 
 

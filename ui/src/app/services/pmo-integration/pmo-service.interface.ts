@@ -14,9 +14,11 @@ export interface PmoService {
 
   /**
    * Get features hierarchy from the PMO system
-   * Returns a hierarchical structure of tickets (Features -> User Stories -> Tasks)
+   * Returns a hierarchical structure of tickets (Features -> User Stories -> Tasks) along with total count
+   * @param skip Number of items to skip (for pagination)
+   * @param top Number of items to take (for pagination)
    */
-  getWorkPlanItemsHierarchy(): Promise<Ticket[]>;
+  getWorkPlanItemsHierarchy(skip?: number, top?: number): Promise<{ tickets: Ticket[]; totalCount: number }>;
 
   /**
    * Get current document hierarchy from SpecifAI for pushing to PMO system

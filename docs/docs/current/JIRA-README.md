@@ -45,7 +45,7 @@ This guide explains how to integrate the Specifai solution with Jira using OAuth
 
 3. **Set the Callback URL:**
    - Enter the **Callback URL** for the Requirements app. This URL is where users will be redirected after authorizing the app.
-     - Expected default value : `http://localhost:49153/callback`
+     - Expected default value : `http://localhost:12345/callback`
       > **Note**: If you modify the port value, replace it with your app's actual callback URL, updating the port accordingly.
    - Click **Save** to apply the configuration.
 
@@ -90,6 +90,34 @@ This guide explains how to integrate the Specifai solution with Jira using OAuth
    - If the connection is successful, you will see a confirmation message indicating that the integration is connected.
    ![JIRA Successful Connection](../../static/img/specifai-jira-integration-connected.png)
 
----
+## Step 6: Using the Jira Integration
 
-By following these steps, you can successfully integrate the Requirements app with Jira using OAuth 2.0.
+### Push to Jira (Specifai → Jira)
+
+1. **Navigate to User Stories:**
+   - From the **PRD** page in Specifai, select your PRD and go to its **Stories** tab.
+
+2. **Push to Jira:**
+   - Click **Push to Jira** to sync your PRDs, User Stories and Tasks to Jira.
+   - The system will create corresponding issues in Jira with proper parent-child relationships:
+     - **Epic**: PRD
+     - **Story**: User Story  
+     - **Task**: Task
+
+### Pull from Jira (Jira → Specifai)
+
+1. **Navigate to User Stories:**
+   - From the **PRD** page in Specifai, select your PRD and go to its **Stories** tab.
+
+2. **Pull from Jira:**
+   - Click **Pull from Jira** to import issues from your Jira project.
+   - The system will import issues and create corresponding User Story and Task files in your Specifai project:
+     - **Epics** (mapped to PRDs)
+     - **Stories** (mapped to User Stories)
+     - **Tasks** (mapped to Tasks)
+
+### Bidirectional Synchronization
+
+- **Update Existing Items**: The integration can update existing items in both directions.
+- **Maintain Relationships**: Parent-child relationships are preserved during synchronization.
+- **Bulk Operations**: All items are processed efficiently in bulk operations.

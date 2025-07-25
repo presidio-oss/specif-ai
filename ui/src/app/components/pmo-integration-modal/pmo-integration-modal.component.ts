@@ -72,6 +72,12 @@ export class PmoIntegrationModalComponent implements OnInit {
   expandedPrdIds = signal<Set<string>>(new Set());
   expandedUserStoryIds = signal<Set<string>>(new Set());
 
+  currentPage = signal<number>(0);
+  pageSize = signal<number>(200);
+  totalItems = signal<number>(0);
+  hasMoreItems = signal<boolean>(false);
+  isLoadingMore = signal<boolean>(false);
+
   // Selected items
   selectedPrdIds = signal<Set<string>>(new Set());
   selectedUserStoryIds = signal<Set<string>>(new Set());
@@ -174,12 +180,30 @@ export class PmoIntegrationModalComponent implements OnInit {
     }
   }
 
-  async loadPrdsHierarchy(): Promise<void> {
+  async loadPrdsHierarchy(reset: boolean = true): Promise<void> {
     try {
       this.isLoadingWorkItems.set(true);
-      const prdsHierarchy = await this.pmoService.getWorkPlanItemsHierarchy();
-      console.log('Loaded PRDs hierarchy:', prdsHierarchy);
-      this.prdsWithChildren.set(prdsHierarchy);
+      const skip = this.currentPage() * this.pageSize();
+      const {tickets: prdsHierarchy, totalCount } = await this.pmoService.getWorkPlanItemsHierarchy(
+        skip,
+        this.pageSize(),
+      );
+
+      if (reset) {
+        this.currentPage.set(0);
+        this.prdsWithChildren.set([]);
+        this.totalItems.set(totalCount);
+      }
+
+      if (reset) {
+        this.prdsWithChildren.set(prdsHierarchy);
+      } else {
+        const currentPrds = this.prdsWithChildren();
+        this.prdsWithChildren.set([...currentPrds, ...prdsHierarchy]);
+      }
+
+      const loadedCount = (this.currentPage() + 1) * this.pageSize();
+      this.hasMoreItems.set(loadedCount < this.totalItems());
 
       // Expand all PRDs and user stories by default
       this.expandAllItemsByDefault(prdsHierarchy);
@@ -196,25 +220,42 @@ export class PmoIntegrationModalComponent implements OnInit {
     }
   }
 
+  async loadMoreItems(): Promise<void> {
+    if (this.isLoadingMore() || !this.hasMoreItems()) {
+      return;
+    }
+
+    try {
+      this.isLoadingMore.set(true);
+      this.currentPage.set(this.currentPage() + 1);
+      await this.loadPrdsHierarchy(false);
+    } catch (error) {
+      console.error('Error loading more items:', error);
+      this.toasterService.showError('Failed to load more items');
+    } finally {
+      this.isLoadingMore.set(false);
+    }
+  }
+
   private expandAllItemsByDefault(prdsHierarchy: Ticket[]): void {
-    // Create new Sets to store the expanded IDs
-    const prdIds = new Set<string>();
-    const userStoryIds = new Set<string>();
+    // Get current expanded state
+    const currentPrdIds = new Set(this.expandedPrdIds());
+    const currentUserStoryIds = new Set(this.expandedUserStoryIds());
 
     // Only expand PRDs and user stories that have children
     prdsHierarchy.forEach((prd) => {
       if (prd.child && prd.child.length > 0) {
-        prdIds.add(prd.specifaiId);
+        currentPrdIds.add(prd.specifaiId);
         prd.child.forEach((userStory: Ticket) => {
           if (userStory.child && userStory.child.length > 0) {
-            userStoryIds.add(userStory.specifaiId);
+            currentUserStoryIds.add(userStory.specifaiId);
           }
         });
       }
     });
 
-    this.expandedPrdIds.set(prdIds);
-    this.expandedUserStoryIds.set(userStoryIds);
+    this.expandedPrdIds.set(currentPrdIds);
+    this.expandedUserStoryIds.set(currentUserStoryIds);
   }
 
   togglePrdExpansion(prdId: string): void {

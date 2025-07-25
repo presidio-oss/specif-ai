@@ -33,13 +33,13 @@
 
       <div class="flex items-center justify-between gap-3">
         <app-button
-          buttonContent="View PRD"
-          icon="heroDocumentText"
+          buttonContent="Edit PRD"
+          icon="heroArrowTopRightOnSquare"
           theme="secondary_outline"
           size="sm"
           rounded="lg"
-          (click)="navigateBackToPRD()"
-          matTooltip="View PRD"
+          (click)="navigateToEditPRD()"
+          matTooltip="Edit PRD"
         />
         <app-button
           *ngIf="userStories.length === 0"

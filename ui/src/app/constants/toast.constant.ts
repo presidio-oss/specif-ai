@@ -4,6 +4,11 @@ export const JIRA_TOAST = {
   INFO: 'JIRA Sync Initiated',
 };
 
+export const ADO_TOAST = {
+  PULL_INITIATED: 'ADO Pull Operation Started',
+  PUSH_INITIATED: 'ADO Push Operation Started',
+};
+
 export const APP_INTEGRATIONS = {
   JIRA: {
     SUCCESS: 'Successfully Authenticated with JIRA',
