@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { Store } from '@ngxs/store';
@@ -47,11 +47,13 @@ import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { catchError, switchMap, take, Observable, filter, map, lastValueFrom } from 'rxjs';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { heroSparklesSolid } from '@ng-icons/heroicons/solid';
-import { heroDocumentText } from '@ng-icons/heroicons/outline';
+import { heroDocumentText, heroPencilSquare } from '@ng-icons/heroicons/outline';
 import { RichTextEditorComponent } from 'src/app/components/core/rich-text-editor/rich-text-editor.component';
 import { truncateMarkdown } from 'src/app/utils/markdown.utils';
 import { CheckboxCardComponent } from 'src/app/components/checkbox-card/checkbox-card.component';
 import { PillComponent } from "../../components/pill/pill.component";
+import { InlineEditDirective } from "../../directives/inline-edit/inline-edit.directive";
+import { Editor } from '@tiptap/core';
 
 @Component({
   selector: 'app-edit-solution',
@@ -73,7 +75,8 @@ import { PillComponent } from "../../components/pill/pill.component";
     CommonModule,
     CheckboxCardComponent,
     PillComponent,
-    NgIconComponent
+    NgIconComponent,
+    InlineEditDirective
 ],
   providers: [
     provideIcons({
@@ -102,6 +105,8 @@ export class EditSolutionComponent {
   absoluteFilePath: string = '';
   oldContent: string = '';
   public loading: boolean = false;
+  @ViewChild(RichTextEditorComponent) richTextEditor?: RichTextEditorComponent;
+  public editorInstance: Editor | null = null;
   selectedFileContent$ = this.store.select(
     ProjectsState.getSelectedFileContent,
   );
@@ -808,5 +813,23 @@ ${chat.contentToAdd}`,
   >(data: TData, key: keyof TData[number]) {
     console.log('-----extractPropertyValues', data)
     return data.map((item) => item[key]);
+  }
+
+  onEditorReady(editorComponent: RichTextEditorComponent): void {
+    if (editorComponent && editorComponent.editor) {
+      this.editorInstance = editorComponent.editor;
+    }
+  }
+
+  getContentContext(): string {
+    return `${this.name || ''} - ${this.description || ''} - ${this.folderName || ''}`;
+  }
+
+  handleInlineEditUpdate(newContent: string): void {
+    this.requirementForm.patchValue({
+      content: newContent
+    });
+    this.requirementForm.markAsDirty();
+    this.requirementForm.markAsTouched();
   }
 }
