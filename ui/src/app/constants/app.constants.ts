@@ -227,12 +227,6 @@ export const APP_MESSAGES = {
     'Sync with Jira\n' +
     'option to create tickets directly in JIRA with the configured Project Key.',
   AWS_BEDROCK_ACCORDION_MESSAGE: `Using the AWS Bedrock Knowledge Base enriches ${environment.ThemeConfiguration.appName} with enterprise-specific context, enhancing its ability to generate precise, business-relevant responses. This added context improves accuracy and ensures deeper alignment with the overall solution.`,
-  JIRA_PREREQUISITE: `Please ensure that you have the following issue types in your JIRA project:
-  <ul class="list-disc pl-5 mt-2">
-    <li>Epic</li>
-    <li>Story</li>
-    <li>Task</li>
-  </ul>`,
   ADO_ACCORDION:
     'Azure DevOps Integration allows users to publish generated user stories as Azure DevOps work items by configuring their organization, project, and personal access token. Once configured and connected, users can sync their user stories directly to Azure DevOps.',
   ADO_DETAILS_MISSING: 'It looks like your ADO details are missing. Please return to the integration settings, fill in your details, and save them to continue.',

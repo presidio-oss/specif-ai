@@ -21,6 +21,7 @@ export interface JiraIntegrationConfig {
   readonly clientId: string;
   readonly clientSecret: string;
   readonly redirectUrl: string;
+  readonly workItemTypeMapping?: WorkItemTypeMapping;
 }
 
 export interface WorkItemTypeMapping {
