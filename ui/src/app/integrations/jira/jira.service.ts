@@ -28,12 +28,14 @@ import {
   UpdateMetadata,
 } from '../../store/projects/projects.actions';
 import {
-  JiraIntegrationConfig,
   IProjectMetadata,
+  JiraIntegrationConfig,
+  JiraCredentials,
 } from '../../model/interfaces/projects.interface';
 import { getJiraTokenInfo } from './jira.utils';
 import { Router } from '@angular/router';
 import { BasePmoService } from '../../services/pmo-integration/base-pmo.service';
+import { IntegrationCredentialsService } from '../../services/integration-credentials/integration-credentials.service';
 
 @Injectable({
   providedIn: 'root',
@@ -44,6 +46,7 @@ export class JiraService extends BasePmoService implements PmoService {
 
   constructor(
     private http: HttpClient,
+    private integrationCredService: IntegrationCredentialsService,
     toast: ToasterService,
     store: Store,
     router: Router,
@@ -66,13 +69,31 @@ export class JiraService extends BasePmoService implements PmoService {
       this.store.select(ProjectsState.getMetadata).pipe(take(1)),
     );
 
-    this.config = metadata?.integration?.jira;
+    const jiraCredentials =
+      await this.integrationCredService.getCredentials<JiraCredentials>(
+        metadata?.name,
+        metadata?.id,
+        'jira',
+      );
 
-    if (!this.config) {
+    if (
+      !jiraCredentials?.jiraProjectKey ||
+      !jiraCredentials?.clientId ||
+      !jiraCredentials?.clientSecret ||
+      !jiraCredentials?.redirectUrl
+    ) {
       throw new Error(
         'Jira credentials not configured. Please configure the integration first.',
       );
     }
+
+    this.config = {
+      jiraProjectKey: jiraCredentials.jiraProjectKey,
+      clientId: jiraCredentials.clientId,
+      clientSecret: jiraCredentials.clientSecret,
+      redirectUrl: jiraCredentials.redirectUrl,
+      workItemTypeMapping: metadata?.integration?.jira?.workItemTypeMapping,
+    };
 
     // Get Jira URL from token info
     const tokenInfo = getJiraTokenInfo(metadata.id);

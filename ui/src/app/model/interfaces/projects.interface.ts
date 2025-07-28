@@ -16,23 +16,29 @@ export interface IRequirementConfig {
   count: number;
 }
 
-export interface JiraIntegrationConfig {
-  readonly jiraProjectKey: string;
-  readonly clientId: string;
-  readonly clientSecret: string;
-  readonly redirectUrl: string;
-  readonly workItemTypeMapping?: WorkItemTypeMapping;
+export interface JiraCredentials {
+  clientId: string;
+  clientSecret: string;
+  jiraProjectKey: string;
+  redirectUrl: string;
+}
+
+export interface AdoCredentials {
+  personalAccessToken: string;
+  organization: string;
+  projectName: string;
+}
+
+export interface JiraIntegrationConfig extends Partial<JiraCredentials> {
+  readonly workItemTypeMapping: WorkItemTypeMapping;
 }
 
 export interface WorkItemTypeMapping {
   [key: string]: string;
 }
 
-export interface AdoIntegrationConfig {
-  readonly organization: string;
-  readonly projectName: string;
-  readonly personalAccessToken: string;
-  readonly workItemTypeMapping?: WorkItemTypeMapping;
+export interface AdoIntegrationConfig extends Partial<AdoCredentials> {
+  readonly workItemTypeMapping: WorkItemTypeMapping;
 }
 
 export interface IProjectMetadata {
