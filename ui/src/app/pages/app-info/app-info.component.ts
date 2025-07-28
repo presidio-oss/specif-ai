@@ -80,6 +80,7 @@ import { ProjectFailureMessageComponent } from '../../components/project-failure
 import { ProjectCreationService } from '../../services/project-creation/project-creation.service';
 import { PmoIntegrationComponent } from '../../components/pmo-integration/pmo-integration.component';
 import { JiraToPmoMigrationService } from '../../services/migration/jira-to-pmo-migration.service';
+import { IntegrationCredentialsService } from '../../services/integration-credentials/integration-credentials.service';
 
 @Component({
   selector: 'app-info',
@@ -120,7 +121,7 @@ import { JiraToPmoMigrationService } from '../../services/migration/jira-to-pmo-
       heroServerStack,
       heroDocument,
       heroBeaker,
-      heroPresentationChartBar
+      heroPresentationChartBar,
     }),
   ],
 })
@@ -194,6 +195,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private workflowProgressService: WorkflowProgressService,
     private projectCreationService: ProjectCreationService,
     private jiraToPmoMigrationService: JiraToPmoMigrationService,
+    private integrationCredService: IntegrationCredentialsService,
   ) {
     const navigation = this.router.getCurrentNavigation();
     this.appInfo = navigation?.extras?.state?.['data'];
@@ -284,6 +286,43 @@ export class AppInfoComponent implements OnInit, OnDestroy {
               .migrateLegacyJiraReferences(this.appName as string, this.appInfo)
               .catch((error) => {
                 this.logger.error('Migration failed:', error);
+              });
+          }
+
+          // Check if we need to migrate integration credentials
+          if (
+            this.integrationCredService.shouldMigrateCredentials(this.appInfo)
+          ) {
+            this.logger.info(
+              'Legacy integration credentials detected. Starting migration...',
+            );
+            this.integrationCredService
+              .migrateCredentialsFromMetadata(
+                this.appName as string,
+                this.projectId as string,
+                this.appInfo,
+              )
+              .then((result) => {
+                if (result.success && result.migratedTypes.length > 0) {
+                  this.logger.info(
+                    `Successfully migrated ${result.migratedTypes.join(', ')} credentials`,
+                  );
+
+                  const cleanedMetadata =
+                    this.integrationCredService.cleanMetadataCredentials(
+                      this.appInfo,
+                    );
+                  this.store.dispatch(
+                    new UpdateMetadata(this.appInfo.id, cleanedMetadata),
+                  );
+
+                  this.toast.showSuccess(
+                    `Migrated ${result.migratedTypes.join(' and ')} credentials to secure storage`,
+                  );
+                }
+              })
+              .catch((error) => {
+                this.logger.error('Credential migration failed:', error);
               });
           }
         } else {
@@ -591,7 +630,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
         .then();
     });
   }
-
 
   navigateToBPFlow(item: any) {
     this.router.navigate(['/bp-flow/view', item.id], {

@@ -28,9 +28,10 @@ import { ToasterService } from '../../../services/toaster/toaster.service';
 import { ElectronService } from '../../../electron-bridge/electron.service';
 import {
   IProjectMetadata,
-  AdoIntegrationConfig,
   WorkItemTypeMapping,
+  AdoCredentials,
 } from '../../../model/interfaces/projects.interface';
+import { IntegrationCredentialsService } from '../../../services/integration-credentials/integration-credentials.service';
 import { APP_MESSAGES } from '../../../constants/app.constants';
 import { APP_INTEGRATIONS } from '../../../constants/toast.constant';
 import { environment } from '../../../../environments/environment';
@@ -52,6 +53,9 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
   private readonly logger = inject(NGXLogger);
   private readonly destroyRef = inject(DestroyRef);
   private readonly electronService = inject(ElectronService);
+  private readonly integrationCredService = inject(
+    IntegrationCredentialsService,
+  );
 
   protected readonly APP_MESSAGES = APP_MESSAGES;
   protected readonly environment = environment;
@@ -87,17 +91,25 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
     });
   }
 
-  private initializeFormState(): void {
+  private async initializeFormState(): Promise<void> {
+    const credentials =
+      await this.integrationCredService.getCredentials<AdoCredentials>(
+        this.projectMetadata.name,
+        this.projectId,
+        'ado',
+      );
+
     const adoIntegration = this.projectMetadata?.integration?.ado;
 
-    if (adoIntegration) {
+    if (credentials) {
       this.adoForm.patchValue({
-        organization: adoIntegration.organization || '',
-        projectName: adoIntegration.projectName || '',
-        personalAccessToken: adoIntegration.personalAccessToken || '',
-        prdWorkItemType: adoIntegration.workItemTypeMapping?.['PRD'] || '',
-        userStoryWorkItemType: adoIntegration.workItemTypeMapping?.['US'] || '',
-        taskWorkItemType: adoIntegration.workItemTypeMapping?.['TASK'] || '',
+        organization: credentials.organization || '',
+        projectName: credentials.projectName || '',
+        personalAccessToken: credentials.personalAccessToken || '',
+        prdWorkItemType: adoIntegration?.workItemTypeMapping?.['PRD'] || '',
+        userStoryWorkItemType:
+          adoIntegration?.workItemTypeMapping?.['US'] || '',
+        taskWorkItemType: adoIntegration?.workItemTypeMapping?.['TASK'] || '',
       });
     }
 
@@ -116,19 +128,24 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
   }
 
   private async initializeConnectionState(): Promise<void> {
-    const adoIntegration = this.projectMetadata.integration?.ado;
+    const credentials =
+      await this.integrationCredService.getCredentials<AdoCredentials>(
+        this.projectMetadata.name,
+        this.projectId,
+        'ado',
+      );
 
     if (
-      adoIntegration?.organization &&
-      adoIntegration?.projectName &&
-      adoIntegration?.personalAccessToken
+      credentials?.organization &&
+      credentials?.projectName &&
+      credentials?.personalAccessToken
     ) {
       try {
         const validationResult =
           await this.electronService.validateAdoCredentials(
-            adoIntegration.organization,
-            adoIntegration.projectName,
-            adoIntegration.personalAccessToken,
+            credentials.organization,
+            credentials.projectName,
+            credentials.personalAccessToken,
           );
 
         this.isConnected.set(validationResult.isValid);
@@ -152,30 +169,25 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
     this.saveAdoData(formData);
   }
 
-  onDisconnect(): void {
-    if (this.isProcessing()) {
-      return;
-    }
+  async onDisconnect(): Promise<void> {
+    if (this.isProcessing()) return;
 
     this.isProcessing.set(true);
-    const updatedMetadata = this.createUpdatedMetadata({ ado: undefined });
 
-    this.store
-      .dispatch(new UpdateMetadata(this.projectMetadata.id, updatedMetadata))
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isProcessing.set(false)),
-      )
-      .subscribe({
-        next: () => {
-          this.handleDisconnectSuccess();
-        },
-        error: () => {
-          this.toast.showError(APP_INTEGRATIONS.ADO.ERROR);
-        },
-      });
+    try {
+      await this.integrationCredService.removeCredentials(
+        this.projectMetadata.name,
+        this.projectId,
+        'ado',
+      );
+      this.adoForm.enable();
+      this.isConnected.set(false);
+      this.connectionStatusChange.emit(false);
+      this.toast.showSuccess(APP_INTEGRATIONS.ADO.DISCONNECT);
+    } finally {
+      this.isProcessing.set(false);
+    }
   }
-
   private async saveAdoData(formData: any): Promise<void> {
     try {
       const validationResult =
@@ -191,22 +203,30 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
         return;
       }
 
+      const credentials: AdoCredentials = {
+        organization: formData.organization,
+        projectName: formData.projectName,
+        personalAccessToken: formData.personalAccessToken,
+      };
+
+      await this.integrationCredService.saveCredentials(
+        this.projectMetadata.name,
+        this.projectId,
+        'ado',
+        credentials,
+      );
+
       const workflowMapping: WorkItemTypeMapping = {
         PRD: formData.prdWorkItemType,
         US: formData.userStoryWorkItemType,
         TASK: formData.taskWorkItemType,
       };
 
-      const adoConfig: AdoIntegrationConfig = {
-        organization: formData.organization,
-        projectName: formData.projectName,
-        personalAccessToken: formData.personalAccessToken,
-        workItemTypeMapping: workflowMapping,
-      };
-
       const updatedMetadata = this.createUpdatedMetadata({
         selectedPmoTool: 'ado',
-        ado: adoConfig,
+        ado: {
+          workItemTypeMapping: workflowMapping,
+        },
       });
 
       this.store
@@ -250,13 +270,6 @@ export class AdoIntegrationComponent implements PmoIntegrationBase, OnInit {
     this.isConnected.set(true);
     this.connectionStatusChange.emit(true);
     this.toast.showSuccess(APP_INTEGRATIONS.ADO.SUCCESS);
-  }
-
-  private handleDisconnectSuccess(): void {
-    this.adoForm.enable();
-    this.isConnected.set(false);
-    this.connectionStatusChange.emit(false);
-    this.toast.showSuccess(APP_INTEGRATIONS.ADO.DISCONNECT);
   }
 
   getButtonText(): string {
