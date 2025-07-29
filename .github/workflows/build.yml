@@ -15,8 +15,6 @@ on:
         required: true
       AWS_DEFAULT_REGION:
         required: true
-      ELECTRON_S3_BUCKET:
-        required: true
       APPLE_CSC_SECRET_NAME:
         required: true
       APPLE_ID:
@@ -102,14 +100,6 @@ jobs:
           echo "COMMIT_SHA=$COMMIT_SHA" >> $env:GITHUB_OUTPUT
           echo "Using short commit SHA: $COMMIT_SHA"
 
-      - name: Configure AWS credentials
-        id: aws-credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-          role-session-name: GitHubActions-${{ github.event.repository.name }}-${{ github.run_id }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -177,9 +167,6 @@ jobs:
           Copy-Item dist/latest.yml out/
           Copy-Item dist/*Setup*.exe out/ -ErrorAction SilentlyContinue
           Copy-Item dist/*Setup*.exe.blockmap out/ -ErrorAction SilentlyContinue
-
-          # Upload to S3 for long-term storage using sync
-          aws s3 sync out/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/windows/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/"
 
       - name: Upload Windows Build as GitHub Artifact
         uses: actions/upload-artifact@v4
@@ -280,15 +267,12 @@ jobs:
           LANGFUSE_BASE_URL: ${{ inputs.environment == 'production' && secrets.PROD_LANGFUSE_BASE_URL || secrets.DEV_LANGFUSE_BASE_URL }}
           ENABLE_LANGFUSE_DETAILED_TRACES: ${{ inputs.environment == 'production' && secrets.PROD_ENABLE_LANGFUSE_DETAILED_TRACES || secrets.DEV_ENABLE_LANGFUSE_DETAILED_TRACES }}
 
-      - name: Package and Upload to S3
-        id: package_and_upload
+      - name: Package Build
+        id: package_build
         run: |
           cd electron
           VERSION=$(node -e "console.log(require('./package.json').version);")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-          # Upload to S3 for long-term storage
-          aws s3 sync dist/ "s3://${{ secrets.ELECTRON_S3_BUCKET }}/github-actions/${{ inputs.environment }}/darwin/$VERSION/${{steps.get-sha.outputs.COMMIT_SHA}}/" --exclude "dist/mac/*" --exclude "dist/mac-arm64/*"
 
       - name: Upload macOS Intel Build as GitHub Artifact
         uses: actions/upload-artifact@v4
