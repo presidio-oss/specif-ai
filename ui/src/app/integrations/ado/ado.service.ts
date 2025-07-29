@@ -6,6 +6,7 @@ import { PmoService } from '../../services/pmo-integration/pmo-service.interface
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from 'src/app/store/projects/projects.state';
+import { IntegrationCredentialsService } from '../../services/integration-credentials/integration-credentials.service';
 import {
   BulkReadFiles,
   BulkUpdateFiles,
@@ -15,7 +16,10 @@ import {
 } from '../../store/projects/projects.actions';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { Router } from '@angular/router';
-import { IProjectMetadata } from 'src/app/model/interfaces/projects.interface';
+import {
+  IProjectMetadata,
+  AdoCredentials,
+} from 'src/app/model/interfaces/projects.interface';
 import { convertHtmlToMarkdown, convertMarkdownToHtml } from './ado.util';
 import { ADO_TOAST } from '../../constants/toast.constant';
 
@@ -42,6 +46,7 @@ export class AdoService implements PmoService {
   constructor(
     private http: HttpClient,
     private electronService: ElectronService,
+    private integrationCredService: IntegrationCredentialsService,
     private store: Store,
     private toast: ToasterService,
     private router: Router,
@@ -55,13 +60,30 @@ export class AdoService implements PmoService {
       this.store.select(ProjectsState.getMetadata).pipe(take(1)),
     );
 
-    this.config = metadata?.integration?.ado;
+    const adoCredentials =
+      await this.integrationCredService.getCredentials<AdoCredentials>(
+        metadata?.name,
+        metadata?.id,
+        'ado',
+      );
 
-    if (!this.config) {
+    if (
+      !adoCredentials?.organization ||
+      !adoCredentials?.projectName ||
+      !adoCredentials?.personalAccessToken
+    ) {
       throw new Error(
         'Azure DevOps credentials not configured. Please configure the integration first.',
       );
     }
+
+    this.config = {
+      organization: adoCredentials.organization,
+      projectName: adoCredentials.projectName,
+      personalAccessToken: adoCredentials.personalAccessToken,
+      workItemTypeMapping: metadata?.integration?.ado?.workItemTypeMapping,
+    };
+
     this.baseUrl = `https://dev.azure.com/${this.config.organization}/${this.config.projectName}`;
   }
 
