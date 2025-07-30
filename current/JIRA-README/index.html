@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.8.0">
 <title data-rh="true">Jira OAuth 2.0 Integration Guide for Specifai | Specifai</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://specifai.io/img/specifai-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://specifai.io/img/specifai-social-card.jpg"><meta data-rh="true" property="og:url" content="https://specifai.io/current/JIRA-README"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Jira OAuth 2.0 Integration Guide for Specifai | Specifai"><meta data-rh="true" name="description" content="This guide explains how to integrate the Specifai solution with Jira using OAuth 2.0. Follow these steps to create an OAuth app, configure permissions, and set up the integration."><meta data-rh="true" property="og:description" content="This guide explains how to integrate the Specifai solution with Jira using OAuth 2.0. Follow these steps to create an OAuth app, configure permissions, and set up the integration."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://specifai.io/current/JIRA-README"><link data-rh="true" rel="alternate" href="https://specifai.io/current/JIRA-README" hreflang="en"><link data-rh="true" rel="alternate" href="https://specifai.io/current/JIRA-README" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Detailed JIRA Setup","item":"https://specifai.io/current/JIRA-README"}]}</script><link rel="stylesheet" href="/assets/css/styles.a3efeea6.css">
-<script src="/assets/js/runtime~main.b50b3b49.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.8a4c5646.js" defer="defer"></script>
 <script src="/assets/js/main.14c3022f.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -91,11 +91,12 @@
 <ul>
 <li>Enter the <strong>Callback URL</strong> for the Requirements app. This URL is where users will be redirected after authorizing the app.<!-- -->
 <ul>
-<li>Expected default value : <code>http://localhost:12345/callback</code></li>
-</ul>
+<li>Expected default value : <code>http://localhost:12345/callback</code>
 <blockquote>
 <p><strong>Note</strong>: If you modify the port value, replace it with your app&#x27;s actual callback URL, updating the port accordingly.</p>
 </blockquote>
+</li>
+</ul>
 </li>
 <li>Click <strong>Save</strong> to apply the configuration.</li>
 </ul>
@@ -122,13 +123,22 @@
 </ul>
 </li>
 </ol>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="step-5-set-up-the-integration-in-the-electron-app">Step 5: Set Up the Integration in the Electron App<a href="#step-5-set-up-the-integration-in-the-electron-app" class="hash-link" aria-label="Direct link to Step 5: Set Up the Integration in the Electron App" title="Direct link to Step 5: Set Up the Integration in the Electron App">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="step-5-configure-work-item-type-mapping-optional">Step 5: Configure Work Item Type Mapping (Optional)<a href="#step-5-configure-work-item-type-mapping-optional" class="hash-link" aria-label="Direct link to Step 5: Configure Work Item Type Mapping (Optional)" title="Direct link to Step 5: Configure Work Item Type Mapping (Optional)">​</a></h2>
+<p>Specifai supports mapping between its document types and Jira issue types. The default mapping is:</p>
+<ul>
+<li><strong>PRD (Product Requirements Document)</strong> → <strong>Epic</strong></li>
+<li><strong>User Story</strong> → <strong>Story</strong></li>
+<li><strong>Task</strong> → <strong>Task</strong></li>
+</ul>
+<p>If your Jira project uses different issue types, you can configure custom mappings in the integration settings.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="step-6-set-up-the-integration-in-specifai">Step 6: Set Up the Integration in Specifai<a href="#step-6-set-up-the-integration-in-specifai" class="hash-link" aria-label="Direct link to Step 6: Set Up the Integration in Specifai" title="Direct link to Step 6: Set Up the Integration in Specifai">​</a></h2>
 <ol>
 <li>
-<p><strong>Open the Solution Page:</strong></p>
+<p><strong>Open the Integration Page:</strong></p>
 <ul>
-<li>Launch the Requirements app and navigate to the <strong>Solution</strong> -&gt; <strong>Integration</strong> page.
-<img decoding="async" loading="lazy" alt="Specifai JIRA Integration Form" src="/assets/images/specifai-jira-integration-3287546bdbb39c08102d7d8aba29a193.png" width="1193" height="842" class="img_ev3q"></li>
+<li>Launch the Specifai application and navigate to your solution.</li>
+<li>Go to <strong>Solution</strong> → <strong>Integration</strong> page.
+<img decoding="async" loading="lazy" alt="Specifai JIRA Integration Form" src="/assets/images/specifai-jira-integration-bdc87cfd353757b605f3bc9eb231068e.png" width="3024" height="1964" class="img_ev3q"></li>
 </ul>
 </li>
 <li>
@@ -145,14 +155,26 @@
 </ul>
 </li>
 <li>
-<p><strong>Verify the Details:</strong></p>
+<p><strong>Configure Work Item Type Mapping (Optional):</strong></p>
+<ul>
+<li>If your project uses custom issue types, configure the mapping:<!-- -->
+<ul>
+<li><strong>PRD Maps To</strong>: Default is &quot;Epic&quot;</li>
+<li><strong>User Story Maps To</strong>: Default is &quot;Story&quot;</li>
+<li><strong>Task Maps To</strong>: Default is &quot;Task&quot;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Verify the Configuration:</strong></p>
 <ul>
 <li>Ensure that the <strong>Client ID</strong>, <strong>Client Secret</strong>, and <strong>Callback URL</strong> match the information entered in the Atlassian Developer Console.</li>
 <li>Confirm that the <strong>Project Key</strong> is correct, as it identifies the Jira project that the app will interact with.</li>
 </ul>
 </li>
 <li>
-<p><strong>Connect &amp; Save the configurations:</strong></p>
+<p><strong>Connect &amp; Save the Configuration:</strong></p>
 <ul>
 <li>Click the <strong>Connect</strong> button to initiate the OAuth flow.</li>
 </ul>
@@ -170,46 +192,29 @@
 <p><strong>Successful Connection:</strong></p>
 <ul>
 <li>If the connection is successful, you will see a confirmation message indicating that the integration is connected.
-<img decoding="async" loading="lazy" alt="JIRA Successful Connection" src="/assets/images/specifai-jira-integration-connected-67c79c6d478b2c4f102e728a722815f7.png" width="1191" height="836" class="img_ev3q"></li>
+<img decoding="async" loading="lazy" alt="JIRA Successful Connection" src="/assets/images/specifai-jira-integration-connected-eb8f4c7a9afe1979296e436ec48d128a.png" width="3024" height="1964" class="img_ev3q"></li>
 </ul>
 </li>
 </ol>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="step-6-using-the-jira-integration">Step 6: Using the Jira Integration<a href="#step-6-using-the-jira-integration" class="hash-link" aria-label="Direct link to Step 6: Using the Jira Integration" title="Direct link to Step 6: Using the Jira Integration">​</a></h2>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="push-to-jira-specifai--jira">Push to Jira (Specifai → Jira)<a href="#push-to-jira-specifai--jira" class="hash-link" aria-label="Direct link to Push to Jira (Specifai → Jira)" title="Direct link to Push to Jira (Specifai → Jira)">​</a></h3>
-<ol>
-<li>
-<p><strong>Navigate to User Stories:</strong></p>
-<ul>
-<li>From the <strong>PRD</strong> page in Specifai, select your PRD and go to its <strong>Stories</strong> tab.</li>
-</ul>
-</li>
-<li>
-<p><strong>Push to Jira:</strong></p>
-<ul>
-<li>Click <strong>Push to Jira</strong> to sync your PRDs, User Stories and Tasks to Jira.</li>
-<li>The system will create corresponding issues in Jira with proper parent-child relationships:<!-- -->
-<ul>
-<li><strong>Epic</strong>: PRD</li>
-<li><strong>Story</strong>: User Story</li>
-<li><strong>Task</strong>: Task</li>
-</ul>
-</li>
-</ul>
-</li>
-</ol>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="step-8-using-the-jira-integration">Step 8: Using the Jira Integration<a href="#step-8-using-the-jira-integration" class="hash-link" aria-label="Direct link to Step 8: Using the Jira Integration" title="Direct link to Step 8: Using the Jira Integration">​</a></h2>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="pull-from-jira-jira--specifai">Pull from Jira (Jira → Specifai)<a href="#pull-from-jira-jira--specifai" class="hash-link" aria-label="Direct link to Pull from Jira (Jira → Specifai)" title="Direct link to Pull from Jira (Jira → Specifai)">​</a></h3>
 <ol>
 <li>
-<p><strong>Navigate to User Stories:</strong></p>
+<p><strong>Navigate to PRD Page:</strong></p>
 <ul>
-<li>From the <strong>PRD</strong> page in Specifai, select your PRD and go to its <strong>Stories</strong> tab.</li>
+<li>
+<p>Navigate to your PRD page in Specifai.</p>
+</li>
+<li>
+<p>From the options menu, click <strong>Pull from Jira</strong>.</p>
+<p><img decoding="async" loading="lazy" alt="Sync with Jira Option" src="/assets/images/specifai-sync-with-jira-option-4af84d7f2596e4c9437dc5f105c8c97c.png" width="3024" height="1964" class="img_ev3q"></p>
+</li>
 </ul>
 </li>
 <li>
-<p><strong>Pull from Jira:</strong></p>
+<p><strong>Select Issues to Import:</strong></p>
 <ul>
-<li>Click <strong>Pull from Jira</strong> to import issues from your Jira project.</li>
-<li>The system will import issues and create corresponding User Story and Task files in your Specifai project:<!-- -->
+<li>The system will display a hierarchical view of your Jira issues:<!-- -->
 <ul>
 <li><strong>Epics</strong> (mapped to PRDs)</li>
 <li><strong>Stories</strong> (mapped to User Stories)</li>
@@ -218,12 +223,78 @@
 </li>
 </ul>
 </li>
+<li>
+<p><strong>Hierarchical Selection:</strong></p>
+<ul>
+<li>Use the tree view to select specific issues you want to import.</li>
+<li>Parent-child relationships are maintained:<!-- -->
+<ul>
+<li>Select an Epic to import the entire feature with all its stories and tasks</li>
+<li>Select individual Stories to import specific user stories with their tasks</li>
+<li>Select individual Tasks for granular import</li>
+</ul>
+</li>
+<li>Use checkboxes to select/deselect items at any level of the hierarchy.</li>
+</ul>
+</li>
+<li>
+<p><strong>Import Selected Items:</strong></p>
+<ul>
+<li>Review your selections in the hierarchical tree.</li>
+<li>Click <strong>Pull from Jira</strong> to import the selected issues into Specifai.</li>
+<li>The system will create corresponding PRD, User Story, and Task files in your Specifai project.</li>
+</ul>
+<p><img decoding="async" loading="lazy" alt="Post Jira Sync" src="/assets/images/specifai-post-jira-sync-4b86055af98d4b382a7fe02a20c2eac5.png" width="3024" height="1964" class="img_ev3q"></p>
+</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="push-to-jira-specifai--jira">Push to Jira (Specifai → Jira)<a href="#push-to-jira-specifai--jira" class="hash-link" aria-label="Direct link to Push to Jira (Specifai → Jira)" title="Direct link to Push to Jira (Specifai → Jira)">​</a></h3>
+<ol>
+<li>
+<p><strong>Select Items to Export:</strong></p>
+<ul>
+<li>Navigate to your PRD page in Specifai.</li>
+<li>From the options menu, click <strong>Push to Jira</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Hierarchical Export Selection:</strong></p>
+<ul>
+<li>The system will display your Specifai documents in a hierarchical view:<!-- -->
+<ul>
+<li><strong>PRDs</strong> (will become Epics)</li>
+<li><strong>User Stories</strong> (will become Stories)</li>
+<li><strong>Tasks</strong> (will become Tasks)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Choose Export Options:</strong></p>
+<ul>
+<li>Select the PRDs, User Stories, and Tasks you want to push to Jira.</li>
+<li>The system maintains hierarchical relationships during export:<!-- -->
+<ul>
+<li>PRDs become Epics</li>
+<li>User Stories become Stories linked to their parent Epic</li>
+<li>Tasks become Tasks linked to their parent Story</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Push to Jira:</strong></p>
+<ul>
+<li>Review your selections and click <strong>Push to Jira</strong>.</li>
+<li>The system will create corresponding issues in Jira with proper parent-child relationships.</li>
+</ul>
+</li>
 </ol>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="bidirectional-synchronization">Bidirectional Synchronization<a href="#bidirectional-synchronization" class="hash-link" aria-label="Direct link to Bidirectional Synchronization" title="Direct link to Bidirectional Synchronization">​</a></h3>
 <ul>
-<li><strong>Update Existing Items</strong>: The integration can update existing items in both directions.</li>
-<li><strong>Maintain Relationships</strong>: Parent-child relationships are preserved during synchronization.</li>
-<li><strong>Bulk Operations</strong>: All items are processed efficiently in bulk operations.</li>
-</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col"><a href="https://github.com/presidio-oss/specif-ai/tree/main/docs/docs/current/JIRA-README.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/current/integrations-setup"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Solution Integrations</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/current/ADO-README"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Detailed Azure DevOps Setup</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#step-1-create-an-oauth-20-integration" class="table-of-contents__link toc-highlight">Step 1: Create an OAuth 2.0 Integration</a></li><li><a href="#step-2-configure-permissions-for-the-app" class="table-of-contents__link toc-highlight">Step 2: Configure Permissions for the App</a></li><li><a href="#step-3-configure-authorization" class="table-of-contents__link toc-highlight">Step 3: Configure Authorization</a></li><li><a href="#step-4-retrieve-oauth-credentials" class="table-of-contents__link toc-highlight">Step 4: Retrieve OAuth Credentials</a></li><li><a href="#step-5-set-up-the-integration-in-the-electron-app" class="table-of-contents__link toc-highlight">Step 5: Set Up the Integration in the Electron App</a></li><li><a href="#step-6-using-the-jira-integration" class="table-of-contents__link toc-highlight">Step 6: Using the Jira Integration</a><ul><li><a href="#push-to-jira-specifai--jira" class="table-of-contents__link toc-highlight">Push to Jira (Specifai → Jira)</a></li><li><a href="#pull-from-jira-jira--specifai" class="table-of-contents__link toc-highlight">Pull from Jira (Jira → Specifai)</a></li><li><a href="#bidirectional-synchronization" class="table-of-contents__link toc-highlight">Bidirectional Synchronization</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Documentation</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/current/getting-started">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/current/core-features">Core Features</a></li><li class="footer__item"><a class="footer__link-item" href="/current/integrations-setup">Integrations</a></li><li class="footer__item"><a class="footer__link-item" href="/current/advanced-features">Advanced Features</a></li><li class="footer__item"><a class="footer__link-item" href="/current/troubleshooting">Troubleshooting</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/presidio-oss/specif-ai" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="mailto:hai-feedback@presidio.com" target="_blank" rel="noopener noreferrer" class="footer__link-item">Support<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 Hai, Inc. Built with Docusaurus.</div></div></div></footer></div>
+<li><strong>Update Existing Items</strong>: The integration can update existing issues in both directions.</li>
+<li><strong>Maintain Relationships</strong>: Parent-child relationships (Epic → Story → Task) are preserved during synchronization.</li>
+<li><strong>Bulk Operations</strong>: Import or export multiple issues efficiently with hierarchical selection.</li>
+<li><strong>Conflict Resolution</strong>: The system handles conflicts by preserving the most recent changes.</li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col"><a href="https://github.com/presidio-oss/specif-ai/tree/main/docs/docs/current/JIRA-README.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/current/integrations-setup"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Solution Integrations</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/current/ADO-README"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Detailed Azure DevOps Setup</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#step-1-create-an-oauth-20-integration" class="table-of-contents__link toc-highlight">Step 1: Create an OAuth 2.0 Integration</a></li><li><a href="#step-2-configure-permissions-for-the-app" class="table-of-contents__link toc-highlight">Step 2: Configure Permissions for the App</a></li><li><a href="#step-3-configure-authorization" class="table-of-contents__link toc-highlight">Step 3: Configure Authorization</a></li><li><a href="#step-4-retrieve-oauth-credentials" class="table-of-contents__link toc-highlight">Step 4: Retrieve OAuth Credentials</a></li><li><a href="#step-5-configure-work-item-type-mapping-optional" class="table-of-contents__link toc-highlight">Step 5: Configure Work Item Type Mapping (Optional)</a></li><li><a href="#step-6-set-up-the-integration-in-specifai" class="table-of-contents__link toc-highlight">Step 6: Set Up the Integration in Specifai</a></li><li><a href="#step-8-using-the-jira-integration" class="table-of-contents__link toc-highlight">Step 8: Using the Jira Integration</a><ul><li><a href="#pull-from-jira-jira--specifai" class="table-of-contents__link toc-highlight">Pull from Jira (Jira → Specifai)</a></li><li><a href="#push-to-jira-specifai--jira" class="table-of-contents__link toc-highlight">Push to Jira (Specifai → Jira)</a></li><li><a href="#bidirectional-synchronization" class="table-of-contents__link toc-highlight">Bidirectional Synchronization</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Documentation</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/current/getting-started">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/current/core-features">Core Features</a></li><li class="footer__item"><a class="footer__link-item" href="/current/integrations-setup">Integrations</a></li><li class="footer__item"><a class="footer__link-item" href="/current/advanced-features">Advanced Features</a></li><li class="footer__item"><a class="footer__link-item" href="/current/troubleshooting">Troubleshooting</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/presidio-oss/specif-ai" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="mailto:hai-feedback@presidio.com" target="_blank" rel="noopener noreferrer" class="footer__link-item">Support<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 Hai, Inc. Built with Docusaurus.</div></div></div></footer></div>
 </body>
 </html>
