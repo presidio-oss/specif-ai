@@ -178,7 +178,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
 
   // Predefined order of folders
-  folderOrder = ['BRD', 'PRD', 'NFR', 'UIR', 'BP', 'SI', 'TC'];
+  folderOrder = ['BRD', 'PRD', 'NFR', 'UIR', 'BP', 'TC', 'SI'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
