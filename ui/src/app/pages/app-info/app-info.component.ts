@@ -178,7 +178,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
 
   // Predefined order of folders
-  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC', 'SI'];
+  folderOrder = ['BRD', 'PRD', 'NFR', 'UIR', 'BP', 'SI', 'TC'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
@@ -350,9 +350,17 @@ export class AppInfoComponent implements OnInit, OnDestroy {
 
         // Sort directories based on predefined order
         directories.sort((a, b) => {
-          return (
-            this.folderOrder.indexOf(a.name) - this.folderOrder.indexOf(b.name)
-          );
+          const indexA = this.folderOrder.indexOf(a.name);
+          const indexB = this.folderOrder.indexOf(b.name);
+
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+
+          return 0;
         });
       });
 
