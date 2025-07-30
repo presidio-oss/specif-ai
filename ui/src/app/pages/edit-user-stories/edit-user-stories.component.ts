@@ -132,6 +132,7 @@ export class EditUserStoriesComponent implements OnDestroy {
     this.folderName = navigation?.extras?.state?.['folderName'];
     this.fileName = navigation?.extras?.state?.['fileName'];
     this.fileData = navigation?.extras?.state?.['fileData'];
+    this.projectId = this.fileData['id'];
     this.absoluteFilePath = `${this.folderName}/${this.fileName}`;
     this.selectedPRD = navigation?.extras?.state?.['req'];
     if (this.mode === 'edit') {
