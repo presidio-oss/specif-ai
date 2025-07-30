@@ -61,6 +61,9 @@ export function createResearchInformationPrompt({
   ## Tool User guidelines
     ${toolUseContext({ recursionLimit })}
     - Once you have explored reasonable avenues and subsequent tool calls are not yielding significant new or valuable information, you should conclude your research phase.
+    - IMPORTANT: You have access to MCP (Model Context Protocol) tools that may include filesystem operations. Look for tools with names starting with "mcp_" that can help you read files, explore directories, or access documentation.
+    - If filesystem tools are available, prioritize using them to understand the solution requirement context, existing documentation, configuration files, and technical architecture.
+    - Pay special attention to tools that can read files (like "mcp_read_file", "mcp_list_directory", etc.) as these can provide crucial technical context about the solution.
 
   ## Strict Guidelines:
     - You MUST not ask questions directly to the user, as there is currently no interface for providing responses.
