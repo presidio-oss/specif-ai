@@ -20,10 +20,12 @@
           (click)="projectList.length > 0 ? navigateToAdd(projectList[0].id, projectList[0].folderName) : navigateToAdd(selectedFolder.id, selectedFolder.title)"
         />
         <ng-container *ngIf="documentList$ | async as documentList">
-          <app-export-dropdown
-            [disabled]="projectList.length === 0"
-            [groupedOptions]="getExportOptions(projectList[0].folderName)"
-          />
+          <ng-container *ngIf="projectList[0].folderName !== requirementTypes.SI">
+            <app-export-dropdown
+              [disabled]="projectList.length === 0"
+              [groupedOptions]="getExportOptions(projectList[0].folderName)"
+            />
+          </ng-container>
         </ng-container>
       </div>
     </div>
