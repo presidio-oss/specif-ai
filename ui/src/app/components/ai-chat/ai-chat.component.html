@@ -6,8 +6,8 @@
 >
   <!-- Fixed Header -->
   <div *ngIf="!hideHeader && (isKbAvailable || !['BP', 'PRD'].includes(requirementAbbrivation))" class="border-b border-secondary-200 p-1.5 space-y-1">
-    <div 
-      *ngIf="!['BP', 'PRD'].includes(requirementAbbrivation)" 
+    <div
+      *ngIf="!['BP', 'PRD'].includes(requirementAbbrivation)"
       class="bg-primary-50 border border-primary-200 rounded-lg p-2 text-center"
     >
       <div class="flex items-center justify-center gap-2 text-primary-600">
@@ -139,9 +139,9 @@
                     </div>
                   </app-custom-accordion>
 
-                  <!-- Add to Description Section (Outside Accordion) -->
+                  <!-- Update Description Section (Outside Accordion) -->
                   <div
-                    *ngIf="chat.name === 'add_to_requirement_description'"
+                    *ngIf="chat.name === 'update_requirement_description'"
                     class="flex flex-col gap-3"
                   >
                     <!-- Intent Message -->
@@ -183,7 +183,7 @@
                           name="heroDocumentPlus"
                           class="text-lg"
                         ></ng-icon>
-                        Add to Description
+                        Update Description
                       </button>
                       <div
                         *ngIf="chat.isAdded"
@@ -193,7 +193,7 @@
                           name="heroCheck"
                           class="text-lg text-white"
                         ></ng-icon>
-                        Added Successfully
+                        Updated Successfully
                       </div>
                     </div>
                   </div>

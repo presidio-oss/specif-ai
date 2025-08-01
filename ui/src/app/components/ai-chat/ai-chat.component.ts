@@ -282,7 +282,7 @@ export class AiChatComponent implements OnInit {
     // In the future, we may need to implement a more sophisticated approach
 
     const slicedChatHistory = this.chatHistory
-      .slice(-15);
+      .slice(-50);
 
     let startIndex = Math.max(0, slicedChatHistory.length - 15);
     let endIndex = slicedChatHistory.length;

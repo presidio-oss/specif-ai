@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectsState } from '../../store/projects/projects.state';
 import { Store } from '@ngxs/store';
@@ -127,6 +127,7 @@ export class EditSolutionComponent {
     private featureService: FeatureService,
     private dialogService: DialogService,
     private toastService: ToasterService,
+    private _cd: ChangeDetectorRef,
   ) {
     const url = this.router.url;
     this.mode = url.includes('/add') ? 'add' : 'edit';
@@ -216,12 +217,12 @@ export class EditSolutionComponent {
   private async preUpdateChecks(): Promise<boolean> {
     if (this.isBRD()) {
       const linkedPRDs = this.requirementForm.get('linkedToPRDIds')?.value || [];
-      
+
       // Check for removed links by comparing array contents
-      const hasRemovedLinks = this.currentLinkedPRDIds.some(prdId => 
+      const hasRemovedLinks = this.currentLinkedPRDIds.some(prdId =>
         !linkedPRDs.includes(prdId)
       );
-      
+
       if (linkedPRDs.length > 0 || hasRemovedLinks) {
         return this.getUserConfirmation({
           title: CONFIRMATION_DIALOG.CONFIRM_BRD_UPDATE.TITLE,
@@ -239,7 +240,7 @@ export class EditSolutionComponent {
       const updatedLinkedBRDs = this.requirementForm.get('linkedBRDIds')?.value || [];
 
       // Check for removed links by comparing array contents
-      const hasRemovedBRDs = this.currentLinkedBRDIds.some(brdId => 
+      const hasRemovedBRDs = this.currentLinkedBRDIds.some(brdId =>
         !updatedLinkedBRDs.includes(brdId)
       );
 
@@ -303,30 +304,10 @@ export class EditSolutionComponent {
 
       this.store.dispatch(new UpdateFile(this.absoluteFilePath, fileData));
 
-      if (this.isBRD()) {
-        this.handlePRDBRDLinkUpdates(formValue);
-      }
-      
-      this.store.dispatch(
-        new ReadFile(`${this.folderName}/${this.fileName}`),
-      );
-      
-      this.selectedFileContent$.subscribe((res: any) => {
-        this.oldContent = res.requirement;
-        this.requirementForm.patchValue({
-          title: res.title,
-          content: res.requirement,
-          pmoId: res.pmoId,
-        });
-        this.chatHistory = res.chatHistory || [];
-      });
-      
-      this.requirementForm.markAsUntouched();
-      this.requirementForm.markAsPristine();
+      // Use shared method to avoid duplicate logic
+      this.handlePostUpdateActions(formValue, data.reqId);
 
-      this.toastService.showSuccess(
-        TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(body.addReqtType, data.reqId),
-      );
+      this._cd.detectChanges();
     } catch (error) {
       console.error('Error updating requirement:', error);
       this.toastService.showError(
@@ -335,10 +316,34 @@ export class EditSolutionComponent {
     }
   }
 
-  async updateRequirement() {
-    const shouldProceed = await this.preUpdateChecks();
-    if (!shouldProceed) return;
+  private handlePostUpdateActions(formValue: any, reqId?: string) {
+    if (this.isBRD()) {
+      this.handlePRDBRDLinkUpdates(formValue);
+    }
 
+    this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
+    this.selectedFileContent$.subscribe((res: any) => {
+      this.oldContent = res.requirement;
+      this.requirementForm.patchValue({
+        title: res.title,
+        content: res.requirement,
+        epicticketid: res.epicTicketId,
+      });
+      this.chatHistory = res.chatHistory || [];
+      if (res.pmoId) {
+        this.pmoId = res.pmoId;
+      }
+    });
+    this.requirementForm.markAsUntouched();
+    this.requirementForm.markAsPristine();
+
+    const finalReqId = reqId || this.fileName.replace(/-base.json$/, '');
+    this.toastService.showSuccess(
+      TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(this.folderName, finalReqId),
+    );
+  }
+
+  private performRequirementUpdate() {
     const formValue = this.requirementForm.getRawValue();
     const fileData: IList['content'] = {
       requirement: formValue.content,
@@ -355,28 +360,14 @@ export class EditSolutionComponent {
     }
 
     this.store.dispatch(new UpdateFile(this.absoluteFilePath, fileData));
+    this.handlePostUpdateActions(formValue);
+  }
 
-    if (this.isBRD()) {
-      this.handlePRDBRDLinkUpdates(formValue);
-    }
+  async updateRequirement() {
+    const shouldProceed = await this.preUpdateChecks();
+    if (!shouldProceed) return;
 
-    this.store.dispatch(new ReadFile(`${this.folderName}/${this.fileName}`));
-    this.selectedFileContent$.subscribe((res: any) => {
-      this.oldContent = res.requirement;
-      this.requirementForm.patchValue({
-        title: res.title,
-        description: res.description
-      });
-      this.chatHistory = res.chatHistory || [];
-    });
-    this.requirementForm.markAsUntouched();
-    this.requirementForm.markAsPristine();
-    this.toastService.showSuccess(
-      TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
-        this.folderName,
-        this.fileName.replace(/\-base.json$/, ''),
-      ),
-    );
+    this.performRequirementUpdate();
   }
 
   private updateBRDLinksInPRDs(
@@ -436,7 +427,7 @@ export class EditSolutionComponent {
 
   navigateToUserStories() {
     this.store.dispatch(new DeleteBreadcrumb('Edit'));
-    
+
     this.router.navigate(['/user-stories', this.projectId], {
       state: {
         data: this.initialData,
@@ -539,22 +530,22 @@ export class EditSolutionComponent {
       .filter(<T>(x: T): x is NonNullable<T> => x != null);
   }
 
-  async appendRequirement(data: any) {
+  async updateRequirementFromChat(data: any) {
     const shouldProceed = await this.preUpdateChecks();
     if (!shouldProceed) return;
 
     let { chat, chatHistory } = data;
-    if (chat.contentToAdd) {
+    if (chat?.contentToAdd) {
       this.requirementForm.patchValue({
-        content: `${this.requirementForm.get('content')?.value}
-${chat.contentToAdd}`,
+        content: `${chat.contentToAdd}`,
       });
       let newArray = chatHistory.map((item: any) => {
         if (item.name == chat.tool_name && item.tool_call_id == chat.tool_call_id) return { ...item, isAdded: true };
         else return item;
       });
       this.chatHistory = newArray;
-      this.updateRequirementWithAI(true);
+      // Use shared method to avoid duplicate logic
+      this.performRequirementUpdate();
     }
   }
 
@@ -792,13 +783,13 @@ ${chat.contentToAdd}`,
 
   private checkMappingChanges(): boolean {
     const formValue = this.requirementForm.getRawValue();
-  
+
     if (this.isPRD()) {
       const currentBRDs = formValue.linkedBRDIds || [];
-      return !(currentBRDs.length === this.currentLinkedBRDIds.length && 
+      return !(currentBRDs.length === this.currentLinkedBRDIds.length &&
              currentBRDs.every((id: string) => this.currentLinkedBRDIds.includes(id)));
     }
-    
+
     if (this.isBRD()) {
       const currentPRDs = formValue.linkedToPRDIds || [];
       return !(currentPRDs.length === this.currentLinkedPRDIds.length &&
@@ -806,7 +797,7 @@ ${chat.contentToAdd}`,
     }
     return false;
   }
-  
+
   extractPropertyValues<
     TData extends Array<TDataItem>,
     TDataItem extends Record<string, any>,
