@@ -8,11 +8,20 @@ Discover the powerful features that make Specifai your ultimate companion for SD
 
 - Solution Creation & Structure
 - Requirements Document Types & Best Practices
+  - Business Requirements (BRD)
+  - Product Requirements (PRD)
+  - User Stories
+  - Tasks
+  - Non-Functional Requirements (NFR)
+  - User Interface Requirements (UIR)
+  - Test Cases
+  - Strategic Initiatives
 - Visualizing Business Workflows
 - Organizing & Refining Requirements
 - Intelligent Chat Interface
 - Automating User Story & Task Creation
 - Model Configuration
+- AI-Powered Inline Editing
 - Export & Integration Options
 
 ---
@@ -107,6 +116,8 @@ Each solution follows a modular, scalable structure:
     * **Tasks**: Breakdown of user stories.
     * **NFR**: Performance & security requirements.
     * **UIR**: UI/UX design guidelines.
+    * **Test Cases**: Quality validation procedures.
+    * **Strategic Initiatives**: High-level organizational objectives.
 
 3.  **📊 Business Process Flows (`BP`)**
     This folder contains visual representations of your key business processes.
@@ -253,6 +264,75 @@ A **Product Requirements Document (PRD)** is a technical document that outlines 
 
 </div>
 
+### 7. Test Cases (TC)
+
+#### What are Test Cases?
+**Test Cases** are detailed procedures designed to verify that a specific aspect of the system functions as expected. They provide a structured approach to validate requirements, identify defects, and ensure quality across the application.
+
+#### Best Practices for Writing Test Cases
+* Link directly to requirements for traceability.
+* Include clear prerequisites and setup steps.
+* Define specific input data and expected outcomes.
+* Document edge cases and boundary conditions.
+* Specify pass/fail criteria.
+* Include both positive and negative test scenarios.
+
+#### Example Test Case Structure
+```
+Test Case ID: TC01
+User Story ID: US05
+Description: Verify user login with valid credentials
+Prerequisites:
+  - User account exists in the system
+  - User is not currently logged in
+Steps:
+  1. Navigate to login page
+  2. Enter valid username
+  3. Enter valid password
+  4. Click login button
+Expected Result: User is successfully logged in and redirected to dashboard
+Alternative Flows:
+  - If remember me is checked, session should persist after browser restart
+```
+
+#### Example TC
+
+<div align="center">
+
+![TC Details](../../static/img/specifai-test-cases.png)
+*Test Cases in Specifai*
+
+</div>
+
+### 8. Strategic Initiatives (SI)
+
+#### What are Strategic Initiatives?
+**Strategic Initiatives** represent high-level organizational objectives that drive multiple solutions or projects. They align technical efforts with business goals and provide context for requirement prioritization across the enterprise portfolio.
+
+#### Best Practices for Strategic Initiatives
+* Define clear business outcomes and success metrics.
+* Include executive sponsorship and stakeholder information.
+* Outline alignment with company vision and mission.
+* Document dependencies on other initiatives.
+* Establish timeline and milestone expectations.
+* Identify key performance indicators (KPIs) for measuring success.
+
+#### Strategic Initiative Components
+* **Vision Statement**: The overarching goal of the initiative.
+* **Business Drivers**: Factors necessitating the initiative.
+* **Success Criteria**: Measurable outcomes that determine success.
+* **Solution Portfolio**: Collection of solutions supporting the initiative.
+* **Timeline**: Major milestones and delivery expectations.
+
+#### Example SI
+
+<div align="center">
+
+![SI Details](../../static/img/specifai-si.png)
+*Strategic Initiative in Specifai*
+
+</div>
+
 ---
 
 ## 📊 Visualizing Business Workflows
@@ -314,7 +394,7 @@ A **Business Process Flow (BP Flow)** is a visual representation of the steps, d
 
 ## ✍️ Organizing and Refining Your Requirements
 
-Once your initial documents are generated, Specifai provides robust tools to organize and refine your requirements (BRD, PRD, User Stories, Tasks, NFR, UIR, & BP).
+Once your initial documents are generated, Specifai provides robust tools to organize and refine your requirements (BRD, PRD, User Stories, Tasks, NFR, UIR, Test Cases, Strategic Initiatives, & BP).
 
 ### 1. Adding Requirements
 * **Fill in Basic Details:**
@@ -472,9 +552,43 @@ Specifai offers flexible AI model configuration, allowing you to choose and conn
 
 ---
 
+## 🪄 AI-Powered Inline Editing
+
+Specifai's inline editing feature allows you to instantly improve any text within editable fields using AI assistance, without disrupting your workflow.
+
+<div align="center">
+
+![Inline Editing Feature](../../static/gif/specifai-inline-edit.gif)
+*Inline Editing Demo*
+
+</div>
+
+### How to Use Inline Editing
+
+1. **Select Text:** Highlight any text you want to improve in your requirements, user stories, or descriptions.
+2. **Activate AI:** Click the ✨ sparkle icon that appears near your selection.
+3. **Provide Instructions:** Enter specific instructions like "Make this more concise" or "Add technical details."
+4. **Apply Changes:** Review the AI's suggestions and click "Accept" to apply them to your document.
+
+### Best Practices
+
+* **Be Specific:** Give clear instructions for better results (e.g., "Convert to bullet points highlighting key features").
+* **Select Appropriately:** Include enough context for the AI to understand what you're trying to improve.
+* **Iterate:** Start with general improvements, then refine with more specific editing passes.
+
+### Use Cases
+
+* Improve requirement clarity and specificity
+* Enhance technical descriptions with proper terminology
+* Convert vague user stories into structured formats with acceptance criteria
+* Fix grammar and improve readability of documentation
+* Standardize content format across documents
+
+---
+
 ## 📤 Export and Integration Options
 
-Specifai provides seamless options to share and integrate your generated requirements (BRD, PRD, UIR, NFR, and user stories) with all stakeholders and development teams.
+Specifai provides seamless options to share and integrate your generated requirements (BRD, PRD, UIR, NFR, Test Cases, Strategic Initiatives, and user stories) with all stakeholders and development teams.
 
 1.  **Copy to Clipboard (JSON)**
     * Export requirements in JSON format.
@@ -487,6 +601,12 @@ Specifai provides seamless options to share and integrate your generated require
 3.  **Jira Sync** (Individual PRD - User Stories level)
     * Directly synchronize your requirements with Jira projects.
     * Automatically creates epics, stories, and tasks, maintaining hierarchy and relationships.
+    * Supports bidirectional sync for pulling existing issues from Jira into Specifai.
+
+4.  **Azure DevOps Sync** (Individual PRD - User Stories level)
+    * Seamlessly synchronize your requirements with Azure DevOps projects.
+    * Automatically creates Features, Platform Features, and User Stories, maintaining hierarchical relationships.
+    * Supports bidirectional sync for pulling existing work items from ADO into Specifai.
 
 <div align="center">
 

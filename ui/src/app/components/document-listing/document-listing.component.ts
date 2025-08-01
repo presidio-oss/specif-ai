@@ -51,6 +51,7 @@ import {
 } from '../../export-dropdown/export-dropdown.component';
 import { PmoIntegrationModalComponent } from '../pmo-integration-modal/pmo-integration-modal.component';
 import { AdoService } from '../../integrations/ado/ado.service';
+import { JiraService } from '../../integrations/jira/jira.service';
 
 @Component({
   selector: 'app-document-listing',
@@ -125,6 +126,7 @@ export class DocumentListingComponent
     private toast: ToasterService,
     private dialog: MatDialog,
     private adoService: AdoService,
+    private jiraService: JiraService,
   ) {
     this.currentRoute = this.router.url;
     this.documentList$ = combineLatest([
@@ -211,7 +213,14 @@ export class DocumentListingComponent
   }
 
   navigateToEdit({ id, folderName, fileName, content }: any) {
-    const url = folderName === this.requirementTypes.BP ? '/bp-edit' : '/edit';
+    let url = '/edit';
+    
+    if (folderName === this.requirementTypes.BP) {
+      url = '/bp-edit';
+    } else if (folderName === this.requirementTypes.SI) {
+      url = `/strategic-initiative/edit/${fileName}`;
+    }
+    
     this.router.navigate([url], {
       state: { data: this.appInfo, id, folderName, fileName, req: content },
     });
@@ -273,6 +282,20 @@ export class DocumentListingComponent
             },
           });
         });
+    } else if (folderName === this.requirementTypes.SI) {
+      // Special handling for strategic initiative add
+      this.router.navigate(['/strategic-initiative/add'], {
+        state: {
+          data: this.appInfo,
+          id,
+          folderName,
+          breadcrumb: {
+            name: 'Add Strategic Initiative',
+            link: this.currentRoute,
+            icon: 'add',
+          },
+        },
+      });
     } else {
       this.router.navigate(['/add'], {
         state: {
@@ -339,6 +362,20 @@ export class DocumentListingComponent
   }
 
   /**
+   * Handle Pull from Jira action with integration status check
+   */
+  pullFromJira(folderName: string) {
+    this.openPmoIntegrationModal(folderName, 'pull', 'jira');
+  }
+
+  /**
+   * Handle Push to Jira action with integration status check
+   */
+  pushToJira(folderName: string) {
+    this.openPmoIntegrationModal(folderName, 'push', 'jira');
+  }
+
+  /**
    * Opens the PMO integration status modal and handles the result
    */
   private openPmoIntegrationModal(
@@ -368,15 +405,28 @@ export class DocumentListingComponent
     dialogRef.afterClosed().subscribe((result) => {
       if (result?.proceed) {
         if (result?.selectedItems) {
-          this.adoService.processAdoSelectedItems(
-            folderName,
-            action,
-            result.selectedItems,
-            this.appInfo,
-          );
+          if (pmoType === 'ado') {
+            this.adoService.processAdoSelectedItems(
+              folderName,
+              action,
+              result.selectedItems,
+              this.appInfo,
+            );
+          } else if (pmoType === 'jira') {
+            this.jiraService.processJiraSelectedItems(
+              folderName,
+              action,
+              result.selectedItems,
+              this.appInfo,
+            );
+          }
         }
       } else if (result?.configure) {
-        this.adoService.navigateToAdoConfiguration(this.appInfo);
+        if (pmoType === 'ado') {
+          this.adoService.navigateToAdoConfiguration(this.appInfo);
+        } else if (pmoType === 'jira') {
+          this.jiraService.navigateToJiraConfiguration(this.appInfo);
+        }
       }
     });
   }
@@ -441,6 +491,14 @@ export class DocumentListingComponent
       this.pushToAdo(folderName);
     };
 
+    const pullFromJira = () => {
+      this.pullFromJira(folderName);
+    };
+
+    const pushToJira = () => {
+      this.pushToJira(folderName);
+    };
+
     this.exportedFolderName = folderName;
     this.exportOptions = [
       {
@@ -463,7 +521,10 @@ export class DocumentListingComponent
         ],
       },
     ];
-    if (this.appInfo?.integration?.selectedPmoTool === 'ado') {
+    if (
+      this.appInfo?.integration?.selectedPmoTool === 'ado' &&
+      this.selectedFolder.title == 'PRD'
+    ) {
       this.exportOptions.push({
         groupName: 'ADO',
         options: [
@@ -471,14 +532,35 @@ export class DocumentListingComponent
             label: 'Pull from ADO',
             callback: pullFromAdo.bind(this),
             icon: 'heroArrowDownTray',
-            // additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
             isTimestamp: true,
           },
           {
             label: 'Push to ADO',
             callback: pushToAdo.bind(this),
             icon: 'heroArrowUpTray',
-            // additionalInfo: this.requirementFile?.lastPushToJiraTimestamp || undefined,
+            isTimestamp: true,
+          },
+        ],
+      });
+    }
+
+    if (
+      this.appInfo?.integration?.selectedPmoTool === 'jira' &&
+      this.selectedFolder.title == 'PRD'
+    ) {
+      this.exportOptions.push({
+        groupName: 'JIRA',
+        options: [
+          {
+            label: 'Pull from JIRA',
+            callback: pullFromJira.bind(this),
+            icon: 'heroArrowDownTray',
+            isTimestamp: true,
+          },
+          {
+            label: 'Push to JIRA',
+            callback: pushToJira.bind(this),
+            icon: 'heroArrowUpTray',
             isTimestamp: true,
           },
         ],

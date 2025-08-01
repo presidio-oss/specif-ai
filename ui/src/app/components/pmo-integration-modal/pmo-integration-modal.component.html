@@ -404,6 +404,32 @@
           </div>
         </div>
       </div>
+
+      <div
+        *ngIf="
+          !isLoadingWorkItems() &&
+          prdsWithChildren().length > 0 &&
+          action() === 'pull' &&
+          hasMoreItems()
+        "
+        class="border-t border-gray-100 px-6 py-4 bg-gradient-to-r from-gray-50 to-white"
+      >
+        <div class="flex items-center justify-center">
+          <app-button
+            [buttonContent]="isLoadingMore() ? 'Loading...' : 'Load More Items'"
+            theme="secondary"
+            size="sm"
+            (click)="loadMoreItems()"
+            [disabled]="isLoadingMore()"
+            aria-label="Load more work items"
+          ></app-button>
+        </div>
+        <div class="text-center mt-2">
+          <span class="text-xs text-gray-500">
+            Showing {{ prdsWithChildren().length }} of {{ totalItems() }} items
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -24,13 +24,17 @@ In this guide, you'll learn how to:
 
 ## 📥 Installation
 
-### Download Latest Release
+### Download Latest Release (v2.7.0)
 
 Choose your platform:
-- **Windows**: [Download Specifai for Windows](https://github.com/presidio-oss/specif-ai/releases/download/v2.4.0/Specif-AI-Setup-2.4.0.exe)
-- **macOS**: [Download Specifai for macOS](https://github.com/presidio-oss/specif-ai/releases/download/v2.4.0/Specif-AI-2.4.0-arm64.dmg)
+- **Windows**: [Download Specifai for Windows](https://github.com/presidio-oss/specif-ai/releases/download/v2.7.0/Specif-AI-Setup-2.7.0.exe)
+- **macOS**: 
+    - [Apple Silicon (M1/M2/M3)](https://github.com/presidio-oss/specif-ai/releases/download/v2.7.0/Specif-AI-2.7.0-arm64.dmg)
+    - [Intel Processors](https://github.com/presidio-oss/specif-ai/releases/download/v2.7.0/Specif-AI-2.7.0.dmg)
 
-View all versions on our [releases page](https://github.com/presidio-oss/specif-ai/releases/tag/v2.4.0).
+> 💡 **Mac users**: Check your processor type in Apple Menu → About This Mac
+
+View all versions on our [releases page](https://github.com/presidio-oss/specif-ai/releases).
 
 ### Quick Install Guide
 
@@ -146,6 +150,7 @@ You're ready to start using Specifai! Here's what to do next:
 
 2.  **Set up integrations:**
     - Configure Jira integration.
+    - Configure Azure DevOps integration.
     - Set up AWS Bedrock.
     - Add custom MCP servers.
     (See: [Integrations Setup Guide](integrations-setup.md))

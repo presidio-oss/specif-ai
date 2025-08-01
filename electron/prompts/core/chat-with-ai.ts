@@ -1,3 +1,4 @@
+import { STRATEGIC_INITIATIVE_DEFINITION_CONTEXT } from "../context/strategic-initiative";
 import { REQUIREMENT_DISPLAY_NAME_MAP, REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 import { BP_DEFINITION_CONTEXT } from "../../prompts/context/bp";
 import { BRD_DEFINITION_CONTEXT } from "../../prompts/context/brd";
@@ -147,6 +148,8 @@ const getPersona = (requirementType: keyof typeof REQUIREMENT_TYPE): string => {
     case "US":
     case "TASK":
       return "Product Manager";
+    case "SI":
+      return "Business Development Consultant";
     default:
       return "Product Manager"; // Better default than empty string
   }
@@ -168,6 +171,9 @@ const getRequirementTypeContext = (params: ChatWithAIParams): string => {
     }
     case "US": {
       return USER_STORY_DEFINITION_CONTEXT;
+    }
+    case "SI": {
+      return STRATEGIC_INITIATIVE_DEFINITION_CONTEXT;
     }
     default: {
       return "";

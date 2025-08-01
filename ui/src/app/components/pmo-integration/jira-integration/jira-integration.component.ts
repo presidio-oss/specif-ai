@@ -27,8 +27,9 @@ import { ToasterService } from '../../../services/toaster/toaster.service';
 import { ElectronService } from '../../../electron-bridge/electron.service';
 import {
   IProjectMetadata,
-  JiraIntegrationConfig,
+  JiraCredentials,
 } from 'src/app/model/interfaces/projects.interface';
+import { IntegrationCredentialsService } from '../../../services/integration-credentials/integration-credentials.service';
 import { APP_MESSAGES } from '../../../constants/app.constants';
 import { APP_INTEGRATIONS } from '../../../constants/toast.constant';
 import { NGXLogger } from 'ngx-logger';
@@ -55,6 +56,9 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly electronService = inject(ElectronService);
   private readonly logger = inject(NGXLogger);
+  private readonly integrationCredService = inject(
+    IntegrationCredentialsService,
+  );
 
   protected readonly APP_MESSAGES = APP_MESSAGES;
 
@@ -84,18 +88,32 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
       clientId: ['', [Validators.required, Validators.minLength(1)]],
       clientSecret: ['', [Validators.required, Validators.minLength(1)]],
       redirectUrl: ['', [Validators.required, Validators.minLength(1)]],
+      prdWorkItemType: ['Epic', [Validators.required]],
+      userStoryWorkItemType: ['Story', [Validators.required]],
+      taskWorkItemType: ['Sub-task', [Validators.required]],
     });
   }
 
-  private initializeFormState(): void {
+  private async initializeFormState(): Promise<void> {
+    const credentials =
+      await this.integrationCredService.getCredentials<JiraCredentials>(
+        this.projectMetadata.name,
+        this.projectId,
+        'jira',
+      );
     const jiraIntegration = this.projectMetadata?.integration?.jira;
 
-    if (jiraIntegration) {
+    if (credentials && jiraIntegration) {
       this.jiraForm.patchValue({
-        jiraProjectKey: jiraIntegration.jiraProjectKey || '',
-        clientId: jiraIntegration.clientId || '',
-        clientSecret: jiraIntegration.clientSecret || '',
-        redirectUrl: jiraIntegration.redirectUrl || '',
+        jiraProjectKey: credentials.jiraProjectKey || '',
+        clientId: credentials.clientId || '',
+        clientSecret: credentials.clientSecret || '',
+        redirectUrl: credentials.redirectUrl || '',
+        prdWorkItemType: jiraIntegration.workItemTypeMapping?.['PRD'] || 'Epic',
+        userStoryWorkItemType:
+          jiraIntegration.workItemTypeMapping?.['US'] || 'Story',
+        taskWorkItemType:
+          jiraIntegration.workItemTypeMapping?.['TASK'] || 'Sub-task',
       });
     }
 
@@ -113,13 +131,21 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
       });
   }
 
-  private initializeConnectionState(): void {
+  private async initializeConnectionState(): Promise<void> {
     const tokenInfo = getJiraTokenInfo(this.projectId);
-    const isConnected =
-      tokenInfo.projectKey ===
-        this.projectMetadata.integration?.jira?.jiraProjectKey &&
+    const credentials =
+      await this.integrationCredService.getCredentials<JiraCredentials>(
+        this.projectMetadata.name,
+        this.projectId,
+        'jira',
+      );
+
+    const isConnected = !!(
+      credentials &&
+      tokenInfo.projectKey === credentials.jiraProjectKey &&
       !!tokenInfo.token &&
-      this.isTokenValid();
+      this.isTokenValid()
+    );
 
     this.isConnected.set(isConnected);
     this.connectionStatusChange.emit(this.isConnected());
@@ -164,51 +190,65 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
     }
 
     this.isProcessing.set(true);
-    const updatedMetadata = this.createUpdatedMetadata({ jira: undefined });
-
-    this.store
-      .dispatch(new UpdateMetadata(this.projectMetadata.id, updatedMetadata))
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isProcessing.set(false)),
-      )
-      .subscribe({
-        next: () => {
-          this.handleDisconnectSuccess();
-        },
-        error: () => {
-          this.toast.showError(APP_INTEGRATIONS.JIRA.ERROR);
-        },
-      });
+    try {
+      resetJiraToken(this.projectId);
+      this.jiraForm.enable();
+      this.isConnected.set(false);
+      this.connectionStatusChange.emit(false);
+      this.toast.showSuccess(APP_INTEGRATIONS.JIRA.DISCONNECT);
+    } finally {
+      this.isProcessing.set(false);
+    }
   }
 
-  private saveJiraData(formData: JiraIntegrationConfig): void {
-    const jiraConfig: JiraIntegrationConfig = {
-      jiraProjectKey: formData.jiraProjectKey,
-      clientId: formData.clientId,
-      clientSecret: formData.clientSecret,
-      redirectUrl: formData.redirectUrl,
-    };
+  private async saveJiraData(formData: any): Promise<void> {
+    try {
+      const credentials: JiraCredentials = {
+        clientId: formData.clientId,
+        clientSecret: formData.clientSecret,
+        jiraProjectKey: formData.jiraProjectKey,
+        redirectUrl: formData.redirectUrl,
+      };
 
-    const updatedMetadata = this.createUpdatedMetadata({
-      selectedPmoTool: 'jira',
-      jira: jiraConfig,
-    });
+      await this.integrationCredService.saveCredentials(
+        this.projectMetadata.name,
+        this.projectId,
+        'jira',
+        credentials,
+      );
 
-    this.store
-      .dispatch(new UpdateMetadata(this.projectMetadata.id, updatedMetadata))
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isProcessing.set(false)),
-      )
-      .subscribe({
-        next: () => {
-          this.handleConnectSuccess();
-        },
-        error: () => {
-          this.toast.showError(APP_INTEGRATIONS.JIRA.ERROR);
+      const workItemTypeMapping = {
+        PRD: formData.prdWorkItemType,
+        US: formData.userStoryWorkItemType,
+        TASK: formData.taskWorkItemType,
+      };
+
+      const updatedMetadata = this.createUpdatedMetadata({
+        selectedPmoTool: 'jira',
+        jira: {
+          workItemTypeMapping: workItemTypeMapping,
         },
       });
+
+      this.store
+        .dispatch(new UpdateMetadata(this.projectMetadata.id, updatedMetadata))
+        .pipe(
+          takeUntilDestroyed(this.destroyRef),
+          finalize(() => this.isProcessing.set(false)),
+        )
+        .subscribe({
+          next: () => {
+            this.handleConnectSuccess();
+          },
+          error: () => {
+            this.toast.showError(APP_INTEGRATIONS.JIRA.ERROR);
+          },
+        });
+    } catch (error) {
+      this.logger.error('Error saving JIRA credentials:', error);
+      this.toast.showError(APP_INTEGRATIONS.JIRA.ERROR);
+      this.isProcessing.set(false);
+    }
   }
 
   private createUpdatedMetadata(
@@ -228,14 +268,6 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
     this.isConnected.set(true);
     this.connectionStatusChange.emit(true);
     this.toast.showSuccess(APP_INTEGRATIONS.JIRA.SUCCESS);
-  }
-
-  private handleDisconnectSuccess(): void {
-    resetJiraToken(this.projectId);
-    this.jiraForm.enable();
-    this.isConnected.set(false);
-    this.connectionStatusChange.emit(false);
-    this.toast.showSuccess(APP_INTEGRATIONS.JIRA.DISCONNECT);
   }
 
   getButtonText(): string {

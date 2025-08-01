@@ -217,6 +217,7 @@ export class ProjectsState {
         [REQUIREMENT_TYPE.TASK]: 0,
         [REQUIREMENT_TYPE.BP]: 0,
         [REQUIREMENT_TYPE.TC]: 0,
+        [REQUIREMENT_TYPE.SI]: 0,
       };
 
       metadata = {
@@ -374,7 +375,7 @@ export class ProjectsState {
     }
 
     // Define the folder order
-    const folderOrder = ['solution', 'BRD', 'PRD', 'NFR', 'UIR', 'BP', 'TC']; // Update as needed
+    const folderOrder = ['solution', 'BRD', 'PRD', 'NFR', 'UIR', 'BP', 'TC', 'SI']; // Update as needed
 
     try {
       const files = await this.appSystemService.getFolders(
@@ -788,9 +789,15 @@ export class ProjectsState {
   ) {
     try {
       patchState({ exportingData: true });
-      this.toast.showInfo(
-        `Exporting ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} data`,
-      );
+      if (options.type === 'json') {
+        this.toast.showInfo(
+          `Copied ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} data`,
+        );
+      } else {
+        this.toast.showInfo(
+          `Exporting ${REQUIREMENT_DISPLAY_NAME_MAP[requirementType as RequirementType]} data`,
+        );
+      }
       const state = getState();
 
       await this.requirementExportService.exportRequirementData(

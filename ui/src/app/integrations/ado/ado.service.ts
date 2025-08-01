@@ -6,15 +6,22 @@ import { PmoService } from '../../services/pmo-integration/pmo-service.interface
 import { ElectronService } from '../../electron-bridge/electron.service';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from 'src/app/store/projects/projects.state';
+import { IntegrationCredentialsService } from '../../services/integration-credentials/integration-credentials.service';
 import {
   BulkReadFiles,
   BulkUpdateFiles,
   GetProjectFiles,
   ReadFile,
+  UpdateMetadata,
 } from '../../store/projects/projects.actions';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { Router } from '@angular/router';
-import { IProjectMetadata } from 'src/app/model/interfaces/projects.interface';
+import {
+  IProjectMetadata,
+  AdoCredentials,
+} from 'src/app/model/interfaces/projects.interface';
+import { convertHtmlToMarkdown, convertMarkdownToHtml } from './ado.util';
+import { ADO_TOAST } from '../../constants/toast.constant';
 
 const ADO_API_VERSION = '7.1';
 
@@ -39,6 +46,7 @@ export class AdoService implements PmoService {
   constructor(
     private http: HttpClient,
     private electronService: ElectronService,
+    private integrationCredService: IntegrationCredentialsService,
     private store: Store,
     private toast: ToasterService,
     private router: Router,
@@ -52,13 +60,30 @@ export class AdoService implements PmoService {
       this.store.select(ProjectsState.getMetadata).pipe(take(1)),
     );
 
-    this.config = metadata?.integration?.ado;
+    const adoCredentials =
+      await this.integrationCredService.getCredentials<AdoCredentials>(
+        metadata?.name,
+        metadata?.id,
+        'ado',
+      );
 
-    if (!this.config) {
+    if (
+      !adoCredentials?.organization ||
+      !adoCredentials?.projectName ||
+      !adoCredentials?.personalAccessToken
+    ) {
       throw new Error(
         'Azure DevOps credentials not configured. Please configure the integration first.',
       );
     }
+
+    this.config = {
+      organization: adoCredentials.organization,
+      projectName: adoCredentials.projectName,
+      personalAccessToken: adoCredentials.personalAccessToken,
+      workItemTypeMapping: metadata?.integration?.ado?.workItemTypeMapping,
+    };
+
     this.baseUrl = `https://dev.azure.com/${this.config.organization}/${this.config.projectName}`;
   }
 
@@ -132,13 +157,17 @@ export class AdoService implements PmoService {
    * Fetch Features, PlatformFeatures, and UserStories in a hierarchical structure
    * This creates a three-level hierarchy that can be displayed in a tree view
    * Mapped to the Ticket interface for PMO integration
+   * Used when Pull Popup is invoked to fetch the current work plan items from ADO
    */
-  async getWorkPlanItemsHierarchy(): Promise<Ticket[]> {
+  async getWorkPlanItemsHierarchy(
+    skip: number = 0,
+    top: number = 200,
+  ): Promise<{ tickets: Ticket[]; totalCount: number }> {
     if (!this.config || !this.baseUrl) {
       console.error(
         'Azure DevOps service not configured. Call configure() first.',
       );
-      return [];
+      return { tickets: [], totalCount: 0 };
     }
 
     try {
@@ -171,21 +200,24 @@ export class AdoService implements PmoService {
       };
       buildMappingFromHierarchy(currentHierarchy);
 
-      // 2. Get Features from ADO
+      // 2. Get Features from ADO with pagination
+      const featureWorkItemType =
+        this.config.workItemTypeMapping?.PRD || 'Feature';
       const query = `
         SELECT [System.Id]
         FROM WorkItems
-        WHERE [System.WorkItemType] = 'Feature'
+        WHERE [System.WorkItemType] = '${featureWorkItemType}'
         AND [System.TeamProject] = @project
-        ORDER BY [System.ChangedDate] DESC
+        ORDER BY [System.Id] DESC
       `;
 
-      const featureIds = await this.executeWiqlQuery(query);
-      if (featureIds.length === 0) {
-        return [];
+      const allFeatureIds = await this.executeWiqlQuery(query);
+      if (allFeatureIds.length === 0) {
+        return { tickets: [], totalCount: 0 };
       }
 
-      const features = await this.getWorkItemsByIds(featureIds);
+      const paginatedFeatureIds = allFeatureIds.slice(skip, skip + top);
+      const features = await this.getWorkItemsByIds(paginatedFeatureIds);
 
       // 3. Build the hierarchy using existing mappings where available
       const hierarchy = await Promise.all(
@@ -229,8 +261,9 @@ export class AdoService implements PmoService {
                         pmoIssueType: userStory.fields['System.WorkItemType'],
                         pmoParentId: platformFeaturePmoId,
 
-                        // Specifai mapping
+                        // Only used for UI Uniqueness
                         specifaiId: `TASK${userStory.id}`,
+                        // Specifai mapping
                         reqId:
                           existingUserStoryMapping?.specifaiId || `New Task`,
                         specifaiType: 'Task',
@@ -255,8 +288,9 @@ export class AdoService implements PmoService {
                     pmoIssueType: platformFeature.fields['System.WorkItemType'],
                     pmoParentId: featurePmoId,
 
-                    // Specifai mapping
+                    // UI Mapping for uniqueness
                     specifaiId: `US${platformFeature.id}`,
+                    // Specifai mapping
                     reqId:
                       existingPlatformFeatureMapping?.specifaiId ||
                       `New User Story`,
@@ -309,8 +343,9 @@ export class AdoService implements PmoService {
               pmoIssueType: feature.fields['System.WorkItemType'],
               pmoParentId: null, // Top-level items have no parent
 
-              // Specifai mapping
+              // Specifai UI uniqueness
               specifaiId: `PRD${feature.id}`,
+              // Specifai mapping
               reqId: existingFeatureMapping?.specifaiId || `New PRD`,
               specifaiType: 'PRD',
               specifaiParentId: null, // Top-level items have no parent
@@ -349,10 +384,10 @@ export class AdoService implements PmoService {
         }),
       );
 
-      return hierarchy;
+      return { tickets: hierarchy, totalCount: allFeatureIds.length };
     } catch (err) {
       console.error('Error fetching Features hierarchy:', err);
-      return [];
+      return { tickets: [], totalCount: 0 };
     }
   }
 
@@ -375,7 +410,7 @@ export class AdoService implements PmoService {
     const query = `
       SELECT [System.Id]
       FROM WorkItems
-      WHERE [System.WorkItemType] = '${workItemType}' 
+      WHERE [System.WorkItemType] = '${workItemType}'
       AND [System.Parent] = ${parentId}
       ORDER BY [System.ChangedDate] DESC
     `;
@@ -398,14 +433,21 @@ export class AdoService implements PmoService {
   private async getPlatformFeaturesByParentId(
     parentId: number,
   ): Promise<any[]> {
-    return this.getWorkItemsByParentIdAndType(parentId, 'Platform Feature');
+    const platformFeatureWorkItemType =
+      this.config?.workItemTypeMapping?.US || 'Platform Feature';
+    return this.getWorkItemsByParentIdAndType(
+      parentId,
+      platformFeatureWorkItemType,
+    );
   }
 
   /**
    * Get only UserStory work items for a specific parent PlatformFeature
    */
   private async getUserStoriesByParentId(parentId: number): Promise<any[]> {
-    return this.getWorkItemsByParentIdAndType(parentId, 'User Story');
+    const userStoryWorkItemType =
+      this.config?.workItemTypeMapping?.TASK || 'User Story';
+    return this.getWorkItemsByParentIdAndType(parentId, userStoryWorkItemType);
   }
 
   /**
@@ -549,6 +591,7 @@ export class AdoService implements PmoService {
     console.log('Project metadata:', appInfo);
 
     if (action === 'pull') {
+      this.toast.showInfo(ADO_TOAST.PULL_INITIATED);
       try {
         // First, get the existing PRD files to check for pmoId and get max PRD number
         this.getExistingPrdFiles(appInfo)
@@ -563,179 +606,239 @@ export class AdoService implements PmoService {
             // Prepare updates array for BulkUpdateFiles action
             const updates: { path: string; content: any }[] = [];
 
+            let nextPrdNumber = maxPrdNumber + 1;
+
             // Process each PRD (Feature from ADO)
-            ticketGroups.forEach((group, index) => {
-              const prd = group.prd;
+            const processGroups = async () => {
+              for (const [, group] of ticketGroups.entries()) {
+                const prd = group.prd;
 
-              // Check if this PRD already exists based on pmoId
-              const existingPrd = existingPmoMap.prds[prd.pmoId];
+                // Check if this PRD already exists based on pmoId
+                const existingPrd = existingPmoMap.prds[prd.pmoId];
 
-              // Determine PRD ID - use existing or generate new one with zero-padding (PRD01, PRD02, etc.)
-              const prdId = existingPrd
-                ? existingPrd.specifaiId
-                : `PRD${String(maxPrdNumber + index + 1).padStart(2, '0')}`;
+                // Determine PRD ID - use existing or generate new one with zero-padding (PRD01, PRD02, etc.)
+                const prdId = existingPrd
+                  ? existingPrd.specifaiId
+                  : `PRD${String(nextPrdNumber++).padStart(2, '0')}`;
 
-              // Format the user stories and tasks for this PRD
-              const features = this.formatFeaturesForPrd(
-                group.userStories,
-                group.tasks,
-                existingPmoMap,
-              );
+                // Format the user stories and tasks for this PRD
+                const features = await this.formatFeaturesForPrd(
+                  group.userStories,
+                  group.tasks,
+                  existingPmoMap,
+                );
 
-              // Create the PRD base file content with correct structure
-              const prdBaseContent = {
-                id: prdId,
-                title: prd.title,
-                requirement: prd.description || '', // Map description to requirement field
-                state: 'Active',
-                createdAt: existingPrd
-                  ? new Date().toISOString()
-                  : new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                pmoId: prd.pmoId, // Store ADO ID for future reference
-                pmoIssueType: prd.pmoIssueType,
-                chatHistory: [], // Add empty chatHistory array as required
-              };
+                // Create the PRD base file content with correct structure
+                const prdBaseContent = {
+                  id: prdId,
+                  title: prd.title,
+                  requirement: await convertHtmlToMarkdown(
+                    prd.description || '',
+                  ), // Format description -> requirement mapping
+                  state: 'Active',
+                  createdAt: existingPrd
+                    ? new Date().toISOString()
+                    : new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  pmoId: prd.pmoId, // Store ADO ID for future reference
+                  pmoIssueType: prd.pmoIssueType,
+                  chatHistory: [], // Add empty chatHistory array as required
+                };
 
-              // Check if there's an existing feature file for this PRD
-              const featureFilePath = `prd/${prdId}-feature.json`;
-              const existingFeatureFile = existingFeatureFiles[prdId];
+                // Check if there's an existing feature file for this PRD
+                const featureFilePath = `prd/${prdId}-feature.json`;
+                const existingFeatureFile = existingFeatureFiles[prdId];
 
-              let prdFeatureContent: any = { features: features };
+                let prdFeatureContent: any = { features: features };
 
-              // If this PRD exists and we have the feature file content, merge with new features
-              if (existingPrd && existingFeatureFile) {
-                const existingFeatures = existingFeatureFile.features || [];
+                // If this PRD exists and we have the feature file content, merge with new features
+                if (existingPrd && existingFeatureFile) {
+                  const existingFeatures = existingFeatureFile.features || [];
 
-                // Create a map of existing features by pmoId for easy lookup
-                const existingFeatureMap = new Map<string, any>();
-                existingFeatures.forEach((feature: any) => {
-                  if (feature.pmoId) {
-                    existingFeatureMap.set(feature.pmoId, feature);
-                  }
-                });
+                  // Create maps for existing features - one by pmoId and one by feature id for manual features
+                  const existingFeatureByPmoId = new Map<string, any>();
+                  const existingFeatureById = new Map<string, any>();
+                  const processedFeatureIds = new Set<string>();
 
-                // Merge or update features
-                const mergedFeatures = features.map((newFeature) => {
-                  const existingFeature = existingFeatureMap.get(
-                    newFeature.pmoId,
-                  );
+                  existingFeatures.forEach((feature: any) => {
+                    if (feature.pmoId) {
+                      existingFeatureByPmoId.set(feature.pmoId, feature);
+                    }
+                    if (feature.id) {
+                      existingFeatureById.set(feature.id, feature);
+                    }
+                  });
 
-                  // If this feature already exists, update its properties but preserve any
-                  // that might be set in the UI and not coming from ADO
-                  if (existingFeature) {
-                    existingFeatureMap.delete(newFeature.pmoId); // Remove from map to track what's processed
-
-                    // Create a map of existing tasks by pmoId
-                    const existingTaskMap = new Map<string, any>();
-                    (existingFeature.tasks || []).forEach((task: any) => {
-                      if (task.pmoId) {
-                        existingTaskMap.set(task.pmoId, task);
-                      }
-                    });
-
-                    // Merge tasks within this feature
-                    const mergedTasks = (newFeature.tasks || []).map(
-                      (newTask: any) => {
-                        const existingTask = existingTaskMap.get(newTask.pmoId);
-
-                        // If task exists, update it
-                        if (existingTask) {
-                          existingTaskMap.delete(newTask.pmoId); // Remove from map to track what's processed
-                          return {
-                            ...existingTask,
-                            list: newTask.list,
-                            acceptance:
-                              newTask.acceptance || existingTask.acceptance,
-                            // Keep other properties from existing task
-                          };
-                        }
-
-                        // This is a new task
-                        return newTask;
-                      },
+                  // Merge or update features
+                  const mergedFeatures = features.map((newFeature) => {
+                    const existingFeature = existingFeatureByPmoId.get(
+                      newFeature.pmoId,
                     );
 
-                    // Add any remaining existing tasks that weren't in the new data
-                    existingTaskMap.forEach((remainingTask) => {
-                      mergedTasks.push(remainingTask);
-                    });
+                    // If this feature already exists, update its properties but preserve any
+                    // that might be set in the UI and not coming from ADO
+                    if (existingFeature) {
+                      processedFeatureIds.add(existingFeature.id); // Track processed features
 
-                    // Return the merged feature
-                    return {
-                      ...existingFeature,
-                      name: newFeature.name,
-                      description:
-                        newFeature.description || existingFeature.description,
-                      tasks: mergedTasks,
-                      // Keep other properties from existing feature
-                    };
-                  }
+                      // Create maps for existing tasks - one by pmoId and one by task id for manual tasks
+                      const existingTaskByPmoId = new Map<string, any>();
+                      const existingTaskById = new Map<string, any>();
+                      const processedTaskIds = new Set<string>();
 
-                  // This is a new feature
-                  return newFeature;
+                      (existingFeature.tasks || []).forEach((task: any) => {
+                        if (task.pmoId) {
+                          existingTaskByPmoId.set(task.pmoId, task);
+                        }
+                        if (task.id) {
+                          existingTaskById.set(task.id, task);
+                        }
+                      });
+
+                      // Merge tasks within this feature
+                      const mergedTasks = (newFeature.tasks || []).map(
+                        (newTask: any) => {
+                          const existingTask = existingTaskByPmoId.get(
+                            newTask.pmoId,
+                          );
+
+                          // If task exists, update it while preserving local changes
+                          if (existingTask) {
+                            processedTaskIds.add(existingTask.id); // Track processed tasks
+                            return {
+                              ...existingTask,
+                              // Only update title if it's different and not empty
+                              list:
+                                newTask.list && newTask.list.trim() !== ''
+                                  ? newTask.list
+                                  : existingTask.list,
+                              // Preserve local acceptance criteria if ADO doesn't have it
+                              acceptance:
+                                newTask.acceptance &&
+                                newTask.acceptance.trim() !== ''
+                                  ? newTask.acceptance
+                                  : existingTask.acceptance,
+                              // Update pmoId and pmoIssueType from ADO
+                              pmoId: newTask.pmoId,
+                              pmoIssueType:
+                                newTask.pmoIssueType ||
+                                existingTask.pmoIssueType,
+                              // Keep all other existing properties (status, custom fields, etc.)
+                              status: existingTask.status,
+                            };
+                          }
+
+                          // This is a new task
+                          return newTask;
+                        },
+                      );
+
+                      // Add any remaining existing tasks that weren't processed (manual tasks without pmoId)
+                      existingTaskById.forEach((remainingTask, taskId) => {
+                        if (!processedTaskIds.has(taskId)) {
+                          mergedTasks.push(remainingTask);
+                        }
+                      });
+
+                      // Return the merged feature with better preservation of existing data
+                      return {
+                        ...existingFeature,
+                        // Only update name if it's different and not empty
+                        name:
+                          newFeature.name && newFeature.name.trim() !== ''
+                            ? newFeature.name
+                            : existingFeature.name,
+                        // Preserve local description if ADO doesn't have it or if local is more detailed
+                        description:
+                          newFeature.description &&
+                          newFeature.description.trim() !== ''
+                            ? newFeature.description
+                            : existingFeature.description,
+                        // Update pmoId and pmoIssueType from ADO
+                        pmoId: newFeature.pmoId,
+                        pmoIssueType:
+                          newFeature.pmoIssueType ||
+                          existingFeature.pmoIssueType,
+                        tasks: mergedTasks,
+                        // Preserve all other existing properties
+                      };
+                    }
+
+                    // This is a new feature
+                    return newFeature;
+                  });
+
+                  // Add any remaining existing features that weren't processed (manual features without pmoId)
+                  existingFeatureById.forEach((remainingFeature, featureId) => {
+                    if (!processedFeatureIds.has(featureId)) {
+                      mergedFeatures.push(remainingFeature);
+                    }
+                  });
+
+                  // Update the feature content with merged features
+                  prdFeatureContent = {
+                    ...existingFeatureFile,
+                    features: mergedFeatures,
+                  };
+                }
+
+                // Log what we're saving for debugging
+                console.log(
+                  `Creating/updating PRD base file: ${prdId}-base.json`,
+                  prdBaseContent,
+                );
+                console.log(
+                  `Creating/updating PRD feature file: ${prdId}-feature.json`,
+                  prdFeatureContent,
+                );
+
+                // Add PRD files to updates
+                updates.push({
+                  path: `prd/${prdId}-base.json`,
+                  content: prdBaseContent,
                 });
 
-                // Add any remaining existing features that weren't in the new data
-                existingFeatureMap.forEach((remainingFeature) => {
-                  mergedFeatures.push(remainingFeature);
+                updates.push({
+                  path: featureFilePath,
+                  content: prdFeatureContent,
                 });
-
-                // Update the feature content with merged features
-                prdFeatureContent = {
-                  ...existingFeatureFile,
-                  features: mergedFeatures,
-                };
               }
 
-              // Log what we're saving for debugging
-              console.log(
-                `Creating/updating PRD base file: ${prdId}-base.json`,
-                prdBaseContent,
-              );
-              console.log(
-                `Creating/updating PRD feature file: ${prdId}-feature.json`,
-                prdFeatureContent,
-              );
+              // If we have updates, dispatch the BulkUpdateFiles action
+              if (updates.length > 0) {
+                // Calculate the new max PRD number after adding all new PRDs
+                const newMaxPrdNumber =
+                  maxPrdNumber +
+                  ticketGroups.filter((group) => {
+                    const prd = group.prd;
+                    return !existingPmoMap.prds[prd.pmoId]; // Only count new PRDs
+                  }).length;
 
-              // Add PRD files to updates
-              updates.push({
-                path: `prd/${prdId}-base.json`,
-                content: prdBaseContent,
-              });
+                // Update the metadata with the new PRD count
 
-              updates.push({
-                path: featureFilePath,
-                content: prdFeatureContent,
-              });
+                this.store.dispatch(new BulkUpdateFiles(updates));
+                this.toast.showSuccess(
+                  `Successfully imported ${ticketGroups.length} PRDs with their user stories and tasks from ADO`,
+                );
+
+                // Refresh the file list
+                const projectId = appInfo?.id;
+                if (projectId) {
+                  this.store.dispatch(new GetProjectFiles(projectId));
+                }
+
+                setTimeout(() => {
+                  this.updatePrdCountInMetadata(newMaxPrdNumber, appInfo);
+                }, 100);
+              } else {
+                this.toast.showInfo('No items to import from ADO');
+              }
+            };
+
+            // Execute the async processing
+            processGroups().catch((error) => {
+              console.error('Error processing ADO items:', error);
+              this.toast.showError('Failed to process ADO items');
             });
-
-            // If we have updates, dispatch the BulkUpdateFiles action
-            if (updates.length > 0) {
-              // Calculate the new max PRD number after adding all new PRDs
-              const newMaxPrdNumber =
-                maxPrdNumber +
-                ticketGroups.filter((group) => {
-                  const prd = group.prd;
-                  return !existingPmoMap.prds[prd.pmoId]; // Only count new PRDs
-                }).length;
-
-              // Update the metadata with the new PRD count
-              this.updatePrdCountInMetadata(newMaxPrdNumber, appInfo);
-
-              this.store.dispatch(new BulkUpdateFiles(updates));
-              this.toast.showSuccess(
-                `Successfully imported ${ticketGroups.length} PRDs with their user stories and tasks from ADO`,
-              );
-
-              // Refresh the file list
-              const projectId = appInfo?.id;
-              if (projectId) {
-                this.store.dispatch(new GetProjectFiles(projectId));
-              }
-            } else {
-              this.toast.showInfo('No items to import from ADO');
-            }
           })
           .catch((error) => {
             console.error('Error processing ADO items:', error);
@@ -746,6 +849,7 @@ export class AdoService implements PmoService {
         this.toast.showError('Failed to import items from ADO');
       }
     } else {
+      this.toast.showInfo(ADO_TOAST.PUSH_INITIATED);
       (async () => {
         try {
           // Map to keep track of PRD/UserStory/Task pmoId <-> ADO ID
@@ -828,10 +932,9 @@ export class AdoService implements PmoService {
               }
 
               // Get all feature files (PRD*-feature.json)
-              const featureFiles = prdDir.children.filter(
-                (file) =>
-                  file.includes('-feature.json') && !file.includes('-archived'),
-              );
+              const featureFiles = prdDir.children
+                .filter((file) => !file.includes('-archived'))
+                .map((file) => file.replace('-base.json', '-feature.json'));
 
               // Get all base files (PRD*-base.json)
               const baseFiles = prdDir.children.filter(
@@ -845,10 +948,9 @@ export class AdoService implements PmoService {
 
               console.log('Project metadata for PRD count:', appInfo);
 
-              // Check if we have project metadata with prdCount
-              if (appInfo && appInfo.prdCount) {
-                // Use the value from metadata.json
-                maxPrdNumber = parseInt(appInfo.prdCount, 10);
+              // Check if we have project metadata with PRD count
+              if (appInfo && appInfo.PRD?.count) {
+                maxPrdNumber = appInfo.PRD.count;
               } else {
                 // Fall back to scanning file names
                 baseFiles.forEach((file) => {
@@ -1023,21 +1125,17 @@ export class AdoService implements PmoService {
   private updatePrdCountInMetadata(newPrdCount: number, appInfo: any): void {
     // Only update if we have appInfo and the new count is higher than the current one
     if (appInfo) {
-      const currentCount = appInfo.prdCount
-        ? parseInt(appInfo.prdCount, 10)
-        : 0;
+      const currentCount = appInfo.PRD?.count || 0;
 
       if (newPrdCount > currentCount) {
-        // Create a copy of the metadata to update
-        const updatedMetadata = {
-          ...appInfo,
-          prdCount: String(newPrdCount),
-        };
-
-        // We should update the metadata in the project, but this would require
-        // invoking the electron service to update the .metadata.json file
-        // For now, just update our local copy
-        // TODO: Implement updating metadata file
+        this.store.dispatch(
+          new UpdateMetadata(appInfo.id, {
+            PRD: {
+              ...appInfo.PRD,
+              count: newPrdCount,
+            },
+          }),
+        );
       }
     }
   }
@@ -1258,7 +1356,7 @@ export class AdoService implements PmoService {
    * @param existingPmoMap Map of existing items with pmoId
    * @returns Array of formatted features
    */
-  private formatFeaturesForPrd(
+  private async formatFeaturesForPrd(
     userStories: Ticket[],
     tasks: { [userStoryId: string]: Ticket[] },
     existingPmoMap: {
@@ -1266,7 +1364,7 @@ export class AdoService implements PmoService {
       userStories: { [pmoId: string]: { specifaiId: string; path: string } };
       tasks: { [pmoId: string]: { specifaiId: string; path: string } };
     },
-  ): Array<any> {
+  ): Promise<Array<any>> {
     let nextUserStoryId = 1;
     let nextTaskId = 1;
 
@@ -1292,40 +1390,46 @@ export class AdoService implements PmoService {
     });
 
     // Format user stories into features
-    return userStories.map((userStory) => {
-      // Determine user story ID - use existing or generate new one
-      const userStoryId = existingPmoMap.userStories[userStory.pmoId]
-        ? existingPmoMap.userStories[userStory.pmoId].specifaiId
-        : `US${nextUserStoryId++}`;
+    const features = await Promise.all(
+      userStories.map(async (userStory) => {
+        // Determine user story ID - use existing or generate new one
+        const userStoryId = existingPmoMap.userStories[userStory.pmoId]
+          ? existingPmoMap.userStories[userStory.pmoId].specifaiId
+          : `US${nextUserStoryId++}`;
 
-      // Get tasks for this user story
-      const userStoryTasks = tasks[userStory.pmoId] || [];
+        // Get tasks for this user story
+        const userStoryTasks = tasks[userStory.pmoId] || [];
 
-      // Format tasks
-      const formattedTasks = userStoryTasks.map((task) => {
-        // Determine task ID - use existing or generate new one
-        const taskId = existingPmoMap.tasks[task.pmoId]
-          ? existingPmoMap.tasks[task.pmoId].specifaiId
-          : `TASK${nextTaskId++}`;
+        // Format tasks
+        const formattedTasks = await Promise.all(
+          userStoryTasks.map(async (task) => {
+            // Determine task ID - use existing or generate new one
+            const taskId = existingPmoMap.tasks[task.pmoId]
+              ? existingPmoMap.tasks[task.pmoId].specifaiId
+              : `TASK${nextTaskId++}`;
 
+            return {
+              id: taskId,
+              list: task.title,
+              acceptance: await convertHtmlToMarkdown(task.description || ''),
+              status: 'Active',
+              pmoId: task.pmoId, // Store ADO ID for future reference
+            };
+          }),
+        );
+
+        // Return the feature object (user story)
         return {
-          id: taskId,
-          list: task.title,
-          acceptance: task.description || '',
-          status: 'Active',
-          pmoId: task.pmoId, // Store ADO ID for future reference
+          id: userStoryId,
+          name: userStory.title,
+          description: await convertHtmlToMarkdown(userStory.description || ''),
+          pmoId: userStory.pmoId, // Store ADO ID for future reference
+          tasks: formattedTasks,
         };
-      });
+      }),
+    );
 
-      // Return the feature object (user story)
-      return {
-        id: userStoryId,
-        name: userStory.title,
-        description: userStory.description || '',
-        pmoId: userStory.pmoId, // Store ADO ID for future reference
-        tasks: formattedTasks,
-      };
-    });
+    return features;
   }
 
   /**
@@ -1355,12 +1459,11 @@ export class AdoService implements PmoService {
       {
         op: 'add',
         path: '/fields/System.Description',
-        value: ticket.description || '',
+        value: convertMarkdownToHtml(ticket.description || ''),
       },
-      { op: 'add', path: '/fields/System.State', value: 'Active' },
       { op: 'add', path: '/fields/System.WorkItemType', value: workItemType },
     ];
-    if (parentAdoId) {
+    if (parentAdoId && !ticket.pmoId) {
       patchBody.push({
         op: 'add',
         path: '/relations/-',
@@ -1370,6 +1473,7 @@ export class AdoService implements PmoService {
         },
       });
     }
+
     const options = {
       ...this.getRequestOptions(),
       headers: (this.getRequestOptions().headers as HttpHeaders).set(
@@ -1535,9 +1639,7 @@ export class AdoService implements PmoService {
         .dispatch(new BulkUpdateFiles(updates))
         .pipe(first())
         .subscribe(() => {
-          this.toast.showSuccess(
-            'Successfully pushed selected items to ADO',
-          );
+          this.toast.showSuccess('Successfully pushed selected items to ADO');
           const projectId = appInfo?.id;
           if (projectId) {
             this.store.dispatch(new GetProjectFiles(projectId));

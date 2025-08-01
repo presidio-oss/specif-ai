@@ -47,6 +47,8 @@ import {
   heroChevronUp,
   heroServerStack,
   heroBeaker,
+  heroDocument,
+  heroPresentationChartBar,
 } from '@ng-icons/heroicons/outline';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { DocumentListingComponent } from '../../components/document-listing/document-listing.component';
@@ -77,6 +79,8 @@ import { WorkflowProgressService } from '../../services/workflow-progress/workfl
 import { ProjectFailureMessageComponent } from '../../components/project-failure-message/project-failure-message.component';
 import { ProjectCreationService } from '../../services/project-creation/project-creation.service';
 import { PmoIntegrationComponent } from '../../components/pmo-integration/pmo-integration.component';
+import { JiraToPmoMigrationService } from '../../services/migration/jira-to-pmo-migration.service';
+import { IntegrationCredentialsService } from '../../services/integration-credentials/integration-credentials.service';
 
 @Component({
   selector: 'app-info',
@@ -115,7 +119,9 @@ import { PmoIntegrationComponent } from '../../components/pmo-integration/pmo-in
       heroChevronDown,
       heroChevronUp,
       heroServerStack,
-      heroBeaker
+      heroDocument,
+      heroBeaker,
+      heroPresentationChartBar,
     }),
   ],
 })
@@ -172,7 +178,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   );
 
   // Predefined order of folders
-  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC'];
+  folderOrder = ['BRD', 'NFR', 'PRD', 'UIR', 'BP', 'TC', 'SI'];
   isBedrockConfigPresent: boolean = false;
   isSavingMcpSettings: boolean = false;
   isCreatingSolution: boolean = false;
@@ -188,6 +194,8 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     private logger: NGXLogger,
     private workflowProgressService: WorkflowProgressService,
     private projectCreationService: ProjectCreationService,
+    private jiraToPmoMigrationService: JiraToPmoMigrationService,
+    private integrationCredService: IntegrationCredentialsService,
   ) {
     const navigation = this.router.getCurrentNavigation();
     this.appInfo = navigation?.extras?.state?.['data'];
@@ -235,7 +243,18 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     }
     this.store
       .select(ProjectsState.getProjects)
-      .pipe(first())
+      .pipe(
+        takeUntil(this.destroy$),
+        distinctUntilChanged((prev, curr) => {
+          const prevProject = prev.find(
+            (p) => p.metadata.id === this.projectId,
+          );
+          const currProject = curr.find(
+            (p) => p.metadata.id === this.projectId,
+          );
+          return JSON.stringify(prevProject) === JSON.stringify(currProject);
+        }),
+      )
       .subscribe((projects) => {
         const project = projects.find((p) => p.metadata.id === this.projectId);
 
@@ -255,6 +274,57 @@ export class AppInfoComponent implements OnInit, OnDestroy {
               },
             ]),
           );
+
+          // Check if we need to migrate legacy JIRA references
+          if (
+            this.jiraToPmoMigrationService.shouldMigrateLegacyJira(this.appInfo)
+          ) {
+            this.logger.info(
+              'Legacy JIRA project detected. Starting migration...',
+            );
+            this.jiraToPmoMigrationService
+              .migrateLegacyJiraReferences(this.appName as string, this.appInfo)
+              .catch((error) => {
+                this.logger.error('Migration failed:', error);
+              });
+          }
+
+          // Check if we need to migrate integration credentials
+          if (
+            this.integrationCredService.shouldMigrateCredentials(this.appInfo)
+          ) {
+            this.logger.info(
+              'Legacy integration credentials detected. Starting migration...',
+            );
+            this.integrationCredService
+              .migrateCredentialsFromMetadata(
+                this.appName as string,
+                this.projectId as string,
+                this.appInfo,
+              )
+              .then((result) => {
+                if (result.success && result.migratedTypes.length > 0) {
+                  this.logger.info(
+                    `Successfully migrated ${result.migratedTypes.join(', ')} credentials`,
+                  );
+
+                  const cleanedMetadata =
+                    this.integrationCredService.cleanMetadataCredentials(
+                      this.appInfo,
+                    );
+                  this.store.dispatch(
+                    new UpdateMetadata(this.appInfo.id, cleanedMetadata),
+                  );
+
+                  this.toast.showSuccess(
+                    `Migrated ${result.migratedTypes.join(' and ')} credentials to secure storage`,
+                  );
+                }
+              })
+              .catch((error) => {
+                this.logger.error('Credential migration failed:', error);
+              });
+          }
         } else {
           console.error('Project not found with id:', this.projectId);
         }
@@ -333,27 +403,27 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     this.isBedrockConnected && this.bedrockForm.disable();
 
     this.initMcpForm();
-  }  
+  }
 
   private setupCustomEventListeners(): void {
     // Listen for open-pmo-integration event
     window.addEventListener('open-pmo-integration', (event: Event) => {
       const customEvent = event as CustomEvent;
       const state = customEvent.detail;
-      
+
       if (state) {
         // Update selected folder if provided
         if (state.selectedFolder) {
           this.selectedFolder = state.selectedFolder;
         }
-        
+
         // Open PMO integration accordion if requested
         if (state.openPmoAccordion) {
           this.accordionState['pmoIntegration'] = true;
         }
 
         // set the selected integration if provided
-        if(state.selectedIntegration) {
+        if (state.selectedIntegration) {
           this.selectedIntegration = state.selectedIntegration;
         }
       }
@@ -561,23 +631,6 @@ export class AppInfoComponent implements OnInit, OnDestroy {
     });
   }
 
-  navigateToAdd(folderName: string) {
-    this.router
-      .navigate(['/add'], {
-        state: {
-          data: this.appInfo,
-          id: this.projectId,
-          folderName: folderName,
-          breadcrumb: {
-            name: 'Add Document',
-            link: this.router.url,
-            icon: 'add',
-          },
-        },
-      })
-      .then();
-  }
-
   navigateToBPFlow(item: any) {
     this.router.navigate(['/bp-flow/view', item.id], {
       state: {
@@ -594,9 +647,50 @@ export class AppInfoComponent implements OnInit, OnDestroy {
       },
     });
   }
-  
+
   navigateToTestCasesHome() {
     this.selectFolder({ name: 'TC', children: [] });
+  }
+
+  navigateToAdd(folderName: string) {
+    if (folderName === 'SI') {
+      this.router
+        .navigate(['/strategic-initiative/add'], {
+          state: {
+            data: this.appInfo,
+            id: this.projectId,
+            folderName: folderName,
+            breadcrumb: {
+              name: 'Add Document',
+              link: this.router.url,
+              icon: 'add',
+            },
+          },
+        })
+        .then();
+    } else {
+      this.router
+        .navigate(['/add'], {
+          state: {
+            data: this.appInfo,
+            id: this.projectId,
+            folderName: folderName,
+            breadcrumb: {
+              name: 'Add Document',
+              link: this.router.url,
+              icon: 'add',
+            },
+          },
+        })
+        .then();
+    }
+  }
+
+  handleIntegrationNavState(): void {
+    if (this.navigationState && this.navigationState['openAppIntegrations']) {
+      this.selectFolder({ name: 'app-integrations', children: [] });
+      this.toggleAccordion('jira');
+    }
   }
 
   getIconName(key: string): string {
@@ -747,7 +841,7 @@ export class AppInfoComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.complete();
-    
+
     // Remove custom event listeners
     window.removeEventListener('open-pmo-integration', () => {});
   }
