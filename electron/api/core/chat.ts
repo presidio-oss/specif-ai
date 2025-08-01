@@ -196,10 +196,15 @@ const buildToolsForRequirement = async (data: ChatWithAIParams) => {
     },
     {
       name: "update_requirement_description",
-      description: "Suggest content modifications to the current requirement description",
+      description:
+        "Suggest content modifications to the current requirement description. CRITICAL: When user provides instructions with action verbs (elaborate, expand, simplify, etc.), pass the PROCESSED RESULT of applying those actions, NOT the instruction itself. Only pass the final modified content.",
       schema: z.object({
-        contentToAdd: z.string()
-      })
+        contentToAdd: z
+          .string()
+          .describe(
+            "The complete modified requirement content after processing any user instructions. Never pass instruction text like 'elaborate X' or 'expand Y' - instead pass the actual elaborated/expanded/modified content."
+          ),
+      }),
     }
   );
 

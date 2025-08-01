@@ -126,7 +126,7 @@
         class="h-full block"
         [name]="projectMetadata?.name"
         [description]="projectMetadata?.description"
-        [baseContent]="description"
+        [baseContent]="userStoryForm.getRawValue().description"
         [chatHistory]="chatHistory"
         [prd]="selectedPRD.requirement"
         (getContent)="updateContent($event)"
