@@ -94,8 +94,8 @@ By simply providing a solution name, description, and tech stack details, Specif
 </div>
 
 - **📊 Business Process Visualization**: Easily generate and manage process flows.
-- **📋 User Story Generation**: Convert requirements into actionable user stories and tasks.
 - **🔗 Linking BRDs and PRDs**: Share BRD context to PRDs for holistic output.
+- **📋 User Story Generation**: Convert requirements into actionable user stories and tasks.
 
 <div align="center">
 
@@ -103,11 +103,12 @@ By simply providing a solution name, description, and tech stack details, Specif
 *User story and task generation*
 </div>
 
-- **🧪 Automated Test Case Generation**: Generate comprehensive test cases from user stories through an intelligent workflow.
+- **🧪 Automated Test Case Generation**: Generate comprehensive test cases from user stories through an intelligent workflow. 
 
+For Test Case Generation instructions, please refer to our [Automated Test Case Generation Guide](docs/docs/current/core-features.md#-automating-test-case-generation).
 <div align="center">
 
-![Test case generation](docs/static/gif/specifai-test-cases.gif)  
+![Test Case Generation](docs/static/gif/specifai-test-cases.gif)  
 *Automated test case generation workflow*
 </div>
 

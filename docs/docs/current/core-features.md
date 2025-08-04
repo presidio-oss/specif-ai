@@ -512,6 +512,8 @@ This feature enables the seamless generation of user stories and associated task
 
 </div>
 
+---
+
 ### 🔹 How It Works
 
 1.  **Select a PRD:**
@@ -544,6 +546,66 @@ You can regenerate user stories and tasks at any time. When this action is trigg
 * A **new set of user stories and tasks** is created based on the latest context and PRD selection.
 
 This ensures the system always reflects the most current understanding of requirements while maintaining historical traceability.
+
+---
+
+## 📝 Automating Test Case Generation
+
+This feature allows you to automatically generate comprehensive test cases from user stories, ensuring complete coverage of requirements and facilitating robust quality assurance processes. The system leverages an intelligent **3-Phase Agentic Flow** to interpret user stories and its parent product requirement, producing detailed test cases that thoroughly validate functionality.
+
+<div align="center">
+
+![Test Case Generation](../../static/gif/specifai-testcase-generation.gif)
+*AI-powered test case generation in action*
+
+</div>
+
+**🔄 Test Case Generation Agentic Flow Process:**
+
+1. **Research & Analysis** - Gathers context from user stories, acceptance criteria, its parent Product Requirement Document (PRD), and technical constraints to understand testing scope.
+2. **Intelligent Generation** - Creates comprehensive test cases covering functional, integration, edge cases, and negative scenarios with structured format.
+3. **Quality Evaluation** - Validates generated test cases against coverage criteria, clarity standards, and best practices with iterative refinement (up to 3 cycles)
+
+### 🔹 How It Works
+
+1.  **Navigate to User Stories:**
+    Begin by selecting the relevant PRD from the available list, then click the **"Stories"** button to view its associated user stories.
+
+2. **Select a User Story:**
+    Begin by selecting the user story for which you want to generate test cases.
+
+3.  **Click on 'Test Cases' button:**
+    Click the **Test Cases** button associated with the selected user story. This will open the test case list screen.
+
+4.  **Click on 'Generate Test Cases':**
+    Once the test case list screen is open, click the **Generate Test Cases** button.
+
+5.  **Provide User Screens Involved and Extra Context in the Popup:**
+    A popup window will appear, prompting you to provide additional context, such as:
+    * **UI Screens**: Specify which screens/pages are involved in the user story flow
+    * **Extra Context**: Any extra information that can help the AI generate more accurate test cases.
+
+6.  **Test Case Generation:**
+    Upon submission, the backend **3-Phase Agentic Flow** is triggered. It performs the following actions:
+    * Generates comprehensive test cases based on user story and context.
+    * Enhances quality using MCP servers (AWS Bedrock KB) when configured
+    * Links test cases to user story for full traceability
+    * Creates structured format with prerequisites, steps, expected results, and alternative flows
+
+
+### 🔄 Regeneration Support
+
+You can regenerate test cases at any time. When triggered:
+* Previously generated test cases are **automatically archived** for historical reference
+* New test cases are created based on the latest user story updates and context.
+* Full traceability is maintained throughout the regeneration process.
+
+### 🎯 Key Benefits
+
+* **Complete Coverage**: Functional, integration, edge cases, and negative scenarios.
+* **Structured Format**: Clear prerequisites, steps, expected results, and alternative flows.
+* **Traceability**: Direct linkage to source user stories and acceptance criteria.
+* **Quality Validation**: AI-evaluated for completeness and testing best practices.
 
 ---
 
