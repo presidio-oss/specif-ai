@@ -94,6 +94,16 @@ Each solution follows a modular, scalable structure:
 ├── 📁 UIR                       # User Interface Requirements
 │   ├── 📄 UIR01-base.json
 │   └── 📄 UIRxx-base.json
+├── 📁 TC                        # Test Cases
+│   ├── 📁 US1                   # Test Cases for User Story 1
+│   │   ├── 📄 TC01-base.json
+│   │   └── 📄 TCxx-base.json
+│   └── 📁 USx                   # Test Cases for User Story x
+│       ├── 📄 TC01-base.json
+│       └── 📄 TCxx-base.json
+├── 📁 SI                        # Strategic Initiatives
+│   ├── 📄 SI01-base.json
+│   └── 📄 SIxx-base.json
 └── 📁 BP                        # Business Process Flows
     ├── 📄 BP01-base.json
     └── 📄 BPxx-base.json
@@ -116,8 +126,8 @@ Each solution follows a modular, scalable structure:
     * **Tasks**: Breakdown of user stories.
     * **NFR**: Performance & security requirements.
     * **UIR**: UI/UX design guidelines.
-    * **Test Cases**: Quality validation procedures.
-    * **Strategic Initiatives**: High-level organizational objectives.
+    * **TC**: Test cases for quality validation procedures.
+    * **SI**: Strategic initiatives for high-level organizational objectives.
 
 3.  **📊 Business Process Flows (`BP`)**
     This folder contains visual representations of your key business processes.
@@ -588,7 +598,7 @@ Specifai's inline editing feature allows you to instantly improve any text withi
 
 ## 📤 Export and Integration Options
 
-Specifai provides seamless options to share and integrate your generated requirements (BRD, PRD, UIR, NFR, Test Cases, Strategic Initiatives, and user stories) with all stakeholders and development teams.
+Specifai provides seamless options to share and integrate your generated requirements (BRD, PRD, UIR, NFR, and user stories) with all stakeholders and development teams.
 
 1.  **Copy to Clipboard (JSON)**
     * Export requirements in JSON format.
