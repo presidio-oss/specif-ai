@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.8.0]
+
+### Added
+
+- Introduced a Strategic Initiative Builder to enable creation and management of business proposals.
+- Added Inline Editor functionality for all requirements to support quick, selection-context editing.
+
+### Enhancements
+- Refactored to securely persist JIRA/ADO credentials in Electron Store instead of metadata.
+- Enhanced HAI Chat to fully replace requirement text with structured AI suggestions, enabling clearer edits and reducing hallucinations during refinement.
+- Updated Jira integration to follow a modal-based workflow similar to ADO, with precise ticket-level Pull/Push controls for a consistent user experience.
+
+### Fixed
+
+- Fixed an issue where user stories could not be regenerated after deleting a story within the same PRD.
+- Updated toast notifications to display appropriate messages when copying user stories and other requirements.
+
 ## [2.7.0]
 
 ### Added
