@@ -95,8 +95,12 @@ Each solution follows a modular, scalable structure:
 │   ├── 📄 UIR01-base.json
 │   └── 📄 UIRxx-base.json
 ├── 📁 TC                        # Test Cases
-│   ├── 📄 TC01-base.json
-│   └── 📄 TCxx-base.json
+│   ├── 📁 US1                   # Test Cases for User Story 1
+│   │   ├── 📄 TC01-base.json
+│   │   └── 📄 TCxx-base.json
+│   └── 📁 USx                   # Test Cases for User Story x
+│       ├── 📄 TC01-base.json
+│       └── 📄 TCxx-base.json
 ├── 📁 SI                        # Strategic Initiatives
 │   ├── 📄 SI01-base.json
 │   └── 📄 SIxx-base.json
