@@ -69,7 +69,7 @@ import { Editor } from '@tiptap/core';
     InlineEditDirective
   ],
   providers: [
-    provideIcons({ 
+    provideIcons({
       heroSparklesSolid
     })
   ]
@@ -167,6 +167,29 @@ export class EditUserStoriesComponent implements OnDestroy {
     console.log(this.projectMetadata, 'projectMetadata');
   }
 
+  private handlePostUpdateActions() {
+    this.userStoryForm.markAsUntouched();
+    this.userStoryForm.markAsPristine();
+    this.toasterService.showSuccess(
+      TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
+        this.entityType,
+        this.existingUserForm.id,
+      ),
+    );
+  }
+
+  private performUserStoryUpdate() {
+    this.store.dispatch(
+      new EditUserStory(this.absoluteFilePath, {
+        description: this.userStoryForm.getRawValue().description,
+        name: this.userStoryForm.getRawValue().name,
+        id: this.data.id,
+        chatHistory: this.chatHistory,
+      }),
+    );
+    this.handlePostUpdateActions();
+  }
+
   updateUserStoryWithAI() {
     const body: IUpdateUserStoryRequest = {
       name: this.projectMetadata.name,
@@ -209,17 +232,11 @@ export class EditUserStoriesComponent implements OnDestroy {
           });
           this.name = featureName!;
           this.description = featureDescription;
-          this.toasterService.showSuccess(
-            TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
-              this.entityType,
-              this.existingUserForm.id,
-            ),
-          );
+          this.handlePostUpdateActions();
         } else {
           console.log('No matching feature found for the given ID.');
         }
-        this.userStoryForm.markAsUntouched();
-        this.userStoryForm.markAsPristine();
+        // Form state management is handled by handlePostUpdateActions()
       })
       .catch((error) => {
         console.error('Error updating requirement:', error);
@@ -239,23 +256,7 @@ export class EditUserStoriesComponent implements OnDestroy {
     ) {
       this.updateUserStoryWithAI();
     } else {
-      this.store.dispatch(
-        new EditUserStory(this.absoluteFilePath, {
-          description: this.userStoryForm.getRawValue().description,
-          name: this.userStoryForm.getRawValue().name,
-          id: this.data.id,
-          chatHistory: this.chatHistory,
-        }),
-      );
-
-      this.userStoryForm.markAsUntouched();
-      this.userStoryForm.markAsPristine();
-      this.toasterService.showSuccess(
-        TOASTER_MESSAGES.ENTITY.UPDATE.SUCCESS(
-          this.entityType,
-          this.existingUserForm.id,
-        ),
-      );
+      this.performUserStoryUpdate();
     }
   }
 
@@ -345,16 +346,17 @@ export class EditUserStoriesComponent implements OnDestroy {
 
   updateContent(data: any) {
     let { chat, chatHistory } = data;
-    if (chat.contentToAdd) {
+    if (chat?.contentToAdd) {
       this.userStoryForm.patchValue({
-        description: `${this.userStoryForm.getRawValue().description} ${chat.contentToAdd}`,
+        description: `${chat.contentToAdd}`,
       });
       let newArray = chatHistory.map((item: any) => {
         if (item.name == chat.tool_name && item.tool_call_id == chat.tool_call_id) return { ...item, isAdded: true };
         else return item;
       });
       this.chatHistory = newArray;
-      this.updateUserStoryWithAI();
+      // Use shared method to avoid duplicate logic
+      this.performUserStoryUpdate();
     }
   }
 

@@ -298,7 +298,7 @@
           [fileName]="fileName"
           [chatHistory]="chatHistory"
           [baseContent]="requirementForm.getRawValue().content"
-          (getContent)="appendRequirement($event)"
+          (getContent)="updateRequirementFromChat($event)"
           (updateChatHistory)="updateChatHistory($event)"
           [containerClass]="'border-none h-full'"
           [brds]="getBRDDataFromIds(requirementForm.getRawValue().linkedBRDIds)"
@@ -319,7 +319,7 @@
         [fileName]="fileName"
         [chatHistory]="chatHistory"
         [baseContent]="requirementForm.getRawValue().content"
-        (getContent)="appendRequirement($event)"
+        (getContent)="updateRequirementFromChat($event)"
         (updateChatHistory)="updateChatHistory($event)"
         [containerClass]="'border-none h-full'"
       />
