@@ -549,7 +549,7 @@ This ensures the system always reflects the most current understanding of requir
 
 ---
 
-## 📝 Automating Test Case Generation
+## 🧪 Automating Test Case Generation
 
 This feature allows you to automatically generate comprehensive test cases from user stories, ensuring complete coverage of requirements and facilitating robust quality assurance processes. The system leverages an intelligent **3-Phase Agentic Flow** to interpret user stories and its parent product requirement, producing detailed test cases that thoroughly validate functionality.
 
@@ -559,12 +559,6 @@ This feature allows you to automatically generate comprehensive test cases from 
 *AI-powered test case generation in action*
 
 </div>
-
-**🔄 Test Case Generation Agentic Flow Process:**
-
-1. **Research & Analysis** - Gathers context from user stories, acceptance criteria, its parent Product Requirement Document (PRD), and technical constraints to understand testing scope.
-2. **Intelligent Generation** - Creates comprehensive test cases covering functional, integration, edge cases, and negative scenarios with structured format.
-3. **Quality Evaluation** - Validates generated test cases against coverage criteria, clarity standards, and best practices with iterative refinement (up to 3 cycles)
 
 ### 🔹 How It Works
 

@@ -104,6 +104,21 @@ This iterative, agent-driven process ensures comprehensive coverage and consiste
 
 ---
 
+## 🧪 Test Case Generation Process
+
+Test case generation ensures comprehensive coverage through intelligent AI agents that analyze user stories, technical constraints, and business logic to produce validated test cases covering all aspects.
+
+### Flow Overview
+
+* **Test Case Generation:**
+    * **Contextual Analysis:** Gathers context from user stories, acceptance criteria, technical constraints, and their parent product requirement documents. Also gathers information about UI screens involved from the user.
+* **Agentic Workflow:**
+    * **Research & Analysis** - Gathers context from user stories, acceptance criteria, their parent Product Requirement Document (PRD), and technical constraints to understand testing scope. MCP Tools are also used for research to enhance context.
+    * **Intelligent Generation** - Creates comprehensive test cases covering functional, integration, edge cases, and negative scenarios with structured format.
+    * **Quality Evaluation** - Validates generated test cases against coverage criteria, clarity standards, and best practices with iterative refinement (up to 3 cycles).
+
+---
+
 ## 🛡️ Security and Safety
 
 Specifai integrates **hai-guardrails** throughout its architecture to ensure robust security and content safety, particularly within AI-driven workflows.
