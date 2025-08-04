@@ -15,6 +15,10 @@ This guide helps you resolve common issues you might encounter while using Speci
 2.  **Specifai Won't Launch or Behaves Unexpectedly**
     * **Verify Installation Completion:** Ensure the installation process completed without errors.
     * **Restart Your System:** A system restart can sometimes resolve unexpected launch issues.
+    * **Reset Settings:** If the application launches but behaves unexpectedly, try using the "Reset Settings" button in the Settings page to restore default configuration and fix common issues.
+    
+    ![Reset Settings Button](../../static/img/specifai-reset-settings.png)
+    
     * **Clear Electron Store/User Data:**
         * The Electron store saves application settings and user data. Corrupted data here can cause launch failures or strange behavior.
         * **Location:**

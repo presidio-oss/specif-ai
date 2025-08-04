@@ -98,6 +98,9 @@ If your Azure DevOps project uses different work item types, you can configure c
      - **Platform Features** (mapped to User Stories)
      - **User Stories** (mapped to Tasks)
 
+   ![ADO Pull Selection Interface](../../static/img/specifai-ado-pull-selection.png)
+   _Hierarchical view for selecting Azure DevOps work items to import_
+
 3. **Import Selected Items:**
    - Select the work items you want to import into Specifai.
    - Click **Pull from ADO** to import the selected items.
@@ -108,6 +111,9 @@ If your Azure DevOps project uses different work item types, you can configure c
 1. **Select Items to Export:**
    - Choose the PRDs, User Stories, and Tasks you want to push to Azure DevOps.
    - The system maintains the hierarchical relationships during export.
+
+   ![ADO Push Selection Interface](../../static/img/specifai-ado-push-selection.png)
+   _Hierarchical view for selecting Specifai documents to push to Azure DevOps_
 
 2. **Push to ADO:**
    - Click **Push to ADO** to create corresponding work items in Azure DevOps.
