@@ -326,6 +326,7 @@ Alternative Flows:
 * Document dependencies on other initiatives.
 * Establish timeline and milestone expectations.
 * Identify key performance indicators (KPIs) for measuring success.
+* **Add Research URLs**: Enhance initiatives with links to external research, documentation, and context.
 
 #### Strategic Initiative Components
 * **Vision Statement**: The overarching goal of the initiative.
@@ -333,6 +334,7 @@ Alternative Flows:
 * **Success Criteria**: Measurable outcomes that determine success.
 * **Solution Portfolio**: Collection of solutions supporting the initiative.
 * **Timeline**: Major milestones and delivery expectations.
+* **Research Resources**: External URLs and documentation that provide additional context and support for the initiative.
 
 #### Example SI
 
