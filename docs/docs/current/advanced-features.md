@@ -125,13 +125,6 @@ Test case generation ensures comprehensive coverage through intelligent AI agent
 
 Strategic Initiative generation in Specifai leverages an advanced two-phase agentic workflow to create high-level organizational objectives that align technical efforts with business goals.
 
-<div align="center">
-
-![Strategic Initiative Flow](../../static/gif/specifai-si.gif)
-*Strategic Initiative workflow in action*
-
-</div>
-
 ### Workflow Architecture
 
 The Strategic Initiative workflow follows a structured, sequential process:
