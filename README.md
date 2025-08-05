@@ -111,6 +111,14 @@ By simply providing a solution name, description, and tech stack details, Specif
 *Automated test case generation workflow*
 </div>
 
+- **🎯 Strategic Initiative Management**: Create and manage strategic initiatives to align technical work with business goals, enabling better planning and tracking of high-level objectives.
+
+<div align="center">
+
+![Strategic Initiative Management](docs/static/gif/specifai-si.gif)  
+*Strategic Initiative management workflow*
+</div>
+
 - **🔍 Analytics & Observability**: Optional analytics and observability tracked in PostHog and Langfuse.
 - **🔄 Multi-Model Support**: Choose the model that best suits your needs. Supported models include:
    - Azure OpenAI
