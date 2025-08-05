@@ -65,6 +65,15 @@ Efficiently manage your project requirements with Specifai's robust tools, inclu
 
 </div>
 
+---
+
+<div align="center">
+
+![Strategic Initiatives](../../static/gif/specifai-si.gif)
+*Strategic Initiatives with external research URL support*
+
+</div>
+
 --- 
 
 ## 🔌 Enterprise Solutions

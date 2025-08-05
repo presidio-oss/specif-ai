@@ -326,6 +326,7 @@ Alternative Flows:
 * Document dependencies on other initiatives.
 * Establish timeline and milestone expectations.
 * Identify key performance indicators (KPIs) for measuring success.
+* **Add Research URLs**: Enhance initiatives with links to external research, documentation, and context.
 
 #### Strategic Initiative Components
 * **Vision Statement**: The overarching goal of the initiative.
@@ -333,6 +334,7 @@ Alternative Flows:
 * **Success Criteria**: Measurable outcomes that determine success.
 * **Solution Portfolio**: Collection of solutions supporting the initiative.
 * **Timeline**: Major milestones and delivery expectations.
+* **Research Resources**: External URLs and documentation that provide additional context and support for the initiative.
 
 #### Example SI
 
@@ -600,6 +602,61 @@ You can regenerate test cases at any time. When triggered:
 * **Structured Format**: Clear prerequisites, steps, expected results, and alternative flows.
 * **Traceability**: Direct linkage to source user stories and acceptance criteria.
 * **Quality Validation**: AI-evaluated for completeness and testing best practices.
+
+---
+
+## 🎯 Automating Strategic Initiative Generation
+
+This feature enables you to create high-level strategic initiatives that align business goals with technical execution. Strategic initiatives provide a framework for organizing and prioritizing your solutions across the enterprise portfolio. The system leverages an intelligent **Two-Phase Agentic Workflow** to generate comprehensive strategic initiatives with enhanced context from external research.
+
+<div align="center">
+
+![Strategic Initiative Generation](../../static/gif/specifai-si.gif)
+*AI-powered strategic initiative generation in action*
+
+</div>
+
+### 🔹 How It Works
+
+1. **Access Strategic Initiatives:**
+   Navigate to the Strategic Initiatives section of your solution.
+
+2. **Click on 'Generate Strategic Initiative':**
+   Click the **Generate Strategic Initiative** button to start the creation process.
+
+3. **Provide Context in the Popup:**
+   A popup window will appear, prompting you to provide:
+   * **Title**: A descriptive name for your strategic initiative
+   * **Description**: High-level overview of the initiative's goals
+   * **Research URLs**: Links to external resources that provide additional context (market research, industry reports, technical documentation)
+
+4. **Strategic Initiative Generation:**
+   Upon submission, the backend **Two-Phase Agentic Workflow** is triggered:
+   * **Research Phase**: The system processes all available context, including your solution details and any provided research URLs
+   * **Generation Phase**: Creates a comprehensive strategic initiative with vision statement, business drivers, success criteria, and timeline
+   * If MCP servers are configured (like AWS Bedrock Knowledge Base), they're leveraged to enhance the quality and relevance of the generated initiative
+
+### 🔄 URL-Enhanced Context
+
+One of the most powerful features of Strategic Initiative generation is the ability to incorporate external research:
+
+* **How to Add Research URLs:**
+  * Include URLs to relevant market research, industry reports, competitor analysis, or technical documentation
+  * The system will process these resources and incorporate key insights into your strategic initiative
+  * Multiple URLs can be added for comprehensive context
+
+* **Benefits of URL Integration:**
+  * More informed strategic planning
+  * Data-driven decision making
+  * Industry alignment
+  * Enhanced initiative quality and relevance
+
+### 🌟 Key Benefits
+
+* **Business Alignment**: Ensures technical efforts directly support strategic business goals
+* **Enhanced Context**: External research URLs provide deeper insights
+* **Comprehensive Structure**: Generated initiatives include vision, drivers, success criteria, and timelines
+* **Enterprise Portfolio View**: Organize and prioritize solutions to maximize strategic impact
 
 ---
 
