@@ -112,6 +112,14 @@ For Test Case Generation instructions, please refer to our [Automated Test Case 
 *Automated test case generation workflow*
 </div>
 
+- **🎯 Strategic Initiative Management**: Revolutionize the way you align strategy with execution. Design and manage powerful strategic initiatives that seamlessly connect high-level business goals with on-the-ground execution. Bridge the gap between vision and action, ensuring every technical effort directly supports your strategic priorities. Enhance your initiatives with external research by adding URLs that provide valuable context and documentation.
+
+<div align="center">
+
+![Strategic Initiative Management](docs/static/gif/specifai-si.gif)  
+*Strategic Initiative management workflow*
+</div>
+
 - **🔍 Analytics & Observability**: Optional analytics and observability tracked in PostHog and Langfuse.
 - **🔄 Multi-Model Support**: Choose the model that best suits your needs. Supported models include:
    - Azure OpenAI
