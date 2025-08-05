@@ -48,8 +48,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 - 🔧 Non-Functional Requirements Documents (NFRD)
 - 📱 Product Requirement Documents (PRD)
 - 🎨 User Interface Requirements (UIR)
-- 🔄 Business Process Flows
-- 🧪 Test Cases
+
 
 <div align="center">
     <img src="docs/static/gif/specifai-sections.gif" alt="Document Generation Demo" width="900">
@@ -82,6 +81,15 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 ![AI powered chat feature in action](docs/static/gif/specifai-chat.gif)  
 *AI powered chat feature in action*
+
+</div>
+
+- **🪄 AI-Powered Inline Editing**: Specifai's inline editing feature allows you to instantly improve any text within editable fields using AI assistance, without disrupting your workflow.
+
+<div align="center">
+
+![Inline Editing Feature](docs/static/gif/specifai-inline-edit.gif)
+*Inline Editing Demo*
 
 </div>
 
@@ -276,7 +284,7 @@ Specifai is a powerful desktop application built to streamline and organize your
 ## 🗺 Roadmap
 - [x] Advanced BRD-PRD linking capabilities.
 - [x] Agentic Workflow.
-- [ ] Enhanced collaboration features.
+- [x] Test Case Generation from User Stories.
 - [ ] Custom template support.
 
 ## 🤝 Contributing

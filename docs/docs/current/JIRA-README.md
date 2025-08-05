@@ -138,6 +138,9 @@ If your Jira project uses different issue types, you can configure custom mappin
      - **Stories** (mapped to User Stories)
      - **Tasks** (mapped to Tasks)
 
+   ![Jira Pull Selection Interface](../../static/img/specifai-jira-pull-selection.png)
+   _Hierarchical view for selecting Jira issues to import_
+
 3. **Hierarchical Selection:**
 
    - Use the tree view to select specific issues you want to import.
@@ -168,6 +171,9 @@ If your Jira project uses different issue types, you can configure custom mappin
      - **PRDs** (will become Epics)
      - **User Stories** (will become Stories)
      - **Tasks** (will become Tasks)
+
+   ![Jira Push Selection Interface](../../static/img/specifai-jira-push-selection.png)
+   _Hierarchical view for selecting Specifai documents to push to Jira_
 
 3. **Choose Export Options:**
 
