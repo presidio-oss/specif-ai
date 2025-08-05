@@ -9,7 +9,10 @@ enum AnthropicModel {
   CLAUDE_3_5_SONNET_20241022 = 'claude-3-5-sonnet-20241022',
   CLAUDE_3_5_HAIKU_20241022 = 'claude-3-5-haiku-20241022',
   CLAUDE_3_5_OPUS_20240229 = 'claude-3-opus-20240229',
-  CLAUDE_3_5_HAIKU_20240307 = 'claude-3-haiku-20240307'
+  CLAUDE_3_5_HAIKU_20240307 = 'claude-3-haiku-20240307',
+  CLAUDE_3_7_SONNET_20250219 = 'claude-3-7-sonnet-20250219',
+  CLAUDE_OPUS_4_20250514 = 'claude-opus-4-20250514',
+  CLAUDE_SONNET_4_20250514 = 'claude-sonnet-4-20250514'
 }
 
 interface AnthropicModelInfo {
@@ -21,7 +24,10 @@ const MODEL_CONFIGS: Record<AnthropicModel, AnthropicModelInfo> = {
   [AnthropicModel.CLAUDE_3_5_SONNET_20241022]: { id: AnthropicModel.CLAUDE_3_5_SONNET_20241022, maxTokens: 8192 },
   [AnthropicModel.CLAUDE_3_5_HAIKU_20241022]: { id: AnthropicModel.CLAUDE_3_5_HAIKU_20241022, maxTokens: 8192 },
   [AnthropicModel.CLAUDE_3_5_OPUS_20240229]: { id: AnthropicModel.CLAUDE_3_5_OPUS_20240229, maxTokens: 4096 },
-  [AnthropicModel.CLAUDE_3_5_HAIKU_20240307]: { id: AnthropicModel.CLAUDE_3_5_HAIKU_20240307, maxTokens: 4096 }
+  [AnthropicModel.CLAUDE_3_5_HAIKU_20240307]: { id: AnthropicModel.CLAUDE_3_5_HAIKU_20240307, maxTokens: 4096 },
+  [AnthropicModel.CLAUDE_3_7_SONNET_20250219]: { id: AnthropicModel.CLAUDE_3_7_SONNET_20250219, maxTokens: 8192 },
+  [AnthropicModel.CLAUDE_OPUS_4_20250514]: { id: AnthropicModel.CLAUDE_OPUS_4_20250514, maxTokens: 8192 },
+  [AnthropicModel.CLAUDE_SONNET_4_20250514]: { id: AnthropicModel.CLAUDE_SONNET_4_20250514, maxTokens: 8192 }
 };
 
 interface AnthropicConfig extends LLMConfig {
