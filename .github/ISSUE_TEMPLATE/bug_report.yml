@@ -11,6 +11,11 @@ body:
               - AWS Bedrock
               - Azure OpenAI
               - OpenAI Native
+              - Anthropic
+              - Gemini
+              - OpenRouter
+              - Ollama
+
       validations:
           required: true
     - type: input

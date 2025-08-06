@@ -94,6 +94,16 @@ Each solution follows a modular, scalable structure:
 ├── 📁 UIR                       # User Interface Requirements
 │   ├── 📄 UIR01-base.json
 │   └── 📄 UIRxx-base.json
+├── 📁 TC                        # Test Cases
+│   ├── 📁 US1                   # Test Cases for User Story 1
+│   │   ├── 📄 TC01-base.json
+│   │   └── 📄 TCxx-base.json
+│   └── 📁 USx                   # Test Cases for User Story x
+│       ├── 📄 TC01-base.json
+│       └── 📄 TCxx-base.json
+├── 📁 SI                        # Strategic Initiatives
+│   ├── 📄 SI01-base.json
+│   └── 📄 SIxx-base.json
 └── 📁 BP                        # Business Process Flows
     ├── 📄 BP01-base.json
     └── 📄 BPxx-base.json
@@ -116,8 +126,8 @@ Each solution follows a modular, scalable structure:
     * **Tasks**: Breakdown of user stories.
     * **NFR**: Performance & security requirements.
     * **UIR**: UI/UX design guidelines.
-    * **Test Cases**: Quality validation procedures.
-    * **Strategic Initiatives**: High-level organizational objectives.
+    * **TC**: Test cases for quality validation procedures.
+    * **SI**: Strategic initiatives for high-level organizational objectives.
 
 3.  **📊 Business Process Flows (`BP`)**
     This folder contains visual representations of your key business processes.
@@ -316,6 +326,7 @@ Alternative Flows:
 * Document dependencies on other initiatives.
 * Establish timeline and milestone expectations.
 * Identify key performance indicators (KPIs) for measuring success.
+* **Add Research URLs**: Enhance initiatives with links to external research, documentation, and context.
 
 #### Strategic Initiative Components
 * **Vision Statement**: The overarching goal of the initiative.
@@ -323,6 +334,7 @@ Alternative Flows:
 * **Success Criteria**: Measurable outcomes that determine success.
 * **Solution Portfolio**: Collection of solutions supporting the initiative.
 * **Timeline**: Major milestones and delivery expectations.
+* **Research Resources**: External URLs and documentation that provide additional context and support for the initiative.
 
 #### Example SI
 
@@ -502,6 +514,8 @@ This feature enables the seamless generation of user stories and associated task
 
 </div>
 
+---
+
 ### 🔹 How It Works
 
 1.  **Select a PRD:**
@@ -534,6 +548,115 @@ You can regenerate user stories and tasks at any time. When this action is trigg
 * A **new set of user stories and tasks** is created based on the latest context and PRD selection.
 
 This ensures the system always reflects the most current understanding of requirements while maintaining historical traceability.
+
+---
+
+## 🧪 Automating Test Case Generation
+
+This feature allows you to automatically generate comprehensive test cases from user stories, ensuring complete coverage of requirements and facilitating robust quality assurance processes. The system leverages an intelligent **3-Phase Agentic Flow** to interpret user stories and its parent product requirement, producing detailed test cases that thoroughly validate functionality.
+
+<div align="center">
+
+![Test Case Generation](../../static/gif/specifai-testcase-generation.gif)
+*AI-powered test case generation in action*
+
+</div>
+
+### 🔹 How It Works
+
+1.  **Navigate to User Stories:**
+    Begin by selecting the relevant PRD from the available list, then click the **"Stories"** button to view its associated user stories.
+
+2. **Select a User Story:**
+    Begin by selecting the user story for which you want to generate test cases.
+
+3.  **Click on 'Test Cases' button:**
+    Click the **Test Cases** button associated with the selected user story. This will open the test case list screen.
+
+4.  **Click on 'Generate Test Cases':**
+    Once the test case list screen is open, click the **Generate Test Cases** button.
+
+5.  **Provide User Screens Involved and Extra Context in the Popup:**
+    A popup window will appear, prompting you to provide additional context, such as:
+    * **UI Screens**: Specify which screens/pages are involved in the user story flow
+    * **Extra Context**: Any extra information that can help the AI generate more accurate test cases.
+
+6.  **Test Case Generation:**
+    Upon submission, the backend **3-Phase Agentic Flow** is triggered. It performs the following actions:
+    * Generates comprehensive test cases based on user story and context.
+    * Enhances quality using MCP servers (AWS Bedrock KB) when configured
+    * Links test cases to user story for full traceability
+    * Creates structured format with prerequisites, steps, expected results, and alternative flows
+
+
+### 🔄 Regeneration Support
+
+You can regenerate test cases at any time. When triggered:
+* Previously generated test cases are **automatically archived** for historical reference
+* New test cases are created based on the latest user story updates and context.
+* Full traceability is maintained throughout the regeneration process.
+
+### 🎯 Key Benefits
+
+* **Complete Coverage**: Functional, integration, edge cases, and negative scenarios.
+* **Structured Format**: Clear prerequisites, steps, expected results, and alternative flows.
+* **Traceability**: Direct linkage to source user stories and acceptance criteria.
+* **Quality Validation**: AI-evaluated for completeness and testing best practices.
+
+---
+
+## 🎯 Automating Strategic Initiative Generation
+
+This feature enables you to create high-level strategic initiatives that align business goals with technical execution. Strategic initiatives provide a framework for organizing and prioritizing your solutions across the enterprise portfolio. The system leverages an intelligent **Two-Phase Agentic Workflow** to generate comprehensive strategic initiatives with enhanced context from external research.
+
+<div align="center">
+
+![Strategic Initiative Generation](../../static/gif/specifai-si.gif)
+*AI-powered strategic initiative generation in action*
+
+</div>
+
+### 🔹 How It Works
+
+1. **Access Strategic Initiatives:**
+   Navigate to the Strategic Initiatives section of your solution.
+
+2. **Click on 'Generate Strategic Initiative':**
+   Click the **Generate Strategic Initiative** button to start the creation process.
+
+3. **Provide Context in the Popup:**
+   A popup window will appear, prompting you to provide:
+   * **Title**: A descriptive name for your strategic initiative
+   * **Description**: High-level overview of the initiative's goals
+   * **Research URLs**: Links to external resources that provide additional context (market research, industry reports, technical documentation)
+
+4. **Strategic Initiative Generation:**
+   Upon submission, the backend **Two-Phase Agentic Workflow** is triggered:
+   * **Research Phase**: The system processes all available context, including your solution details and any provided research URLs
+   * **Generation Phase**: Creates a comprehensive strategic initiative with vision statement, business drivers, success criteria, and timeline
+   * If MCP servers are configured (like AWS Bedrock Knowledge Base), they're leveraged to enhance the quality and relevance of the generated initiative
+
+### 🔄 URL-Enhanced Context
+
+One of the most powerful features of Strategic Initiative generation is the ability to incorporate external research:
+
+* **How to Add Research URLs:**
+  * Include URLs to relevant market research, industry reports, competitor analysis, or technical documentation
+  * The system will process these resources and incorporate key insights into your strategic initiative
+  * Multiple URLs can be added for comprehensive context
+
+* **Benefits of URL Integration:**
+  * More informed strategic planning
+  * Data-driven decision making
+  * Industry alignment
+  * Enhanced initiative quality and relevance
+
+### 🌟 Key Benefits
+
+* **Business Alignment**: Ensures technical efforts directly support strategic business goals
+* **Enhanced Context**: External research URLs provide deeper insights
+* **Comprehensive Structure**: Generated initiatives include vision, drivers, success criteria, and timelines
+* **Enterprise Portfolio View**: Organize and prioritize solutions to maximize strategic impact
 
 ---
 
@@ -588,7 +711,7 @@ Specifai's inline editing feature allows you to instantly improve any text withi
 
 ## 📤 Export and Integration Options
 
-Specifai provides seamless options to share and integrate your generated requirements (BRD, PRD, UIR, NFR, Test Cases, Strategic Initiatives, and user stories) with all stakeholders and development teams.
+Specifai provides seamless options to share and integrate your generated requirements (BRD, PRD, UIR, NFR, and user stories) with all stakeholders and development teams.
 
 1.  **Copy to Clipboard (JSON)**
     * Export requirements in JSON format.

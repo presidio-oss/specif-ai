@@ -48,8 +48,7 @@ By simply providing a solution name, description, and tech stack details, Specif
 - 🔧 Non-Functional Requirements Documents (NFRD)
 - 📱 Product Requirement Documents (PRD)
 - 🎨 User Interface Requirements (UIR)
-- 🔄 Business Process Flows
-- 🧪 Test Cases
+
 
 <div align="center">
     <img src="docs/static/gif/specifai-sections.gif" alt="Document Generation Demo" width="900">
@@ -85,9 +84,18 @@ By simply providing a solution name, description, and tech stack details, Specif
 
 </div>
 
+- **🪄 AI-Powered Inline Editing**: Specifai's inline editing feature allows you to instantly improve any text within editable fields using AI assistance, without disrupting your workflow.
+
+<div align="center">
+
+![Inline Editing Feature](docs/static/gif/specifai-inline-edit.gif)
+*Inline Editing Demo*
+
+</div>
+
 - **📊 Business Process Visualization**: Easily generate and manage process flows.
-- **📋 User Story Generation**: Convert requirements into actionable user stories and tasks.
 - **🔗 Linking BRDs and PRDs**: Share BRD context to PRDs for holistic output.
+- **📋 User Story Generation**: Convert requirements into actionable user stories and tasks.
 
 <div align="center">
 
@@ -95,12 +103,21 @@ By simply providing a solution name, description, and tech stack details, Specif
 *User story and task generation*
 </div>
 
-- **🧪 Automated Test Case Generation**: Generate comprehensive test cases from user stories through an intelligent workflow.
+- **🧪 Automated Test Case Generation**: Generate comprehensive test cases from user stories through an intelligent workflow. 
+
+For Test Case Generation instructions, please refer to our [Automated Test Case Generation Guide](docs/docs/current/core-features.md#-automating-test-case-generation).
+<div align="center">
+
+![Test Case Generation](docs/static/gif/specifai-test-cases.gif)  
+*Automated test case generation workflow*
+</div>
+
+- **🎯 Strategic Initiative Management**: Revolutionize the way you align strategy with execution. Design and manage powerful strategic initiatives that seamlessly connect high-level business goals with on-the-ground execution. Bridge the gap between vision and action, ensuring every technical effort directly supports your strategic priorities. Enhance your initiatives with external research by adding URLs that provide valuable context and documentation.
 
 <div align="center">
 
-![Test case generation](docs/static/gif/specifai-test-cases.gif)  
-*Automated test case generation workflow*
+![Strategic Initiative Management](docs/static/gif/specifai-si.gif)  
+*Strategic Initiative management workflow*
 </div>
 
 - **🔍 Analytics & Observability**: Optional analytics and observability tracked in PostHog and Langfuse.
@@ -276,7 +293,7 @@ Specifai is a powerful desktop application built to streamline and organize your
 ## 🗺 Roadmap
 - [x] Advanced BRD-PRD linking capabilities.
 - [x] Agentic Workflow.
-- [ ] Enhanced collaboration features.
+- [x] Test Case Generation from User Stories.
 - [ ] Custom template support.
 
 ## 🤝 Contributing

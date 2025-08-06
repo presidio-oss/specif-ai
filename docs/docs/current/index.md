@@ -8,6 +8,8 @@ Specifai is your AI-powered companion for revolutionizing project requirements m
 
 Specifai is an intelligent requirements management tool that leverages AI to streamline your software development lifecycle. From document generation to user story creation, Specifai helps teams work more efficiently and maintain consistency across projects.
 
+---
+
 ## 🏁 Getting Started
 
 New to Specifai? Start here:
@@ -19,6 +21,7 @@ New to Specifai? Start here:
 - [Workspace Setup](getting-started.md#workspace-setup)
 - [Basic Navigation](getting-started.md#basic-navigation)
 
+---
 
 ## 🚀 Core Features
 
@@ -41,6 +44,10 @@ Efficiently manage your project requirements with Specifai's robust tools, inclu
 - User Story Generation
 - Task Management
 - BRD-PRD Linking
+- Test Cases Generation
+- Strategic Initiatives
+
+---
 
 <div align="center">
 
@@ -48,6 +55,26 @@ Efficiently manage your project requirements with Specifai's robust tools, inclu
 *User story and task generation*
 
 </div>
+
+---
+
+<div align="center">
+
+![Test Cases](../../static/gif/specifai-test-cases.gif)
+*Test Cases for a User Story*
+
+</div>
+
+---
+
+<div align="center">
+
+![Strategic Initiatives](../../static/gif/specifai-si.gif)
+*Strategic Initiatives with external research URL support*
+
+</div>
+
+--- 
 
 ## 🔌 Enterprise Solutions
 
@@ -66,6 +93,8 @@ Seamlessly synchronize requirements and work items with Azure DevOps. Support fo
 
 ### ☁️ AWS Bedrock Knowledge Base
 Enterprise knowledge base integration for enhanced AI suggestions and iterative conversations.
+
+--- 
 
 ## 🧠 Model Configuration
 
@@ -108,13 +137,17 @@ Choose the AI model that best suits your needs from a variety of providers. Spec
 
 </div>
 
+---
+
 ## 📚 Documentation Sections
 
 ### [🎯 Core Features](core-features.md)
 - Solution Creation
 - Document Generation
 - Requirements Management
-- User Stories & Tasks
+- User Stories & Tasks Generation
+- Test Case Generation
+- Strategic Initiative Draft Generation
 - Model Configuration
 
 ### [🔌 Integrations Setup](integrations-setup.md)
@@ -127,6 +160,7 @@ Choose the AI model that best suits your needs from a variety of providers. Spec
 - Application Architecture
 - Solution Creation Workflow
 - User Story Generation Process
+- Test Case Generation Process
 - Security and Safety Measures
 
 ### [❓ Troubleshooting & FAQs](troubleshooting.md)
