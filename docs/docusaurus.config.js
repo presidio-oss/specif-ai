@@ -128,7 +128,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Hai, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Presidio, Inc. Built with Docusaurus.`,
       },
       prism: {
         theme: require('prism-react-renderer').themes.github,

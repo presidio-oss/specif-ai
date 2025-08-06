@@ -152,6 +152,7 @@ body {
 .markdown {
   --ifm-heading-margin-top: 1.5rem;
   --ifm-heading-margin-bottom: 1rem;
+  --ifm-heading-vertical-rhythm-top: 0.675rem;
   --ifm-h1-vertical-rhythm-top: 1rem;
   --ifm-h2-vertical-rhythm-top: 0.75rem;
   --ifm-h3-vertical-rhythm-top: 0.5rem;

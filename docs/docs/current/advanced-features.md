@@ -10,6 +10,8 @@ This guide covers:
 - Application Architecture
 - Solution Creation Workflow
 - User Story Generation Process
+- Test Case Generation Process
+- Strategic Initiative Workflow
 - Security and Safety Measures
 
 ---
@@ -101,6 +103,63 @@ User Story generation in Specifai also follows a sophisticated agentic workflow,
     * **Validation Steps:** Ensures story completeness and alignment with overall solution requirements.
 
 This iterative, agent-driven process ensures comprehensive coverage and consistency with the broader solution architecture.
+
+---
+
+## 🧪 Test Case Generation Process
+
+Test case generation ensures comprehensive coverage through intelligent AI agents that analyze user stories, technical constraints, and business logic to produce validated test cases covering all aspects.
+
+### Flow Overview
+
+* **Test Case Generation:**
+    * **Contextual Analysis:** Gathers context from user stories, acceptance criteria, technical constraints, and their parent product requirement documents. Also gathers information about UI screens involved from the user.
+* **Agentic Workflow:**
+    * **Research & Analysis** - Gathers context from user stories, acceptance criteria, their parent Product Requirement Document (PRD), and technical constraints to understand testing scope. MCP Tools are also used for research to enhance context.
+    * **Intelligent Generation** - Creates comprehensive test cases covering functional, integration, edge cases, and negative scenarios with structured format.
+    * **Quality Evaluation** - Validates generated test cases against coverage criteria, clarity standards, and best practices with iterative refinement (up to 3 cycles).
+
+---
+
+## 🎯 Strategic Initiative Workflow
+
+Strategic Initiative generation in Specifai leverages an advanced two-phase agentic workflow to create high-level organizational objectives that align technical efforts with business goals.
+
+### Workflow Architecture
+
+The Strategic Initiative workflow follows a structured, sequential process:
+
+```mermaid
+graph TD
+  A[Input Context] --> B[Research Node]
+  B --> C[Generate SI Node]
+  C --> D[Strategic Initiative]
+```
+
+1. **Research Phase:**
+   * Utilizes available tools, including MCP tools, to gather context
+   * Processes solution details and project requirements
+   * Incorporates research URLs provided as input references
+   * Creates a comprehensive reference summary for the generation phase
+
+2. **Generation Phase:**
+   * Processes the research results and project context
+   * Produces a structured strategic initiative with title and detailed content
+   * Formats the output for integration into the wider system
+
+### Research URL Integration
+
+The Strategic Initiative workflow includes support for external research URLs:
+
+* **Implementation:**
+  * External URLs can be provided via the `researchUrls` array in the request
+  * These URLs serve as reference points for the research phase
+  * The system incorporates this additional context into the initiative generation process
+
+* **Benefits:**
+  * Enhanced context from external resources
+  * More comprehensive strategic initiatives
+  * Better alignment with market research and industry standards
 
 ---
 

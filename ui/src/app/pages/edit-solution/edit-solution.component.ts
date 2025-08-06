@@ -434,7 +434,10 @@ export class EditSolutionComponent {
         id: this.projectId,
         folderName: this.folderName,
         fileName: this.fileName,
-        req: this.requirementForm.getRawValue(),
+        req: {
+          ...this.selectedRequirement,
+          ...this.requirementForm.getRawValue(),
+        },
       },
     });
   }

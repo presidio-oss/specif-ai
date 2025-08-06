@@ -27,6 +27,19 @@ import { isLangfuseDetailedTracesEnabled } from "../../services/observability/ob
 import { getSIPrompt } from "../../prompts/core/strategic-initiative";
 import { REQUIREMENT_TYPE } from "../../constants/requirement.constants";
 
+interface ContentBlock {
+  type: string;
+  text?: string;
+}
+
+interface StreamEvent {
+  data?: {
+    chunk?: {
+      content?: string | ContentBlock[];
+    };
+  };
+}
+
 // Message type mapping
 const MESSAGE_TYPES = {
   SystemMessage: "system",
@@ -134,6 +147,17 @@ export const chatWithAI = async (_: IpcMainInvokeEvent, data: unknown) => {
     );
 
     for await (const event of stream) {
+      const streamEvent = event as StreamEvent;
+      if (
+        streamEvent.data?.chunk?.content &&
+        typeof streamEvent.data.chunk.content !== "string" &&
+        Array.isArray(streamEvent.data.chunk.content)
+      ) {
+        streamEvent.data.chunk.content = streamEvent.data.chunk.content
+          .filter((block: ContentBlock) => block.type === "text")
+          .map((block: ContentBlock) => block.text || "")
+          .join("");
+      }
       _.sender.send(`core:${validatedData.requestId}-chatStream`, event);
     }
 
