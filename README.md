@@ -129,15 +129,15 @@ For Test Case Generation instructions, please refer to our [Automated Test Case 
       - gpt-4o
       - gpt-4o-mini
    - AWS Bedrock
+      - anthropic.claude-opus-4-20250514-v1:0
+      - anthropic.claude-sonnet-4-20250514-v1:0
       - anthropic.claude-3-7-sonnet-20250219-v1:0
       - anthropic.claude-3-5-sonnet-20241022-v2:0
       - anthropic.claude-3-5-haiku-20241022-v1:0
       - anthropic.claude-3-5-sonnet-20240620-v1:0
+      - anthropic.claude-3-haiku-20240307-v1:0
       - anthropic.claude-3-opus-20240229-v1:0
       - anthropic.claude-3-sonnet-20240229-v1:0
-      - anthropic.claude-3-haiku-20240307-v1:0
-      - anthropic.claude-opus-4-20250514-v1:0
-      - anthropic.claude-sonnet-4-20250514-v1:0
    - Gemini
       - gemini-2.0-flash-001
       - gemini-2.0-flash-lite-preview-02-05
@@ -152,15 +152,15 @@ For Test Case Generation instructions, please refer to our [Automated Test Case 
       - gemini-1.5-pro-exp-0827
       - gemini-exp-1206
    - Anthropic
+      - claude-opus-4-20250514
+      - claude-sonnet-4-20250514
       - claude-3-7-sonnet-20250219
       - claude-3-5-sonnet-20241022
       - claude-3-5-haiku-20241022
       - claude-3-5-sonnet-20240620
+      - claude-3-haiku-20240307
       - claude-3-opus-20240229
       - claude-3-sonnet-20240229
-      - claude-3-haiku-20240307
-      - claude-opus-4-20250514
-      - claude-sonnet-4-20250514
    - OpenRouter
    - Ollama
 
