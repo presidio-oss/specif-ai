@@ -24,13 +24,13 @@ In this guide, you'll learn how to:
 
 ## 📥 Installation
 
-### Download Latest Release (v2.7.0)
+### Download Latest Release (v2.8.0)
 
 Choose your platform:
-- **Windows**: [Download Specifai for Windows](https://github.com/presidio-oss/specif-ai/releases/download/v2.7.0/Specif-AI-Setup-2.7.0.exe)
+- **Windows**: [Download Specifai for Windows](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.0/Specif-AI-Setup-2.8.0.exe)
 - **macOS**: 
-    - [Apple Silicon (M1/M2/M3)](https://github.com/presidio-oss/specif-ai/releases/download/v2.7.0/Specif-AI-2.7.0-arm64.dmg)
-    - [Intel Processors](https://github.com/presidio-oss/specif-ai/releases/download/v2.7.0/Specif-AI-2.7.0.dmg)
+    - [Apple Silicon (M1/M2/M3)](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.0/Specif-AI-2.8.0-arm64.dmg)
+    - [Intel Processors](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.0/Specif-AI-2.8.0.dmg)
 
 > 💡 **Mac users**: Check your processor type in Apple Menu → About This Mac
 
@@ -73,13 +73,15 @@ Choose a workspace directory that is:
 
 2. Select AI model provider:
 * **Anthropic**
+    * claude-opus-4-20250514-v1:0
+    * claude-sonnet-4-20250514-v1:0
     * claude-3-7-sonnet-20250219-v1:0
     * claude-3-5-sonnet-20241022-v2:0
     * claude-3-5-haiku-20241022-v1:0
     * claude-3-5-sonnet-20240620-v1:0
+    * claude-3-haiku-20240307-v1:0
     * claude-3-opus-20240229-v1:0
     * claude-3-sonnet-20240229-v1:0
-    * claude-3-haiku-20240307-v1:0
 * **Azure OpenAI**
     * gpt-4o
     * gpt-4o-mini
@@ -87,13 +89,15 @@ Choose a workspace directory that is:
     * gpt-4o
     * gpt-4o-mini
 * **AWS Bedrock**
+    * anthropic.claude-opus-4-20250514-v1:0
+    * anthropic.claude-sonnet-4-20250514-v1:0
     * anthropic.claude-3-7-sonnet-20250219-v1:0
     * anthropic.claude-3-5-sonnet-20241022-v2:0
     * anthropic.claude-3-5-haiku-20241022-v1:0
     * anthropic.claude-3-5-sonnet-20240620-v1:0
+    * anthropic.claude-3-haiku-20240307-v1:0
     * anthropic.claude-3-opus-20240229-v1:0
     * anthropic.claude-3-sonnet-20240229-v1:0
-    * anthropic.claude-3-haiku-20240307-v1:0
 * **Gemini**
     * gemini-2.0-flash-001
     * gemini-2.0-flash-lite-preview-02-05
