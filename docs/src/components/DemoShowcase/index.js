@@ -106,12 +106,16 @@ export default function DemoShowcase() {
           <div className={styles.demoImageContainer}>
             <div className={styles.demoImageWrapper}>
               <div className={styles.demoImageGlow}></div>
-              <img
-                src="/gif/specifai-overview.gif"
-                alt="Specifai overview demonstration"
+              <video 
                 className={styles.demoImage}
-                loading="lazy"
-              />
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+              >
+                <source src="/videos/specifai-overview-bg.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
           </div>
 
