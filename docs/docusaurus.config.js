@@ -3,7 +3,7 @@ const config = {
   title: 'Specifai',
   tagline: 'Accelerate your SDLC process with AI-powered intelligence.',
   customFields: {
-    subTagline: 'From ideas to actionable tasks in minutes.',
+    subTagline: 'Transform requirements into intelligent solutions with enterprise-grade AI.',
   },
   url: 'https://specifai.io',
   baseUrl: '/',

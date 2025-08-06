@@ -1,0 +1,222 @@
+/**
+ * Demo showcase styles
+ * Interactive demo section with animations and visual enhancements
+ */
+
+.demoSection {
+  padding: 6rem 0;
+  background-color: var(--ifm-background-color);
+  position: relative;
+  overflow: visible;
+  border-bottom: 1px solid var(--ifm-background-color);
+  z-index: 1;
+}
+
+.demoSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ifm-color-primary-lighter), transparent);
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 4rem;
+  position: relative;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(120deg, var(--ifm-color-primary-dark), var(--ifm-color-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+.sectionSubtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto;
+  color: var(--ifm-color-emphasis-700);
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards 0.2s;
+}
+
+.demoShowcase {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.8s ease forwards 0.3s;
+}
+
+.demoContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 500px;
+}
+
+.demoTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--demo-title-color, var(--ifm-heading-color));
+  position: relative;
+}
+
+.demoDescription {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: var(--demo-desc-color, var(--ifm-font-color-base));
+  margin-bottom: 1.5rem;
+}
+
+.demoImageWrapper {
+  flex: 1.2;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px var(--demo-shadow, rgba(0, 0, 0, 0.2));
+  transition: all 0.5s ease;
+}
+
+.demoImageWrapper:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 60px var(--demo-hover-shadow, rgba(0, 0, 0, 0.3));
+}
+
+.demoImageGlow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, 
+    var(--demo-glow-start, rgba(0, 123, 255, 0.1)), 
+    var(--demo-glow-end, rgba(128, 0, 255, 0.1))
+  );
+  opacity: 0.8;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.demoImage {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media screen and (max-width: 996px) {
+  .demoSection {
+    padding: 4rem 1.5rem 8rem;
+  }
+
+  .sectionTitle {
+    font-size: 2rem;
+  }
+
+  .sectionSubtitle {
+    font-size: 1.1rem;
+  }
+
+  .demoShowcase {
+    flex-direction: column-reverse;
+    gap: 2rem;
+  }
+
+  .demoImageWrapper {
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto;
+    transform: none;
+  }
+
+  .demoImageWrapper:hover {
+    transform: translateY(-5px);
+  }
+
+  .demoContent {
+    text-align: center;
+    max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .demoSection {
+    padding: 3rem 1rem 6rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.8rem;
+  }
+
+  .sectionHeader {
+    margin-bottom: 3rem;
+  }
+
+  .demoTitle {
+    font-size: 1.6rem;
+  }
+
+  .demoDescription {
+    font-size: 1rem;
+  }
+}
+
+/* Custom CSS Variables for Dark Mode Support */
+html[data-theme='light'] {
+  --demo-title-color: #2d3748;
+  --demo-desc-color: #4a5568;
+  --demo-shadow: rgba(0, 0, 0, 0.1);
+  --demo-hover-shadow: rgba(0, 0, 0, 0.2);
+  --demo-glow-start: rgba(0, 123, 255, 0.1);
+  --demo-glow-end: rgba(128, 0, 255, 0.1);
+}
+
+html[data-theme='dark'] {
+  --demo-title-color: #e6e6e6;
+  --demo-desc-color: #b1b1b1;
+  --demo-shadow: rgba(0, 0, 0, 0.4);
+  --demo-hover-shadow: rgba(0, 0, 0, 0.5);
+  --demo-glow-start: rgba(0, 123, 255, 0.15);
+  --demo-glow-end: rgba(128, 0, 255, 0.15);
+}
