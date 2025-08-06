@@ -42,9 +42,9 @@ export default function DemoShowcase() {
                       <line x1="9" y1="9" x2="15" y2="9"></line>
                     </svg>
                   </div>
-                  <h4 className={styles.cardTitle}>Getting Started</h4>
+                  <h4 className={styles.cardTitle}>Quick Start Guide</h4>
                   <p className={styles.cardDescription}>
-                    Learn the basics and set up Specifai in minutes with our beginner-friendly guide
+                    Experience Specifai in minutes with our step-by-step setup guide designed for rapid deployment
                   </p>
                 </Link>
               </div>
@@ -62,9 +62,9 @@ export default function DemoShowcase() {
                       <path d="M9 18c-5 1.5-5-2.5-7-3"></path>
                     </svg>
                   </div>
-                  <h4 className={styles.cardTitle}>Open Source</h4>
+                  <h4 className={styles.cardTitle}>Join the Community</h4>
                   <p className={styles.cardDescription}>
-                    Join our community, contribute to the project, and help shape the future of Specifai
+                    Contribute to our open source platform, share ideas, and collaborate with developers worldwide
                   </p>
                 </Link>
               </div>
@@ -83,9 +83,9 @@ export default function DemoShowcase() {
                       <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
                   </div>
-                  <h4 className={styles.cardTitle}>Download</h4>
+                  <h4 className={styles.cardTitle}>Try Specifai Now</h4>
                   <p className={styles.cardDescription}>
-                    Get the latest version of Specifai with all the newest features and improvements
+                    Download the latest release and start accelerating your SDLC process immediately
                   </p>
                 </Link>
               </div>
