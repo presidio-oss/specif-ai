@@ -8,7 +8,7 @@
   background-color: var(--ifm-background-color);
   position: relative;
   overflow: visible;
-  border-bottom: 1px solid var(--ifm-background-color);
+  margin-top: -1px;
   z-index: 1;
 }
 
@@ -127,7 +127,7 @@
 /* Quick Guide Cards */
 .quickGuideCardsContainer {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   opacity: 0;
   animation: fadeIn 0.8s ease forwards 0.6s;
@@ -250,6 +250,12 @@ html[data-theme='dark'] .cardIcon svg {
 }
 
 /* Responsive design */
+@media screen and (max-width: 1200px) {
+  .quickGuideCardsContainer {
+    max-width: 1200px;
+  }
+}
+
 @media screen and (max-width: 996px) {
   .demoSection {
     padding: 4rem 1.5rem;
