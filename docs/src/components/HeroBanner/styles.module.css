@@ -47,12 +47,14 @@
   gap: 4rem;
   position: relative;
   z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .hero-banner__text {
   flex: 1;
   text-align: left;
-  max-width: 600px;
+  max-width: 700px;
 }
 
 .hero-banner__product-name {
@@ -62,11 +64,7 @@
   font-weight: 800;
   letter-spacing: -1.5px;
   line-height: 1;
-  background: linear-gradient(
-    to right,
-    var(--hero-product-name-gradient-start),
-    var(--hero-product-name-gradient-end)
-  );
+  background: linear-gradient(120deg, var(--ifm-color-primary), var(--ifm-color-primary-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   opacity: 0;
@@ -92,7 +90,7 @@
   color: var(--hero-subtitle-color, #4b5563);
   font-family: var(--ifm-font-family-base);
   font-weight: 400;
-  max-width: 540px;
+  max-width: 700px;
   opacity: 0;
   transform: translateY(40px);
   animation: slideInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;

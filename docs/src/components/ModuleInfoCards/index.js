@@ -107,7 +107,7 @@ const ModuleList = [
     ),
   },
   {
-    title: "AI Chat Interface",
+    title: "AI Assistant Interface",
     link: "/current/core-features#-ai-chat-interface",
     icon: (
       <svg
@@ -124,15 +124,15 @@ const ModuleList = [
     ),
     description: (
       <>
-        Engage with your intelligent SDLC assistant using natural language. 
-        Receive smart suggestions, ask questions about requirements, and collaborate 
-        across teams with a shared interface that understands your project context.
+        Engage with your intelligent SDLC assistant through natural language chat and 
+        inline editing. Receive smart suggestions, enhance requirement clarity, and 
+        standardize content with AI assistance that fits into your workflow.
       </>
     ),
   },
   {
-    title: "Inline Editing",
-    link: "/current/core-features#-ai-powered-inline-editing",
+    title: "Enterprise Integrations",
+    link: "/current/integrations-setup",
     icon: (
       <svg
         className={styles["module-card__icon"]}
@@ -143,15 +143,17 @@ const ModuleList = [
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M12 20h9"></path>
-        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        <rect x="2" y="2" width="9" height="9" rx="2"></rect>
+        <rect x="13" y="2" width="9" height="9" rx="2"></rect>
+        <rect x="2" y="13" width="9" height="9" rx="2"></rect>
+        <rect x="13" y="13" width="9" height="9" rx="2"></rect>
       </svg>
     ),
     description: (
       <>
-        Enhance text directly within editable fields using AI assistance. 
-        Improve requirement clarity, enhance technical descriptions, and standardize content 
-        format with intuitive inline editing that maintains your workflow.
+        Seamlessly connect Specifai with JIRA, Azure DevOps, and other enterprise tools
+        to enhance your workflow. Sync requirements, push generated artifacts, and maintain
+        traceability across your development ecosystem.
       </>
     ),
   },
