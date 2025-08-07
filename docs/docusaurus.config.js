@@ -3,7 +3,8 @@ const config = {
   title: 'Specifai',
   tagline: 'Accelerate your SDLC process with AI-powered intelligence.',
   customFields: {
-    subTagline: 'From ideas to actionable tasks in minutes.',
+    subTagline:
+      'Transform requirements into intelligent solutions with enterprise-grade AI.',
   },
   url: 'https://specifai.io',
   baseUrl: '/',
@@ -21,13 +22,13 @@ const config = {
 
   plugins: [
     [
-      require.resolve("@easyops-cn/docusaurus-search-local"),
+      require.resolve('@easyops-cn/docusaurus-search-local'),
       {
         hashed: true,
         indexDocs: true,
         indexBlog: false,
         indexPages: true,
-        language: ["en"],
+        language: ['en'],
         highlightSearchTermsOnTargetPage: true,
         searchResultLimits: 8,
         searchResultContextMaxLength: 50,
@@ -101,10 +102,6 @@ const config = {
                 to: '/current/core-features',
               },
               {
-                label: 'Integrations',
-                to: '/current/integrations-setup',
-              },
-              {
                 label: 'Advanced Features',
                 to: '/current/advanced-features',
               },
@@ -115,11 +112,32 @@ const config = {
             ],
           },
           {
-            title: 'Community',
+            title: 'Resources',
+            items: [
+              {
+                label: 'ADO Integration',
+                to: '/current/ADO-README',
+              },
+              {
+                label: 'JIRA Integration',
+                to: '/current/JIRA-README',
+              },
+              {
+                label: 'Setup Guide',
+                to: '/current/integrations-setup',
+              },
+            ],
+          },
+          {
+            title: 'Presidio',
             items: [
               {
                 label: 'GitHub',
                 href: 'https://github.com/presidio-oss/specif-ai',
+              },
+              {
+                label: 'LinkedIn',
+                href: 'https://www.linkedin.com/company/presidio-/',
               },
               {
                 label: 'Support',
@@ -128,7 +146,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Presidio, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Presidio, Inc. • Made with ❤️ by the HAI team`,
       },
       prism: {
         theme: require('prism-react-renderer').themes.github,

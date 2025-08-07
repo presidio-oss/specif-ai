@@ -1,0 +1,285 @@
+/**
+ * Module info cards styles
+ * Comprehensive module showcase with interactive cards and animations
+ */
+
+.modules-section {
+  display: flex;
+  align-items: center;
+  padding: 6rem 0;
+  width: 100%;
+  background: var(--modules-bg, var(--ifm-background-surface-color));
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+}
+
+.modules-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ifm-color-primary-lighter), transparent);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(120deg, var(--ifm-color-primary), var(--ifm-color-primary-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards 0.2s;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--ifm-color-emphasis-700);
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards 0.4s;
+}
+
+.module-section__column {
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.module-card {
+  height: 100%;
+  padding: 2.5rem 2rem;
+  background: var(--card-bg, var(--ifm-card-background-color));
+  border: 1px solid var(--card-border, var(--ifm-color-emphasis-200));
+  border-radius: 16px;
+  box-shadow: 0 8px 24px var(--card-shadow, rgba(0, 0, 0, 0.05));
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease forwards;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.module-card__shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--shine-color, rgba(255, 255, 255, 0.2)),
+    transparent
+  );
+  transition: 0.5s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.module-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px var(--hover-shadow, rgba(0, 0, 0, 0.1));
+  border-color: var(--hover-border, var(--ifm-color-primary-lighter));
+  background: var(--hover-bg, var(--ifm-hover-overlay));
+}
+
+.module-card:hover .module-card__shine {
+  left: 100%;
+}
+
+.module-card:active {
+  transform: translateY(-1px);
+  transition: 0.1s;
+}
+
+.module-card__header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--card-border, var(--ifm-color-emphasis-200));
+  padding-bottom: 1rem;
+}
+
+.module-card__icon {
+  width: 36px;
+  height: 36px;
+  margin-right: 1rem;
+  color: var(--ifm-color-primary);
+  transition: all 0.4s ease;
+  filter: drop-shadow(0 0 8px var(--card-shadow, rgba(0, 0, 0, 0.05)));
+  flex-shrink: 0;
+}
+
+.module-card:hover .module-card__icon {
+  transform: scale(1.05);
+  color: var(--ifm-color-primary-darker);
+}
+
+.module-card__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0;
+  color: var(--title-color, var(--ifm-heading-color));
+  transition: all 0.3s ease;
+}
+
+.module-card:hover .module-card__title {
+  color: var(--ifm-color-primary);
+}
+
+.module-card__content {
+  padding-top: 0.5rem;
+}
+
+.module-card__description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--desc-color, var(--ifm-font-color-base));
+  margin: 0;
+  transition: color 0.3s ease;
+  text-align: left;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation delay for each module card */
+.modules-section > div > div > div:nth-child(1) .module-card {
+  animation-delay: 0.2s;
+}
+
+.modules-section > div > div > div:nth-child(2) .module-card {
+  animation-delay: 0.3s;
+}
+
+.modules-section > div > div > div:nth-child(3) .module-card {
+  animation-delay: 0.4s;
+}
+
+.modules-section > div > div > div:nth-child(4) .module-card {
+  animation-delay: 0.5s;
+}
+
+.modules-section > div > div > div:nth-child(5) .module-card {
+  animation-delay: 0.6s;
+}
+
+.modules-section > div > div > div:nth-child(6) .module-card {
+  animation-delay: 0.7s;
+}
+
+/* Responsive design */
+@media screen and (max-width: 996px) {
+  .modules-section {
+    padding: 4rem 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .section-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .module-section__column {
+    margin-bottom: 1.5rem;
+  }
+
+  .module-card {
+    padding: 1.75rem;
+  }
+  
+  .module-card__icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .module-card__title {
+    font-size: 1.25rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .modules-section {
+    padding: 3rem 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.8rem;
+  }
+  
+  .section-subtitle {
+    font-size: 1rem;
+  }
+  
+  .module-card__title {
+    font-size: 1.2rem;
+  }
+  
+  .module-card__description {
+    font-size: 0.95rem;
+  }
+}
+
+/* Custom CSS Variables for Dark Mode Support */
+html[data-theme='light'] {
+  --modules-bg: #fafafa;
+  --card-bg: #ffffff;
+  --card-border: #eaeaea;
+  --card-shadow: rgba(0, 0, 0, 0.05);
+  --shine-color: rgba(255, 255, 255, 0.6);
+  --hover-shadow: rgba(0, 0, 0, 0.08);
+  --hover-border: var(--ifm-color-primary-light);
+  --hover-bg: #f9f9f9;
+  --title-color: #2d3748;
+  --desc-color: #4a5568;
+}
+
+html[data-theme='dark'] {
+  --modules-bg: #161b22;
+  --card-bg: #1c2128;
+  --card-border: #30363d;
+  --card-shadow: rgba(0, 0, 0, 0.3);
+  --shine-color: rgba(255, 255, 255, 0.05);
+  --hover-shadow: rgba(0, 0, 0, 0.3);
+  --hover-border: var(--ifm-color-primary);
+  --hover-bg: #2d333b;
+  --title-color: #e6e6e6;
+  --desc-color: #b1b1b1;
+}

@@ -74,6 +74,27 @@
   --hover-shadow: rgba(124, 58, 237, 0.15);
   --hover-border: rgba(124, 58, 237, 0.4);
   --hover-bg: rgba(255, 255, 255, 1);
+  
+  /* Module info cards */
+  --modules-bg: #fafafa;
+  --module-card-bg: #ffffff;
+  --module-card-border: #eaeaea;
+  --module-card-shadow: rgba(0, 0, 0, 0.05);
+  --module-shine-color: rgba(255, 255, 255, 0.6);
+  --module-hover-shadow: rgba(0, 0, 0, 0.08);
+  --module-hover-border: var(--ifm-color-primary-light);
+  --module-hover-bg: #f9f9f9;
+  --module-title-color: #2d3748;
+  --module-desc-color: #4a5568;
+  
+  /* Demo showcase */
+  --demo-bg: #ffffff;
+  --demo-title-color: #2d3748;
+  --demo-desc-color: #4a5568;
+  --demo-shadow: rgba(0, 0, 0, 0.1);
+  --demo-hover-shadow: rgba(0, 0, 0, 0.2);
+  --demo-glow-start: rgba(0, 123, 255, 0.1);
+  --demo-glow-end: rgba(128, 0, 255, 0.1);
 }
 
 /* Dark mode theme */
@@ -136,6 +157,27 @@
   --hover-shadow: rgba(124, 58, 237, 0.9);
   --hover-border: rgba(124, 58, 237, 1);
   --hover-bg: rgba(30, 41, 59, 0.9);
+  
+  /* Module info cards - dark mode */
+  --modules-bg: #161b22;
+  --module-card-bg: #1c2128;
+  --module-card-border: #30363d;
+  --module-card-shadow: rgba(0, 0, 0, 0.3);
+  --module-shine-color: rgba(255, 255, 255, 0.05);
+  --module-hover-shadow: rgba(0, 0, 0, 0.3);
+  --module-hover-border: var(--ifm-color-primary);
+  --module-hover-bg: #2d333b;
+  --module-title-color: #e6e6e6;
+  --module-desc-color: #b1b1b1;
+  
+  /* Demo showcase - dark mode */
+  --demo-bg: #0d1117;
+  --demo-title-color: #e6e6e6;
+  --demo-desc-color: #b1b1b1;
+  --demo-shadow: rgba(0, 0, 0, 0.4);
+  --demo-hover-shadow: rgba(0, 0, 0, 0.5);
+  --demo-glow-start: rgba(0, 123, 255, 0.15);
+  --demo-glow-end: rgba(128, 0, 255, 0.15);
 }
 
 /* Base styles */
@@ -275,6 +317,24 @@ article {
 .back-to-top:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced section separators */
+.modules-section, 
+.demoSection,
+.features-section {
+  position: relative;
+}
+
+.modules-section::before, 
+.demoSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ifm-color-primary-lighter), transparent);
 }
 
 /* Responsive design */
