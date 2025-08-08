@@ -171,13 +171,19 @@
             >
             </ng-icon>
             <h4
-              class="text-sm font-medium"
+              class="text-sm font-medium flex flex-wrap" 
               [ngClass]="{
                 'text-primary-600': selectedFolder?.title === 'TC',
                 'text-secondary-500': selectedFolder?.title !== 'TC'
               }"
             >
               Test Cases
+            <div class="new-button rounded-full text-sm relative flex items-center justify-center overflow-hidden ml-1" *ngIf="newModuleFlag===false">
+              <span class="absolute inset-0 flex items-center justify-center">
+                <span class="bg-gradient-to-r from-yellow-200 to-sky-300 rounded-full w-16 h-16 animate-spin"></span>
+              </span>
+              <span class="relative z-10 bg-gray-50 text-black m-[2px] font-mono rounded-full px-1">new</span>
+            </div> 
             </h4>
           </div>
         </li>
@@ -194,9 +200,17 @@
               strokeWidth="2"
               [name]="getIconName(folder.key)"
             ></ng-icon>
-            <h4 class="text-sm text-secondary-500 font-medium">
-              {{ folder.value }}
-            </h4>
+            <div class="flex items-center flex-wrap">
+              <h4 class="text-sm text-secondary-500 font-medium">
+                {{ folder.value }}
+              </h4>
+              <div class="new-button rounded-full text-sm relative flex items-center justify-center overflow-hidden ml-1" *ngIf="folder.key === 'SI' && newModuleFlag===false">
+                <span class="absolute inset-0 flex items-center justify-center">
+                  <span class="bg-gradient-to-r from-yellow-200 to-sky-300 rounded-full w-16 h-16 animate-spin"></span>
+                </span>
+                <span class="relative z-10 bg-gray-50 text-black font-mono m-[2px] rounded-full px-1">new</span>
+              </div>
+            </div>
           </div>
           <app-button
             buttonContent="Add"
