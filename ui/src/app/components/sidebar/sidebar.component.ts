@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent } from '@ng-icons/core';
 import { BadgeComponent } from '../core/badge/badge.component';
@@ -9,6 +9,7 @@ import { FILTER_STRINGS } from '../../constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { IconPairingEnum } from '../../model/enum/file-type.enum';
 import { ISelectedFolder } from 'src/app/model/interfaces/IList';
+import { APP_CONSTANTS } from '../../constants/app.constants';
 
 @Component({
   selector: 'app-sidebar',
@@ -24,12 +25,24 @@ import { ISelectedFolder } from 'src/app/model/interfaces/IList';
     NgForOf,
   ],
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
   @Input() directories: { name: string; children: string[] }[] = [];
   @Input() selectedFolder: ISelectedFolder | null = null;
   @Input() appName: string = '';
   @Input() haiFolder: { key: string; value: string }[] = [];
   @Input() isCreatingSolution: boolean = false;
+  newModuleFlag: boolean = false;
+
+  ngOnInit(): void {
+    this.newModuleFlag = localStorage.getItem(APP_CONSTANTS.NEW_MODULE_FLAG) === 'true';
+    if (!this.newModuleFlag) {
+      localStorage.setItem(APP_CONSTANTS.NEW_MODULE_FLAG, 'false');
+    }
+  }
+
+  ngOnDestroy(): void {
+    localStorage.setItem(APP_CONSTANTS.NEW_MODULE_FLAG, 'true');
+  }
   
   @Output() folderSelected = new EventEmitter<any>();
   @Output() addDocument = new EventEmitter<string>();
