@@ -52,6 +52,7 @@ import {
 import { PmoIntegrationModalComponent } from '../pmo-integration-modal/pmo-integration-modal.component';
 import { AdoService } from '../../integrations/ado/ado.service';
 import { JiraService } from '../../integrations/jira/jira.service';
+import { getDetailsByReqType } from 'src/app/constants/specifai-core-features.constants';
 
 @Component({
   selector: 'app-document-listing',
@@ -92,6 +93,7 @@ export class DocumentListingComponent
     (IList & { id: string; formattedRequirement: string | null })[]
   >;
   selectedFolder: any = {};
+  doc_url: string = '';
   private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({
     title: '',
     id: '',
@@ -102,6 +104,8 @@ export class DocumentListingComponent
     this.appInfo = value.metadata;
     this.selectedFolder = value;
     this.combinedSubject.next({ title: value.title, id: value.id });
+
+    this.doc_url = getDetailsByReqType(this.selectedFolder.title)?.url ?? '';
 
     // Reset scroll position when a new folder is set
     if (this.scrollContainer) {

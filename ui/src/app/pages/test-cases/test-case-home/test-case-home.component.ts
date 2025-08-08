@@ -28,6 +28,7 @@ import { SummaryCardComponent } from "../../../components/summary-card/summary-c
 import { FormsModule } from '@angular/forms';
 import { joinPaths } from 'src/app/utils/path.utils';
 import { ButtonComponent } from "../../../components/core/button/button.component";
+import { getDetailsByReqType } from 'src/app/constants/specifai-core-features.constants';
 
 interface IPrdInfo {
   id: string;
@@ -85,6 +86,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   userStories: IUserStory[] = [];
   isLoading: boolean = false;
   testCaseCounts: Map<string, number> = new Map<string, number>();
+  doc_url = getDetailsByReqType(REQUIREMENT_TYPE.TC)?.url || '';
   
   summaryCards: SummaryCardData[] = [
     {
