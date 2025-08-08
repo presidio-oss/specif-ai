@@ -14,9 +14,45 @@ const sidebars = {
       id: 'current/getting-started',
     },
     {
-      type: 'doc',
+      type: 'category',
       label: 'Core Features',
-      id: 'current/core-features',
+      items: [
+        {
+          type: 'doc',
+          id: 'current/core-features',
+          label: 'Overview',
+        },
+        {
+          type: 'doc',
+          id: 'current/solution-creation-management',
+          label: 'Solution Creation & Management',
+        },
+        {
+          type: 'doc',
+          id: 'current/requirement-types',
+          label: 'Requirements Document Types',
+        },
+        {
+          type: 'doc',
+          id: 'current/business-workflows',
+          label: 'Visualizing Business Workflows',
+        },
+        {
+          type: 'doc',
+          id: 'current/ai-interaction',
+          label: 'Intelligent Requirement Interaction',
+        },
+        {
+          type: 'doc',
+          id: 'current/ai-generated-content',
+          label: 'Agent-Driven Requirement Authoring',
+        },
+        {
+          type: 'doc',
+          id: 'current/export-integration',
+          label: 'Export & Integration Options',
+        },
+      ],
     },
     {
       type: 'category',
