@@ -1,22 +1,22 @@
-# AI Interaction & Features ✨
+# Intelligent Requirement Interaction ✨
 
-Specifai offers powerful AI interaction capabilities that enhance your workflow. This guide covers the AI Chat Interface and AI-Powered Inline Editing features.
+Specifai offers powerful intelligent requirement interaction capabilities that enhance your workflow. This guide covers the Intelligent Chat Interface and Intelligent Inline Editing features.
 
 ## 💬 AI Chat Interface
 
-The AI Chat Interface is your on-demand SDLC assistant within Specifai. It uses natural language understanding and context awareness to streamline your requirements management.
+The Intelligent Chat Interface is your on-demand SDLC assistant within Specifai. It uses natural language understanding and context awareness to streamline your requirements management.
 
 <div align="center">
 
 ![Chat Interface](../../static/gif/specifai-chat.gif)
-*Your AI-powered chat for real-time assistance*
+*Your intelligent chat for real-time assistance*
 
 </div>
 
 ### Key Capabilities
 
 1.  **Natural Language Understanding:**
-    * Engage with the AI using everyday language. The chat interprets your intent and context to perform relevant actions.
+    * Engage with the system using everyday language. The chat interprets your intent and context to perform relevant actions.
     * Ask questions like:
         * *"Can you refine the BRD for authentication based on SSO?"*
         * *"Add NFR data privacy guidelines."*
@@ -47,7 +47,7 @@ The AI Chat Interface is your on-demand SDLC assistant within Specifai. It uses 
 
 ## 🪄 AI-Powered Inline Editing
 
-Specifai's inline editing feature allows you to instantly improve any text within editable fields using AI assistance, without disrupting your workflow.
+Specifai's inline editing feature allows you to instantly improve any text within editable fields using intelligent assistance, without disrupting your workflow.
 
 <div align="center">
 
@@ -59,14 +59,14 @@ Specifai's inline editing feature allows you to instantly improve any text withi
 ### How to Use Inline Editing
 
 1. **Select Text:** Highlight any text you want to improve in your requirements, user stories, or descriptions.
-2. **Activate AI:** Click the ✨ sparkle icon that appears near your selection.
+2. **Activate Intelligence:** Click the ✨ sparkle icon that appears near your selection.
 3. **Provide Instructions:** Enter specific instructions like "Make this more concise" or "Add technical details."
-4. **Apply Changes:** Review the AI's suggestions and click "Accept" to apply them to your document.
+4. **Apply Changes:** Review the intelligent suggestions and click "Accept" to apply them to your document.
 
 ### Best Practices
 
 * **Be Specific:** Give clear instructions for better results (e.g., "Convert to bullet points highlighting key features").
-* **Select Appropriately:** Include enough context for the AI to understand what you're trying to improve.
+* **Select Appropriately:** Include enough context for the system to understand what you're trying to improve.
 * **Iterate:** Start with general improvements, then refine with more specific editing passes.
 
 ### Use Cases

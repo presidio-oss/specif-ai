@@ -40,12 +40,12 @@ const sidebars = {
         {
           type: 'doc',
           id: 'current/ai-interaction',
-          label: 'AI Interaction & Features',
+          label: 'Intelligent Requirement Interaction',
         },
         {
           type: 'doc',
           id: 'current/ai-generated-content',
-          label: 'Agent-Driven Content Generation',
+          label: 'Agent-Driven Requirement Authoring',
         },
         {
           type: 'doc',

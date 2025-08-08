@@ -174,15 +174,6 @@ Specifai offers flexible AI model configuration, allowing you to choose and conn
 
 ---
 
-## 🎉 Next Steps
-
-Ready to explore more with Specifai?
-1.  Set up [integrations](integrations-setup.md) with your existing tools to connect your workflows.
-2.  Discover [advanced features](advanced-features.md) for power users who want to push Specifai to its limits.
-3.  Join our [community](https://github.com/presidio-oss/specif-ai/discussions) to ask questions, share feedback, and connect with other users.
-
----
-
 Need help? Check our [troubleshooting guide](troubleshooting.md) for quick solutions, or reach out to [support](mailto:hai-feedback@presidio.com) if you have any questions.
 
 Specifai is continuously evolving to meet your needs—be sure to check our [release notes](https://github.com/presidio-oss/specif-ai/releases) for the latest features and improvements!

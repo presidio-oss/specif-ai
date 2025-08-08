@@ -1,4 +1,4 @@
-# Agent-Driven Content Generation 🤖
+# Agent-Driven Requirement Authoring 🤖
 
 Specifai leverages advanced AI to automate the creation of various content types. This guide covers how Specifai can generate user stories, tasks, test cases, and strategic initiatives automatically.
 
@@ -158,10 +158,10 @@ One of the most powerful features of Strategic Initiative generation is the abil
 
 ## Integration with Other Features
 
-Agent-driven content generation works seamlessly with other Specifai features:
+Agent-Driven Requirement Authoring works seamlessly with other Specifai features:
 
-- Use the [AI Chat Interface](ai-interaction.md) to refine and enhance generated content
-- Apply [AI-Powered Inline Editing](ai-interaction.md) to improve specific sections of generated content
+- Use the [Intelligent Chat Interface](ai-interaction.md) to refine and enhance generated content
+- Apply [Intelligent Inline Editing](ai-interaction.md) to improve specific sections of generated content
 - [Export and integrate](export-integration.md) your generated content to external systems
 
 For detailed information on the different types of requirements that can be generated, see [Requirements Document Types](requirement-types.md).
