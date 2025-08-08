@@ -12,7 +12,8 @@
               : ""
           }}
         </h1>
-        <app-badge [badgeText]="projectList.length" />
+        <app-badge [badgeText]="projectList.length" *ngIf="false"/>
+        <app-badge [infoLink]="doc_url" />
       </div>
       <div class="flex gap-2">
         <app-button
