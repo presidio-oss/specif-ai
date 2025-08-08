@@ -8,8 +8,8 @@
   <button
     *ngIf="infoLink" 
     (click)="electronService.openExternalUrl(infoLink)"
+    title="Opens docs in browser for more information"
     class="flex items-center justify-center text-secondary-600 hover:text-secondary-800 transition-colors duration-200 rounded-sm hover:bg-secondary-100 p-0.5 min-w-4 min-h-4"
-    [attr.aria-label]="badgeText ? 'More information about ' + badgeText : 'More information'"
   >
     <ng-icon name="heroInformationCircle"></ng-icon>
   </button>
