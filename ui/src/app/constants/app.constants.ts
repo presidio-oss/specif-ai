@@ -5,6 +5,7 @@ export const APP_CONSTANTS = {
   VERSION: 'APP_VERSION',
   USER_NAME: 'USER_NAME',
   USER_ID: 'USER_ID',
+  NEW_MODULE_FLAG: 'NEW_MODULE_FLAG',
 };
 export const FILTER_STRINGS = {
   BASE: 'base',

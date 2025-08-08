@@ -9,6 +9,7 @@ import { FILTER_STRINGS } from '../../constants/app.constants';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
 import { IconPairingEnum } from '../../model/enum/file-type.enum';
 import { ISelectedFolder } from 'src/app/model/interfaces/IList';
+import { APP_CONSTANTS } from '../../constants/app.constants';
 
 @Component({
   selector: 'app-sidebar',
@@ -33,14 +34,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
   newModuleFlag: boolean = false;
 
   ngOnInit(): void {
-    this.newModuleFlag = localStorage.getItem('NEW_MODULE_FLAG') === 'true';
+    this.newModuleFlag = localStorage.getItem(APP_CONSTANTS.NEW_MODULE_FLAG) === 'true';
     if (!this.newModuleFlag) {
-      localStorage.setItem('NEW_MODULE_FLAG', 'false');
+      localStorage.setItem(APP_CONSTANTS.NEW_MODULE_FLAG, 'false');
     }
   }
 
   ngOnDestroy(): void {
-    localStorage.setItem('NEW_MODULE_FLAG', 'true');
+    localStorage.setItem(APP_CONSTANTS.NEW_MODULE_FLAG, 'true');
   }
   
   @Output() folderSelected = new EventEmitter<any>();
