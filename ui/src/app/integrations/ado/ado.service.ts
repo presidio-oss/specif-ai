@@ -608,6 +608,37 @@ export class AdoService implements PmoService {
 
             let nextPrdNumber = maxPrdNumber + 1;
 
+            let globalNextUserStoryId = 1;
+            let globalNextTaskId = 1;
+
+            if (appInfo && appInfo.US?.count) {
+              globalNextUserStoryId = appInfo.US.count + 1;
+            } else {
+              Object.values(existingPmoMap.userStories).forEach((item) => {
+                const match = item.specifaiId.match(/US(\d+)/);
+                if (match && match[1]) {
+                  const id = parseInt(match[1], 10);
+                  if (id >= globalNextUserStoryId) {
+                    globalNextUserStoryId = id + 1;
+                  }
+                }
+              });
+            }
+
+            if (appInfo && appInfo.TASK?.count) {
+              globalNextTaskId = appInfo.TASK.count + 1;
+            } else {
+              Object.values(existingPmoMap.tasks).forEach((item) => {
+                const match = item.specifaiId.match(/TASK(\d+)/);
+                if (match && match[1]) {
+                  const id = parseInt(match[1], 10);
+                  if (id >= globalNextTaskId) {
+                    globalNextTaskId = id + 1;
+                  }
+                }
+              });
+            }
+
             // Process each PRD (Feature from ADO)
             const processGroups = async () => {
               for (const [, group] of ticketGroups.entries()) {
@@ -626,7 +657,20 @@ export class AdoService implements PmoService {
                   group.userStories,
                   group.tasks,
                   existingPmoMap,
+                  globalNextUserStoryId,
+                  globalNextTaskId,
                 );
+
+                features.forEach((feature) => {
+                  if (!existingPmoMap.userStories[feature.pmoId]) {
+                    globalNextUserStoryId++;
+                  }
+                  feature.tasks.forEach((task: any) => {
+                    if (!existingPmoMap.tasks[task.pmoId]) {
+                      globalNextTaskId++;
+                    }
+                  });
+                });
 
                 // Create the PRD base file content with correct structure
                 const prdBaseContent = {
@@ -1354,6 +1398,8 @@ export class AdoService implements PmoService {
    * @param userStories User stories to include in the PRD
    * @param tasks Tasks mapped by user story ID
    * @param existingPmoMap Map of existing items with pmoId
+   * @param nextUserStoryId Global counter for user story IDs
+   * @param nextTaskId Global counter for task IDs
    * @returns Array of formatted features
    */
   private async formatFeaturesForPrd(
@@ -1364,30 +1410,11 @@ export class AdoService implements PmoService {
       userStories: { [pmoId: string]: { specifaiId: string; path: string } };
       tasks: { [pmoId: string]: { specifaiId: string; path: string } };
     },
+    nextUserStoryId: number,
+    nextTaskId: number,
   ): Promise<Array<any>> {
-    let nextUserStoryId = 1;
-    let nextTaskId = 1;
-
-    // Find the highest existing US and TASK IDs
-    Object.values(existingPmoMap.userStories).forEach((item) => {
-      const match = item.specifaiId.match(/US(\d+)/);
-      if (match && match[1]) {
-        const id = parseInt(match[1], 10);
-        if (id >= nextUserStoryId) {
-          nextUserStoryId = id + 1;
-        }
-      }
-    });
-
-    Object.values(existingPmoMap.tasks).forEach((item) => {
-      const match = item.specifaiId.match(/TASK(\d+)/);
-      if (match && match[1]) {
-        const id = parseInt(match[1], 10);
-        if (id >= nextTaskId) {
-          nextTaskId = id + 1;
-        }
-      }
-    });
+    let currentUserStoryId = nextUserStoryId;
+    let currentTaskId = nextTaskId;
 
     // Format user stories into features
     const features = await Promise.all(
@@ -1395,7 +1422,7 @@ export class AdoService implements PmoService {
         // Determine user story ID - use existing or generate new one
         const userStoryId = existingPmoMap.userStories[userStory.pmoId]
           ? existingPmoMap.userStories[userStory.pmoId].specifaiId
-          : `US${nextUserStoryId++}`;
+          : `US${currentUserStoryId++}`;
 
         // Get tasks for this user story
         const userStoryTasks = tasks[userStory.pmoId] || [];
@@ -1406,7 +1433,7 @@ export class AdoService implements PmoService {
             // Determine task ID - use existing or generate new one
             const taskId = existingPmoMap.tasks[task.pmoId]
               ? existingPmoMap.tasks[task.pmoId].specifaiId
-              : `TASK${nextTaskId++}`;
+              : `TASK${currentTaskId++}`;
 
             return {
               id: taskId,

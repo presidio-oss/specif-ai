@@ -192,9 +192,13 @@ export class JiraService extends BasePmoService implements PmoService {
       buildMappingFromHierarchy(currentHierarchy);
 
       // 2. Get epics from Jira with pagination
-      const epics = await this.getEpicsFromJira(tokenInfo.token!, skip, top);
+      const { epics, totalCount } = await this.getEpicsFromJira(
+        tokenInfo.token!,
+        skip,
+        top,
+      );
       if (epics.length === 0) {
-        return { tickets: [], totalCount: 0 };
+        return { tickets: [], totalCount };
       }
 
       // 3. Build the hierarchy using existing mappings where available
@@ -292,7 +296,7 @@ export class JiraService extends BasePmoService implements PmoService {
         }),
       );
 
-      return { tickets: hierarchy, totalCount: epics.length };
+      return { tickets: hierarchy, totalCount };
     } catch (err) {
       return { tickets: [], totalCount: 0 };
     }
@@ -336,7 +340,7 @@ export class JiraService extends BasePmoService implements PmoService {
     token: string,
     skip: number,
     top: number,
-  ): Promise<any[]> {
+  ): Promise<{ epics: any[]; totalCount: number }> {
     if (!this.baseUrl) {
       throw new Error('Jira base URL not configured');
     }
@@ -366,9 +370,12 @@ export class JiraService extends BasePmoService implements PmoService {
         }),
       );
 
-      return response.issues || [];
+      return {
+        epics: response.issues || [],
+        totalCount: response.total || 0,
+      };
     } catch (error) {
-      return [];
+      return { epics: [], totalCount: 0 };
     }
   }
 
@@ -1122,6 +1129,37 @@ export class JiraService extends BasePmoService implements PmoService {
 
           let nextPrdNumber = maxPrdNumber + 1;
 
+          let globalNextUserStoryId = 1;
+          let globalNextTaskId = 1;
+
+          if (appInfo && appInfo.US?.count) {
+            globalNextUserStoryId = appInfo.US.count + 1;
+          } else {
+            Object.values(existingPmoMap.userStories).forEach((item) => {
+              const match = item.specifaiId.match(/US(\d+)/);
+              if (match && match[1]) {
+                const id = parseInt(match[1], 10);
+                if (id >= globalNextUserStoryId) {
+                  globalNextUserStoryId = id + 1;
+                }
+              }
+            });
+          }
+
+          if (appInfo && appInfo.TASK?.count) {
+            globalNextTaskId = appInfo.TASK.count + 1;
+          } else {
+            Object.values(existingPmoMap.tasks).forEach((item) => {
+              const match = item.specifaiId.match(/TASK(\d+)/);
+              if (match && match[1]) {
+                const id = parseInt(match[1], 10);
+                if (id >= globalNextTaskId) {
+                  globalNextTaskId = id + 1;
+                }
+              }
+            });
+          }
+
           // Process each PRD (Epic from Jira)
           const processGroups = async () => {
             for (const [, group] of ticketGroups.entries()) {
@@ -1140,8 +1178,20 @@ export class JiraService extends BasePmoService implements PmoService {
                 group.userStories,
                 group.tasks,
                 existingPmoMap,
-                appInfo,
+                globalNextUserStoryId,
+                globalNextTaskId,
               );
+
+              features.forEach((feature) => {
+                if (!existingPmoMap.userStories[feature.pmoId]) {
+                  globalNextUserStoryId++;
+                }
+                feature.tasks.forEach((task: any) => {
+                  if (!existingPmoMap.tasks[task.pmoId]) {
+                    globalNextTaskId++;
+                  }
+                });
+              });
 
               // Create the PRD base file content with correct structure
               const prdBaseContent = {
@@ -1562,7 +1612,8 @@ export class JiraService extends BasePmoService implements PmoService {
    * @param userStories User stories to include in the PRD
    * @param tasks Tasks mapped by user story ID
    * @param existingPmoMap Map of existing items with pmoId
-   * @param appInfo Application metadata for getting next IDs
+   * @param nextUserStoryId Global counter for user story IDs
+   * @param nextTaskId Global counter for task IDs
    * @returns Array of formatted features
    */
   private async formatFeaturesForPrd(
@@ -1573,44 +1624,17 @@ export class JiraService extends BasePmoService implements PmoService {
       userStories: { [pmoId: string]: { specifaiId: string; path: string } };
       tasks: { [pmoId: string]: { specifaiId: string; path: string } };
     },
-    appInfo?: any,
+    nextUserStoryId: number,
+    nextTaskId: number,
   ): Promise<Array<any>> {
-    let nextUserStoryId = 1;
-    let nextTaskId = 1;
-
-    if (appInfo && appInfo.US?.count) {
-      nextUserStoryId = appInfo.US.count + 1;
-    } else {
-      Object.values(existingPmoMap.userStories).forEach((item) => {
-        const match = item.specifaiId.match(/US(\d+)/);
-        if (match && match[1]) {
-          const id = parseInt(match[1], 10);
-          if (id >= nextUserStoryId) {
-            nextUserStoryId = id + 1;
-          }
-        }
-      });
-    }
-
-    if (appInfo && appInfo.TASK?.count) {
-      nextTaskId = appInfo.TASK.count + 1;
-    } else {
-      Object.values(existingPmoMap.tasks).forEach((item) => {
-        const match = item.specifaiId.match(/TASK(\d+)/);
-        if (match && match[1]) {
-          const id = parseInt(match[1], 10);
-          if (id >= nextTaskId) {
-            nextTaskId = id + 1;
-          }
-        }
-      });
-    }
+    let currentUserStoryId = nextUserStoryId;
+    let currentTaskId = nextTaskId;
 
     const features = await Promise.all(
       userStories.map(async (userStory) => {
         const userStoryId = existingPmoMap.userStories[userStory.pmoId]
           ? existingPmoMap.userStories[userStory.pmoId].specifaiId
-          : `US${nextUserStoryId++}`;
+          : `US${currentUserStoryId++}`;
 
         const userStoryTasks = tasks[userStory.pmoId] || [];
 
@@ -1618,7 +1642,7 @@ export class JiraService extends BasePmoService implements PmoService {
           userStoryTasks.map(async (task) => {
             const taskId = existingPmoMap.tasks[task.pmoId]
               ? existingPmoMap.tasks[task.pmoId].specifaiId
-              : `TASK${nextTaskId++}`;
+              : `TASK${currentTaskId++}`;
 
             return {
               id: taskId,

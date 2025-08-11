@@ -184,10 +184,8 @@ export class PmoIntegrationModalComponent implements OnInit {
     try {
       this.isLoadingWorkItems.set(true);
       const skip = this.currentPage() * this.pageSize();
-      const {tickets: prdsHierarchy, totalCount } = await this.pmoService.getWorkPlanItemsHierarchy(
-        skip,
-        this.pageSize(),
-      );
+      const { tickets: prdsHierarchy, totalCount } =
+        await this.pmoService.getWorkPlanItemsHierarchy(skip, this.pageSize());
 
       if (reset) {
         this.currentPage.set(0);
@@ -202,8 +200,8 @@ export class PmoIntegrationModalComponent implements OnInit {
         this.prdsWithChildren.set([...currentPrds, ...prdsHierarchy]);
       }
 
-      const loadedCount = (this.currentPage() + 1) * this.pageSize();
-      this.hasMoreItems.set(loadedCount < this.totalItems());
+      const actualLoadedCount = this.prdsWithChildren().length;
+      this.hasMoreItems.set(actualLoadedCount < this.totalItems());
 
       // Expand all PRDs and user stories by default
       this.expandAllItemsByDefault(prdsHierarchy);
