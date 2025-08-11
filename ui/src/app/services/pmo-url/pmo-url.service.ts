@@ -105,35 +105,6 @@ export class PmoUrlService {
   }
 
   /**
-   * Batch generate URLs for multiple PMO items
-   * @param items Array of PMO items with their metadata
-   * @returns Promise<Array<{item: any, url: string | null}>>
-   */
-  async generateBatchPmoUrls(
-    items: Array<{
-      pmoId: string;
-      pmoType: PmoType;
-      projectMetadata: IProjectMetadata;
-      metadata?: any;
-    }>,
-  ): Promise<Array<{ item: any; url: string | null }>> {
-    const results = await Promise.allSettled(
-      items.map(async (item) => ({
-        item: item.metadata || item,
-        url: await this.generatePmoUrl(
-          item.pmoId,
-          item.pmoType,
-          item.projectMetadata,
-        ),
-      })),
-    );
-
-    return results.map((result) =>
-      result.status === 'fulfilled' ? result.value : { item: null, url: null },
-    );
-  }
-
-  /**
    * Check if PMO integration is available for a project
    * @param pmoType The PMO tool type
    * @param projectMetadata The project metadata
