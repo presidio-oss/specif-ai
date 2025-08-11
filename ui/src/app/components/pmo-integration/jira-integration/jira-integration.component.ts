@@ -176,7 +176,7 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
       const authResponse =
         await this.electronService.startJiraOAuth(oauthParams);
       storeJiraToken(authResponse, formData.jiraProjectKey, this.projectId);
-      this.saveJiraData(formData);
+      this.saveJiraData(formData, authResponse);
     } catch (error) {
       this.logger.error('Error during Jira OAuth process:', error);
       this.toast.showError(APP_INTEGRATIONS.JIRA.ERROR);
@@ -201,13 +201,14 @@ export class JiraIntegrationComponent implements PmoIntegrationBase, OnInit {
     }
   }
 
-  private async saveJiraData(formData: any): Promise<void> {
+  private async saveJiraData(formData: any, authResponse: any): Promise<void> {
     try {
       const credentials: JiraCredentials = {
         clientId: formData.clientId,
         clientSecret: formData.clientSecret,
         jiraProjectKey: formData.jiraProjectKey,
         redirectUrl: formData.redirectUrl,
+        baseUrl: authResponse.baseUrl,
       };
 
       await this.integrationCredService.saveCredentials(

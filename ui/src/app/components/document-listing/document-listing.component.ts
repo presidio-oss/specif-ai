@@ -30,7 +30,7 @@ import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BadgeComponent } from '../core/badge/badge.component';
 import { ButtonComponent } from '../core/button/button.component';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { SearchInputComponent } from '../core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
 import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
@@ -52,6 +52,10 @@ import {
 import { PmoIntegrationModalComponent } from '../pmo-integration-modal/pmo-integration-modal.component';
 import { AdoService } from '../../integrations/ado/ado.service';
 import { JiraService } from '../../integrations/jira/jira.service';
+import {
+  heroArrowTopRightOnSquare,
+} from '@ng-icons/heroicons/outline';
+import { PmoUrlService } from '../../services/pmo-url/pmo-url.service';
 
 @Component({
   selector: 'app-document-listing',
@@ -71,6 +75,11 @@ import { JiraService } from '../../integrations/jira/jira.service';
     NgClass,
     ExportDropdownComponent,
   ],
+    providers: [
+      provideIcons({
+        heroArrowTopRightOnSquare,
+      }),
+    ],
 })
 export class DocumentListingComponent
   implements OnInit, OnDestroy, AfterViewInit
@@ -127,6 +136,7 @@ export class DocumentListingComponent
     private dialog: MatDialog,
     private adoService: AdoService,
     private jiraService: JiraService,
+    private pmoUrlService: PmoUrlService,
   ) {
     this.currentRoute = this.router.url;
     this.documentList$ = combineLatest([
@@ -463,6 +473,28 @@ export class DocumentListingComponent
     }
 
     return null;
+  }
+
+  /**
+   * Handle PMO ID click to open the item in external PMO tool
+   * @param pmoId The PMO ID (Jira ticket key or ADO work item ID)
+   */
+  async onPmoIdClick(pmoId: string | undefined): Promise<void> {
+    const selectedPmoTool = this.appInfo?.integration?.selectedPmoTool;
+    if (!selectedPmoTool || !pmoId) {
+      return;
+    }
+    try {
+      await this.pmoUrlService.openPmoItem(
+        pmoId,
+        selectedPmoTool,
+        this.appInfo,
+      );
+    } catch (error) {
+      this.toast.showError(
+        `Failed to open ${selectedPmoTool.toUpperCase()} item: ${pmoId}`,
+      );
+    }
   }
 
   getExportOptions(folderName: string) {

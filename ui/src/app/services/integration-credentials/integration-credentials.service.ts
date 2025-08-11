@@ -137,6 +137,7 @@ export class IntegrationCredentialsService {
             clientSecret: jiraConfig.clientSecret || '',
             jiraProjectKey: jiraConfig.jiraProjectKey || '',
             redirectUrl: jiraConfig.redirectUrl || '',
+            baseUrl: jiraConfig.baseUrl || '',
           };
 
           await this.saveCredentials(
