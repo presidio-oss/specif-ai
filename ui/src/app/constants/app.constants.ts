@@ -150,7 +150,8 @@ export const SPECIFAI_REQ_DOCS = {
   [REQUIREMENT_TYPE.NFR]: `${SPECIFAI_BASE_URL}#5-non-functional-requirements-nfr`,
   [REQUIREMENT_TYPE.UIR]: `${SPECIFAI_BASE_URL}#6-user-interface-requirements-uir`,
   [REQUIREMENT_TYPE.TC]: `${SPECIFAI_BASE_URL}#7-test-cases-tc`,
-  [REQUIREMENT_TYPE.SI]: `${SPECIFAI_BASE_URL}#8-strategic-initiatives-si`
+  [REQUIREMENT_TYPE.SI]: `${SPECIFAI_BASE_URL}#8-strategic-initiatives-si`,
+  [REQUIREMENT_TYPE.BP]: `https://specifai.io/current/business-workflows`,
 } as const;
 
 const getEntityDisplayName = (folderId: string): string => {
