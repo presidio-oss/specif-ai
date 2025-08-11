@@ -7,6 +7,7 @@ import {
   ViewChild,
   ElementRef,
   HostListener,
+  inject,
 } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
@@ -30,14 +31,14 @@ import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BadgeComponent } from '../core/badge/badge.component';
 import { ButtonComponent } from '../core/button/button.component';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIcon, NgIconComponent } from '@ng-icons/core';
 import { SearchInputComponent } from '../core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
 import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
-import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
+import { FOLDER_REQUIREMENT_TYPE_MAP, SPECIFAI_REQ_DOCS, SPECIFAI_FALLBACK_URL } from 'src/app/constants/app.constants';
 import {
   EXPORT_FILE_FORMATS,
   ExportFileFormat,
@@ -52,6 +53,7 @@ import {
 import { PmoIntegrationModalComponent } from '../pmo-integration-modal/pmo-integration-modal.component';
 import { AdoService } from '../../integrations/ado/ado.service';
 import { JiraService } from '../../integrations/jira/jira.service';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 
 @Component({
   selector: 'app-document-listing',
@@ -70,6 +72,7 @@ import { JiraService } from '../../integrations/jira/jira.service';
     RichTextEditorComponent,
     NgClass,
     ExportDropdownComponent,
+    NgIcon,
   ],
 })
 export class DocumentListingComponent
@@ -92,6 +95,8 @@ export class DocumentListingComponent
     (IList & { id: string; formattedRequirement: string | null })[]
   >;
   selectedFolder: any = {};
+  docUrl: string = '';
+  electronService = inject(ElectronService);
   private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({
     title: '',
     id: '',
@@ -102,6 +107,8 @@ export class DocumentListingComponent
     this.appInfo = value.metadata;
     this.selectedFolder = value;
     this.combinedSubject.next({ title: value.title, id: value.id });
+
+    this.docUrl = SPECIFAI_REQ_DOCS[this.selectedFolder.title as keyof typeof SPECIFAI_REQ_DOCS] || SPECIFAI_FALLBACK_URL;
 
     // Reset scroll position when a new folder is set
     if (this.scrollContainer) {

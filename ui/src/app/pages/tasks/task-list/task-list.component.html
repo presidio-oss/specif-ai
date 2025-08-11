@@ -45,6 +45,11 @@
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center">
             <h2 class="text-md font-semibold text-secondary-600">Tasks</h2>
+            <ng-icon
+              name="heroInformationCircle"
+              (click)="electronService.openExternalUrl(docUrl)"
+              class="cursor-pointer ml-1 hover:text-secondary-500"
+            ></ng-icon>
             <app-badge
               [badgeText]="(taskList$ | async)?.length || 0"
             ></app-badge>
