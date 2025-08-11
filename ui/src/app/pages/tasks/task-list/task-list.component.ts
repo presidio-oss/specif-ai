@@ -44,6 +44,8 @@ import { WorkflowProgressService } from '../../../services/workflow-progress/wor
 import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 import { provideIcons } from '@ng-icons/core';
 import { heroArrowRight } from '@ng-icons/heroicons/outline';
+import {SPECIFAI_REQ_DOCS} from 'src/app/constants/specifai-req-types-docs.constants';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 
 @Component({
   selector: 'app-task-list',
@@ -86,6 +88,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
   entityType: string = 'TASK';
   private searchTerm$ = new BehaviorSubject<string>('');
   private destroy$ = new Subject<void>();
+  electronService = inject(ElectronService);
+  docUrl = SPECIFAI_REQ_DOCS.find(
+    (doc) => doc.id === REQUIREMENT_TYPE.TASK,
+  )?.url || '';
 
   isGeneratingTasks: boolean = false;
   taskGenerationComplete: boolean = false;

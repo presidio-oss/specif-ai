@@ -8,7 +8,11 @@
           class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8"
         >
           Test Cases
-          <app-badge [infoLink]="doc_url" />
+            <ng-icon
+              name="heroInformationCircle"
+              (click)="electronService.openExternalUrl(docUrl)"
+              class="cursor-pointer ml-1 hover:text-secondary-500"
+            ></ng-icon>
         </h1>
 
         <div class="flex items-center">

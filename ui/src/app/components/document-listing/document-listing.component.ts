@@ -7,6 +7,7 @@ import {
   ViewChild,
   ElementRef,
   HostListener,
+  inject,
 } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../store/projects/projects.state';
@@ -30,7 +31,7 @@ import { RequirementTypeEnum } from '../../model/enum/requirement-type.enum';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BadgeComponent } from '../core/badge/badge.component';
 import { ButtonComponent } from '../core/button/button.component';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIcon, NgIconComponent } from '@ng-icons/core';
 import { SearchInputComponent } from '../core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
 import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.constants';
@@ -52,7 +53,8 @@ import {
 import { PmoIntegrationModalComponent } from '../pmo-integration-modal/pmo-integration-modal.component';
 import { AdoService } from '../../integrations/ado/ado.service';
 import { JiraService } from '../../integrations/jira/jira.service';
-import { getDetailsByReqType } from 'src/app/constants/specifai-core-features.constants';
+import { SPECIFAI_REQ_DOCS } from 'src/app/constants/specifai-req-types-docs.constants';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 
 @Component({
   selector: 'app-document-listing',
@@ -71,6 +73,7 @@ import { getDetailsByReqType } from 'src/app/constants/specifai-core-features.co
     RichTextEditorComponent,
     NgClass,
     ExportDropdownComponent,
+    NgIcon,
   ],
 })
 export class DocumentListingComponent
@@ -93,7 +96,8 @@ export class DocumentListingComponent
     (IList & { id: string; formattedRequirement: string | null })[]
   >;
   selectedFolder: any = {};
-  doc_url: string = '';
+  docUrl: string = '';
+  electronService = inject(ElectronService);
   private combinedSubject = new BehaviorSubject<{ title: string; id: string }>({
     title: '',
     id: '',
@@ -105,7 +109,7 @@ export class DocumentListingComponent
     this.selectedFolder = value;
     this.combinedSubject.next({ title: value.title, id: value.id });
 
-    this.doc_url = getDetailsByReqType(this.selectedFolder.title)?.url ?? '';
+    this.docUrl = SPECIFAI_REQ_DOCS.find(doc => doc.id === this.selectedFolder.title)?.url ?? '';
 
     // Reset scroll position when a new folder is set
     if (this.scrollContainer) {

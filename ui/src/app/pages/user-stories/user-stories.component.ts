@@ -65,6 +65,8 @@ import { WorkflowProgressDialogComponent } from '../../components/workflow-progr
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils.service';
+import { SPECIFAI_REQ_DOCS } from 'src/app/constants/specifai-req-types-docs.constants';
+import { ElectronService } from 'src/app/electron-bridge/electron.service';
 
 @Component({
   selector: 'app-user-stories',
@@ -110,6 +112,8 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   isGeneratingStories: boolean = false;
   storyGenerationComplete: boolean = false;
   showProgressDialog: boolean = false;
+  docUrl = SPECIFAI_REQ_DOCS.find((doc) => doc.id === REQUIREMENT_TYPE.US)?.url || '';
+  electronService = inject(ElectronService);
 
   isTokenAvailable: boolean = true;
   navigation: {

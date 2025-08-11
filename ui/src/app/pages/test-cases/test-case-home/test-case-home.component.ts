@@ -13,7 +13,7 @@ import { TestCaseService } from '../../../services/test-case/test-case.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { provideIcons } from '@ng-icons/core';
+import { provideIcons, NgIcon } from '@ng-icons/core';
 import { heroArrowRight, heroDocumentText, heroClipboardDocumentCheck, heroBeaker } from '@ng-icons/heroicons/outline';
 import { UnifiedCardComponent, CardStatusIndicator } from '../../../components/unified-card/unified-card.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
@@ -28,7 +28,7 @@ import { SummaryCardComponent } from "../../../components/summary-card/summary-c
 import { FormsModule } from '@angular/forms';
 import { joinPaths } from 'src/app/utils/path.utils';
 import { ButtonComponent } from "../../../components/core/button/button.component";
-import { getDetailsByReqType } from 'src/app/constants/specifai-core-features.constants';
+import { SPECIFAI_REQ_DOCS } from 'src/app/constants/specifai-req-types-docs.constants';
 
 interface IPrdInfo {
   id: string;
@@ -61,7 +61,8 @@ interface SummaryCardData {
     MatTooltipModule,
     AppSelectComponent,
     FormsModule,
-    ButtonComponent
+    ButtonComponent,
+    NgIcon
 ],
   providers: [
     provideIcons({
@@ -86,8 +87,8 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   userStories: IUserStory[] = [];
   isLoading: boolean = false;
   testCaseCounts: Map<string, number> = new Map<string, number>();
-  doc_url = getDetailsByReqType(REQUIREMENT_TYPE.TC)?.url || '';
-  
+  docUrl = SPECIFAI_REQ_DOCS.find(doc => doc.id === REQUIREMENT_TYPE.TC)?.url || '';
+
   summaryCards: SummaryCardData[] = [
     {
       icon: 'heroDocumentText',

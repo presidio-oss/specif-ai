@@ -57,8 +57,9 @@ import {
 } from '../../../store/breadcrumb/breadcrumb.actions';
 import { WorkflowProgressService } from 'src/app/services/workflow-progress/workflow-progress.service';
 import { heroArrowRight } from '@ng-icons/heroicons/outline';
-import { provideIcons } from '@ng-icons/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
+import {SPECIFAI_REQ_DOCS} from 'src/app/constants/specifai-req-types-docs.constants';
 
 @Component({
   selector: 'app-test-case-list',
@@ -77,6 +78,7 @@ import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
     WorkflowProgressDialogComponent,
     UnifiedCardComponent,
     AppSelectComponent,
+    NgIcon,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [
@@ -104,8 +106,10 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
   logger = inject(NGXLogger);
   store = inject(Store);
   searchService = inject(SearchService);
+  electronService = inject(ElectronService);
   requirementFile: any = [];
   testCases: ITestCase[] = [];
+  docUrl = SPECIFAI_REQ_DOCS.find(doc => doc.id === 'TC')?.url || '';
   private destroy$ = new Subject<void>();
 
   testCaseUserStoryMap: Map<string, string> = new Map();
@@ -261,7 +265,6 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
   constructor(
     private testCaseService: TestCaseService,
     private clipboardService: ClipboardService,
-    private electronService: ElectronService,
     private toast: ToasterService,
     private appSystemService: AppSystemService,
     private requirementIdService: RequirementIdService,
