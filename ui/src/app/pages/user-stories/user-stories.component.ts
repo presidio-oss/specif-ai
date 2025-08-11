@@ -40,6 +40,7 @@ import { BadgeComponent } from '../../components/core/badge/badge.component';
 import {
   REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
+  SPECIFAI_REQ_DOCS
 } from '../../constants/app.constants';
 import { SearchInputComponent } from '../../components/core/search-input/search-input.component';
 import { SearchService } from '../../services/search/search.service';
@@ -65,7 +66,6 @@ import { WorkflowProgressDialogComponent } from '../../components/workflow-progr
 import { WorkflowType } from '../../model/interfaces/workflow-progress.interface';
 import { WorkflowProgressService } from '../../services/workflow-progress/workflow-progress.service';
 import { TestCaseUtilsService } from 'src/app/services/test-case/test-case-utils.service';
-import { SPECIFAI_REQ_DOCS } from 'src/app/constants/specifai-req-types-docs.constants';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
 
 @Component({
@@ -112,7 +112,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   isGeneratingStories: boolean = false;
   storyGenerationComplete: boolean = false;
   showProgressDialog: boolean = false;
-  docUrl = SPECIFAI_REQ_DOCS['US'];
+  docUrl = SPECIFAI_REQ_DOCS[REQUIREMENT_TYPE.US];
   electronService = inject(ElectronService);
 
   isTokenAvailable: boolean = true;

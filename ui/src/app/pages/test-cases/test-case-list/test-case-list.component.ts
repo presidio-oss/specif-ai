@@ -30,6 +30,7 @@ import {
   FILTER_STRINGS,
   REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
+  SPECIFAI_REQ_DOCS
 } from '../../../constants/app.constants';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { BehaviorSubject, combineLatest, firstValueFrom, map, Subject, take, takeUntil } from 'rxjs';
@@ -59,7 +60,6 @@ import { WorkflowProgressService } from 'src/app/services/workflow-progress/work
 import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
-import {SPECIFAI_REQ_DOCS} from 'src/app/constants/specifai-req-types-docs.constants';
 
 @Component({
   selector: 'app-test-case-list',
@@ -109,7 +109,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   requirementFile: any = [];
   testCases: ITestCase[] = [];
-  docUrl = SPECIFAI_REQ_DOCS['TC'];
+  docUrl = SPECIFAI_REQ_DOCS[REQUIREMENT_TYPE.TC];
   private destroy$ = new Subject<void>();
 
   testCaseUserStoryMap: Map<string, string> = new Map();

@@ -1,16 +1,5 @@
 <span
-  class="inline-flex items-center gap-1 bg-secondary-50 border border-secondary-300 text-secondary-900 rounded-lg text-xs h-6 ml-2"
-  [class.px-2]="badgeText"
-  [class.px-1]="!badgeText && infoLink"
-  [class.py-1]="true"
+  class="ml-2 bg-secondary-50 border border-secondary-300 text-secondary-900 rounded-lg px-2 py-1 text-xs max-w-20 h-6 flex items-center justify-center"
 >
-  <span *ngIf="badgeText" class="truncate">{{ badgeText }}</span>
-  <button
-    *ngIf="infoLink" 
-    (click)="electronService.openExternalUrl(infoLink)"
-    title="Opens docs in browser for more information"
-    class="flex items-center justify-center text-secondary-600 hover:text-secondary-800 transition-colors duration-200 rounded-sm hover:bg-secondary-100 p-0.5 min-w-4 min-h-4"
-  >
-    <ng-icon name="heroInformationCircle"></ng-icon>
-  </button>
+  {{ badgeText }}
 </span>

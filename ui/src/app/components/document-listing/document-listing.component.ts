@@ -38,7 +38,7 @@ import { APP_INFO_COMPONENT_ERROR_MESSAGES } from '../../constants/messages.cons
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
-import { FOLDER_REQUIREMENT_TYPE_MAP } from 'src/app/constants/app.constants';
+import { FOLDER_REQUIREMENT_TYPE_MAP, SPECIFAI_REQ_DOCS, SPECIFAI_FALLBACK_URL } from 'src/app/constants/app.constants';
 import {
   EXPORT_FILE_FORMATS,
   ExportFileFormat,
@@ -53,7 +53,6 @@ import {
 import { PmoIntegrationModalComponent } from '../pmo-integration-modal/pmo-integration-modal.component';
 import { AdoService } from '../../integrations/ado/ado.service';
 import { JiraService } from '../../integrations/jira/jira.service';
-import { SPECIFAI_REQ_DOCS } from 'src/app/constants/specifai-req-types-docs.constants';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
 
 @Component({
@@ -109,7 +108,7 @@ export class DocumentListingComponent
     this.selectedFolder = value;
     this.combinedSubject.next({ title: value.title, id: value.id });
 
-    this.docUrl = SPECIFAI_REQ_DOCS[this.selectedFolder.title as keyof typeof SPECIFAI_REQ_DOCS] || '';
+    this.docUrl = SPECIFAI_REQ_DOCS[this.selectedFolder.title as keyof typeof SPECIFAI_REQ_DOCS] || SPECIFAI_FALLBACK_URL;
 
     // Reset scroll position when a new folder is set
     if (this.scrollContainer) {

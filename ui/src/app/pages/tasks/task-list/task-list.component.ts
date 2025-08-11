@@ -29,6 +29,7 @@ import { ClipboardService } from '../../../services/clipboard.service';
 import {
   REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
+  SPECIFAI_REQ_DOCS
 } from 'src/app/constants/app.constants';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
@@ -44,7 +45,6 @@ import { WorkflowProgressService } from '../../../services/workflow-progress/wor
 import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 import { provideIcons } from '@ng-icons/core';
 import { heroArrowRight } from '@ng-icons/heroicons/outline';
-import {SPECIFAI_REQ_DOCS} from 'src/app/constants/specifai-req-types-docs.constants';
 import { ElectronService } from 'src/app/electron-bridge/electron.service';
 
 @Component({
@@ -89,7 +89,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   private searchTerm$ = new BehaviorSubject<string>('');
   private destroy$ = new Subject<void>();
   electronService = inject(ElectronService);
-  docUrl = SPECIFAI_REQ_DOCS['TASK']
+  docUrl = SPECIFAI_REQ_DOCS[REQUIREMENT_TYPE.TASK]
 
   isGeneratingTasks: boolean = false;
   taskGenerationComplete: boolean = false;
