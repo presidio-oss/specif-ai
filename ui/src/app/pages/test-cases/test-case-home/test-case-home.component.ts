@@ -87,7 +87,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   userStories: IUserStory[] = [];
   isLoading: boolean = false;
   testCaseCounts: Map<string, number> = new Map<string, number>();
-  docUrl = SPECIFAI_REQ_DOCS.find(doc => doc.id === REQUIREMENT_TYPE.TC)?.url || '';
+  docUrl = SPECIFAI_REQ_DOCS['TC'];
 
   summaryCards: SummaryCardData[] = [
     {

@@ -109,7 +109,7 @@ export class DocumentListingComponent
     this.selectedFolder = value;
     this.combinedSubject.next({ title: value.title, id: value.id });
 
-    this.docUrl = SPECIFAI_REQ_DOCS.find(doc => doc.id === this.selectedFolder.title)?.url ?? '';
+    this.docUrl = SPECIFAI_REQ_DOCS[this.selectedFolder.title as keyof typeof SPECIFAI_REQ_DOCS] || '';
 
     // Reset scroll position when a new folder is set
     if (this.scrollContainer) {

@@ -89,9 +89,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   private searchTerm$ = new BehaviorSubject<string>('');
   private destroy$ = new Subject<void>();
   electronService = inject(ElectronService);
-  docUrl = SPECIFAI_REQ_DOCS.find(
-    (doc) => doc.id === REQUIREMENT_TYPE.TASK,
-  )?.url || '';
+  docUrl = SPECIFAI_REQ_DOCS['TASK']
 
   isGeneratingTasks: boolean = false;
   taskGenerationComplete: boolean = false;

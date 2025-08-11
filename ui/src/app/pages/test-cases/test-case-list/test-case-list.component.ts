@@ -109,7 +109,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
   electronService = inject(ElectronService);
   requirementFile: any = [];
   testCases: ITestCase[] = [];
-  docUrl = SPECIFAI_REQ_DOCS.find(doc => doc.id === 'TC')?.url || '';
+  docUrl = SPECIFAI_REQ_DOCS['TC'];
   private destroy$ = new Subject<void>();
 
   testCaseUserStoryMap: Map<string, string> = new Map();

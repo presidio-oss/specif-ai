@@ -112,7 +112,7 @@ export class UserStoriesComponent implements OnInit, OnDestroy {
   isGeneratingStories: boolean = false;
   storyGenerationComplete: boolean = false;
   showProgressDialog: boolean = false;
-  docUrl = SPECIFAI_REQ_DOCS.find((doc) => doc.id === REQUIREMENT_TYPE.US)?.url || '';
+  docUrl = SPECIFAI_REQ_DOCS['US'];
   electronService = inject(ElectronService);
 
   isTokenAvailable: boolean = true;
