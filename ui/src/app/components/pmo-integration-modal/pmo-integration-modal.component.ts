@@ -16,6 +16,7 @@ import {
   heroDocumentPlus,
   heroDocumentCheck,
   heroCog6Tooth,
+  heroInbox,
 } from '@ng-icons/heroicons/outline';
 import { APP_MESSAGES } from 'src/app/constants/app.constants';
 import { Ticket } from '../../services/pmo-integration/pmo-integration.service';
@@ -55,6 +56,7 @@ interface PmoIntegrationData {
       heroDocumentPlus,
       heroDocumentCheck,
       heroCog6Tooth,
+      heroInbox,
     }),
   ],
 })
@@ -182,7 +184,10 @@ export class PmoIntegrationModalComponent implements OnInit {
 
   async loadPrdsHierarchy(reset: boolean = true): Promise<void> {
     try {
-      this.isLoadingWorkItems.set(true);
+      if (reset) {
+        this.isLoadingWorkItems.set(true);
+      }
+      
       const skip = this.currentPage() * this.pageSize();
       const { tickets: prdsHierarchy, totalCount } =
         await this.pmoService.getWorkPlanItemsHierarchy(skip, this.pageSize());
@@ -217,7 +222,9 @@ export class PmoIntegrationModalComponent implements OnInit {
         `Failed to load ${this.data.pmoType.toUpperCase()} work items`,
       );
     } finally {
-      this.isLoadingWorkItems.set(false);
+      if (reset) {
+        this.isLoadingWorkItems.set(false);
+      }
     }
   }
 
