@@ -422,7 +422,14 @@
             (click)="loadMoreItems()"
             [disabled]="isLoadingMore()"
             aria-label="Load more work items"
-          ></app-button>
+          >
+            <ng-icon
+              *ngIf="isLoadingMore()"
+              slot="icon-left"
+              name="heroArrowPath"
+              class="animate-spin w-4 h-4 mr-2"
+            ></ng-icon>
+          </app-button>
         </div>
         <div class="text-center mt-2">
           <span class="text-xs text-gray-500">
