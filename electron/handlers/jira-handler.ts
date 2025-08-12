@@ -21,6 +21,14 @@ export function setupJiraHandlers(mainWindow: BrowserWindow) {
     expires_in: number;
     token_type: string;
   }
+
+  interface JiraServerInfo {
+    id: string;
+    name: string;
+    url: string;
+    scopes: string[];
+    avatarUrl: string;
+  }
   
   async function exchangeToken(grantType: string, codeOrToken: string) {
     const tokenUrl = "https://auth.atlassian.com/oauth/token";
@@ -54,30 +62,36 @@ export function setupJiraHandlers(mainWindow: BrowserWindow) {
   
     const expirationDate = new Date();
     expirationDate.setSeconds(expirationDate.getSeconds() + expires_in);
-  
-    const cloudId = await getCloudId(access_token);
-  
+
+    const serverInfo = await getJiraServerInfo(access_token);
+
     return {
       accessToken: access_token,
       refreshToken: refresh_token,
       expirationDate: expirationDate.toISOString(),
       tokenType: token_type,
-      cloudId: cloudId,
+      cloudId: serverInfo?.id,
+      baseUrl: serverInfo?.url,
     };
   }
   
-  async function getCloudId(accessToken: string): Promise<string | null> {
-    const accessibleResourcesUrl =
-      "https://api.atlassian.com/oauth/token/accessible-resources";
-    const cloudIdResponse = await axios.get<Array<{ id: string }>>(accessibleResourcesUrl, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
-      },
-    });
-  
-    const resources = cloudIdResponse.data;
-    return resources.length > 0 ? resources[0].id : null;
+  async function getJiraServerInfo(accessToken: string): Promise<JiraServerInfo | null> {
+    try {
+      const accessibleResourcesUrl =
+        "https://api.atlassian.com/oauth/token/accessible-resources";
+      const cloudIdResponse = await axios.get<Array<JiraServerInfo>>(accessibleResourcesUrl, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/json",
+        },
+      });
+    
+      const resources = cloudIdResponse.data;
+      return resources.length > 0 ? resources[0] : null;
+    } catch (error) {
+      console.error("Error getting Jira server info:", error);
+      return null;
+    }
   }
   
   const authServer = createServer((req: IncomingMessage, res: ServerResponse) => {
