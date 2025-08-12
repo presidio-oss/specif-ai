@@ -13,11 +13,11 @@ import { TestCaseService } from '../../../services/test-case/test-case.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { provideIcons } from '@ng-icons/core';
+import { provideIcons, NgIcon } from '@ng-icons/core';
 import { heroArrowRight, heroDocumentText, heroClipboardDocumentCheck, heroBeaker } from '@ng-icons/heroicons/outline';
 import { UnifiedCardComponent, CardStatusIndicator } from '../../../components/unified-card/unified-card.component';
 import { BadgeComponent } from '../../../components/core/badge/badge.component';
-import { FILTER_STRINGS, REQUIREMENT_TYPE, TOASTER_MESSAGES } from '../../../constants/app.constants';
+import { FILTER_STRINGS, REQUIREMENT_TYPE, TOASTER_MESSAGES, SPECIFAI_REQ_DOCS } from '../../../constants/app.constants';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { AppSelectComponent, SelectOption } from '../../../components/core/app-select/app-select.component';
 import { SearchService } from '../../../services/search/search.service';
@@ -60,7 +60,8 @@ interface SummaryCardData {
     MatTooltipModule,
     AppSelectComponent,
     FormsModule,
-    ButtonComponent
+    ButtonComponent,
+    NgIcon
 ],
   providers: [
     provideIcons({
@@ -85,7 +86,8 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
   userStories: IUserStory[] = [];
   isLoading: boolean = false;
   testCaseCounts: Map<string, number> = new Map<string, number>();
-  
+  docUrl = SPECIFAI_REQ_DOCS[REQUIREMENT_TYPE.TC];
+
   summaryCards: SummaryCardData[] = [
     {
       icon: 'heroDocumentText',

@@ -14,6 +14,11 @@
 
         <div class="flex items-center">
           <h2 class="text-md font-semibold text-secondary-600">Test Cases</h2>
+            <ng-icon
+              name="heroInformationCircle"
+              (click)="electronService.openExternalUrl(docUrl)"
+              class="cursor-pointer ml-1 hover:text-secondary-500"
+            ></ng-icon>
           <app-badge [badgeText]="testCases.length"></app-badge>
         </div>
       </div>
