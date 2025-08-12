@@ -201,7 +201,10 @@ export class PmoIntegrationModalComponent implements OnInit {
       }
 
       const actualLoadedCount = this.prdsWithChildren().length;
-      this.hasMoreItems.set(actualLoadedCount < this.totalItems());
+      const loadedExactPageSize = prdsHierarchy.length === this.pageSize();
+      this.hasMoreItems.set(
+        actualLoadedCount < this.totalItems() && loadedExactPageSize,
+      );
 
       // Expand all PRDs and user stories by default
       this.expandAllItemsByDefault(prdsHierarchy);
