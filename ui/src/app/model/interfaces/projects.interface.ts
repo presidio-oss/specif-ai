@@ -21,6 +21,7 @@ export interface JiraCredentials {
   clientSecret: string;
   jiraProjectKey: string;
   redirectUrl: string;
+  baseUrl: string;
 }
 
 export interface AdoCredentials {

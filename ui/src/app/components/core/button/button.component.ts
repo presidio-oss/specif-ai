@@ -33,8 +33,20 @@ export class ButtonComponent {
   @Input() tooltip?: string;
   @Input() tooltipDisabled?: string;
   @Input() showTooltip: boolean = false;
+  @Input() pill: boolean = false;
 
   get themeClasses() {
+    if (this.pill) {
+      return {
+        bg: 'bg-secondary-100',
+        text: 'text-xs',
+        hoverBg: 'hover:bg-secondary-200',
+        disabledBg: 'bg-secondary-50',
+        disabledText: 'text-secondary-300',
+        border: '',
+      };
+    }
+
     const styles = {
       primary: {
         bg: 'bg-primary-600',
@@ -96,7 +108,17 @@ export class ButtonComponent {
     return styles[this.theme] || styles.primary;
   }
 
+  get baseClasses(): string {
+    return this.pill
+      ? 'inline-flex items-center cursor-pointer transition-colors ml-1.5'
+      : 'flex items-center justify-center font-semibold opacity-100 transition-colors duration-300 select-none';
+  }
+
   get sizeClass(): string {
+    if (this.pill) {
+      return 'px-1.5 text-xs';
+    }
+
     switch (this.size) {
       case 'xs':
         return 'px-2 py-1 text-xs';
@@ -112,6 +134,9 @@ export class ButtonComponent {
   }
 
   get roundedClass(): string {
+    if (this.pill) {
+      return 'rounded-xl';
+    }
     const leftClass =
       this.roundedLeft !== 'none' ? `rounded-l-${this.roundedLeft}` : '';
     const rightClass =

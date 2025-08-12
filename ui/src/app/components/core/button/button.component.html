@@ -1,13 +1,6 @@
 <button
   [ngClass]="[
-    'flex',
-    'items-center',
-    'justify-center',
-    'font-semibold',
-    'opacity-100',
-    'transition-colors',
-    'duration-300',
-    'select-none',
+    baseClasses,
     sizeClass,
     roundedClass,
     themeClasses.border,
@@ -23,6 +16,7 @@
   [matTooltipDisabled]="!tooltip && !tooltipDisabled"
   matTooltipPosition="above"
 >
+  <ng-content select="[slot=icon-left]"></ng-content>
   <ng-container *ngIf="icon && iconPosition === 'left'">
     <ng-icon
       [name]="icon"
@@ -40,4 +34,5 @@
       [ngClass]="isIconButton ? 'w-5 h-5 text-lg' : 'w-4 h-4 ml-2'"
     ></ng-icon>
   </ng-container>
+  <ng-content select="[slot=icon-right]"></ng-content>
 </button>
