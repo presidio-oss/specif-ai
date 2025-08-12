@@ -75,7 +75,7 @@ export class PmoIntegrationModalComponent implements OnInit {
   expandedUserStoryIds = signal<Set<string>>(new Set());
 
   currentPage = signal<number>(0);
-  pageSize = signal<number>(200);
+  pageSize = signal<number>(100);
   totalItems = signal<number>(0);
   hasMoreItems = signal<boolean>(false);
   isLoadingMore = signal<boolean>(false);
