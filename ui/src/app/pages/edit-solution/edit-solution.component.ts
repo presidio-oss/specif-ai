@@ -801,6 +801,19 @@ export class EditSolutionComponent {
     return false;
   }
 
+  hasFormChanges(): boolean {
+    if (this.mode === 'add') {
+      return false;
+    }
+    const hasBasicChanges = this.requirementForm.dirty && this.requirementForm.touched;
+    const hasMappingChanges = this.checkMappingChanges();
+    return hasBasicChanges || hasMappingChanges;
+  }
+
+  isUpdateDisabled(): boolean {
+    return this.requirementForm.invalid || !this.hasFormChanges();
+  }
+
   extractPropertyValues<
     TData extends Array<TDataItem>,
     TDataItem extends Record<string, any>,

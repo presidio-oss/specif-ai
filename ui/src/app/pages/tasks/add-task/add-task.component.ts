@@ -506,6 +506,17 @@ export class AddTaskComponent implements OnDestroy {
     this.destroy$.complete();
   }
 
+  hasFormChanges(): boolean {
+    if (this.mode === 'add') {
+      return false;
+    }
+    return this.taskForm.dirty && this.taskForm.touched;
+  }
+
+  isUpdateDisabled(): boolean {
+    return this.taskForm.invalid || !this.hasFormChanges();
+  }
+
   canDeactivate(): boolean {
     return (
       !this.allowForceRedirect &&

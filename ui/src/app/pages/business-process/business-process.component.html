@@ -171,7 +171,7 @@
             rounded="md"
             *ngIf="mode === 'edit'"
             (click)="updateBusinessProcess()"
-            [disabled]="checkFormValidity()"
+            [disabled]="isUpdateDisabled()"
           />
           <app-button
             buttonContent="Add"

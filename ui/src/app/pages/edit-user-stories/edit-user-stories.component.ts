@@ -466,6 +466,17 @@ export class EditUserStoriesComponent implements OnDestroy {
     this.uploadedFileContent = content;
   }
 
+  hasFormChanges(): boolean {
+    if (this.mode === 'add') {
+      return false;
+    }
+    return this.userStoryForm.dirty && this.userStoryForm.touched;
+  }
+
+  isUpdateDisabled(): boolean {
+    return this.userStoryForm.invalid || !this.hasFormChanges();
+  }
+
   canDeactivate(): boolean {
     return (
       !this.allowForceRedirect &&
