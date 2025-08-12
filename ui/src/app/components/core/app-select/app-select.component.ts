@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, forwardRef, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, forwardRef, HostListener, ElementRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -50,12 +50,15 @@ export class AppSelectComponent implements ControlValueAccessor {
   @HostListener('document:click', ['$event'])
   onClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!target.closest('.custom-select-container')) {
+    const clickedContainer = target.closest('.custom-select-container');
+    const thisContainer = this.elementRef.nativeElement.querySelector('.custom-select-container');
+    
+    if (!clickedContainer || (clickedContainer && clickedContainer !== thisContainer)) {
       this.showDropdown = false;
     }
   }
 
-  constructor() {
+  constructor(private elementRef: ElementRef) {
     this.filteredOptions = this.options;
   }
 
