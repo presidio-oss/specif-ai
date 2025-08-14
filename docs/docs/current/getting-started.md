@@ -24,13 +24,13 @@ In this guide, you'll learn how to:
 
 ## 📥 Installation
 
-### Download Latest Release (v2.8.0)
+### Download Latest Release (v2.8.1)
 
 Choose your platform:
-- **Windows**: [Download Specifai for Windows](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.0/Specif-AI-Setup-2.8.0.exe)
+- **Windows**: [Download Specifai for Windows](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.1/Specif-AI-Setup-2.8.1.exe)
 - **macOS**: 
-    - [Apple Silicon (M1/M2/M3)](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.0/Specif-AI-2.8.0-arm64.dmg)
-    - [Intel Processors](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.0/Specif-AI-2.8.0.dmg)
+    - [Apple Silicon (M1/M2/M3)](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.1/Specif-AI-2.8.1-arm64.dmg)
+    - [Intel Processors](https://github.com/presidio-oss/specif-ai/releases/download/v2.8.1/Specif-AI-2.8.1.dmg)
 
 > 💡 **Mac users**: Check your processor type in Apple Menu → About This Mac
 
