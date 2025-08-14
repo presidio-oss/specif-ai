@@ -4,17 +4,15 @@
 
 ### Enhancements
 
-- Added ESLint configuration for UI components to improve code quality and consistency.
-- Enhanced PMO integration modal with optimized page size (reduced from 200 to 100 items) for better performance.
-- Improved badge functionality with click support for opening Jira/ADO links directly from requirement badges.
-- Added informational tooltips and "New" pill indicators for better user guidance on new modules.
-- Updated documentation structure with improved Docusaurus home page UI and core features section.
+- Improved PMO integration performance by optimizing the number of items displayed per page for faster loading.
+- Enhanced requirement badges with clickable functionality to directly open associated Jira/ADO tickets.
+- Added helpful information buttons and "New" indicators to guide users through new features and modules.
+- Updated documentation with improved navigation and clearer feature explanations.
 
 ### Fixed
 
-- Resolved pagination logic issues in PMO integration modal to correctly determine item availability.
-- Addressed ID duplication and pagination issues in PMO integrations for more reliable data handling.
-- Fixed chat streaming object serialization issues and added support for new Claude models.
+- Resolved issues where PMO integration modal would incorrectly show "Load More" button when no additional items were available.
+- Improved AI chat reliability and added support for latest Claude AI models.
 
 ## [2.8.0]
 
