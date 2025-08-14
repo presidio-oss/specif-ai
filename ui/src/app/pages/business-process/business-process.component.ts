@@ -672,8 +672,10 @@ export class BusinessProcessComponent implements OnInit {
     );
   }
 
-  canDeactivate(): boolean {
-    // Check form changes
+  hasFormChanges(): boolean {
+    if (this.mode === 'add') {
+      return false;
+    }
     const hasFormChanges = this.businessProcessForm.dirty && this.businessProcessForm.touched;
 
     // Compare original vs current PRD selections
@@ -682,7 +684,14 @@ export class BusinessProcessComponent implements OnInit {
     // Compare original vs current BRD selections
     const hasBRDChanges = !this.areSelectionsEqual(this.originalSelectedBRDs, this.selectedBRDs);
 
-    // Return true to allow navigation only if there are no changes or force redirect is allowed
-    return !this.allowForceRedirect && (hasFormChanges || hasPRDChanges || hasBRDChanges);
+    return hasFormChanges || hasPRDChanges || hasBRDChanges;
+  }
+
+  isUpdateDisabled(): boolean {
+    return this.checkFormValidity() || !this.hasFormChanges();
+  }
+
+  canDeactivate(): boolean {
+    return !this.allowForceRedirect && this.hasFormChanges();
   }
 }

@@ -109,7 +109,7 @@
             rounded="md"
             *ngIf="mode === 'edit'"
             type="submit"
-            [disabled]="taskForm.invalid"
+            [disabled]="isUpdateDisabled()"
           />
           <app-button
             buttonContent="Add"

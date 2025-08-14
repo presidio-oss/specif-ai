@@ -165,7 +165,7 @@
             rounded="md"
             *ngIf="mode === 'edit'"
             type="submit"
-            [disabled]="requirementForm.invalid"
+            [disabled]="isUpdateDisabled()"
           />
           <app-button
             buttonContent="Add"
