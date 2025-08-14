@@ -16,11 +16,6 @@
 - Addressed ID duplication and pagination issues in PMO integrations for more reliable data handling.
 - Fixed chat streaming object serialization issues and added support for new Claude models.
 
-### Fixed
-
-- Resolved issues where PMO integration modal would incorrectly show "Load More" button when no additional items were available.
-- Improved AI chat reliability and added support for latest Claude AI models.
-
 ## [2.8.0]
 
 ### Added
