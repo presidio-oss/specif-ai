@@ -43,6 +43,7 @@ import { IntegrationCredentialsService } from '../../services/integration-creden
 export class JiraService extends BasePmoService implements PmoService {
   private config: JiraIntegrationConfig | null = null;
   private baseUrl: string | null = null;
+  private nextPageToken: string | null = null;
 
   constructor(
     private http: HttpClient,
@@ -192,11 +193,17 @@ export class JiraService extends BasePmoService implements PmoService {
       buildMappingFromHierarchy(currentHierarchy);
 
       // 2. Get epics from Jira with pagination
-      const { epics, totalCount } = await this.getEpicsFromJira(
+      const pageToken = skip === 0 ? null : this.nextPageToken;
+
+      const { epics, totalCount, nextPageToken, isLast } = await this.getEpicsFromJira(
         tokenInfo.token!,
-        skip,
         top,
+        pageToken,
       );
+
+      // Store the token for the next page
+      this.nextPageToken = nextPageToken;
+
       if (epics.length === 0) {
         return { tickets: [], totalCount };
       }
@@ -296,7 +303,15 @@ export class JiraService extends BasePmoService implements PmoService {
         }),
       );
 
-      return { tickets: hierarchy, totalCount };
+      // Calculate totalCount for the component's Load More logic
+      // Since the new API doesn't provide total count, we estimate it:
+      // - If isLast is true: we've loaded all items
+      // - If isLast is false: there are more items, so return a number > current count
+      const estimatedTotalCount = isLast
+        ? skip + hierarchy.length  // Exact count when we've reached the end
+        : skip + hierarchy.length + 1;  // Add 1 to indicate more items exist
+
+      return { tickets: hierarchy, totalCount: estimatedTotalCount };
     } catch (err) {
       return { tickets: [], totalCount: 0 };
     }
@@ -335,12 +350,15 @@ export class JiraService extends BasePmoService implements PmoService {
 
   /**
    * Get epics from Jira project
+   * @param token - Authentication token
+   * @param top - Maximum number of results
+   * @param pageToken - Token for pagination (null for first page)
    */
   private async getEpicsFromJira(
     token: string,
-    skip: number,
     top: number,
-  ): Promise<{ epics: any[]; totalCount: number }> {
+    pageToken?: string | null,
+  ): Promise<{ epics: any[]; totalCount: number; nextPageToken: string | null; isLast: boolean }> {
     if (!this.baseUrl) {
       throw new Error('Jira base URL not configured');
     }
@@ -348,10 +366,9 @@ export class JiraService extends BasePmoService implements PmoService {
     const epicIssueType = this.getJiraIssueType('PRD');
     const jql = `project = "${this.config!.jiraProjectKey}" AND issuetype = "${epicIssueType}" ORDER BY created DESC`;
 
-    const searchUrl = `${this.baseUrl}/rest/api/3/search`;
-    const params = {
+    const searchUrl = `${this.baseUrl}/rest/api/3/search/jql`;
+    const params: any = {
       jql,
-      startAt: skip,
       maxResults: top,
       fields: [
         'summary',
@@ -363,6 +380,11 @@ export class JiraService extends BasePmoService implements PmoService {
       ],
     };
 
+    // Add nextPageToken if provided (for pagination)
+    if (pageToken) {
+      params.nextPageToken = pageToken;
+    }
+
     try {
       const response = await lastValueFrom(
         this.http.post<any>(searchUrl, params, {
@@ -372,10 +394,12 @@ export class JiraService extends BasePmoService implements PmoService {
 
       return {
         epics: response.issues || [],
-        totalCount: response.total || 0,
+        totalCount: response.issues?.length || 0, // Return current page count
+        nextPageToken: response.nextPageToken || null,
+        isLast: response.isLast ?? true, // Include isLast flag
       };
     } catch (error) {
-      return { epics: [], totalCount: 0 };
+      return { epics: [], totalCount: 0, nextPageToken: null, isLast: true };
     }
   }
 
@@ -393,7 +417,7 @@ export class JiraService extends BasePmoService implements PmoService {
     const storyIssueType = this.getJiraIssueType('User Story');
     const jql = `project = "${this.config!.jiraProjectKey}" AND issuetype = "${storyIssueType}" AND parent = "${epicKey}" ORDER BY created DESC`;
 
-    const searchUrl = `${this.baseUrl}/rest/api/3/search`;
+    const searchUrl = `${this.baseUrl}/rest/api/3/search/jql`;
     const params = {
       jql,
       fields: [
@@ -434,7 +458,7 @@ export class JiraService extends BasePmoService implements PmoService {
     const taskIssueType = this.getJiraIssueType('Task');
     const jql = `project = "${this.config!.jiraProjectKey}" AND issuetype = "${taskIssueType}" AND parent = "${storyKey}" ORDER BY created DESC`;
 
-    const searchUrl = `${this.baseUrl}/rest/api/3/search`;
+    const searchUrl = `${this.baseUrl}/rest/api/3/search/jql`;
     const params = {
       jql,
       fields: [
