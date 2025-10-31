@@ -192,13 +192,11 @@ export class PmoIntegrationModalComponent implements OnInit {
       const { tickets: prdsHierarchy, totalCount } =
         await this.pmoService.getWorkPlanItemsHierarchy(skip, this.pageSize());
 
-      if (reset) {
-        this.currentPage.set(0);
-        this.prdsWithChildren.set([]);
-        this.totalItems.set(totalCount);
-      }
+      // Always update totalItems (it changes as we paginate)
+      this.totalItems.set(totalCount);
 
       if (reset) {
+        this.currentPage.set(0);
         this.prdsWithChildren.set(prdsHierarchy);
       } else {
         const currentPrds = this.prdsWithChildren();

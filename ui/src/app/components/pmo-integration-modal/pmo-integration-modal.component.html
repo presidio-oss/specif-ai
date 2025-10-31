@@ -405,6 +405,7 @@
         </div>
       </div>
 
+      <!-- Load More Button Section -->
       <div
         *ngIf="
           !isLoadingWorkItems() &&
@@ -431,11 +432,20 @@
             ></ng-icon>
           </app-button>
         </div>
-        <div class="text-center mt-2">
-          <span class="text-xs text-gray-500">
-            Showing {{ prdsWithChildren().length }} of {{ totalItems() }} items
-          </span>
-        </div>
+      </div>
+
+      <!-- Item Count - Always show when items are loaded -->
+      <div
+        *ngIf="
+          !isLoadingWorkItems() &&
+          prdsWithChildren().length > 0 &&
+          action() === 'pull'
+        "
+        class="border-t border-gray-100 px-6 py-3 bg-gray-50 text-center"
+      >
+        <span class="text-xs text-gray-500">
+          Showing {{ prdsWithChildren().length }} items
+        </span>
       </div>
     </div>
   </div>
