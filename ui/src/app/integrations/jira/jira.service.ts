@@ -417,31 +417,7 @@ export class JiraService extends BasePmoService implements PmoService {
     const storyIssueType = this.getJiraIssueType('User Story');
     const jql = `project = "${this.config!.jiraProjectKey}" AND issuetype = "${storyIssueType}" AND parent = "${epicKey}" ORDER BY created DESC`;
 
-    const searchUrl = `${this.baseUrl}/rest/api/3/search/jql`;
-    const params = {
-      jql,
-      fields: [
-        'summary',
-        'description',
-        'status',
-        'issuetype',
-        'parent',
-        'created',
-        'updated',
-      ],
-    };
-
-    try {
-      const response = await lastValueFrom(
-        this.http.post<any>(searchUrl, params, {
-          headers: this.getHeaders(token),
-        }),
-      );
-
-      return response.issues || [];
-    } catch (error) {
-      return [];
-    }
+    return this.fetchAllIssues(jql, token);
   }
 
   /**
@@ -458,28 +434,67 @@ export class JiraService extends BasePmoService implements PmoService {
     const taskIssueType = this.getJiraIssueType('Task');
     const jql = `project = "${this.config!.jiraProjectKey}" AND issuetype = "${taskIssueType}" AND parent = "${storyKey}" ORDER BY created DESC`;
 
+    return this.fetchAllIssues(jql, token);
+  }
+
+  /**
+   * Helper method to fetch all issues with pagination using nextPageToken
+   * @param jql The JQL query string
+   * @param token Authentication token
+   * @returns Promise resolving to array of all issues
+   */
+  private async fetchAllIssues(
+    jql: string,
+    token: string,
+  ): Promise<any[]> {
+    if (!this.baseUrl) {
+      throw new Error('Jira base URL not configured');
+    }
+
     const searchUrl = `${this.baseUrl}/rest/api/3/search/jql`;
-    const params = {
-      jql,
-      fields: [
-        'summary',
-        'description',
-        'status',
-        'issuetype',
-        'parent',
-        'created',
-        'updated',
-      ],
-    };
+    const maxResults = 5000;
+    let allIssues: any[] = [];
+    let nextPageToken: string | null = null;
+    let isLast = false;
+
+    const fields = [
+      'summary',
+      'description',
+      'status',
+      'issuetype',
+      'parent',
+      'created',
+      'updated',
+    ];
 
     try {
-      const response = await lastValueFrom(
-        this.http.post<any>(searchUrl, params, {
-          headers: this.getHeaders(token),
-        }),
-      );
+      while (!isLast) {
+        const params: any = {
+          jql,
+          maxResults,
+          fields,
+        };
 
-      return response.issues || [];
+        // Add nextPageToken if we have one (for subsequent pages)
+        if (nextPageToken) {
+          params.nextPageToken = nextPageToken;
+        }
+
+        const response = await lastValueFrom(
+          this.http.post<any>(searchUrl, params, {
+            headers: this.getHeaders(token),
+          }),
+        );
+
+        const issues = response.issues || [];
+        allIssues = allIssues.concat(issues);
+
+        // Update pagination state
+        nextPageToken = response.nextPageToken || null;
+        isLast = response.isLast ?? true;
+      }
+
+      return allIssues;
     } catch (error) {
       return [];
     }
