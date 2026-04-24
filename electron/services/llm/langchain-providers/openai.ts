@@ -18,15 +18,18 @@ export enum OpenAiModelId {
   GPT_4O_MINI = 'gpt-4o-mini',
   CHATGPT_4O_LATEST = 'chatgpt-4o-latest',
   GPT_4_5_PREVIEW = 'gpt-4.5-preview',
+  GPT_5_2_CHAT = 'gpt-5.2-chat',
+  GPT_5_4      = 'gpt-5.4'
 }
+
 
 const OpenAiModels: Record<OpenAiModelId, ModelInfoV1> = {
   [OpenAiModelId.O3]: {
-    maxTokens: 100_000,
+    maxCompletionTokens: 100_000,
     contextWindow: 200_000,
   },
   [OpenAiModelId.O4_MINI]: {
-    maxTokens: 100_000,
+    maxCompletionTokens: 100_000,
     contextWindow: 200_000,
   },
   [OpenAiModelId.GPT_4_1]: {
@@ -42,19 +45,19 @@ const OpenAiModels: Record<OpenAiModelId, ModelInfoV1> = {
     contextWindow: 1_047_576,
   },
   [OpenAiModelId.O3_MINI]: {
-    maxTokens: 100_000,
+    maxCompletionTokens: 100_000,
     contextWindow: 200_000,
   },
   [OpenAiModelId.O1]: {
-    maxTokens: 100_000,
+    maxCompletionTokens: 100_000,
     contextWindow: 200_000,
   },
   [OpenAiModelId.O1_PREVIEW]: {
-    maxTokens: 32_768,
+    maxCompletionTokens: 32_768,
     contextWindow: 128_000,
   },
   [OpenAiModelId.O1_MINI]: {
-    maxTokens: 65_536,
+    maxCompletionTokens: 65_536,
     contextWindow: 128_000,
   },
   [OpenAiModelId.GPT_4O]: {
@@ -73,6 +76,14 @@ const OpenAiModels: Record<OpenAiModelId, ModelInfoV1> = {
     maxTokens: 16_384,
     contextWindow: 128_000,
   },
+  [OpenAiModelId.GPT_5_2_CHAT]: {
+    maxCompletionTokens: 16_384,
+    contextWindow: 128_000,
+  },
+  [OpenAiModelId.GPT_5_4]: {
+    maxCompletionTokens: 16_384,
+    contextWindow: 128_000,
+  }
 };
 
 interface OpenAIConfig extends LLMConfig {
@@ -90,6 +101,11 @@ export class OpenAILangChainProvider implements LangChainModelProvider {
     this.configData = this.getConfig(config);
     const modelInfo = OpenAiModels[this.configData.model];
 
+    // LangChain's isReasoningModel only detects o1/o3 prefixes; newer models
+    // like o4-mini and gpt-5.x also require max_completion_tokens. For those,
+    // suppress LangChain's max_tokens via maxTokens=-1 and inject the value
+    // through modelKwargs so it lands in the request payload correctly.
+    const needsCompletionTokens = modelInfo.maxCompletionTokens !== undefined;
     this.model = LangChainChatGuardrails(
       new ChatOpenAI({
         openAIApiKey: this.configData.apiKey,
@@ -98,7 +114,12 @@ export class OpenAILangChainProvider implements LangChainModelProvider {
         configuration: {
           baseURL: this.configData.baseUrl,
         },
-        maxTokens: modelInfo.maxTokens,
+        ...(needsCompletionTokens
+          ? {
+              maxTokens: -1,
+              modelKwargs: { max_completion_tokens: modelInfo.maxCompletionTokens },
+            }
+          : { maxTokens: modelInfo.maxTokens }),
       }),
       guardrailsEngine
     );

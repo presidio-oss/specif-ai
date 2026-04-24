@@ -18,13 +18,10 @@ interface AzureModelInfo extends ModelInfo {
   apiVersion?: string;
 }
 
+
 export class AzureOpenAIHandler extends LLMHandler {
   private client: AzureOpenAI;
   protected configData: AzureOpenAIConfig;
-  private modelParameters = {
-    temperature: 0.7,
-    max_tokens: 4096,
-  };
   private observabilityManager = ObservabilityManager.getInstance();
 
   constructor(config: Partial<AzureOpenAIConfig>) {
@@ -74,19 +71,21 @@ export class AzureOpenAIHandler extends LLMHandler {
       ...(msg.name && { name: msg.name }),
     })) as any[];
 
+    const modelParameters = { temperature: 0.7, max_completion_tokens: 4096 };
+
     const response = await this.client.chat.completions.create({
       model: this.configData.deployment,
       messages: openAIMessages,
-      ...this.modelParameters,
+      ...modelParameters,
     });
 
     const traceName = `${TRACES.CHAT_COMPLETION}:${this.configData.deployment}`;
     const trace = this.observabilityManager.createTrace(traceName);
-    
+
     trace.generation({
       name: operation,
       model: this.configData.deployment,
-      modelParameters: this.modelParameters,
+      modelParameters: modelParameters,
       usage: {
         input: response?.usage?.prompt_tokens,
         output: response?.usage?.completion_tokens,

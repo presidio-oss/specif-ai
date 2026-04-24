@@ -22,6 +22,7 @@ export interface ModelInfo {
 
 export interface ModelInfoV1 {
   maxTokens?: number;
+  maxCompletionTokens?: number;
   contextWindow?: number;
 }
 
