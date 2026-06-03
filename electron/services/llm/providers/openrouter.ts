@@ -11,6 +11,7 @@ interface OpenRouterConfig extends LLMConfig {
   baseUrl?: string;
 }
 
+
 export class OpenRouterHandler extends LLMHandler {
   private client: OpenAI;
   protected configData: OpenRouterConfig;
@@ -61,7 +62,7 @@ export class OpenRouterHandler extends LLMHandler {
     const response = await this.client.chat.completions.create({
       model: this.configData.model,
       messages: openAIMessages,
-      max_tokens: 1000,
+      max_completion_tokens: 1000,
       temperature: 0.7,
     });
 
