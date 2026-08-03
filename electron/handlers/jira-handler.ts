@@ -162,6 +162,11 @@ export function setupJiraHandlers(mainWindow: BrowserWindow) {
     server.listen(port);
   }
     ipcMain.handle("kill-port", async (_event, port: number) => {
+      if (typeof port !== "number" || !Number.isInteger(port) || port < 1 || port > 65535) {
+        console.error(`[kill-port] Refused to kill port: Invalid port value "${port}" received`);
+        return { success: false, message: "Invalid port number" };
+      }
+
       if (process.platform === "win32") {
         try {
           const { stdout } = await new Promise<{stdout: string, stderr: string}>((resolve, reject) => {
