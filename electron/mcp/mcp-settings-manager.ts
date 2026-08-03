@@ -16,7 +16,7 @@ export class MCPSettingsManager {
 
   static getInstance() {
     if (this.instance == null) {
-      return new MCPSettingsManager();
+      this.instance = new MCPSettingsManager();
     }
 
     return this.instance;
