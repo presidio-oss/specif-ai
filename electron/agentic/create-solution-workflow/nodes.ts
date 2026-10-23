@@ -89,7 +89,7 @@ export const buildResearchNode = ({
     });
 
     // TODO: Discuss
-    // max(min(64, each tool called twice (for each tool call - llm node + tool node + trim messaegs node) so 3) + 1 (for structured output)), 128)
+    // max(min(64, each tool called twice (for each tool call - llm node + tool node + trim messages node) so 3) + 1 (for structured output)), 128)
     const recursionLimit = Math.min(Math.max(64, tools.length * 2 * 3 + 1), 128);
 
     const response = await agent.invoke(
